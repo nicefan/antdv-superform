@@ -1,0 +1,9 @@
+.table-form-item {
+  margin-bottom: 0;
+  :global {
+    .ant-form-item-control>.ant-form-item-explain,
+    .ant-form-item-label {
+      display:none
+    }
+  }
+}
