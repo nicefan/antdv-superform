@@ -28,6 +28,7 @@ declare global {
   // type Readonly<T = any> = Vue.DeepReadonly<T>
   interface ModelData {
     refName: string
+    // propRef: Ref
     parent: Obj
     propChain: string[]
     rules: Obj
@@ -37,10 +38,15 @@ declare global {
     parent: Obj
     propChain?: string[]
     rules?: Obj
+    propRef?: Ref
+    refName?: string
   }
+  type ModelsMap<T = ExBaseOption> = Map<T, T extends {subItems: any} ? Required<ModelChildren> : ModelChildren>
+  type ModelChildren = { model: ModelData; children?: ModelsMap }
+
   interface FormOption {
     attr?: Obj
-    columns: UniOption[]
+    subItems: UniOption[]
   }
   interface ButtonItem {
     label?: string
@@ -62,7 +68,7 @@ declare global {
     hide?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     actions?: T[] | { [K in T]?: ButtonItem }
-    items?: ButtonItem[]
+    subItems?: ButtonItem[]
   }
   interface ExBaseOption {
     type: string
@@ -74,6 +80,7 @@ declare global {
     hide?: boolean | ((formData: Readonly<Obj>) => boolean)
     /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
     disabled?: boolean | Fn
+    dynamicAttr?: Fn<Obj>
     // renderView?: Fn<VNode>
     // customRender?: Fn
     // row?: boolean
@@ -82,7 +89,7 @@ declare global {
     offset?: number
   }
   interface ExTableOption extends ExBaseOption {
-    prop?: string
+    prop: string
     title?: string | Fn<VNode>
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
@@ -95,21 +102,21 @@ declare global {
     prop?: string
     title?: string | Fn<VNode>
     gutter?: number
-    columns: UniOption[]
+    subItems: UniOption[]
   }
   interface ExInputGroupOption extends ExBaseOption {
     span: number
     gutter?: number
-    columns: UniOption[]
+    subItems: UniOption[]
   }
   interface ExCardOption extends ExBaseOption {
     prop?: string
     buttons?: ExButtonGroup
     title?: string | VNode
-    columns: UniOption[]
+    subItems: UniOption[]
   }
   interface ExListOption extends ExBaseOption {
-    prop?: string
+    prop: string
     buttons?: ExButtonGroup<'add' | 'refresh'>
     columns: UniInputOption[]
     /** 列表元素右边按钮 */
@@ -126,7 +133,7 @@ declare global {
     prop?: string
     key?: string
     icon?: string
-    columns: UniOption[]
+    subItems: UniOption[]
   }
   interface ExCollapseOption extends ExBaseOption {
     activeKey?: string | Ref<string>
@@ -137,7 +144,7 @@ declare global {
     prop?: string
     key?: string
     icon?: string
-    columns: UniOption[]
+    subItems: UniOption[]
     buttons?: ExButtonGroup
   }
 
@@ -208,7 +215,7 @@ declare global {
 
   type UniOption = { [K in keyof OptionType]: { type: K } & OptionType[K] }[keyof OptionType]
   type UniInputOption = Extract<UniOption, ExFormOption>
-  type MixOption = { [K in keyof OptionType]: (k: Partial<OptionType[K]>) => void }[keyof OptionType] extends (
+  type MixOption = { [K in keyof OptionType]: (k: Partial<OptionType[K]>& { type: string }) => void }[keyof OptionType] extends (
     k: infer U
   ) => void
     ? U // & { type: keyof OptionType}

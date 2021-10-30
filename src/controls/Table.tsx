@@ -1,22 +1,21 @@
 /* eslint-disable vue/one-component-per-file */
 import { ref, reactive, h, PropType, defineComponent, inject } from 'vue'
 import { nanoid } from 'nanoid'
-import { buildModel } from '../util'
+import { buildModelDeep } from '../utils/util'
 import { useModal } from '../Modal'
 import cloneDeep from 'lodash/cloneDeep'
 import BottonGroup from './ButtonGroup.vue'
 import inlineRender from './TableEdit'
 import Collections from './Collections'
 
-function modalEdit(cols: any[], list, rowKey) {
+function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
   // 生成新增表单
-  const modelRef = reactive<Obj>({})
-  const rules = {}
-  const editModels = cols.map((col) => ({ option: col, modelData: buildModel(col, { parent: modelRef, rules }) }))
-
-  const defData = cloneDeep(modelRef)
+  const { parent, rules } = parentModel
+  const copyData = cloneDeep(parent)
+  const modelRef = parent
   const formData = inject('formData')
   const formRef = ref()
+
   const editForm = defineComponent({
     provide: {
       formData,
@@ -24,7 +23,7 @@ function modalEdit(cols: any[], list, rowKey) {
     setup() {
       return () => (
         <a-form ref={formRef} class="exa-form" model={modelRef} rules={rules} layout="vertical">
-          <Collections option={{ columns: cols }} modelData={{ parent: modelRef }} />
+          <Collections children={modelsMap} />
         </a-form>
       )
     },
@@ -33,12 +32,12 @@ function modalEdit(cols: any[], list, rowKey) {
 
   const methods = {
     add() {
-      Object.assign(modelRef, cloneDeep(defData), { [rowKey]: nanoid(12) })
+      Object.assign(modelRef, cloneDeep(copyData), { [rowKey]: nanoid(12) })
       openModal({
         title: '新增',
         onOk() {
           return formRef.value.validate().then(() => {
-            list.push(cloneDeep(modelRef))
+            orgList.push(cloneDeep(modelRef))
           })
         },
       })
@@ -50,8 +49,8 @@ function modalEdit(cols: any[], list, rowKey) {
         title: '修改',
         onOk() {
           return formRef.value.validate().then(() => {
-            const idx = list.indexOf(data)
-            Object.assign(list[idx], cloneDeep(modelRef))
+            const idx = orgList.indexOf(data)
+            Object.assign(orgList[idx], cloneDeep(modelRef))
           })
         },
       })
@@ -59,15 +58,40 @@ function modalEdit(cols: any[], list, rowKey) {
     del({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
       items.forEach((item) => {
-        list.splice(list.indexOf(item), 1)
+        orgList.splice(orgList.indexOf(item), 1)
       })
     },
   }
   return { methods }
 }
 
+function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
+  const columns = (function getConfig(_models: ModelsMap) {
+    return [..._models].map(([col, { model, children }]) => {
+      if (children) {
+        return {
+          title: col.label,
+          children: getConfig(children),
+        }
+      } else {
+        const colRender = colRenderMap?.get(col)
+        return {
+          title: col.label,
+          dataIndex: model.propChain.join('.'),
+          ...(colRender && { customRender: colRender }),
+          ...col.attr,
+        }
+      }
+    })
+  })(models)
+
+  return columns
+}
+
 function buildData(option: ExTableOption, orgList: Obj[], rowKey: string) {
-  const { columns, itemButtons, buttons } = option
+  const { columns: cols, itemButtons } = option
+  const parentModel = { parent: reactive({}), rules: {} }
+  const modelsMap = buildModelDeep(cols, parentModel)
 
   let context: {
     list: Ref
@@ -75,34 +99,30 @@ function buildData(option: ExTableOption, orgList: Obj[], rowKey: string) {
     methods: Obj
     actionSlot?: Fn
   }
+  const _param = { parentModel, modelsMap, orgList, rowKey }
 
   if (option.editMode === 'inline') {
-    context = inlineRender(columns, orgList, rowKey)
+    const ctx = inlineRender(_param)
+
     if (option.addMode === 'modal') {
-      const modalInfo = modalEdit(columns, orgList, rowKey)
-      context.methods.add = modalInfo.methods.add
+      const modalInfo = modalEdit(_param)
+      ctx.methods = { ...ctx.methods, add: modalInfo.methods.add }
     }
+    const { list, actionSlot, colRenderMap, methods } = ctx
+    const columns = buildColumns(modelsMap, colRenderMap)
+
+    context = { columns, list, methods, actionSlot }
   } else {
-    const cols: Obj[] = columns.map((item) => {
-      return {
-        title: item.label,
-        dataIndex: item.prop,
-        ...item.attr,
-      }
-    })
-    const { methods } = modalEdit(columns, orgList, rowKey)
-    context = {
-      list: ref(orgList),
-      columns: cols,
-      methods,
-    }
+    const columns = buildColumns(modelsMap)
+    const { methods } = modalEdit(_param)
+    context = { methods, columns, list: ref(orgList) }
   }
+
   if (itemButtons) {
     context.columns.push({
       title: '操作',
       key: 'action',
       customRender: (param) => {
-        console.log('table')
         return context.actionSlot?.(param) || h(BottonGroup, { config: itemButtons, param, methods: context.methods })
       },
     })
@@ -118,16 +138,17 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ExTableOption>,
     },
-    modelData: {
+    model: {
       required: true,
       type: Object as PropType<ModelData>,
     },
   },
-  setup({ option, modelData }) {
+  setup({ option, model }) {
     const editInline = option.editMode === 'inline'
     const rowKey = option.attr?.rowKey || 'id'
+    const orgList = model.parent[model.refName]
 
-    const { list, columns, methods } = buildData(option, modelData.parent as Obj[], rowKey)
+    const { list, columns, methods } = buildData(option, orgList as Obj[], rowKey)
 
     const selectedRowKeys = ref<string[]>([])
     const selectedRows = ref<Obj[]>([])
@@ -155,15 +176,19 @@ export default defineComponent({
       },
       ...(editInline && {
         getCheckboxProps: (record) => ({
-          disabled: !modelData.parent.includes(record),
+          disabled: !orgList.includes(record),
         }),
       }),
     }
-    const btns =
-      option.buttons && h(BottonGroup, { config: option.buttons, param: { selectedRows, selectedRowKeys }, methods })
+    const btnProps = { config: option.buttons, param: { selectedRows, selectedRowKeys }, methods }
+
     return () => (
       <>
-        {btns}
+        {option.buttons && (
+          <a-row class="ant-list-header">
+            <BottonGroup {...btnProps} />
+          </a-row>
+        )}
         <a-table
           dataSource={list.value}
           columns={columns}

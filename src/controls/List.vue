@@ -1,28 +1,27 @@
 <script lang="ts" setup>
-import { ref, watch, inject } from 'vue'
+import { ref, watch, inject, toRef } from 'vue'
 import { nanoid } from 'nanoid'
-import { buildModelDeep, buildModel } from '../util'
+import { buildModelDeep, cloneModels } from '../utils/util';
 import ButtonGroup from './ButtonGroup.vue'
 import Collections from './Collections'
 import cloneDeep from 'lodash/cloneDeep'
 
 const props = defineProps<{
   option: ExListOption
-  modelData: ModelData
+  model: ModelData
 }>()
 
 const { columns, buttons, itemButtons, label, attr } = props.option
 // 先构建一个数据结构
 const defaultData: Obj = {}
-buildModelDeep(columns, { parent: defaultData })
+const modelsMap = buildModelDeep(columns, { parent: defaultData })
 
-const formData = inject('formData')
+const { parent, refName } = props.model
+const orgList = parent[refName]
+
 const rowKey = attr?.rowKey || 'id'
-
 const itemsMap: Obj = {}
-const listItems = ref<Obj[]>([])
-// 监听数据变化
-const orgList = props.modelData.parent
+
 const methods = {
   add() {
     orgList.push(cloneDeep(defaultData))
@@ -33,19 +32,21 @@ const methods = {
     delete itemsMap[record[rowKey]]
   },
 }
+
+const listItems = ref<ModelsMap[]>([])
+// 监听数据变化
 watch(
   () => orgList.length,
   () => {
-    listItems.value = orgList.map((item, idx) => {
+    listItems.value = orgList.map((item) => {
       const hash = item[rowKey] || nanoid(12)
-      let hashItem = itemsMap[hash]
-      if (!hashItem) {
+      let itemModel = itemsMap[hash]
+      if (!itemModel) {
         item[rowKey] = hash
         // 原数据已经存在, 此处建立表单绑定
-        const itemModel = buildModel({ prop: String(idx), columns: true }, props.modelData)
-        hashItem = itemModel
+        itemModel = itemsMap[hash] = cloneModels(modelsMap, item)
       }
-      return hashItem
+      return itemModel
     })
   }
 )
@@ -59,17 +60,17 @@ watch(
         <ButtonGroup v-if="buttons" :config="buttons" :param="{ listData: orgList }" :methods="methods" />
       </a-row>
     </template>
-    <template #renderItem="{ item, index }">
-      <a-list-item :key="item.parent[rowKey]">
+    <template #renderItem="{ item: models, index }">
+      <a-list-item :key="model.parent[rowKey]">
         <template #actions>
           <ButtonGroup
             v-if="itemButtons"
             :config="itemButtons"
             :methods="methods"
-            :param="{ listData: orgList, index, record: item.parent }"
+            :param="{ listData: orgList, index, record: model.parent }"
           />
         </template>
-        <Collections style="width: 100%" :model-data="item" :option="props.option" />
+        <Collections style="width: 100%" :children="models" />
       </a-list-item>
     </template>
   </a-list>

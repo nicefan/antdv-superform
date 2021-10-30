@@ -17,9 +17,9 @@ import useControl from './useControl'
 
 const props = defineProps<{
   option: ExSwitchOption
-  modelData: ModelData
+  model: ModelData
 }>()
-const { formData, attrs, ruleName, label } = useControl(props)
+const { attrs, ruleName, label } = useControl(props)
 
 const [trueName, falseName] = props.option.valueLabels || []
 </script>

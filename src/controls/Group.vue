@@ -4,13 +4,14 @@ import Collections from './Collections'
 
 const props = defineProps<{
   option: ExGroupOption
-  modelData: ModelData
+  model: ModelData
+  children: ModelsMap<UniOption>
 }>()
 const { attr, title } = props.option
 
 </script>
 <template>
-  <div style="width: 100%" class="form-group-list ant-row" v-bind="attr">
+  <div v-bind="attr">
     <a-row v-if="title" :span="24" class="title">
       <slot name="title">
         <a-divider orientation="left">{{ title }}</a-divider>

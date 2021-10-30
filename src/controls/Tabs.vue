@@ -1,6 +1,6 @@
 <script lang="tsx">
 import { inject, reactive, readonly, ref, unref, watch } from 'vue'
-import { useDisabled, useShow, getListener, buildModel } from '../util'
+import { useDisabled, useShow, getListener, buildModel } from '../utils/util'
 export default {
   name: 'ExTabs',
 }
@@ -11,21 +11,23 @@ import ButtonGroup from './ButtonGroup.vue'
 
 const props = defineProps<{
   option: ExTabsOption
-  modelData: ModelData
+  model: ModelData
+  children: ModelsMap<TabItem>
 }>()
+
 const formData = inject('formData')
-const { subItems: tabsOption, activeKey, attr, buttons } = props.option
+const { activeKey, attr, buttons } = props.option
 
 const tabMap: Obj = {}
-const allList = tabsOption.map((itemOption, idx) => {
+const allList = [...props.children].map(([itemOption, data], idx) => {
   const { key, prop, label, icon, hide, disabled: dis } = itemOption
   const tabKey = key || prop || String(idx)
-  const subModel = !prop ? props.modelData : buildModel(itemOption, props.modelData)
+  const subModel = data.model
   const effectData = { current: subModel.parent }
   const disabled = useDisabled(dis, effectData)
   const show = useShow(hide, effectData)
   const tabLabel = (icon ? <v-icon type={icon} /> : '') + label
-  tabMap[tabKey] = { modelData: subModel, option: itemOption }
+  tabMap[tabKey] = { children: data.children, option: itemOption }
   return reactive({ key: tabKey, tab: tabLabel, disabled, show })
 })
 

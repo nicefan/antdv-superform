@@ -1,14 +1,13 @@
-import { unref, onMounted, reactive, toRef, watch, watchEffect, inject, toRaw, readonly, computed } from 'vue'
-import { useDisabled, getListener } from '../util'
+import { unref, onMounted, reactive, toRef, watch, watchEffect, inject, toRaw, readonly, computed, toRefs } from 'vue'
+import { useDisabled, getListener, getComputedAttr } from '../utils/util'
 type Param = {
   option: ExFormOption
-  modelData: Obj
-  defaultData?: Obj
+  model: Obj
 }
 
-export default function render({ option, modelData }: Param) {
+export default function render({ option, model }: Param) {
   const { type, label, prop, attr, disabled: __disabled, computed: __computed, keepProp }: MixOption = option
-  const { refName, parent, currentRules, propChain } = modelData
+  const { refName, parent, currentRules, propChain } = model
   // 实际存储变量
   const refValue = toRef(parent, refName)
   // 创建一个静态对象，用于传递到计算属性
@@ -50,7 +49,8 @@ export default function render({ option, modelData }: Param) {
   const disabled = useDisabled(__disabled, effectData)
 
   const listener = getListener(option.on, effectData)
-  const _attr = { ...attr, ...listener }
+  const computedAttr = getComputedAttr(option.dynamicAttr, effect)
+  const _attr = { ...attr, ...listener, ...toRefs(computedAttr) }
 
   if (type === 'Select' && keepProp) {
     const change = listener.onChange
@@ -66,5 +66,5 @@ export default function render({ option, modelData }: Param) {
   // 创建元素并进行数据绑定, name和label不做props接收将会自动绑定到根组件上
   const attrs: Obj = reactive({ ...vModel, ..._attr, disabled })
 
-  return { effectData, formData, attrs, ruleName, label, rules: modelData.currentRules }
+  return { effectData, formData, attrs, ruleName, label }
 }

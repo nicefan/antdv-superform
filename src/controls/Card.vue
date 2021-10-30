@@ -6,7 +6,7 @@ import ButtonGroup from './ButtonGroup.vue'
 
 const props = defineProps<{
   option: ExCardOption
-  modelData: ModelData
+  children: ModelsMap
 }>()
 const { attr, title, buttons } = props.option
 </script>

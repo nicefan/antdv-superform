@@ -2,26 +2,29 @@
 
 <script setup lang="ts">
 import { ref, watch, inject, readonly, reactive } from 'vue'
-import { buildModelDeep, buildModel, useDisabled, useShow, getListener } from '../util'
+import { buildModelDeep, buildModel, useDisabled, useShow, getListener } from '../utils/util'
 import ButtonGroup from './ButtonGroup.vue'
 import Collections from './Collections'
 
 const props = defineProps<{
   option: ExCollapseOption
-  modelData: ModelData
+  model: ModelData
+  children: ModelsMap<CollapseItem>
 }>()
-const { attr, subItems, activeKey } = props.option
+const { attr, activeKey } = props.option
 
-const formData = inject('formData')
-const panels = subItems.map((itemOption, idx) => {
-  const { key, prop, icon, hide, disabled: dis } = itemOption
-  const subModel = !prop ? props.modelData : buildModel(itemOption, props.modelData)
-  const effectData = { current: subModel.parent }
-  const tabKey = key || prop || String(idx)
+const panels = [...props.children].map(([option, data], idx) => {
+  const { key, prop, icon, hide, disabled: dis } = option
+  const effectData = { current: data.model.parent }
   const disabled = useDisabled(dis, effectData)
-  const show = useShow(hide, effectData)
-  const attrs = reactive({ ...itemOption.attr, disabled, ...getListener(itemOption.on, effectData) })
-  return { key: tabKey, attrs, show, modelData: subModel, option: itemOption }
+  const attrs = reactive({ ...option.attr, disabled, ...getListener(option.on, effectData) })
+  return {
+    attrs,
+    option,
+    propsData: data,
+    key: key || prop || String(idx),
+    show: useShow(hide, effectData),
+  }
 })
 const acKey = ref(activeKey || panels[0].key)
 </script>
@@ -33,7 +36,7 @@ const acKey = ref(activeKey || panels[0].key)
         <template #extra>
           <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons"></ButtonGroup>
         </template>
-        <Collections :option="panel.option" :model-data="panel.modelData" />
+        <Collections :option="panel.option" v-bind="panel.propsData" />
       </a-collapse-panel>
     </template>
   </a-collapse>

@@ -1,4 +1,4 @@
-import VIcon from './VIcon'
+import VIcon from './icon/VIcon'
 // import moment from 'moment';
 import 'moment/dist/locale/zh-cn'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'

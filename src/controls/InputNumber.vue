@@ -9,9 +9,8 @@ import useControl from './useControl'
 
 const props = defineProps<{
   option: ExInputOption
-  modelData: ModelData
+  model: ModelData
 }>()
 // const defData = reactive(defaultData || {})
 const { formData, attrs, ruleName, label } = useControl(props)
-
 </script>

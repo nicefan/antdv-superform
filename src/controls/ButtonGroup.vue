@@ -18,7 +18,7 @@
   </a-space>
 </template>
 <script lang="ts">
-import { useDisabled, useShow } from '../util'
+import { useDisabled, useShow } from '../utils/util'
 import Modal from 'ant-design-vue/es/modal'
 import 'ant-design-vue/es/modal/style'
 import { ref, watchEffect, defineComponent, inject, PropType, readonly } from 'vue'

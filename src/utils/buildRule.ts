@@ -39,10 +39,6 @@ const ruleTypeMap = {
     pattern: /^[A-Za-z0-9][A-Za-z0-9_]*$/,
     message: '{label}只能为字母数字及下划线，且首字符不能为_',
   },
-  dictKey: {
-    pattern: /^[a-zA-Z]+$/,
-    message: '{label}格式错误请重新输入',
-  },
 }
 const rangeMsg = {
   'string': {

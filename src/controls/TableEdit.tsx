@@ -3,75 +3,45 @@
  */
 
 import { ref, shallowReactive, toRaw, watch, reactive, h } from 'vue'
-import { buildModel } from '../util'
 import { nanoid } from 'nanoid'
 import cloneDeep from 'lodash/cloneDeep'
 import { useForm } from 'ant-design-vue/es/form'
 import * as Controls from '../controls'
 import message from 'ant-design-vue/es/message'
-import style from '../style.module.scss'
+import style from './style.module.scss'
+import { flatModels } from '../utils/util';
+
 
 /** 生成编辑表单 */
-function buildInlineForm(columns) {
-  const modelMap: Obj = {}
-  // 编辑表单数据绑定到editData上，编辑完成后再覆盖到原数据
-  const defaultData: Obj = {}
+function buildInlineForm(modelsMap: ModelsMap, data) {
+  const editData = reactive(cloneDeep(data))
   const rules: Obj = {}
-  columns.forEach((col: Obj) => {
-    modelMap[col.prop] = buildModel(col, { parent: defaultData, rules })
-  })
+  const nodes = new Map()
+  const models = flatModels(modelsMap, editData)
 
-  return (def = defaultData) => {
-    const editData = reactive(cloneDeep(def))
-    const form = useForm(editData, ref(rules))
-    const nodes: Obj = {}
-    columns.forEach((col: Obj) => {
-      const { refName, propChain } = modelMap[col.prop]
-      let parent = editData
-      propChain.slice(0, -1).forEach((name) => {
-        parent = reactive((parent[name] = parent[name] || {}))
-      })
-      const modelData = { refName, parent }
+  for (const [option, model] of models) {
+    const ruleName = model.propChain.join('.')
+    model.currentRules && (rules[ruleName] = model.currentRules)
+    const node = () =>
+      h(Controls[option.type], { option, model, ...form.validateInfos[ruleName], class: style['table-form-item'] })
+    nodes.set(option, node)
+  }
+  const form = useForm(editData, ref(rules))
 
-      nodes[col.prop] = () =>
-        h(Controls[col.type], { option: col, modelData, ...form.validateInfos[refName], class: style['table-form-item'] })
-    })
-
-    return {
-      nodes,
-      ...form,
-    }
+  return {
+    nodes,
+    form,
   }
 }
 
-export default function render(cols, orgList, rowKey) {
-  const createForm = buildInlineForm(cols)
-
+export default function ({ parentModel, modelsMap, orgList, rowKey }) {
   // 数据监听
   const newItems = ref<Obj[]>([])
-  // const listItems = ref<any[]>([])
   const list = ref<Obj[]>([])
-  const editMap: Obj = {}
+  const editMap: Obj = shallowReactive({})
   watch(
     () => orgList.length,
     () => {
-      // listItems.value = orgList.map((item) => {
-      //   let hashItem = weakMap.get(item)
-      //   if (!hashItem) {
-      //     // TODO: 可以在此处将新加的行进行字段过滤
-      //     const hash = item.hash || random()
-      //     hashItem = { ...item, hash }
-      //     const editInfo = editMap[hash] ? Object.assign(editMap[hash], { isNew: false, isEdit: false, org: item }) : shallowReactive<Obj>({ org: item })
-      //     // formWeakMap.set(hashItem, editInfo)
-      //     editMap[hashItem.hash] = editInfo
-      //     watch(() => editInfo.isEdit, (boo) => {
-      //       boo && (editInfo.form = createForm(item))
-      //     }, { flush: 'sync' })
-      //     weakMap.set(item, hashItem)
-      //   }
-      //   return hashItem
-      // })
-      // list.value = listItems.value.concat(newItems.value)
       list.value = orgList.concat(newItems.value)
     }
   )
@@ -86,7 +56,11 @@ export default function render(cols, orgList, rowKey) {
   const methods = {
     add() {
       const hash = nanoid(12)
-      editMap[hash] = shallowReactive<Obj>({ isEdit: true, isNew: true, form: createForm() })
+      editMap[hash] = shallowReactive<Obj>({
+        isEdit: true,
+        isNew: true,
+        ...buildInlineForm(modelsMap, parentModel.parent),
+      })
       newItems.value = newItems.value.concat({ [rowKey]: hash })
     },
     edit({ record, selectedRows }) {
@@ -95,7 +69,7 @@ export default function render(cols, orgList, rowKey) {
       if (editInfo) {
         editInfo.isEdit = true
       } else {
-        editMap[data[rowKey]] = shallowReactive<Obj>({ isEdit: true, form: createForm() })
+        editMap[data[rowKey]] = shallowReactive<Obj>({ isEdit: true, ...buildInlineForm(modelsMap, data) })
       }
     },
     del({ record, selectedRows }) {
@@ -115,12 +89,11 @@ export default function render(cols, orgList, rowKey) {
         if (editInfo.isNew) {
           newItems.value.splice(newItems.value.indexOf(record), 1)
           editInfo.isNew = false
-          editInfo.isEdit = false
           orgList.push({ ...record, ...raw })
         } else {
           Object.assign(toRaw(record), raw)
-          editInfo.isEdit = false
         }
+        editInfo.isEdit = false
       })
       .catch((err) => {
         console.log('error', err)
@@ -155,22 +128,19 @@ export default function render(cols, orgList, rowKey) {
       return editButtons(param)
     }
   }
-
-  const columns: Obj[] = cols.map((item) => {
-    return {
-      title: item.label,
-      dataIndex: item.prop,
-      customRender({ record, text }) {
-        const editInfo = editMap[record[rowKey]]
-        return editInfo?.isEdit ? h(editInfo.form.nodes[item.prop]) : text
-      },
-      ...item.attr,
+  const colRenderMap = new Map()
+  const models = flatModels(modelsMap)
+  for (const col of models.keys()) {
+    const customRender = ({ record, text }) => {
+      const editInfo = editMap[record[rowKey]]
+      return (editInfo?.isEdit && editInfo.nodes.get(col)?.()) || text
     }
-  })
+    colRenderMap.set(col, customRender)
+  }
 
   return {
     list,
-    columns,
+    colRenderMap,
     methods,
     actionSlot,
   }

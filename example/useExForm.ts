@@ -33,7 +33,7 @@ export default function exampleForm() {
   ]
   const acKey = ref('')
   const options = defineForm({
-    columns: [
+    subItems: [
       {
         type: 'Input',
         prop: 'name',
@@ -76,7 +76,7 @@ export default function exampleForm() {
         label: '详细地址',
         span: 16,
         gutter: 0,
-        columns: [
+        subItems: [
           {
             type: 'Input',
             prop: 'addr',
@@ -100,6 +100,7 @@ export default function exampleForm() {
         type: 'Table',
         prop: 'table',
         label: '表格',
+        attr: { bordered: true },
         editMode: 'inline',
         addMode: 'modal',
         buttons: {
@@ -118,10 +119,14 @@ export default function exampleForm() {
             rules: { required: true },
           },
           {
-            type: 'Input',
-            prop: 'col2',
-            label: 'col2',
+            type: 'Group',
+            label: '分组',
+            subItems: [
+              { type: 'Input', prop: 'group1', label: '分组1' },
+              { type: 'Input', prop: 'group2', label: '分组2' },
+            ],
           },
+          { type: 'Input', prop: 'col2', label: 'col2' },
         ],
       },
 
@@ -134,7 +139,7 @@ export default function exampleForm() {
           size: 'small',
           type: 'primary',
           iconOnly: true,
-          items: [
+          subItems: [
             {
               disabled: (data) => data.forever === 2,
               label: '新增',
@@ -152,7 +157,7 @@ export default function exampleForm() {
             },
           ],
         },
-        columns: [
+        subItems: [
           {
             type: 'InputNumber',
             prop: 'width',
@@ -205,7 +210,7 @@ export default function exampleForm() {
           {
             key: 'tab1',
             label: '第一页',
-            columns: [
+            subItems: [
               {
                 type: 'List',
                 prop: 'list',
@@ -241,7 +246,7 @@ export default function exampleForm() {
             label: '第二页',
             hide: ({ formData }) => formData.forever === 3,
             // disabled: true,
-            columns: [
+            subItems: [
               {
                 type: 'Input',
                 prop: 'tab2',
@@ -262,7 +267,7 @@ export default function exampleForm() {
               return !formData.isReg
             },
             // disabled: true,
-            columns: [
+            subItems: [
               {
                 type: 'Input',
                 prop: 'tab3',
@@ -283,7 +288,7 @@ export default function exampleForm() {
               size: 'small',
               type: 'primary',
               iconOnly: true,
-              items: [
+              subItems: [
                 {
                   label: '新增',
                   onClick(arg) {
@@ -304,7 +309,7 @@ export default function exampleForm() {
                 },
               ],
             },
-            columns: [
+            subItems: [
               {
                 type: 'InputNumber',
                 prop: 'width',

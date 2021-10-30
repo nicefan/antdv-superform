@@ -10,7 +10,7 @@ import useControl from './useControl'
 
 const props = defineProps<{
   option: ExTreeOption
-  modelData: ModelData
+  model: ModelData
 }>()
 
 const { effectData, attrs, ruleName, label } = useControl(props)
