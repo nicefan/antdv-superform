@@ -16,11 +16,11 @@ export default defineComponent({
     },
     children: {
       required: true,
-      type: Object as PropType<ModelsMap<MixOption>>,
+      type: Object as PropType<ModelsMap<any>>,
     },
   },
   setup({ option, children }) {
-    const { subItems, gutter = 16 } = option || {}
+    const { gutter = 16 } = option || {}
     // if (!subItems?.length) return
 
     const nodes = [...children].map(([col, data]) => {

@@ -1,7 +1,7 @@
 /* eslint-disable vue/one-component-per-file */
 import { ref, reactive, h, PropType, defineComponent, inject } from 'vue'
 import { nanoid } from 'nanoid'
-import { buildModelDeep } from '../utils/util'
+import { cloneModels } from '../utils/util';
 import { useModal } from '../Modal'
 import cloneDeep from 'lodash/cloneDeep'
 import BottonGroup from './ButtonGroup.vue'
@@ -11,8 +11,9 @@ import Collections from './Collections'
 function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
   // 生成新增表单
   const { parent, rules } = parentModel
-  const copyData = cloneDeep(parent)
-  const modelRef = parent
+  const copyData = parent
+  const modelRef = reactive(cloneDeep(parent))
+  const children = cloneModels(modelsMap, modelRef)
   const formData = inject('formData')
   const formRef = ref()
 
@@ -23,7 +24,7 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
     setup() {
       return () => (
         <a-form ref={formRef} class="exa-form" model={modelRef} rules={rules} layout="vertical">
-          <Collections children={modelsMap} />
+          <Collections children={children} />
         </a-form>
       )
     },
@@ -88,10 +89,11 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   return columns
 }
 
-function buildData(option: ExTableOption, orgList: Obj[], rowKey: string) {
-  const { columns: cols, itemButtons } = option
-  const parentModel = { parent: reactive({}), rules: {} }
-  const modelsMap = buildModelDeep(cols, parentModel)
+type BuildDataParam = { option: ExTableOption; listData: ListModels; orgList: Obj[]; rowKey: string }
+function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
+  const { itemButtons } = option
+  const parentModel = listData.model
+  const modelsMap = listData.children
 
   let context: {
     list: Ref
@@ -142,13 +144,17 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ModelData>,
     },
+    listData: {
+      required: true,
+      type: Object as PropType<ListModels>,
+    },
   },
-  setup({ option, model }) {
+  setup({ option, model, listData }) {
     const editInline = option.editMode === 'inline'
     const rowKey = option.attr?.rowKey || 'id'
     const orgList = model.parent[model.refName]
 
-    const { list, columns, methods } = buildData(option, orgList as Obj[], rowKey)
+    const { list, columns, methods } = buildData({ option, listData, orgList, rowKey })
 
     const selectedRowKeys = ref<string[]>([])
     const selectedRows = ref<Obj[]>([])

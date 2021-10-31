@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { ref, watch, inject, toRef } from 'vue'
+import { ref, watch } from 'vue'
 import { nanoid } from 'nanoid'
-import { buildModelDeep, cloneModels } from '../utils/util';
+import { cloneModels } from '../utils/util'
 import ButtonGroup from './ButtonGroup.vue'
 import Collections from './Collections'
 import cloneDeep from 'lodash/cloneDeep'
@@ -9,12 +9,13 @@ import cloneDeep from 'lodash/cloneDeep'
 const props = defineProps<{
   option: ExListOption
   model: ModelData
+  listData: ListModels
 }>()
 
-const { columns, buttons, itemButtons, label, attr } = props.option
+const { buttons, itemButtons, label, attr } = props.option
 // 先构建一个数据结构
-const defaultData: Obj = {}
-const modelsMap = buildModelDeep(columns, { parent: defaultData })
+const defaultData = props.listData.model.parent
+const modelsMap = props.listData.children
 
 const { parent, refName } = props.model
 const orgList = parent[refName]

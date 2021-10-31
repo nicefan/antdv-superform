@@ -31,6 +31,6 @@ const props = defineProps<{
   option: ExInputOption
   model: ModelData
 }>()
-const { formData, attrs, ruleName, label } = useControl(props)
+const { attrs, ruleName, label } = useControl(props)
 
 </script>

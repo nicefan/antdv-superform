@@ -1,5 +1,7 @@
 import buildRule from './buildRule'
 import { inject, reactive, readonly, ref, shallowReactive, toRef, toRefs, unref, watchEffect } from 'vue'
+import cloneDeep from 'lodash/cloneDeep'
+import { nanoid } from 'nanoid'
 
 export function getComputedStatus(org: undefined | boolean | Ref<boolean> | Fn<boolean>, data: Obj = {}) {
   const res = ref(!!unref(org))
@@ -96,11 +98,20 @@ export function buildModelDeep(children: any[], { parent, propChain = [], rules 
 
   const models: ModelsMap = new Map()
   cols.forEach((child) => {
-    const { prop, subItems } = child
+    const { prop, subItems, columns } = child
     const subModel = prop ? buildModel(child, currentModel) : currentModel
     const item: ModelChildren = {
       model: subModel,
-      ...(subItems && { children: buildModelDeep(subItems, subModel) }),
+    }
+    if (subItems) {
+      item.children = buildModelDeep(subItems, subModel)
+    } else if (columns) {
+      // 列表控件子表单模型
+      const initModel = { parent: reactive({}), rules: {} }
+      item.listData = {
+        model: initModel,
+        children: buildModelDeep(columns, initModel),
+      }
     }
     models.set(child, item)
   })
@@ -110,7 +121,7 @@ export function buildModelDeep(children: any[], { parent, propChain = [], rules 
 function getPropertyDeep(target: Obj, names: string[]) {
   let result = target
   names.forEach((name) => {
-    result = result[name]
+    result = result?.[name]
   })
   return result
 }
@@ -141,4 +152,30 @@ export function flatModels(orgModels: ModelsMap, data?: Obj) {
     }
   }
   return new Map(models)
+}
+
+export function setFieldsValue(modelsMap: ModelsMap<MixOption>, data) {
+  for (const [option, { model, children, listData }] of modelsMap) {
+    if (children) {
+      setFieldsValue(children, data)
+    } else {
+      const parent = getPropertyDeep(data, model.propChain.slice(0, -1))
+      if (!parent) continue
+      const curValue = parent[model.refName]
+      if (listData) {
+        model.parent[model.refName].splice(0)
+        const rowKey = option.attr?.rowKey || 'id'
+        curValue?.forEach((item) => {
+          const def = cloneDeep(listData.model.parent)
+          setFieldsValue(cloneModels(listData.children, def), item)
+          def[rowKey] = item[rowKey] || nanoid(12)
+          model.parent[model.refName].push(def)
+        })
+      } else {
+        const keepProp = option.keepProp
+        keepProp && (model.parent[keepProp] = parent[keepProp])
+        model.parent[model.refName] = curValue
+      }
+    }
+  }
 }

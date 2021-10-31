@@ -1,7 +1,7 @@
 import { defineComponent, PropType, provide, reactive, readonly, ref, h, toRaw } from 'vue'
 import Collections from './controls/Collections'
 import { useModal } from './Modal'
-import { buildModelDeep } from './utils/util';
+import { buildModelDeep, setFieldsValue } from './utils/util';
 
 export function defineForm(option: FormOption) {
   return option
@@ -13,6 +13,8 @@ export function buildForm(optionData) {
   return {
     FormComponent,
     onSubmit,
+    resetFields: () => formRef.value.getExpose().resetFields(),
+    setFieldsValue: (data) => formRef.value.setFieldsValue(data)
   }
 }
 export function buildModel(optionData) {
@@ -51,12 +53,18 @@ const ExaForm = defineComponent({
     provide('formData', readonly(formData))
 
     expose({
+      getExpose() {
+        return formRef.value
+      },
       onSubmit: () => {
         return formRef.value.validate().then((...args) => {
           console.log(args)
           return toRaw(formData)
         })
       },
+      setFieldsValue(data) {
+        return setFieldsValue(modelsMap, data)
+      }
     })
     return () => (
       <a-form ref={formRef} class="exa-form" model={formData} rules={modelData.rules} layout="vertical">

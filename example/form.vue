@@ -1,9 +1,11 @@
 <template>
   <div>
     <MyForm class="hi" />
+    <a-row :gutter="10">
     <a-button @click="changeSelect">切换选项</a-button>
     <a-button @click="onSubmit">校验</a-button>
-    <a-button @click="openForm">弹窗表单</a-button>
+    <a-button @click="setValue">赋值</a-button>
+    </a-row>
   </div>
 </template>
 <script setup lang="ts">
@@ -17,16 +19,26 @@ const props = defineProps<{
 }>()
 // const myModel = useExampleModal()
 const { options, changeSelect } = useOption()
-const { FormComponent: MyForm, onSubmit } = buildForm(options)
-const openForm = () => {
-  // myModel.openModal({
-  //   title: '新增测试数据',
-  //   onOk() {
-  //     return myModel.onSubmit().then((data) => {
-  //       console.log(data)
-  //     })
-  //   },
-  // })
+const form = buildForm(options)
+
+const MyForm = form.FormComponent
+const onSubmit = () => {
+  return form.onSubmit().then(data => {
+    console.log(data)
+  })
 }
-// msg2.value += props.msg
+const setValue = () => {
+  const data = {
+    street: '白龙',
+    isReg: 1,
+    "table": [
+      {id: 'dadf', col2:'col2'}
+    ],
+    "group": {
+        "food": ['1'],
+    },
+    list:[{tab1: 'tab1'}]
+  }
+  form.setFieldsValue(data)
+}
 </script>

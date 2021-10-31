@@ -4,7 +4,7 @@ import Collections from './Collections'
 const props = defineProps<{
   option: ExInputGroupOption
   model: ModelData
-  children: ModelsMap<UniOption>
+  children: ModelsMap
 }>()
 </script>
 

@@ -41,13 +41,23 @@ declare global {
     propRef?: Ref
     refName?: string
   }
-  type ModelsMap<T = ExBaseOption> = Map<T, T extends {subItems: any} ? Required<ModelChildren> : ModelChildren>
-  type ModelChildren = { model: ModelData; children?: ModelsMap }
+  interface ListModels {
+    model: ParentModel
+    children: ModelsMap
+  }
+  type ModelsMap<T = ExBaseOption> = Map<T, T extends { subItems: any } ? Required<ModelChildren<T>> : ModelChildren<T>>
+  interface ModelChildren<T = ExBaseOption> {
+    model: ModelData
+    children?: ModelsMap<T>
+    /** 存储列表配置默认数据 */
+    listData?: ListModels
+  }
 
   interface FormOption {
     attr?: Obj
     subItems: UniOption[]
   }
+
   interface ButtonItem {
     label?: string
     /** 确认提示文本 */
@@ -215,9 +225,9 @@ declare global {
 
   type UniOption = { [K in keyof OptionType]: { type: K } & OptionType[K] }[keyof OptionType]
   type UniInputOption = Extract<UniOption, ExFormOption>
-  type MixOption = { [K in keyof OptionType]: (k: Partial<OptionType[K]>& { type: string }) => void }[keyof OptionType] extends (
-    k: infer U
-  ) => void
+  type MixOption = {
+    [K in keyof OptionType]: (k: Partial<OptionType[K]> & { type: string }) => void
+  }[keyof OptionType] extends (k: infer U) => void
     ? U // & { type: keyof OptionType}
     : never
 }

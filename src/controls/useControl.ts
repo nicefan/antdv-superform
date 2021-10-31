@@ -1,4 +1,4 @@
-import { unref, onMounted, reactive, toRef, watch, watchEffect, inject, toRaw, readonly, computed, toRefs } from 'vue'
+import { unref, onMounted, reactive, toRef, watch, inject, computed, toRefs } from 'vue'
 import { useDisabled, getListener, getComputedAttr } from '../utils/util'
 type Param = {
   option: ExFormOption
@@ -6,7 +6,7 @@ type Param = {
 }
 
 export default function render({ option, model }: Param) {
-  const { type, label, prop, attr, disabled: __disabled, computed: __computed, keepProp }: MixOption = option
+  const { type, label, attr, disabled: __disabled, computed: __computed, keepProp }: MixOption = option
   const { refName, parent, currentRules, propChain } = model
   // 实际存储变量
   const refValue = toRef(parent, refName)

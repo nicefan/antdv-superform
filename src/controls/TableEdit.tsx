@@ -8,9 +8,9 @@ import cloneDeep from 'lodash/cloneDeep'
 import { useForm } from 'ant-design-vue/es/form'
 import * as Controls from '../controls'
 import message from 'ant-design-vue/es/message'
+import 'ant-design-vue/es/message/style'
 import style from './style.module.scss'
-import { flatModels } from '../utils/util';
-
+import { flatModels } from '../utils/util'
 
 /** 生成编辑表单 */
 function buildInlineForm(modelsMap: ModelsMap, data) {
@@ -39,12 +39,9 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }) {
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
   const editMap: Obj = shallowReactive({})
-  watch(
-    () => orgList.length,
-    () => {
-      list.value = orgList.concat(newItems.value)
-    }
-  )
+  watch(shallowReactive(orgList), () => {
+    list.value = orgList.concat(newItems.value)
+  })
 
   watch(
     () => newItems.value,
@@ -104,7 +101,7 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }) {
     const key = record[rowKey]
     const editInfo = editMap[key]
     if (editInfo.isNew) {
-      newItems.value = newItems.value.filter(item => item[rowKey] !== key)
+      newItems.value = newItems.value.filter((item) => item[rowKey] !== key)
       delete editMap[key]
     } else {
       editInfo.isEdit = false
