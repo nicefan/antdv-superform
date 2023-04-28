@@ -1,6 +1,9 @@
 
 <script setup lang="ts">
 import Collections from './Collections'
+import { innerComps } from '../components'
+
+const {Row, Divider} = innerComps
 
 const props = defineProps<{
   option: ExGroupOption
@@ -12,11 +15,11 @@ const { attr, title } = props.option
 </script>
 <template>
   <div v-bind="attr">
-    <a-row v-if="title" :span="24" class="title">
+    <Row v-if="title" :span="24" class="title">
       <slot name="title">
-        <a-divider orientation="left">{{ title }}</a-divider>
+        <Divider orientation="left">{{ title }}</Divider>
       </slot>
-    </a-row>
+    </Row>
     <Collections v-bind="props" />
   </div>
 </template>

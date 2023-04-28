@@ -1,15 +1,16 @@
 <template>
   <div>
     <MyForm class="hi" />
-    <a-row :gutter="10">
-    <a-button @click="changeSelect">切换选项</a-button>
-    <a-button @click="onSubmit">校验</a-button>
-    <a-button @click="setValue">赋值</a-button>
-    </a-row>
+    <Row :gutter="10">
+    <Button @click="changeSelect">切换选项</Button>
+    <Button @click="onSubmit">校验</Button>
+    <Button @click="setValue">赋值</Button>
+    </Row>
   </div>
 </template>
 <script setup lang="ts">
 import { inject, reactive, ref } from 'vue'
+import { Row, Button } from 'ant-design-vue'
 import useOption, { useExampleForm, useExampleModal } from './useExForm'
 import { buildForm } from '../src'
 
@@ -29,6 +30,7 @@ const onSubmit = () => {
 }
 const setValue = () => {
   const data = {
+    name:'白龙',
     street: '白龙',
     isReg: 1,
     "table": [

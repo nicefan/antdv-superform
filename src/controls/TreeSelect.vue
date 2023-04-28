@@ -1,12 +1,15 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-tree-select :placeholder="'请选择' + option.label" v-bind="attrs" :tree-data="treeData" />
-  </a-form-item>
+  <form-item :name="ruleName" :label="label">
+    <tree-select :placeholder="'请选择' + option.label" v-bind="attrs" :tree-data="treeData" />
+  </form-item>
 </template>
 
 <script setup lang="ts">
 import { ref, watchPostEffect, unref } from 'vue'
 import useControl from './useControl'
+import { innerComps } from '../components'
+
+const {FormItem, TreeSelect} = innerComps
 
 const props = defineProps<{
   option: ExTreeOption

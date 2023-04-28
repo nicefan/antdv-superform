@@ -1,11 +1,18 @@
-import { defineComponent, PropType, provide, reactive, readonly, ref, h, toRaw } from 'vue'
+import { defineComponent, PropType, provide, reactive, readonly, ref, h, toRaw, inject } from 'vue'
 import Collections from './controls/Collections'
 import { useModal } from './Modal'
 import { buildModelDeep, setFieldsValue } from './utils/util';
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn'
+import { innerComps } from './components'
+
+const {Form, ConfigProvider} = innerComps
 
 export function defineForm(option: FormOption) {
   return option
 }
+
 export function buildForm(optionData) {
   const formRef = ref()
   const FormComponent = () => h(ExaForm, { option: optionData, ref: formRef })
@@ -17,6 +24,7 @@ export function buildForm(optionData) {
     setFieldsValue: (data) => formRef.value.setFieldsValue(data)
   }
 }
+
 export function buildModel(optionData) {
   const formRef = ref()
   const FormComponent = () => h(ExaForm, { option: optionData, ref: formRef })
@@ -51,7 +59,6 @@ const ExaForm = defineComponent({
     }
     const modelsMap = buildModelDeep(props.option.subItems, modelData)
     provide('formData', readonly(formData))
-
     expose({
       getExpose() {
         return formRef.value
@@ -66,11 +73,24 @@ const ExaForm = defineComponent({
         return setFieldsValue(modelsMap, data)
       }
     })
-    return () => (
-      <a-form ref={formRef} class="exa-form" model={formData} rules={modelData.rules} layout="vertical">
-        <Collections option={props.option} children={modelsMap} />
-        {slots.default}
-      </a-form>
+    let locale = inject<any>('configProvider')?.locale
+    const formNode = () => (
+        <Form ref={formRef} class="exa-form" model={formData} rules={modelData.rules} layout="vertical">
+          <Collections option={props.option} children={modelsMap} />
+          {slots.default}
+        </Form>
     )
+    if (!locale) {
+      locale = inject<any>('localeData')?.locale || zhCN
+      dayjs.locale(locale.locale)
+      return () => (
+      <ConfigProvider locale={locale}>
+        {formNode()}
+      </ConfigProvider>
+    )
+    } else {
+      console.log(inject<any>('configProvider'))
+      return formNode
+    }
   },
 })

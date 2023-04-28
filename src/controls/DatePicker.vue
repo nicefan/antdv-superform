@@ -1,11 +1,14 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-date-picker autofocus value-format="YYYY-MM-DD" v-bind="attrs" :disabled-date="disabledDate" />
-  </a-form-item>
+  <form-item :name="ruleName" :label="label">
+    <date-picker autofocus value-format="YYYY-MM-DD" v-bind="attrs" :disabled-date="disabledDate" />
+  </form-item>
 </template>
 
 <script setup lang="ts">
 import useControl from './useControl'
+import { innerComps } from '../components'
+
+const {FormItem, DatePicker,} = innerComps
 
 const props = defineProps<{
   option: ExInputOption

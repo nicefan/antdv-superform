@@ -1,6 +1,9 @@
 import { defineComponent, h, inject, PropType, readonly } from 'vue';
 import { buildModel, useShow } from '../utils/util'
-import * as Controls from './index'
+import Controls from './index'
+import { innerComps } from '../components'
+
+const { Col, Row } = innerComps
 
 export default defineComponent({
   name: 'Collections',
@@ -29,13 +32,13 @@ export default defineComponent({
       // 元素隐藏控制
       const show = useShow(col.hide, { current: subModel.parent })
       const slot = () => h(Controls[col.type], { option: col, ...data })
-      return () => show.value && <a-col span={span} v-slots={{ default: slot }} />
+      return () => show.value && <Col span={span} v-slots={{ default: slot }} />
     })
     const slots = {
       default() {
         return nodes.map((node) => node())
       },
     }
-    return () => <a-row gutter={gutter} v-slots={slots}></a-row>
+    return () => <Row gutter={gutter} v-slots={slots}></Row>
   },
 })

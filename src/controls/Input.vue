@@ -1,6 +1,6 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-input
+  <FormItem :name="ruleName" :label="label">
+    <Input
       :readonly="!!option.keepProp"
       :placeholder="'请输入' + (label || '')"
       max-length="100"
@@ -8,14 +8,14 @@
       v-bind="attrs"
     >
       <template #addonAfter>
-        <a-button
+        <Button
           v-if="option.btnClick"
           :disabled="attrs.disabled"
           class="ant-input-search-button"
           @click="option.btnClick?.(formData, $event)"
         >
           <v-icon :type="option.addonAfterIcon || 'search'" />
-        </a-button>
+        </Button>
         <v-icon v-else-if="option.addonAfterIcon" :type="option.addonAfterIcon" />
       </template>
       <template #addonBefore>
@@ -27,15 +27,19 @@
 
       <template #suffix>
         <v-icon v-if="option.suffixIcon" :type="option.suffixIcon" />
-        <a-tooltip v-if="option.suffixTips" title="{item.suffixTips}">
+        <Tooltip v-if="option.suffixTips" title="{item.suffixTips}">
           <v-icon type="info-circle" style="color: rgba(0, 0, 0, 0.45)" />
-        </a-tooltip>
+        </Tooltip>
       </template>
-    </a-input>
-  </a-form-item>
+    </Input>
+  </FormItem>
 </template>
 <script setup lang="ts">
 import useControl from './useControl'
+import VIcon from '../icon/VIcon'
+import { innerComps } from '../components'
+
+const { Input, Button, Tooltip, FormItem } = innerComps
 
 const props = defineProps<{
   option: ExInputOption

@@ -1,5 +1,10 @@
-import { createApp } from 'vue'
+import { createApp, h } from 'vue'
 import App from './App.vue'
 import superForm from '../src'
-
-createApp(App).use(superForm).mount('#app')
+import 'ant-design-vue/dist/antd.css'
+import { InputNumber } from 'ant-design-vue'
+const app = createApp(App)
+superForm.registComponent('InNumber', ({ attrs, label }) => {
+  return h(InputNumber, Object.assign(attrs, { style: 'width:100%', type: 'number', placeholder: '请输入' + label }))
+})
+app.use(superForm).mount('#app')

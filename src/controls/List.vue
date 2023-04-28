@@ -5,6 +5,9 @@ import { cloneModels } from '../utils/util'
 import ButtonGroup from './ButtonGroup.vue'
 import Collections from './Collections'
 import cloneDeep from 'lodash/cloneDeep'
+import { innerComps } from '../components'
+
+const {Row, List, ListItem} = innerComps
 
 const props = defineProps<{
   option: ExListOption
@@ -54,15 +57,15 @@ watch(
 </script>
 
 <template>
-  <a-list :data-source="listItems">
+  <List :data-source="listItems">
     <template #header>
-      <a-row v-if="label || buttons" type="flex" justify="space-between" align="middle">
+      <Row v-if="label || buttons" type="flex" justify="space-between" align="middle">
         <span style="font-size: 16px">{{ label }}</span>
         <ButtonGroup v-if="buttons" :config="buttons" :param="{ listData: orgList }" :methods="methods" />
-      </a-row>
+      </Row>
     </template>
     <template #renderItem="{ item: models, index }">
-      <a-list-item :key="model.parent[rowKey]">
+      <ListItem :key="model.parent[rowKey]">
         <template #actions>
           <ButtonGroup
             v-if="itemButtons"
@@ -72,7 +75,7 @@ watch(
           />
         </template>
         <Collections style="width: 100%" :children="models" />
-      </a-list-item>
+      </ListItem>
     </template>
-  </a-list>
+  </List>
 </template>

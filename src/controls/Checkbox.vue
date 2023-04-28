@@ -1,12 +1,15 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-checkbox-group :name="option.prop" v-bind="attrs" :options="options" />
-  </a-form-item>
+  <form-item :name="ruleName" :label="label">
+    <checkbox-group :name="option.prop" v-bind="attrs" :options="options" />
+  </form-item>
 </template>
 
 <script setup lang="ts">
 import { ref, watchPostEffect, unref } from 'vue'
 import useControl from './useControl'
+import { innerComps } from '../components'
+
+const {FormItem, CheckboxGroup} = innerComps
 
 const props = defineProps<{
   option: ExSelectOption

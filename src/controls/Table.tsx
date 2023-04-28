@@ -1,12 +1,15 @@
 /* eslint-disable vue/one-component-per-file */
 import { ref, reactive, h, PropType, defineComponent, inject } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneModels } from '../utils/util';
-import { useModal } from '../Modal'
+import { cloneModels } from '../utils/util'
+import { createModal } from '../Modal'
 import cloneDeep from 'lodash/cloneDeep'
 import BottonGroup from './ButtonGroup.vue'
 import inlineRender from './TableEdit'
 import Collections from './Collections'
+import { innerComps } from '../components'
+
+const { Form, Table } = innerComps
 
 function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
   // 生成新增表单
@@ -17,19 +20,13 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
   const formData = inject('formData')
   const formRef = ref()
 
-  const editForm = defineComponent({
-    provide: {
-      formData,
-    },
-    setup() {
-      return () => (
-        <a-form ref={formRef} class="exa-form" model={modelRef} rules={rules} layout="vertical">
-          <Collections children={children} />
-        </a-form>
-      )
-    },
-  })
-  const { openModal } = useModal(editForm)
+  const editForm = () => (
+    <Form ref={formRef} class="exa-form" model={modelRef} rules={rules} layout="vertical">
+      <Collections children={children} />
+    </Form>
+  )
+
+  const { modalSlot, openModal } = createModal(editForm)
 
   const methods = {
     add() {
@@ -63,12 +60,12 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
       })
     },
   }
-  return { methods }
+  return { modalSlot, methods }
 }
 
 function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   const columns = (function getConfig(_models: ModelsMap) {
-    return [..._models].map(([col, { model, children }]) => {
+    return [...(_models as ModelsMap<MixOption>)].map(([col, { model, children }]) => {
       if (children) {
         return {
           title: col.label,
@@ -76,10 +73,25 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
         }
       } else {
         const colRender = colRenderMap?.get(col)
+        const customRender = ({ record, text }) => {
+          let renderText = text
+          if (Array.isArray(col.options)) {
+            col.options.find(({ value, label }) => {
+              if (value === text) {
+                renderText = label
+                return true
+              }
+            })
+          } else if (col.type === 'Switch') {
+            renderText = (col.valueLabels || '否是')[text]
+          }
+          return colRender ? colRender({ record, text: renderText }) : renderText
+        }
+
         return {
           title: col.label,
           dataIndex: model.propChain.join('.'),
-          ...(colRender && { customRender: colRender }),
+          customRender,
           ...col.attr,
         }
       }
@@ -90,6 +102,7 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
 }
 
 type BuildDataParam = { option: ExTableOption; listData: ListModels; orgList: Obj[]; rowKey: string }
+
 function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
   const { itemButtons } = option
   const parentModel = listData.model
@@ -100,24 +113,28 @@ function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
     columns: Obj[]
     methods: Obj
     actionSlot?: Fn
+    modalSlot?: Fn
   }
   const _param = { parentModel, modelsMap, orgList, rowKey }
 
   if (option.editMode === 'inline') {
-    const ctx = inlineRender(_param)
-
-    if (option.addMode === 'modal') {
-      const modalInfo = modalEdit(_param)
-      ctx.methods = { ...ctx.methods, add: modalInfo.methods.add }
-    }
-    const { list, actionSlot, colRenderMap, methods } = ctx
+    const { list, actionSlot, colRenderMap, methods } = inlineRender(_param)
     const columns = buildColumns(modelsMap, colRenderMap)
 
     context = { columns, list, methods, actionSlot }
+
+    if (option.addMode === 'modal') {
+      const {
+        modalSlot,
+        methods: { add },
+      } = modalEdit(_param)
+      context.methods.add = add
+      context.modalSlot = modalSlot
+    }
   } else {
     const columns = buildColumns(modelsMap)
-    const { methods } = modalEdit(_param)
-    context = { methods, columns, list: ref(orgList) }
+    const { modalSlot, methods } = modalEdit(_param)
+    context = { modalSlot, methods, columns, list: ref(orgList) }
   }
 
   if (itemButtons) {
@@ -154,7 +171,7 @@ export default defineComponent({
     const rowKey = option.attr?.rowKey || 'id'
     const orgList = model.parent[model.refName]
 
-    const { list, columns, methods } = buildData({ option, listData, orgList, rowKey })
+    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey })
 
     const selectedRowKeys = ref<string[]>([])
     const selectedRows = ref<Obj[]>([])
@@ -173,7 +190,7 @@ export default defineComponent({
     // watch(selectedRowKeys, (keys) => {
     //   selectedRows.value = listItems.value.filter((item) => keys.includes(item.hash))
     // },{flush:'sync'})
-    const rowSelection = {
+    const rowSelection = reactive({
       fixed: true,
       selectedRowKeys,
       onChange: (_selectedRowKeys, _selectedRows) => {
@@ -185,24 +202,28 @@ export default defineComponent({
           disabled: !orgList.includes(record),
         }),
       }),
-    }
-    const btnProps = { config: option.buttons, param: { selectedRows, selectedRowKeys }, methods }
+    })
+    const actions =
+      option.buttons &&
+      (() =>
+        option.buttons && (
+          <BottonGroup config={option.buttons} param={{ selectedRows, selectedRowKeys }} methods={methods} />
+        ))
 
     return () => (
       <>
-        {option.buttons && (
-          <a-row class="ant-list-header">
-            <BottonGroup {...btnProps} />
-          </a-row>
-        )}
-        <a-table
+        {modalSlot?.()}
+        <Table
           dataSource={list.value}
           columns={columns}
           {...option.attr}
           rowSelection={rowSelection}
           rowKey={rowKey}
           tableLayout="fixed"
-        />
+          title={actions}
+        >
+          {{ tableTitle: actions }}
+        </Table>
       </>
     )
   },

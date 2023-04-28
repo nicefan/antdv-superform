@@ -1,21 +1,24 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-radio-group :name="option.prop" v-bind="attrs">
+  <form-item :name="ruleName" :label="label">
+    <radio-group :name="option.prop" v-bind="attrs">
       <template v-if="attrs.buttonStyle">
-        <a-radio-button v-for="{ label, value, disabled } of options" :key="value" :value="value" :disabled="disabled">
+        <radio-button v-for="{ label, value, disabled } of options" :key="value" :value="value" :disabled="disabled">
           {{ label }}
-        </a-radio-button>
+        </radio-button>
       </template>
-      <a-radio v-for="{ label, value, disabled } of options" v-else :key="value" :value="value" :disabled="disabled">
+      <Radio v-for="{ label, value, disabled } of options" v-else :key="value" :value="value" :disabled="disabled">
         {{ label }}
-      </a-radio>
-    </a-radio-group>
-  </a-form-item>
+      </Radio>
+    </radio-group>
+  </form-item>
 </template>
 
 <script setup lang="ts">
 import { ref, watchPostEffect, unref } from 'vue'
 import useControl from './useControl'
+import { innerComps } from '../components'
+
+const {FormItem, RadioButton, RadioGroup, Radio} = innerComps
 
 const props = defineProps<{
   option: ExSelectOption

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import Collections from './Collections'
+import { innerComps } from '../components'
+
+const {FormItem, InputGroup} = innerComps
 
 const props = defineProps<{
   option: ExInputGroupOption
@@ -9,9 +12,9 @@ const props = defineProps<{
 </script>
 
 <template>
-  <a-form-item :label="option.label" style="margin: 0">
-    <a-input-group v-bind="props.option.attr">
+  <form-item :label="option.label" style="margin: 0">
+    <input-group v-bind="props.option.attr">
       <Collections v-bind="props" />
-    </a-input-group>
-  </a-form-item>
+    </input-group>
+  </form-item>
 </template>

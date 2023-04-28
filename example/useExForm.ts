@@ -14,9 +14,7 @@ export default function exampleForm() {
         {
           value: '0-0-1',
           key: '0-0-1',
-          slots: {
-            title: 'title',
-          },
+          title: 'title',
         },
         {
           title: 'Child Node2',
@@ -141,7 +139,10 @@ export default function exampleForm() {
           iconOnly: true,
           subItems: [
             {
-              disabled: (data) => data.forever === 2,
+              disabled: (data) => {
+                console.log(data)
+                return data.formData.forever === 2
+              },
               label: '新增',
             },
             {
@@ -159,11 +160,11 @@ export default function exampleForm() {
         },
         subItems: [
           {
-            type: 'InputNumber',
+            type: 'InNumber',
             prop: 'width',
             label: '体重',
             initialValue: 120,
-            disabled: (data) => data.forever === 2,
+            disabled: (data) => data.formData.forever === 2,
             computed: (val, data) => (data.forever === 1 ? val + 1 : val),
             attr: { max: 200, min: 110 },
             rules: { required: true, type: 'number', min: 110 },
@@ -172,6 +173,7 @@ export default function exampleForm() {
             type: 'Input',
             prop: 'height',
             label: '身高',
+            disabled: (data) => data.forever === 2,
             initialValue: 170,
             attr: { type: 'number' },
             rules: { type: 'number', min: 150 },

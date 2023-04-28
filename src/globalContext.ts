@@ -1,9 +1,17 @@
 import VIcon from './icon/VIcon'
-// import moment from 'moment';
-import 'moment/dist/locale/zh-cn'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import { innerComps } from './components'
+import { Component } from 'vue'
 
-export const install = (app) => {
-  app.provide('localeData', { antLocale: zhCN, exist: true })
+interface GlobalConfig {
+  locale?: typeof zhCN,
+  components?: Record<keyof typeof innerComps, Component>
+}
+export const install = (app, config?: GlobalConfig) => {
+  const locale = config?.locale || zhCN
+  app.provide('localeData', { locale: locale, exist: true })
   app.component('VIcon', VIcon)
+  Object.assign(innerComps, config?.components)
+
+  return app
 }

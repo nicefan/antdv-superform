@@ -1,8 +1,9 @@
-<script lang="ts"></script>
-
 <script setup lang="ts">
 import Collections from './Collections'
 import ButtonGroup from './ButtonGroup.vue'
+import { innerComps } from '../components'
+
+const {Card} = innerComps
 
 const props = defineProps<{
   option: ExCardOption
@@ -12,10 +13,10 @@ const { attr, title, buttons } = props.option
 </script>
 
 <template>
-  <a-card :title="title" v-bind="attr">
+  <Card :title="title" v-bind="attr">
     <template #extra>
       <ButtonGroup v-if="buttons" :config="buttons"></ButtonGroup>
     </template>
     <Collections v-bind="props" />
-  </a-card>
+  </Card>
 </template>

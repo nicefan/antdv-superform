@@ -19,14 +19,15 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.ts'),
       formats: ['es'],
       name: 'MyLib',
-      fileName: (format) => `index.${format}.js`
+      fileName: 'index',
     },
     outDir: 'lib',
+    minify: false,
     rollupOptions: {
       // input: {
       //   main: resolve(__dirname, 'example/index.html'),
       // },
-      external: ['vue', /moment/, 'nanoid', /lodash/, /ant-design-vue/, /@ant-design/],
+      external: ['vue', /moment/, 'nanoid', /dayjs/, /lodash/, /ant-design-vue/, /@ant-design/],
       output: {
         // https://rollupjs.org/guide/en/#outputmanualchunks
         // manualChunks: {
@@ -47,13 +48,14 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
-    Components({
-      dts: true,
-      deep: false,
-      // extensions: ['vue', 'tsx'],
-      resolvers: [AntDesignVueResolver()],
-      include: [/\.vue$/, /\.tsx$/]
-    }),
+    // Components({
+    //   dts: true,
+    //   deep: false,
+    //   // extensions: ['vue', 'tsx'],
+    //   resolvers: [AntDesignVueResolver()],
+    //   include: [/\.vue$/, /\.vue\?vue/, /\.tsx$/, /\.ts$/],
+    //   types: [],
+    // }),
     //   svgSprite({
     //   symbolId: 'icon-[name]-[hash]',
     // }),

@@ -1,25 +1,31 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-switch
+  <form-item :name="ruleName" :label="label">
+    <Switch
+      v-model:checked="attrs.value"
       :checked-children="trueName"
       :un-checked-children="falseName"
       :checked-value="1"
       :un-checked-value="0"
-      :checked="attrs.value"
       v-bind="attrs"
-      @update:checked="attrs['onUpdate:value']"
     />
-  </a-form-item>
+  </form-item>
 </template>
 
 <script setup lang="ts">
 import useControl from './useControl'
+import { innerComps } from '../components'
+
+const {FormItem, Switch} = innerComps
 
 const props = defineProps<{
   option: ExSwitchOption
   model: ModelData
 }>()
-const { attrs, ruleName, label } = useControl(props)
+const {
+  attrs,
+  ruleName,
+  label,
+} = useControl(props)
 
-const [trueName, falseName] = props.option.valueLabels || []
+const [falseName, trueName] = props.option.valueLabels || []
 </script>

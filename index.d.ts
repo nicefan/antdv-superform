@@ -1,6 +1,7 @@
 /// <reference types="./types" />
 
 import { ModalProps } from 'ant-design-vue'
+import { Locale } from 'ant-design-vue/es/locale-provider'
 import { App, FunctionalComponent } from 'vue'
 
 interface VIconProps {
@@ -27,5 +28,19 @@ export declare function buildModel(optionData: any): {
   onSubmit: () => any
 }
 
-declare function install(app: App): void
-export default install
+interface RegistPram {
+  label?: string
+  /** 表单数据 */
+  formData: Obj
+  /** 绑定到组件上的动态属性 */
+  attrs: Obj
+  /** 当前值 */
+  effectData: {
+    current: any
+  }
+}
+interface SuperForm {
+  install(app: App, config?: { locale: Locale; components?: object }): void
+  registComponent(name: string, component: ((param: RegistPram) => Vnode) | VNode): void
+}
+export default SuperForm

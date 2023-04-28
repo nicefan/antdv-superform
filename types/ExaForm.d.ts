@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import { SelectProps } from 'ant-design-vue/lib/vc-select'
-import { SelectTypes } from 'ant-design-vue/es/select'
-import * as Vue from '@vue/runtime-core'
+import { DefaultOptionType } from 'ant-design-vue/es/select'
+import Vue from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
 export interface RuleConfig {
   /** 验证类型 */
@@ -173,13 +173,13 @@ declare global {
     prefixIcon?: string
     suffixIcon?: string
     suffixTips?: string
-    btnClick?: (FormData: Obj, e: InputEvent) => void
+    btnClick?: (FormData: Obj, e: MouseEvent) => void
     onChange?: (FormData: Obj, e: InputEvent) => void
     onBlur?: Fn
     onClick?: Fn
     onPressEnter?: Fn
   }
-  type SelectOptions = SelectTypes['options']
+  type SelectOptions = DefaultOptionType[]
 
   interface ExSelectOption extends ExFormOption {
     keepProp?: string
@@ -223,8 +223,8 @@ declare global {
     // Password: d
   }
 
-  type UniOption = { [K in keyof OptionType]: { type: K } & OptionType[K] }[keyof OptionType]
-  type UniInputOption = Extract<UniOption, ExFormOption>
+  type UniOption = { [K in keyof OptionType]: { type: K } & OptionType[K] }[keyof OptionType] | ExFormOption
+  type UniInputOption = Extract<UniOption, ExFormOption | ExGroupOption>
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]> & { type: string }) => void
   }[keyof OptionType] extends (k: infer U) => void

@@ -1,12 +1,15 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-select option-filter-prop="label" :placeholder="'请选择' + label" v-bind="attrs" :options="options" />
-  </a-form-item>
+  <FormItem :name="ruleName" :label="label">
+    <Select option-filter-prop="label" :placeholder="'请选择' + label" v-bind="attrs" :options="options" />
+  </FormItem>
 </template>
 
 <script setup lang="ts">
 import { ref, watchPostEffect, unref } from 'vue'
 import useControl from './useControl'
+import { innerComps } from '../components'
+
+const {FormItem, Select} = innerComps
 
 const props = defineProps<{
   option: ExSelectOption

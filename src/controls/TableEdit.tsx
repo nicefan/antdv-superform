@@ -8,9 +8,11 @@ import cloneDeep from 'lodash/cloneDeep'
 import { useForm } from 'ant-design-vue/es/form'
 import * as Controls from '../controls'
 import message from 'ant-design-vue/es/message'
-import 'ant-design-vue/es/message/style'
 import style from './style.module.scss'
 import { flatModels } from '../utils/util'
+import { innerComps } from '../components'
+
+const { Space, Button } = innerComps
 
 /** 生成编辑表单 */
 function buildInlineForm(modelsMap: ModelsMap, data) {
@@ -109,14 +111,14 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }) {
     }
   }
   const editButtons = (args) => (
-    <a-space>
-      <a-button type="link" onClick={() => save(args)}>
+    <Space>
+      <Button type="link" onClick={() => save(args)}>
         保存
-      </a-button>
-      <a-button type="link" onClick={() => cancel(args)}>
+      </Button>
+      <Button type="link" onClick={() => cancel(args)}>
         取消
-      </a-button>
-    </a-space>
+      </Button>
+    </Space>
   )
 
   const actionSlot = (param) => {
@@ -137,6 +139,7 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }) {
 
   return {
     list,
+    editMap,
     colRenderMap,
     methods,
     actionSlot,

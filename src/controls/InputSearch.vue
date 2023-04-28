@@ -1,10 +1,10 @@
 <template>
-  <a-form-item :name="ruleName" :label="label">
-    <a-input-search :placeholder="'请输入' + label" allow-clear max-length="100" v-bind="attrs">
+  <FormItem :name="ruleName" :label="label">
+    <InputSearch :placeholder="'请输入' + label" allow-clear max-length="100" v-bind="attrs">
       <template #enterButton>
-        <a-button v-if="option.addonAfterIcon">
+        <Button v-if="option.addonAfterIcon">
           <a-icon :type="option.addonAfterIcon" />
-        </a-button>
+        </Button>
       </template>
 
       <template v-if="option.addonBeforeIcon" #addonBefore>
@@ -17,15 +17,18 @@
 
       <template #suffix>
         <icon-font v-if="option.suffixIcon" type="{item.suffixIcon}" />
-        <a-tooltip v-if="option.suffixTips" title="{item.suffixTips}">
+        <Tooltip v-if="option.suffixTips" title="{item.suffixTips}">
           <icon-font type="info-circle" style="color: rgba(0, 0, 0, 0.45)" />
-        </a-tooltip>
+        </Tooltip>
       </template>
-    </a-input-search>
-  </a-form-item>
+    </InputSearch>
+  </FormItem>
 </template>
 <script setup lang="ts">
 import useControl from './useControl'
+import { innerComps } from '../components'
+
+const {FormItem, Tooltip, Button, InputSearch} = innerComps
 
 const props = defineProps<{
   option: ExInputOption

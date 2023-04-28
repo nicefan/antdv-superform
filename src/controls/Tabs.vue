@@ -1,13 +1,19 @@
 <script lang="tsx">
 import { inject, reactive, readonly, ref, unref, watch } from 'vue'
 import { useDisabled, useShow, getListener, buildModel } from '../utils/util'
+
 export default {
   name: 'ExTabs',
 }
 </script>
-<script lang="tsx" setup>
+
+<script setup lang="tsx">
 import Collections from './Collections'
 import ButtonGroup from './ButtonGroup.vue'
+import VIcon from '../icon/VIcon'
+import { innerComps } from '../components'
+
+const {Card} = innerComps
 
 const props = defineProps<{
   option: ExTabsOption
@@ -26,7 +32,7 @@ const allList = [...props.children].map(([itemOption, data], idx) => {
   const effectData = { current: subModel.parent }
   const disabled = useDisabled(dis, effectData)
   const show = useShow(hide, effectData)
-  const tabLabel = (icon ? <v-icon type={icon} /> : '') + label
+  const tabLabel = (icon ? <VIcon type={icon} /> : '') + label
   tabMap[tabKey] = { children: data.children, option: itemOption }
   return reactive({ key: tabKey, tab: tabLabel, disabled, show })
 })
@@ -59,12 +65,12 @@ listener.onTabChange = (key) => {
 }
 </script>
 <template>
-  <a-card :tab-list="tabList" :active-tab-key="acKey" v-bind="{ ...attr, ...listener }">
+  <Card :tab-list="tabList" :active-tab-key="acKey" v-bind="{ ...attr, ...listener }">
     <template #tabBarExtraContent>
       <ButtonGroup v-if="buttons" :config="buttons"></ButtonGroup>
     </template>
     <keep-alive>
       <Collections v-bind="tabMap[acKey]" :key="acKey" />
     </keep-alive>
-  </a-card>
+  </Card>
 </template>
