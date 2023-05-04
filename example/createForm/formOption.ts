@@ -4,9 +4,9 @@ export const useFormOption = () => {
     subItems: [
       {
         type: 'Table',
-        prop: 'table',
+        field: 'table',
         label: '表格',
-        attr: { bordered: true },
+        attrs: { bordered: true },
         editMode: 'inline',
         addMode: 'modal',
         buttons: {
@@ -20,19 +20,19 @@ export const useFormOption = () => {
           {
             type: 'Input',
             label: '字段名',
-            prop: 'fieldName',
+            field: 'fieldName',
             rules: { required: true },
           },
           {
             type: 'Input',
             label: '标题',
-            prop: 'title',
+            field: 'title',
             rules: { required: true },
           },
           {
             type: 'Select',
             label: '数据类型',
-            prop: 'dataType',
+            field: 'dataType',
             options: [
               { label: '文本', value: 'text' },
               { label: '数字', value: 'number' },
@@ -41,10 +41,10 @@ export const useFormOption = () => {
           {
             type: 'Switch',
             label: '是否必填',
-            prop: 'isRequire',
+            field: 'isRequire',
             valueLabels: ['否', '是'],
           },
-          { type: 'Input', prop: 'col2', label: 'col2' },
+          { type: 'Input', field: 'col2', label: 'col2' },
         ],
       },
     ],

@@ -43,7 +43,7 @@ export default defineConfig({
     },
   },
   esbuild: {
-    target: 'es2017'
+    target: 'es2020',
   },
   plugins: [
     vue(),

@@ -7,15 +7,17 @@ import Collections from './Collections'
 import cloneDeep from 'lodash/cloneDeep'
 import { innerComps } from '../components'
 
-const {Row, List, ListItem} = innerComps
+const { Row, List, ListItem } = innerComps
 
 const props = defineProps<{
   option: ExListOption
   model: ModelData
   listData: ListModels
+  attrs: Obj
+  effectData: Obj
 }>()
 
-const { buttons, itemButtons, label, attr } = props.option
+const { buttons, itemButtons, label } = props.option
 // 先构建一个数据结构
 const defaultData = props.listData.model.parent
 const modelsMap = props.listData.children
@@ -23,7 +25,7 @@ const modelsMap = props.listData.children
 const { parent, refName } = props.model
 const orgList = parent[refName]
 
-const rowKey = attr?.rowKey || 'id'
+const rowKey = props.attrs?.rowKey || 'id'
 const itemsMap: Obj = {}
 
 const methods = {
@@ -57,7 +59,7 @@ watch(
 </script>
 
 <template>
-  <List :data-source="listItems">
+  <List :data-source="listItems" v-bind="attrs">
     <template #header>
       <Row v-if="label || buttons" type="flex" justify="space-between" align="middle">
         <span style="font-size: 16px">{{ label }}</span>

@@ -34,7 +34,7 @@ export default function exampleForm() {
     subItems: [
       {
         type: 'Input',
-        prop: 'name',
+        field: 'name',
         label: '姓名',
         rules: { required: true },
         btnClick(...args) {
@@ -44,14 +44,14 @@ export default function exampleForm() {
       },
       {
         type: 'DatePicker',
-        prop: 'born',
+        field: 'born',
         label: '生日',
         rules: { required: true, trigger: 'change' },
       },
       {
         type: 'Select',
-        prop: 'forever',
-        keepProp: 'foreverName',
+        field: 'forever',
+        keepField: 'foreverName',
         label: '爱好',
         /** 依赖数据变化切换 */
         // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
@@ -66,7 +66,7 @@ export default function exampleForm() {
       {
         type: 'Switch',
         label: '是否注册',
-        prop: 'isReg',
+        field: 'isReg',
         valueLabels: ['是', '否'],
       },
       {
@@ -77,13 +77,13 @@ export default function exampleForm() {
         subItems: [
           {
             type: 'Input',
-            prop: 'addr',
+            field: 'addr',
             // label: '地址',
             span: 16,
           },
           {
             type: 'Input',
-            prop: 'street',
+            field: 'street',
             // label: '街道',
           },
         ],
@@ -91,14 +91,14 @@ export default function exampleForm() {
       {
         type: 'DateRange',
         label: '有效期',
-        prop: 'startDate',
-        keepProp: 'endDate',
+        field: 'startDate',
+        keepField: 'endDate',
       },
       {
         type: 'Table',
-        prop: 'table',
+        field: 'table',
         label: '表格',
-        attr: { bordered: true },
+        attrs: { bordered: true },
         editMode: 'inline',
         addMode: 'modal',
         buttons: {
@@ -112,7 +112,7 @@ export default function exampleForm() {
           {
             type: 'Input',
             label: 'col1',
-            prop: 'col1',
+            field: 'col1',
             initialValue: 'init',
             rules: { required: true },
           },
@@ -120,17 +120,17 @@ export default function exampleForm() {
             type: 'Group',
             label: '分组',
             subItems: [
-              { type: 'Input', prop: 'group1', label: '分组1' },
-              { type: 'Input', prop: 'group2', label: '分组2' },
+              { type: 'Input', field: 'group1', label: '分组1' },
+              { type: 'Input', field: 'group2', label: '分组2' },
             ],
           },
-          { type: 'Input', prop: 'col2', label: 'col2' },
+          { type: 'Input', field: 'col2', label: 'col2' },
         ],
       },
 
       {
         type: 'Card',
-        prop: 'group',
+        field: 'group',
         title: '分格线',
         buttons: {
           limit: 3,
@@ -147,42 +147,42 @@ export default function exampleForm() {
             },
             {
               label: '修改',
-              hide: ({ formData }) => formData.forever === 3,
+              hidden: ({ formData }) => formData.forever === 3,
             },
             {
               label: '删除',
               icon: 'user',
               confirmText: '确定删除吗？',
               disabled: ({ formData }) => formData.forever === 2,
-              attr: { danger: true },
+              attrs: { danger: true },
             },
           ],
         },
         subItems: [
           {
             type: 'InNumber',
-            prop: 'width',
+            field: 'width',
             label: '体重',
             initialValue: 120,
             disabled: (data) => data.formData.forever === 2,
-            computed: (val, data) => (data.forever === 1 ? val + 1 : val),
-            attr: { max: 200, min: 110 },
+            computed: (val, { record }) => (record.forever === 1 ? val + 1 : val),
+            attrs: { max: 200, min: 110 },
             rules: { required: true, type: 'number', min: 110 },
           },
           {
             type: 'Input',
-            prop: 'height',
+            field: 'height',
             label: '身高',
-            disabled: (data) => data.forever === 2,
+            disabled: ({ record }) => record?.forever === 2,
             initialValue: 170,
-            attr: { type: 'number' },
+            attrs: { type: 'number' },
             rules: { type: 'number', min: 150 },
           },
           {
             type: 'Radio',
-            prop: 'radio',
+            field: 'radio',
             label: '天气',
-            attr: { buttonStyle: 'outline' },
+            attrs: { buttonStyle: 'outline' },
             options: [
               { label: '晴天', value: '1' },
               { label: '雨天', value: '2' },
@@ -190,7 +190,7 @@ export default function exampleForm() {
           },
           {
             type: 'Checkbox',
-            prop: 'food',
+            field: 'food',
             label: '食物',
             options: [
               { label: '中餐', value: '1' },
@@ -199,7 +199,7 @@ export default function exampleForm() {
           },
           {
             type: 'TreeSelect',
-            prop: 'tree',
+            field: 'tree',
             label: '树形',
             data: treeData,
           },
@@ -215,7 +215,7 @@ export default function exampleForm() {
             subItems: [
               {
                 type: 'List',
-                prop: 'list',
+                field: 'list',
                 label: '列表',
                 buttons: {
                   actions: {
@@ -230,13 +230,13 @@ export default function exampleForm() {
                   {
                     type: 'Input',
                     label: 'tab1',
-                    prop: 'tab1',
+                    field: 'tab1',
                     initialValue: 'init',
                     rules: { required: true },
                   },
                   {
                     type: 'Input',
-                    prop: 'filed2',
+                    field: 'filed2',
                     label: 'filed2',
                   },
                 ],
@@ -246,17 +246,17 @@ export default function exampleForm() {
           {
             key: 'tab2',
             label: '第二页',
-            hide: ({ formData }) => formData.forever === 3,
+            hidden: ({ formData }) => formData.forever === 3,
             // disabled: true,
             subItems: [
               {
                 type: 'Input',
-                prop: 'tab2',
+                field: 'tab2',
                 label: 'tab2',
               },
               {
                 type: 'Input',
-                prop: 'tab4',
+                field: 'tab4',
                 label: 'tab4',
               },
             ],
@@ -272,7 +272,7 @@ export default function exampleForm() {
             subItems: [
               {
                 type: 'Input',
-                prop: 'tab3',
+                field: 'tab3',
                 label: 'tab3',
               },
             ],
@@ -283,8 +283,9 @@ export default function exampleForm() {
         type: 'Collapse',
         subItems: [
           {
-            prop: 'collapse',
+            field: 'collapse',
             label: '百叶窗',
+            disabled: true,
             buttons: {
               limit: 1,
               size: 'small',
@@ -300,29 +301,29 @@ export default function exampleForm() {
                 },
                 {
                   label: '修改',
-                  hide: (data) => data.forever === 3,
+                  hidden: ({ formData }) => formData.forever === 3,
                 },
                 {
                   label: '删除',
                   icon: 'user',
                   confirmText: '确定删除吗？',
-                  disabled: (data) => data.forever === 2,
-                  attr: { danger: true },
+                  disabled: ({ formData }) => formData.forever === 2,
+                  attrs: { danger: true },
                 },
               ],
             },
             subItems: [
               {
                 type: 'InputNumber',
-                prop: 'width',
+                field: 'width',
                 label: '体重',
                 initialValue: 120,
-                attr: { max: 200, min: 110 },
+                attrs: { max: 200, min: 110 },
                 rules: { required: true },
               },
               {
                 type: 'Input',
-                prop: 'home',
+                field: 'home',
                 label: '籍贯',
               },
             ],

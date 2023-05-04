@@ -17,7 +17,6 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
   const copyData = parent
   const modelRef = reactive(cloneDeep(parent))
   const children = cloneModels(modelsMap, modelRef)
-  const formData = inject('formData')
   const formRef = ref()
 
   const editForm = () => (
@@ -92,7 +91,7 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
           title: col.label,
           dataIndex: model.propChain.join('.'),
           customRender,
-          ...col.attr,
+          ...(col.attrs as Obj),
         }
       }
     })
@@ -165,10 +164,14 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ListModels>,
     },
+    attrs: {
+      required: true,
+      type: Object as PropType<Obj>,
+    },
   },
-  setup({ option, model, listData }) {
+  setup({ option, model, listData, attrs }) {
     const editInline = option.editMode === 'inline'
-    const rowKey = option.attr?.rowKey || 'id'
+    const rowKey = attrs.rowKey || 'id'
     const orgList = model.parent[model.refName]
 
     const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey })
@@ -216,7 +219,7 @@ export default defineComponent({
         <Table
           dataSource={list.value}
           columns={columns}
-          {...option.attr}
+          {...attrs}
           rowSelection={rowSelection}
           rowKey={rowKey}
           tableLayout="fixed"

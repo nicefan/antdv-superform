@@ -1,7 +1,7 @@
 <template>
-  <form-item :name="ruleName" :label="label">
+  <form-item>
     <Switch
-      v-model:checked="attrs.value"
+      v-model:checked="value"
       :checked-children="trueName"
       :un-checked-children="falseName"
       :checked-value="1"
@@ -12,20 +12,18 @@
 </template>
 
 <script setup lang="ts">
-import useControl from './useControl'
+import { useVModel } from './useControl'
 import { innerComps } from '../components'
 
-const {FormItem, Switch} = innerComps
+const { FormItem, Switch } = innerComps
 
 const props = defineProps<{
   option: ExSwitchOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
-const {
-  attrs,
-  ruleName,
-  label,
-} = useControl(props)
+const { value } = useVModel(props)
 
 const [falseName, trueName] = props.option.valueLabels || []
 </script>

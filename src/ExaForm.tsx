@@ -1,13 +1,13 @@
 import { defineComponent, PropType, provide, reactive, readonly, ref, h, toRaw, inject } from 'vue'
 import Collections from './controls/Collections'
 import { useModal } from './Modal'
-import { buildModelDeep, setFieldsValue } from './utils/util';
+import { buildModelDeep, setFieldsValue } from './utils/util'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 import { innerComps } from './components'
 
-const {Form, ConfigProvider} = innerComps
+const { Form, ConfigProvider } = innerComps
 
 export function defineForm(option: FormOption) {
   return option
@@ -21,7 +21,7 @@ export function buildForm(optionData) {
     FormComponent,
     onSubmit,
     resetFields: () => formRef.value.getExpose().resetFields(),
-    setFieldsValue: (data) => formRef.value.setFieldsValue(data)
+    setFieldsValue: (data) => formRef.value.setFieldsValue(data),
   }
 }
 
@@ -71,23 +71,19 @@ const ExaForm = defineComponent({
       },
       setFieldsValue(data) {
         return setFieldsValue(modelsMap, data)
-      }
+      },
     })
     let locale = inject<any>('configProvider')?.locale
     const formNode = () => (
-        <Form ref={formRef} class="exa-form" model={formData} rules={modelData.rules} layout="vertical">
-          <Collections option={props.option} children={modelsMap} />
-          {slots.default}
-        </Form>
+      <Form ref={formRef} class="exa-form" model={formData} rules={modelData.rules} layout="vertical">
+        <Collections option={props.option} children={modelsMap} />
+        {slots.default}
+      </Form>
     )
     if (!locale) {
       locale = inject<any>('localeData')?.locale || zhCN
       dayjs.locale(locale.locale)
-      return () => (
-      <ConfigProvider locale={locale}>
-        {formNode()}
-      </ConfigProvider>
-    )
+      return () => <ConfigProvider locale={locale}>{formNode()}</ConfigProvider>
     } else {
       console.log(inject<any>('configProvider'))
       return formNode

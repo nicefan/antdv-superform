@@ -35,10 +35,13 @@ declare global {
     currentRules?: Obj
   }
   interface ParentModel {
+    /** 父对象 */
     parent: Obj
+    /** 属性名链条数组 */
     propChain?: string[]
     rules?: Obj
     propRef?: Ref
+    /** 对象属性名 */
     refName?: string
   }
   interface ListModels {
@@ -54,7 +57,7 @@ declare global {
   }
 
   interface FormOption {
-    attr?: Obj
+    attrs?: Obj | Fn<Obj>
     subItems: UniOption[]
   }
 
@@ -63,8 +66,8 @@ declare global {
     /** 确认提示文本 */
     confirmText?: string
     icon?: string
-    attr?: Obj
-    hide?: boolean | Fn<boolean>
+    attrs?: Obj
+    hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     onClick?: Fn
   }
@@ -75,22 +78,23 @@ declare global {
     shape?: 'circle' | 'round'
     size?: 'large' | 'middle' | 'small'
     iconOnly?: boolean
-    hide?: boolean | Fn<boolean>
+    hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     actions?: T[] | { [K in T]?: ButtonItem }
     subItems?: ButtonItem[]
   }
   interface ExBaseOption {
     type: string
+    field?: string
     label?: string
     /** 配置复用合并时方便插入 */
     sort?: number
-    attr?: Obj
+    attrs?: Obj | Fn<Obj>
     /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
-    hide?: boolean | ((formData: Readonly<Obj>) => boolean)
+    hidden?: boolean | ((formData: Readonly<Obj>) => boolean)
     /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
     disabled?: boolean | Fn
-    dynamicAttr?: Fn<Obj>
+    // dynamicAttrs?: Fn<Obj>
     // renderView?: Fn<VNode>
     // customRender?: Fn
     // row?: boolean
@@ -99,7 +103,7 @@ declare global {
     offset?: number
   }
   interface ExTableOption extends ExBaseOption {
-    prop: string
+    field: string
     title?: string | Fn<VNode>
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
@@ -109,7 +113,6 @@ declare global {
     itemButtons?: ExButtonGroup<'del' | 'edit'>
   }
   interface ExGroupOption extends ExBaseOption {
-    prop?: string
     title?: string | Fn<VNode>
     gutter?: number
     subItems: UniOption[]
@@ -120,13 +123,12 @@ declare global {
     subItems: UniOption[]
   }
   interface ExCardOption extends ExBaseOption {
-    prop?: string
     buttons?: ExButtonGroup
     title?: string | VNode
     subItems: UniOption[]
   }
   interface ExListOption extends ExBaseOption {
-    prop: string
+    field: string
     buttons?: ExButtonGroup<'add' | 'refresh'>
     columns: UniInputOption[]
     /** 列表元素右边按钮 */
@@ -140,7 +142,6 @@ declare global {
   }
   interface TabItem extends Omit<ExBaseOption, 'type'> {
     label: string
-    prop?: string
     key?: string
     icon?: string
     subItems: UniOption[]
@@ -151,7 +152,6 @@ declare global {
   }
   interface CollapseItem extends Omit<ExBaseOption, 'type'> {
     label: string
-    prop?: string
     key?: string
     icon?: string
     subItems: UniOption[]
@@ -159,7 +159,7 @@ declare global {
   }
 
   interface ExFormOption extends ExBaseOption {
-    prop: string
+    field: string
     initialValue?: any
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
@@ -167,7 +167,7 @@ declare global {
   }
 
   interface ExInputOption extends ExFormOption {
-    keepProp?: string
+    keepField?: string
     addonAfterIcon?: string
     addonBeforeIcon?: string
     prefixIcon?: string
@@ -182,9 +182,9 @@ declare global {
   type SelectOptions = DefaultOptionType[]
 
   interface ExSelectOption extends ExFormOption {
-    keepProp?: string
+    keepField?: string
     options?: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
-    attr?: SelectProps
+    attrs?: SelectProps
   }
   interface ExTreeOption extends ExFormOption {
     data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
@@ -195,7 +195,7 @@ declare global {
 
   interface ExDateRange extends ExFormOption {
     /** 绑定结束日期字段 */
-    keepProp?: string
+    keepField?: string
   }
   interface ExRadioOption extends ExFormOption {
     options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>

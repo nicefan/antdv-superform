@@ -24,16 +24,16 @@ import { ref, watchEffect, defineComponent, inject, PropType, readonly } from 'v
 import VIcon from '../icon/VIcon'
 import { innerComps } from '../components'
 
-const {Space, Button, Tooltip, Dropdown, Menu, MenuItem,} = innerComps
+const { Space, Button, Tooltip, Dropdown, Menu, MenuItem } = innerComps
 export default defineComponent({
-  components: { 
+  components: {
     VIcon,
     ASpace: Space,
     AButton: Button,
     ATooltip: Tooltip,
     ADropdown: Dropdown,
     AMenu: Menu,
-    AMenuItem: MenuItem
+    AMenuItem: MenuItem,
   },
   props: {
     config: {
@@ -57,9 +57,9 @@ export default defineComponent({
 })
 
 function useButton(config: ExButtonGroup, param, methods) {
-  const { type, shape, limit = 3, hide, disabled, size, actions } = config
+  const { type, shape, limit = 3, hidden, disabled, size, actions } = config
   const dis = useDisabled(disabled, param)
-  const show = useShow(hide, param)
+  const show = useShow(hidden, param)
 
   const actionBtns: Obj[] = []
   if (actions && methods) {

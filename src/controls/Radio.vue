@@ -1,6 +1,6 @@
 <template>
-  <form-item :name="ruleName" :label="label">
-    <radio-group :name="option.prop" v-bind="attrs">
+  <form-item>
+    <radio-group :name="option.field" v-bind="allAttrs">
       <template v-if="attrs.buttonStyle">
         <radio-button v-for="{ label, value, disabled } of options" :key="value" :value="value" :disabled="disabled">
           {{ label }}
@@ -14,24 +14,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref } from 'vue'
-import useControl from './useControl'
+import { ref, watchPostEffect, unref, reactive } from 'vue'
+import useControl, { useVModel } from './useControl'
 import { innerComps } from '../components'
 
-const {FormItem, RadioButton, RadioGroup, Radio} = innerComps
+const { FormItem, RadioButton, RadioGroup, Radio } = innerComps
 
 const props = defineProps<{
   option: ExSelectOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
+const valueProps = useVModel(props)
+const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
-const { effectData, attrs, ruleName, label } = useControl(props)
-
-const options = ref<any[] | undefined>(attrs.options || [])
+const options = ref<any[] | undefined>(props.attrs.options || [])
 const _options = props.option.options
 if (typeof _options === 'function') {
   watchPostEffect(() => {
-    Promise.resolve(_options(effectData)).then((data) => {
+    Promise.resolve(_options(props.effectData)).then((data) => {
       options.value = data
     })
   })

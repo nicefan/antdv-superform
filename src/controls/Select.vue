@@ -1,28 +1,30 @@
 <template>
-  <FormItem :name="ruleName" :label="label">
-    <Select option-filter-prop="label" :placeholder="'请选择' + label" v-bind="attrs" :options="options" />
+  <FormItem>
+    <Select option-filter-prop="label" :placeholder="'请选择' + option.label" v-bind="allAttrs" :options="options" />
   </FormItem>
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref } from 'vue'
-import useControl from './useControl'
+import { ref, watchPostEffect, unref, reactive } from 'vue'
+import useControl, { useVModel } from './useControl'
 import { innerComps } from '../components'
 
-const {FormItem, Select} = innerComps
+const { FormItem, Select } = innerComps
 
 const props = defineProps<{
   option: ExSelectOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
+const valueProps = useVModel(props)
+const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
-const { effectData, attrs, ruleName, label } = useControl(props)
-
-const options = ref<Obj[] | undefined>(attrs.options || [])
+const options = ref<Obj[] | undefined>(props.attrs.options || [])
 const _options = props.option.options
 if (typeof _options === 'function') {
   watchPostEffect(() => {
-    Promise.resolve(_options(effectData)).then((data) => {
+    Promise.resolve(_options(props.effectData)).then((data) => {
       options.value = data
     })
   })

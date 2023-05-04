@@ -1,43 +1,46 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useDisabled, useShow, getListener } from '../utils/util'
+import { reactive, ref, toRefs } from 'vue'
 import ButtonGroup from './ButtonGroup.vue'
 import Collections from './Collections'
 import { innerComps } from '../components'
+import useControl from './useControl'
 
-const {Collapse, CollapsePanel} = innerComps
+const { Collapse, CollapsePanel } = innerComps
 
 const props = defineProps<{
   option: ExCollapseOption
   model: ModelData
   children: ModelsMap<CollapseItem>
+  attrs: Obj
+  effectData: Obj
 }>()
-const { attr, activeKey } = props.option
 
 const panels = [...props.children].map(([option, data], idx) => {
-  const { key, prop, icon, hide, disabled: dis } = option
-  const effectData = { current: data.model.parent }
-  const disabled = useDisabled(dis, effectData)
-  const attrs = reactive({ ...option.attr, ...getListener(option.on, effectData) })
+  const { attrs: __attrs, hidden } = useControl({ option: option as any, model: data })
+
+  const { key, field } = option
+  const { disabled, ...attrs } = toRefs(__attrs)
+  // console.log(__attrs, disabled)
   return {
-    attrs,
+    attrs: reactive(attrs),
     option,
-    disabled,
     propsData: data,
-    key: key || prop || String(idx),
-    show: useShow(hide, effectData),
+    key: key || field || String(idx),
+    hidden,
+    disabled,
   }
 })
+const { activeKey } = props.option
 const acKey = ref(activeKey || panels[0].key)
 </script>
 
 <template>
-  <Collapse v-model:activeKey="acKey" v-bind="attr">
+  <Collapse v-model:activeKey="acKey" v-bind="attrs">
     <template v-for="panel of panels" :key="panel.key">
       <CollapsePanel
-        v-if="panel.show"
+        v-if="!panel.hidden.value"
         :header="panel.option.label"
-        :collapsible="panel.disabled ? 'disabled' : 'header'"
+        :collapsible="panel.disabled.value ? 'disabled' : 'header'"
         v-bind="panel.attrs"
       >
         <template #extra>

@@ -1,28 +1,30 @@
 <template>
-  <form-item :name="ruleName" :label="label">
-    <tree-select :placeholder="'请选择' + option.label" v-bind="attrs" :tree-data="treeData" />
+  <form-item>
+    <tree-select :placeholder="'请选择' + option.label" v-bind="allAttrs" :tree-data="treeData" />
   </form-item>
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref } from 'vue'
-import useControl from './useControl'
+import { ref, watchPostEffect, unref, reactive } from 'vue'
+import { useVModel } from './useControl'
 import { innerComps } from '../components'
 
-const {FormItem, TreeSelect} = innerComps
+const { FormItem, TreeSelect } = innerComps
 
 const props = defineProps<{
   option: ExTreeOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
-
-const { effectData, attrs, ruleName, label } = useControl(props)
+const valueProps = useVModel(props)
+const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
 const treeData = ref<Obj[]>([])
 const _data = props.option.data
 if (typeof _data === 'function') {
   watchPostEffect(() => {
-    Promise.resolve(_data(effectData)).then((data) => {
+    Promise.resolve(_data(props.effectData)).then((data) => {
       treeData.value = data
     })
   })

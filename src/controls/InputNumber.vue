@@ -1,19 +1,22 @@
 <template>
-  <form-item :name="ruleName" :label="label">
-    <input-number style="width:100%" type="number" :placeholder="'请输入' + label" v-bind="attrs" />
+  <form-item>
+    <input-number style="width: 100%" type="number" :placeholder="'请输入' + option.label" v-bind="allAttrs" />
   </form-item>
 </template>
 
 <script setup lang="ts">
-import useControl from './useControl'
+import useControl, { useVModel } from './useControl'
 import { innerComps } from '../components'
+import { reactive } from 'vue'
 
-const {FormItem, InputNumber} = innerComps
+const { FormItem, InputNumber } = innerComps
 
 const props = defineProps<{
   option: ExInputOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
-// const defData = reactive(defaultData || {})
-const { formData, attrs, ruleName, label } = useControl(props)
+const valueProps = useVModel(props)
+const allAttrs = reactive({ ...valueProps, ...props.attrs })
 </script>

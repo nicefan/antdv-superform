@@ -15,7 +15,7 @@
     "baseUrl": ".",
     "outDir": "./dist",
     "lib": ["esnext", "dom"],
-    "types": ["vite/client"]
+    "types": ["vite/client", "./types"]
   },
-  "include": ["components.d.ts", "example/*", "types", "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["components.d.ts", "example/*", "src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

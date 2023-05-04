@@ -3,17 +3,25 @@ import { inject, reactive, readonly, ref, shallowReactive, toRef, toRefs, unref,
 import cloneDeep from 'lodash/cloneDeep'
 import { nanoid } from 'nanoid'
 
-export function getComputedStatus(org: undefined | boolean | Ref<boolean> | Fn<boolean>, data: Obj = {}) {
+/** 统一生成动态属性参数 */
+export function getEffectData(param: { record: Obj } & Obj) {
+  const formData = inject('formData')
+  return readonly({ formData, ...toRefs(shallowReactive(param)) })
+}
+
+export function getComputedStatus(
+  org: undefined | boolean | Ref<boolean> | Fn<boolean>,
+  dataRef: { record: Obj } & Obj
+) {
   const res = ref(!!unref(org))
   if (typeof org === 'function') {
-    const formData = inject('formData')
-    const dataRef = readonly({ formData, ...toRefs(shallowReactive(data)) })
     watchEffect(() => {
       res.value = org(dataRef)
     })
   }
   return res
 }
+
 export function useShow(hide, data) {
   const show = getComputedStatus(hide, data)
   show.value = !show.value
@@ -25,11 +33,9 @@ export function useDisabled(dis, data) {
 }
 
 /** 动态属性监听 */
-export function getComputedAttr(handler?: Fn<Obj>, data: Obj = {}) {
+export function getComputedAttr(handler: Fn<Obj>, dataRef: { record: Obj } & Obj) {
   const result: Obj = reactive({})
   if (handler) {
-    const formData = inject('formData')
-    const dataRef = readonly({ formData, ...toRefs(shallowReactive(data)) })
     watchEffect(() => {
       Object.assign(result, handler(dataRef))
     })
@@ -55,12 +61,12 @@ export function getListener(option: Obj<Fn> = {}, formData) {
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
 export function buildModel(option: Obj, { parent, propChain = [], rules = {}, refName }: ParentModel) {
-  const { prop = '', keepProp, label, rules: _rules, initialValue } = option
-  const propArr = prop.split('.')
+  const { field = '', keepField, label, rules: _rules, initialValue } = option
+  const nameArr = field.split('.')
   let current = refName ? parent[refName] : parent
   let _refName
   let currentRules
-  propArr.forEach((name, idx, arr) => {
+  nameArr.forEach((name, idx, arr) => {
     const isLast = idx === arr.length - 1
     const isWrap = !!(option.columns || option.subItems)
     if (!isLast) {
@@ -74,7 +80,7 @@ export function buildModel(option: Obj, { parent, propChain = [], rules = {}, re
     } else {
       _refName = name
       current[name] ??= initialValue
-      if (keepProp) current[keepProp] ??= undefined
+      if (keepField) current[keepField] ??= undefined
       if (_rules) {
         const _r = Array.isArray(_rules) ? _rules : [_rules]
         currentRules = rules[name] = _r.map((item) => buildRule(item, label)).flat()
@@ -87,7 +93,7 @@ export function buildModel(option: Obj, { parent, propChain = [], rules = {}, re
     parent: current,
     rules,
     currentRules,
-    propChain: propChain.concat(propArr),
+    propChain: propChain.concat(nameArr),
   }
 }
 
@@ -98,8 +104,8 @@ export function buildModelDeep(children: any[], { parent, propChain = [], rules 
 
   const models: ModelsMap = new Map()
   cols.forEach((child) => {
-    const { prop, subItems, columns } = child
-    const subModel = prop ? buildModel(child, currentModel) : currentModel
+    const { field, subItems, columns } = child
+    const subModel = field ? buildModel(child, currentModel) : currentModel
     const item: ModelChildren = {
       model: subModel,
     }
@@ -164,7 +170,7 @@ export function setFieldsValue(modelsMap: ModelsMap<MixOption>, data) {
       const curValue = parent[model.refName]
       if (listData) {
         model.parent[model.refName].splice(0)
-        const rowKey = option.attr?.rowKey || 'id'
+        const rowKey = (option.attrs as Obj)?.rowKey || 'id'
         curValue?.forEach((item) => {
           const def = cloneDeep(listData.model.parent)
           setFieldsValue(cloneModels(listData.children, def), item)
@@ -172,8 +178,8 @@ export function setFieldsValue(modelsMap: ModelsMap<MixOption>, data) {
           model.parent[model.refName].push(def)
         })
       } else {
-        const keepProp = option.keepProp
-        keepProp && (model.parent[keepProp] = parent[keepProp])
+        const keepField = option.keepField
+        keepField && (model.parent[keepField] = parent[keepField])
         model.parent[model.refName] = curValue
       }
     }

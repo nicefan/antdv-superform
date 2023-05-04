@@ -1,6 +1,7 @@
 <script lang="tsx">
 import { inject, reactive, readonly, ref, unref, watch } from 'vue'
 import { useDisabled, useShow, getListener, buildModel } from '../utils/util'
+import useControl from './useControl'
 
 export default {
   name: 'ExTabs',
@@ -19,22 +20,21 @@ const props = defineProps<{
   option: ExTabsOption
   model: ModelData
   children: ModelsMap<TabItem>
+  attrs: Obj
+  effectData: Obj
 }>()
 
-const formData = inject('formData')
-const { activeKey, attr, buttons } = props.option
+const { activeKey, buttons } = props.option
 
 const tabMap: Obj = {}
 const allList = [...props.children].map(([itemOption, data], idx) => {
-  const { key, prop, label, icon, hide, disabled: dis } = itemOption
-  const tabKey = key || prop || String(idx)
-  const subModel = data.model
-  const effectData = { current: subModel.parent }
-  const disabled = useDisabled(dis, effectData)
-  const show = useShow(hide, effectData)
+  const { attrs, hidden } = useControl({ option: itemOption as any, model: data })
+
+  const { key, field, label, icon } = itemOption
+  const tabKey = key || field || String(idx)
   const tabLabel = (icon ? <VIcon type={icon} /> : '') + label
   tabMap[tabKey] = { children: data.children, option: itemOption }
-  return reactive({ key: tabKey, tab: tabLabel, disabled, show })
+  return reactive({ key: tabKey, tab: tabLabel, disabled: attrs.disabled, hidden })
 })
 
 const acKey = ref(unref(activeKey) || allList[0].key)
@@ -45,27 +45,27 @@ watch(
   () => {
     let validKey
     tabList.value = allList.filter((item) => {
-      if (item.show && !item.disabled) {
+      if (!item.hidden && !item.disabled) {
         validKey = validKey ?? item.key
       } else if (acKey.value === item.key) {
         acKey.value = validKey
       }
-      return item.show
+      return !item.hidden
     })
     acKey.value = acKey.value ?? validKey
   },
   { deep: true }
 )
 
-const listener = getListener(props.option.on, { formData })
-const _tabChange = listener.onTabChange
-listener.onTabChange = (key) => {
+const onTabChange = (key) => {
   acKey.value = key
-  _tabChange?.(key)
+  props.attrs.onTabChange?.(key)
 }
+
+
 </script>
 <template>
-  <Card :tab-list="tabList" :active-tab-key="acKey" v-bind="{ ...attr, ...listener }">
+  <Card :tab-list="tabList" :active-tab-key="acKey" v-bind="attrs" @tab-change="onTabChange">
     <template #tabBarExtraContent>
       <ButtonGroup v-if="buttons" :config="buttons"></ButtonGroup>
     </template>

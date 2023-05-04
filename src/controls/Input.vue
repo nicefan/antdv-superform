@@ -1,18 +1,18 @@
 <template>
-  <FormItem :name="ruleName" :label="label">
+  <FormItem>
     <Input
-      :readonly="!!option.keepProp"
-      :placeholder="'请输入' + (label || '')"
+      :readonly="!!option.keepField"
+      :placeholder="'请输入' + (option.label || '')"
       max-length="100"
       :class="option.btnClick ? 'ant-input-search ant-input-search-enter-button' : ''"
-      v-bind="attrs"
+      v-bind="allAttrs"
     >
       <template #addonAfter>
         <Button
           v-if="option.btnClick"
           :disabled="attrs.disabled"
           class="ant-input-search-button"
-          @click="option.btnClick?.(formData, $event)"
+          @click="option.btnClick?.(effectData, $event)"
         >
           <v-icon :type="option.addonAfterIcon || 'search'" />
         </Button>
@@ -34,17 +34,22 @@
     </Input>
   </FormItem>
 </template>
+
 <script setup lang="ts">
-import useControl from './useControl'
 import VIcon from '../icon/VIcon'
 import { innerComps } from '../components'
+import { useVModel } from './useControl'
+import { reactive } from 'vue'
 
 const { Input, Button, Tooltip, FormItem } = innerComps
 
 const props = defineProps<{
   option: ExInputOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
 // const defData = reactive(defaultData || {})
-const { formData, attrs, ruleName, label } = useControl(props)
+const valueProps = useVModel(props)
+const allAttrs = reactive({ ...valueProps, ...props.attrs })
 </script>

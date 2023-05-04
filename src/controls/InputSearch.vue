@@ -1,6 +1,6 @@
 <template>
-  <FormItem :name="ruleName" :label="label">
-    <InputSearch :placeholder="'请输入' + label" allow-clear max-length="100" v-bind="attrs">
+  <FormItem>
+    <InputSearch :placeholder="'请输入' + option.label" allow-clear max-length="100" v-bind="allAttrs">
       <template #enterButton>
         <Button v-if="option.addonAfterIcon">
           <a-icon :type="option.addonAfterIcon" />
@@ -25,15 +25,18 @@
   </FormItem>
 </template>
 <script setup lang="ts">
-import useControl from './useControl'
+import useControl, { useVModel } from './useControl'
 import { innerComps } from '../components'
+import { reactive } from 'vue'
 
-const {FormItem, Tooltip, Button, InputSearch} = innerComps
+const { FormItem, Tooltip, Button, InputSearch } = innerComps
 
 const props = defineProps<{
   option: ExInputOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
-const { attrs, ruleName, label } = useControl(props)
-
+const valueProps = useVModel(props)
+const allAttrs = reactive({ ...valueProps, ...props.attrs })
 </script>

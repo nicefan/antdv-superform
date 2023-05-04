@@ -1,28 +1,30 @@
 <template>
-  <form-item :name="ruleName" :label="label">
-    <checkbox-group :name="option.prop" v-bind="attrs" :options="options" />
+  <form-item>
+    <checkbox-group :name="option.field" v-bind="allAttrs" :options="options" />
   </form-item>
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref } from 'vue'
-import useControl from './useControl'
+import { ref, watchPostEffect, unref, reactive } from 'vue'
+import { useVModel } from './useControl'
 import { innerComps } from '../components'
 
-const {FormItem, CheckboxGroup} = innerComps
+const { FormItem, CheckboxGroup } = innerComps
 
 const props = defineProps<{
   option: ExSelectOption
   model: ModelData
+  attrs: Obj
+  effectData: Obj
 }>()
+const valueProps = useVModel(props)
+const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
-const { effectData, attrs, ruleName, label } = useControl(props)
-
-const options = ref<any[] | undefined>(attrs.options || [])
+const options = ref<any[] | undefined>(props.attrs.options || [])
 const _options = props.option.options
 if (typeof _options === 'function') {
   watchPostEffect(() => {
-    Promise.resolve(_options(effectData)).then((data) => {
+    Promise.resolve(_options(props.effectData)).then((data) => {
       options.value = data
     })
   })

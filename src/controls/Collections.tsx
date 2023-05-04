@@ -1,7 +1,8 @@
-import { defineComponent, h, inject, PropType, readonly } from 'vue';
-import { buildModel, useShow } from '../utils/util'
+import { defineComponent, h, PropType, reactive } from 'vue'
+import { buildModel, getEffectData, useShow } from '../utils/util'
 import Controls from './index'
 import { innerComps } from '../components'
+import useControl from './useControl'
 
 const { Col, Row } = innerComps
 
@@ -26,13 +27,13 @@ export default defineComponent({
     const { gutter = 16 } = option || {}
     // if (!subItems?.length) return
 
-    const nodes = [...children].map(([col, data]) => {
-      const span = col.span ?? (data.children || col.columns ? 24 : 8)
-      const subModel = data.model
-      // 元素隐藏控制
-      const show = useShow(col.hide, { current: subModel.parent })
-      const slot = () => h(Controls[col.type], { option: col, ...data })
-      return () => show.value && <Col span={span} v-slots={{ default: slot }} />
+    const nodes = [...children].map(([subOption, subData]) => {
+      const span = subOption.span ?? (subData.children || subOption.columns ? 24 : 8)
+      const props = { option: subOption, ...subData }
+      const { effectData, attrs, ruleName, hidden } = useControl(props)
+      const { type, label } = subOption
+      const slot = () => h(Controls[type], reactive({ ...props, attrs, effectData, name: ruleName, label }))
+      return () => !hidden.value && <Col span={span} v-slots={{ default: slot }} />
     })
     const slots = {
       default() {
