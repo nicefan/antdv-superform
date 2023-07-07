@@ -1,6 +1,6 @@
 import icons, { IconNames } from './icons'
 import Icon from '@ant-design/icons-vue/es/components/Icon'
-import { FunctionalComponent, h } from 'vue'
+import { FunctionalComponent, defineComponent, h } from 'vue'
 const registerIcon = (function () {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   svg.setAttribute('aria-hidden', 'true')
@@ -31,20 +31,20 @@ const registerIcon = (function () {
   }
 })()
 
-interface VIconProps {
-  type: IconNames | string
-  spin?: boolean
-  rotate?: number
-  twoToneColor?: string
-}
-const VIcon: FunctionalComponent<VIconProps> = (props, context) => {
-  const iconId = registerIcon(props.type)
-  const content = h('use', { 'xlink:href': '#' + iconId })
+export default defineComponent({
+  props: {
+    type: { type: String, required: true },
+    spin: Boolean,
+    rotate: Number,
+    twoToneColor: String,
+  },
+  setup(props, context) {
+    const iconId = registerIcon(props.type)
+    const content = h('use', { 'xlink:href': '#' + iconId })
 
-  return h(Icon, context.attrs, { default: () => content })
-}
-VIcon.props = ['type']
-export default VIcon
+    return () => h(Icon, context.attrs, { default: () => content })
+  },
+})
 // export default {
 //   components: { AntdIcon },
 //   setup() {

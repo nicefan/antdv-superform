@@ -4,9 +4,9 @@ import cloneDeep from 'lodash/cloneDeep'
 import { nanoid } from 'nanoid'
 
 /** 统一生成动态属性参数 */
-export function getEffectData(param: { record: Obj } & Obj) {
+export function getEffectData<T extends { record: Obj; [k: string]: any }>(param: T) {
   const formData = inject('formData')
-  return readonly({ formData, ...toRefs(shallowReactive(param)) })
+  return readonly({ formData, ...toRefs(shallowReactive(param)) } as { formData: Obj } & T)
 }
 
 export function getComputedStatus(
@@ -145,8 +145,8 @@ export function cloneModels(orgModels: ModelsMap, data) {
 }
 
 /** 针对表格行生成平铺数据模型 */
-export function flatModels(orgModels: ModelsMap, data?: Obj) {
-  const models: [ExBaseOption, ModelData][] = []
+export function flatModels<T>(orgModels: ModelsMap<T>, data?: Obj) {
+  const models: [T, ModelData][] = []
   for (const [option, { model, children }] of orgModels) {
     if (children) {
       models.push(...flatModels(children, data))

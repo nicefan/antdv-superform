@@ -1,6 +1,6 @@
 {
   "name": "antdv-superform",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": {
     "name": "nicefan",
     "email": "covien@msn.com"
@@ -13,10 +13,11 @@
   "type": "module",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
-  "types": "./index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
+    "rollup": "rollup -c",
+    "dts": "vue-tsc --declaration --emitDeclarationOnly",
     "serve": "vite preview"
   },
   "peerDependencies": {
@@ -25,40 +26,41 @@
   "dependencies": {
     "@ant-design/icons-svg": "^4.2.1",
     "@ant-design/icons-vue": "^6.1.0",
-    "ant-design-vue": "^3.2.15"
+    "ant-design-vue": "^3.2.20"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "@types/node": "^18.14.5",
-    "@typescript-eslint/eslint-plugin": "^5.54.0",
-    "@typescript-eslint/parser": "^5.54.0",
-    "@vitejs/plugin-vue": "^4.0.0",
-    "@vitejs/plugin-vue-jsx": "^3.0.0",
-    "@vue/compiler-sfc": "^3.2.47",
-    "@vue/runtime-core": "^3.2.47",
-    "dayjs": "^1.11.7",
-    "eslint": "^8.39.0",
-    "eslint-config-prettier": "^8.6.0",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@types/node": "^18.16.19",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "@vitejs/plugin-vue-jsx": "^3.0.1",
+    "@vue/compiler-sfc": "^3.3.4",
+    "@vue/runtime-core": "^3.3.4",
+    "dayjs": "^1.11.9",
+    "eslint": "^8.44.0",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-vue": "^9.11.0",
+    "eslint-plugin-vue": "^9.15.1",
     "less": "^4.1.3",
     "lodash": "^4.17.21",
-    "nanoid": "^4.0.1",
-    "prettier": "^2.8.4",
-    "rollup": "^3.18.0",
+    "nanoid": "^4.0.2",
+    "prettier": "^2.8.8",
+    "rollup": "^3.26.0",
+    "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-vue": "^6.0.0",
     "rollup-plugin-vue-jsx-compat": "^0.0.6",
-    "sass": "^1.58.3",
-    "typescript": "^4.9.5",
-    "unplugin-vue-components": "^0.24.0",
-    "vite": "^4.1.4",
-    "vite-plugin-dts": "^2.0.2",
+    "sass": "^1.63.6",
+    "typescript": "^5.1.6",
+    "unplugin-vue-components": "^0.24.1",
+    "vite": "^4.3.9",
+    "vite-plugin-dts": "^3.0.3",
     "vite-svg-symbol-loader": "^1.0.0",
-    "vitest": "^0.29.2",
-    "vue": "^3.2.47",
-    "vue-tsc": "^1.2.0"
+    "vitest": "^0.29.8",
+    "vue": "^3.3.4",
+    "vue-tsc": "^1.8.3"
   }
 }

@@ -3,13 +3,15 @@ import path from 'path'
 // import resolve from '@rollup/plugin-node-resolve'
 // import commonjs from '@rollup/plugin-commonjs'
 import ts from '@rollup/plugin-typescript'
+import dts from 'rollup-plugin-dts'
 import vuePlugin from 'rollup-plugin-vue'
 import Components from 'unplugin-vue-components/rollup'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import vueJsx from 'rollup-plugin-vue-jsx-compat'
 import esbuild from 'rollup-plugin-esbuild'
 import postcss from 'rollup-plugin-postcss'
-
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('./package.json')
 const name = pkg.name
@@ -21,13 +23,14 @@ const banner = `/*!
   */`
 
 const tsPlugin = ts({
-  lib: ['esnext'],
+  lib: ['esnext', 'dom'],
   target: 'es2015',
-  declaration: false,
+  declaration: true,
+  noForceEmit: true,
   outDir: dir,
   declarationDir: dir + '/types',
   // check: true,
-  tsconfig: path.resolve(__dirname, 'tsconfig.json'),
+  tsconfig: './tsconfig.json',
 })
 const componentsPlugin = Components({
   resolvers: [AntDesignVueResolver()],
@@ -44,15 +47,15 @@ const mainConfig = [
       file: pkg.module,
     },
     plugins: [
-      componentsPlugin,
+      // componentsPlugin,
       vuePlugin(),
       vueJsx(),
       esbuild({
         jsxFactory: 'vueJsxCompat',
       }),
 
+      tsPlugin,
       postcss(),
-      // tsPlugin,
     ],
   },
   // {
@@ -65,5 +68,13 @@ const mainConfig = [
   //   plugins: [tsPlugin],
   // },
 ]
-
-export default mainConfig
+const types = {
+  input: [`dist/index.d.ts`],
+  output: {
+    format: 'es',
+    dir: '.',
+    entryFileNames: 'lib/[name].ts',
+  },
+  plugins: [dts()],
+}
+export default types

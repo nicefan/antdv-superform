@@ -1,10 +1,7 @@
 import { defineComponent, h, PropType, reactive } from 'vue'
-import { buildModel, getEffectData, useShow } from '../utils/util'
-import Controls from './index'
-import { innerComps } from '../components'
+import { Col, Row } from 'ant-design-vue'
 import useControl from './useControl'
-
-const { Col, Row } = innerComps
+import Controls from './components'
 
 export default defineComponent({
   name: 'Collections',

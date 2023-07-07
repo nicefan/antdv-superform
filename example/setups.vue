@@ -8,7 +8,7 @@
 </template>
 <script lang="ts">
 import { ref, defineComponent, inject, toRefs } from 'vue'
-import { VIcon } from '../src'
+import VIcon from '../src/icon/VIcon'
 import { useExampleModal } from './useExForm'
 export default defineComponent({
   components: {

@@ -1,13 +1,12 @@
 import { defineComponent, PropType, provide, reactive, readonly, ref, h, toRaw, inject } from 'vue'
-import Collections from './controls/Collections'
+
 import { useModal } from './Modal'
 import { buildModelDeep, setFieldsValue } from './utils/util'
+import { ConfigProvider, Form } from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
-import { innerComps } from './components'
-
-const { Form, ConfigProvider } = innerComps
+import { Collections } from './controls'
 
 export function defineForm(option: FormOption) {
   return option
@@ -25,7 +24,7 @@ export function buildForm(optionData) {
   }
 }
 
-export function buildModel(optionData) {
+export function buildModal(optionData) {
   const formRef = ref()
   const FormComponent = () => h(ExaForm, { option: optionData, ref: formRef })
   const { openModal } = useModal(FormComponent)
@@ -41,7 +40,7 @@ const ExaForm = defineComponent({
   props: {
     option: {
       type: Object as PropType<{
-        attr?: Obj
+        attrs?: Obj
         gutter?: number
         subItems: UniOption[]
       }>,
@@ -50,7 +49,7 @@ const ExaForm = defineComponent({
       }),
     },
   },
-  setup(props, { slots, expose }) {
+  setup(props, { slots, expose, attrs }) {
     const formData: Obj = reactive({})
     const formRef = ref()
     const modelData = {
@@ -75,7 +74,15 @@ const ExaForm = defineComponent({
     })
     let locale = inject<any>('configProvider')?.locale
     const formNode = () => (
-      <Form ref={formRef} class="exa-form" model={formData} rules={modelData.rules} layout="vertical">
+      <Form
+        ref={formRef}
+        class="exa-form"
+        model={formData}
+        rules={modelData.rules}
+        layout="vertical"
+        {...props.option.attrs}
+        {...attrs}
+      >
         <Collections option={props.option} children={modelsMap} />
         {slots.default}
       </Form>

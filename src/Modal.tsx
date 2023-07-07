@@ -1,20 +1,7 @@
-import {
-  defineComponent,
-  ref,
-  reactive,
-  render,
-  getCurrentInstance,
-  createVNode,
-  inject,
-  provide,
-  h,
-  onMounted,
-} from 'vue'
-import { ModalFuncProps } from 'ant-design-vue/es/modal'
+import { defineComponent, ref, reactive, render, getCurrentInstance, createVNode, provide, onMounted } from 'vue'
+import { ModalFuncProps } from 'ant-design-vue/es'
 import { VueNode } from 'ant-design-vue/es/_util/type'
-import { innerComps } from './components'
-
-const { Modal } = innerComps
+import base from './controls/override'
 
 const comp = defineComponent({
   props: {
@@ -24,9 +11,7 @@ const comp = defineComponent({
     },
   },
   setup(props, { expose, slots }) {
-    Object.entries(props.provides).forEach(([key, value]) =>
-      provide(key, value)
-    )
+    Object.entries(props.provides).forEach(([key, value]) => provide(key, value))
     const visible = ref(false)
     const porxyOk = (orgOk) => () =>
       Promise.resolve(orgOk?.()).then(() => {
@@ -39,20 +24,11 @@ const comp = defineComponent({
         visible.value = true
       },
     })
-    return () => (
-      <Modal
-        v-model={[visible.value, 'visible']}
-        {...config}
-        v-slots={slots}
-      ></Modal>
-    )
+    return () => <base.Modal v-model={[visible.value, 'visible']} {...config} v-slots={slots}></base.Modal>
   },
 })
 
-export function useModal2(
-  content?: ModalFuncProps['content'],
-  config: Obj = {}
-) {
+export function useModal2(content?: ModalFuncProps['content'], config: Obj = {}) {
   const wrap = document.createElement('div')
   const ins: any = getCurrentInstance() // || currentInstance
   // currentInstance = currentInstance || ins
@@ -71,10 +47,7 @@ export function useModal2(
   }
 }
 
-export function createModal(
-  content: (() => VueNode) | VueNode,
-  config: Obj = {}
-) {
+export function createModal(content: (() => VueNode) | VueNode, config: Obj = {}) {
   const visible = ref(false)
   const _config = reactive({ ...config })
 
@@ -84,12 +57,12 @@ export function createModal(
     })
   const refM = ref()
   const modalSlot = () => (
-    <Modal
+    <base.Modal
       ref={refM}
       v-model={[visible.value, 'visible']}
       {...{ ..._config, onOk }}
       v-slots={{ default: content }}
-    ></Modal>
+    ></base.Modal>
   )
 
   const openModal = (option?: ModalFuncProps) => {

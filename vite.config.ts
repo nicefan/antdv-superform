@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import dts from 'vite-plugin-dts'
+import dts from 'rollup-plugin-dts'
+import viteDts from 'vite-plugin-dts'
 // import ViteComponents, { AntDesignVueResolver } from 'vite-plugin-components'
 import Components from 'unplugin-vue-components/vite'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
@@ -10,6 +11,16 @@ import svgSymbol from 'vite-svg-symbol-loader'
 import resolvePlugin from '@rollup/plugin-node-resolve'
 
 import { resolve } from 'path'
+
+const types = {
+  input: [`dist/index.d.ts`],
+  output: {
+    format: 'es',
+    dir: '.',
+    entryFileNames: 'lib/[name].ts',
+  },
+  plugins: [dts()],
+}
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: {
@@ -28,7 +39,15 @@ export default defineConfig({
       //   main: resolve(__dirname, 'example/index.html'),
       // },
       external: ['vue', /moment/, 'nanoid', /dayjs/, /lodash/, /ant-design-vue/, /@ant-design/],
-      output: {
+      // input: [`dist/index.d.ts`],
+      // output: {
+      //   format: 'es',
+      //   dir: '.',
+      //   entryFileNames: 'lib/[name].ts',
+      // },
+      // plugins: [dts()],
+    
+      // output: {
         // https://rollupjs.org/guide/en/#outputmanualchunks
         // manualChunks: {
         //   vele: ['ant-design-vue'],
@@ -39,7 +58,7 @@ export default defineConfig({
         //   vue: 'vue',
         //   'ant-design-vue': 'ant-design-vue',
         // }
-      },
+      // },
     },
   },
   esbuild: {
@@ -48,6 +67,9 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
+    viteDts({
+      outDir: 'dist',
+    }),
     // Components({
     //   dts: true,
     //   deep: false,
