@@ -16,6 +16,9 @@ export const useFormOption = () => {
           type: 'link',
           actions: ['edit', 'del'],
         },
+        wrapperCol: {
+          span: 24,
+        },
         columns: [
           {
             type: 'Input',

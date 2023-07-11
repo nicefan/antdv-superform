@@ -17,6 +17,6 @@ const props = defineProps<{
         <Divider orientation="left">{{ option.title }}</Divider>
       </slot>
     </Row>
-    <Collections v-bind="props" />
+    <Collections v-bind="{ option, model, children }" />
   </div>
 </template>

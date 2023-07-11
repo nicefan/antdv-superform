@@ -9,7 +9,7 @@ import inlineRender from './TableEdit'
 import Collections from '../Collections'
 import base from '../override'
 
-function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
+function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
   // 生成新增表单
   const { parent, rules } = parentModel
   const copyData = parent
@@ -18,12 +18,19 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }) {
   const formRef = ref()
 
   const editForm = () => (
-    <base.Form ref={formRef} class="exa-form" model={modelRef} rules={rules} layout="vertical">
-      <Collections children={children} />
+    <base.Form
+      ref={formRef}
+      class="exa-form"
+      model={modelRef}
+      rules={rules}
+      layout="vertical"
+      {...tableOption.fromProps}
+    >
+      <Collections option={tableOption} children={children} />
     </base.Form>
   )
 
-  const { modalSlot, openModal } = createModal(editForm)
+  const { modalSlot, openModal } = createModal(editForm, { maskClosable: false, ...tableOption.modalProps })
 
   const methods = {
     add() {
@@ -124,13 +131,13 @@ function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
       const {
         modalSlot,
         methods: { add },
-      } = modalEdit(_param)
+      } = modalEdit(_param, option)
       context.methods.add = add
       context.modalSlot = modalSlot
     }
   } else {
     const columns = buildColumns(modelsMap)
-    const { modalSlot, methods } = modalEdit(_param)
+    const { modalSlot, methods } = modalEdit(_param, option)
     context = { modalSlot, methods, columns, list: ref(orgList) }
   }
 

@@ -14,7 +14,7 @@ export function defineForm(option: FormOption) {
 
 export function buildForm(optionData) {
   const formRef = ref()
-  const FormComponent = () => h(ExaForm, { option: optionData, ref: formRef })
+  const FormComponent = () => h(ExaForm, { ...optionData, ref: formRef })
   const onSubmit = () => formRef.value.onSubmit()
   return {
     FormComponent,
@@ -26,7 +26,7 @@ export function buildForm(optionData) {
 
 export function buildModal(optionData) {
   const formRef = ref()
-  const FormComponent = () => h(ExaForm, { option: optionData, ref: formRef })
+  const FormComponent = () => h(ExaForm, { ...optionData, ref: formRef })
   const { openModal } = useModal(FormComponent)
   const onSubmit = () => formRef.value.onSubmit()
   return {
@@ -38,16 +38,14 @@ export function buildModal(optionData) {
 const ExaForm = defineComponent({
   name: 'ExaForm',
   props: {
-    option: {
-      type: Object as PropType<{
-        attrs?: Obj
-        gutter?: number
-        subItems: UniOption[]
-      }>,
-      default: () => ({
-        subItems: [],
-      }),
+    attrs: Object,
+    subItems: {
+      type: Array as PropType<UniOption[]>,
+      default: () => [],
     },
+    sectionClass: String,
+    wrapperCol: Object,
+    rowProps: Object,
   },
   setup(props, { slots, expose, attrs }) {
     const formData: Obj = reactive({})
@@ -56,8 +54,9 @@ const ExaForm = defineComponent({
       rules: {},
       parent: formData,
     }
-    const modelsMap = buildModelDeep(props.option.subItems, modelData)
+    const modelsMap = buildModelDeep(props.subItems, modelData)
     provide('formData', readonly(formData))
+    // provide('ExConfig', readonly({ sectional: props.sectional }))
     expose({
       getExpose() {
         return formRef.value
@@ -80,10 +79,10 @@ const ExaForm = defineComponent({
         model={formData}
         rules={modelData.rules}
         layout="vertical"
-        {...props.option.attrs}
+        {...props.attrs}
         {...attrs}
       >
-        <Collections option={props.option} children={modelsMap} />
+        <Collections option={props} children={modelsMap} />
         {slots.default}
       </Form>
     )
@@ -92,7 +91,6 @@ const ExaForm = defineComponent({
       dayjs.locale(locale.locale)
       return () => <ConfigProvider locale={locale}>{formNode()}</ConfigProvider>
     } else {
-      console.log(inject<any>('configProvider'))
       return formNode
     }
   },

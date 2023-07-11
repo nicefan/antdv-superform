@@ -1,7 +1,6 @@
 <template>
   <FormItem>
     <Input
-      :readonly="!!option.keepField"
       :placeholder="'请输入' + (option.label || '')"
       max-length="100"
       :class="option.btnClick ? 'ant-input-search ant-input-search-enter-button' : ''"

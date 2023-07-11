@@ -1,12 +1,12 @@
 import { unref, onMounted, reactive, toRef, watch, inject, computed, toRefs } from 'vue'
 import { getListener, getComputedAttr, getEffectData, getComputedStatus } from '../utils/util'
 type Param = {
-  option: ExFormOption
+  option: ExFormItemOption
   model: Obj
 }
 
 export default function render({ option, model }: Param) {
-  const { type, keepField, attrs: __attrs, disabled: __disabled, hidden: __hidden }: MixOption = option
+  const { type, labelField, attrs: __attrs, disabled: __disabled, hidden: __hidden }: MixOption = option
   const { parent, currentRules, propChain } = model
 
   // 动态属性方法需要传递的参数
@@ -21,10 +21,10 @@ export default function render({ option, model }: Param) {
   const computedAttr =
     typeof __attrs === 'function' ? { ...toRefs(getComputedAttr(__attrs, effectData)) } : __attrs || {}
 
-  if (type === 'Select' && keepField) {
+  if (type === 'Select' && labelField) {
     const change = listener.onChange
     listener.onChange = function (val, currentOption) {
-      parent[keepField] = currentOption.label
+      parent[labelField] = currentOption.label
       change && change(val, currentOption)
     }
   }

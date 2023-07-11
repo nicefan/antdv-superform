@@ -1,5 +1,5 @@
 import { h, ref } from 'vue'
-import { buildForm, buildModel, defineForm, useModal } from '../src'
+import { buildForm, buildModal, defineForm, useModal } from '../src'
 
 export default function exampleForm() {
   const list = ref<any[]>([{ value: '一', label: '一' }])
@@ -31,68 +31,74 @@ export default function exampleForm() {
   ]
   const acKey = ref('')
   const options = defineForm({
+    sectionClass: 'exform-section',
     subItems: [
       {
-        type: 'Input',
-        field: 'name',
-        label: '姓名',
-        rules: { required: true },
-        btnClick(...args) {
-          console.log('change:', args)
-          acKey.value = 'tab1'
-        },
-      },
-      {
-        type: 'DatePicker',
-        field: 'born',
-        label: '生日',
-        rules: { required: true, trigger: 'change' },
-      },
-      {
-        type: 'Select',
-        field: 'forever',
-        keepField: 'foreverName',
-        label: '爱好',
-        /** 依赖数据变化切换 */
-        // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
-        /** 异步请求更新 */
-        // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
-        /** 传递响应式数组，本地进行更新 */
-        // options: list
-        /** 静态固定数组 */
-        options: selectList,
-        // disabled: (data) => data.age > 20,
-      },
-      {
-        type: 'Switch',
-        label: '是否注册',
-        field: 'isReg',
-        valueLabels: ['是', '否'],
-      },
-      {
-        type: 'InputGroup',
-        label: '详细地址',
-        span: 16,
-        gutter: 0,
+        type: 'Group',
         subItems: [
           {
             type: 'Input',
-            field: 'addr',
-            // label: '地址',
-            span: 16,
+            field: 'name',
+            label: '姓名',
+            rules: { required: true },
+            btnClick(...args) {
+              console.log('change:', args)
+              acKey.value = 'tab1'
+            },
           },
           {
-            type: 'Input',
-            field: 'street',
-            // label: '街道',
+            type: 'DatePicker',
+            field: 'born',
+            label: '生日',
+            rules: { required: true, trigger: 'change' },
           },
-        ],
-      },
-      {
-        type: 'DateRange',
-        label: '有效期',
-        field: 'startDate',
-        keepField: 'endDate',
+          {
+            type: 'Select',
+            field: 'forever',
+            labelField: 'foreverName',
+            label: '爱好',
+            /** 依赖数据变化切换 */
+            // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
+            /** 异步请求更新 */
+            // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
+            /** 传递响应式数组，本地进行更新 */
+            // options: list
+            /** 静态固定数组 */
+            options: selectList,
+            // disabled: (data) => data.age > 20,
+          },
+          {
+            type: 'Switch',
+            label: '是否注册',
+            field: 'isReg',
+            valueLabels: ['是', '否'],
+          },
+          {
+            type: 'InputGroup',
+            label: '详细地址',
+            span: 16,
+            gutter: 0,
+            subItems: [
+              {
+                type: 'Input',
+                field: 'addr',
+                // label: '地址',
+                span: 16,
+              },
+              {
+                type: 'Input',
+                field: 'street',
+                // label: '街道',
+              },
+            ],
+          },
+          {
+            type: 'DateRange',
+            label: '有效期',
+            field: 'startDate',
+            keepField: 'endDate',
+          },
+        ]
       },
       {
         type: 'Table',
@@ -285,7 +291,7 @@ export default function exampleForm() {
           {
             field: 'collapse',
             label: '百叶窗',
-            disabled: true,
+            // disabled: true,
             buttons: {
               limit: 1,
               size: 'small',
@@ -348,6 +354,6 @@ export function useExampleForm() {
 }
 export function useExampleModal() {
   const { options } = exampleForm()
-  const { openModal, onSubmit } = buildModel(options)
+  const { openModal, onSubmit } = buildModal(options)
   return { openModal, onSubmit }
 }

@@ -1,6 +1,5 @@
 <script lang="tsx">
-import { inject, reactive, readonly, ref, unref, watch } from 'vue'
-import { useDisabled, useShow, getListener, buildModel } from 'src/utils/util'
+import { reactive, ref, unref, watch } from 'vue'
 import useControl from '../useControl'
 
 export default {

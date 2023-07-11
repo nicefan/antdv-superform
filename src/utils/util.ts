@@ -61,7 +61,7 @@ export function getListener(option: Obj<Fn> = {}, formData) {
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
 export function buildModel(option: Obj, { parent, propChain = [], rules = {}, refName }: ParentModel) {
-  const { field = '', keepField, label, rules: _rules, initialValue } = option
+  const { field = '', keepField = option.labelField, label, rules: _rules, initialValue } = option
   const nameArr = field.split('.')
   let current = refName ? parent[refName] : parent
   let _refName
@@ -178,7 +178,7 @@ export function setFieldsValue(modelsMap: ModelsMap<MixOption>, data) {
           model.parent[model.refName].push(def)
         })
       } else {
-        const keepField = option.keepField
+        const keepField = option.keepField || option.labelField
         keepField && (model.parent[keepField] = parent[keepField])
         model.parent[model.refName] = curValue
       }

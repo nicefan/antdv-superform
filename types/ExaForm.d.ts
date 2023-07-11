@@ -3,6 +3,9 @@ import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
 import Vue from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
+import { FormProps } from 'ant-design-vue'
+import { ModalFuncProps, ColProps, RowProps, FormItemProps, InputProps } from 'ant-design-vue/es'
+
 export interface RuleConfig {
   /** 验证类型 */
   type?: 'email' | 'integer' | 'number' | 'idcard' | 'phone' | 'mobile' | 'word' | string
@@ -57,7 +60,12 @@ declare global {
   }
 
   interface FormOption {
-    attrs?: Obj | Fn<Obj>
+    attrs?: FormProps | Fn<FormProps>
+    sectionClass?: string
+    /** 弹窗表单中的行间排版属性 */
+    rowProps?: RowProps
+    /** 表单元素的统一排列属性， */
+    wrapperCol?: ColProps
     subItems: UniOption[]
   }
 
@@ -86,7 +94,6 @@ declare global {
   interface ExBaseOption {
     type: string
     field?: string
-    label?: string
     /** 配置复用合并时方便插入 */
     sort?: number
     attrs?: Obj | Fn<Obj>
@@ -94,13 +101,15 @@ declare global {
     hidden?: boolean | ((formData: Readonly<Obj>) => boolean)
     /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
     disabled?: boolean | Fn
+    on?: Obj<Fn>
     // dynamicAttrs?: Fn<Obj>
     // renderView?: Fn<VNode>
     // customRender?: Fn
     // row?: boolean
-    on?: Obj<Fn>
+    colProps?: ColProps
+    /** 快捷实现col span */
     span?: number
-    offset?: number
+    slots?: Obj<Fn>
   }
   interface ExTableOption extends ExBaseOption {
     field: string
@@ -111,21 +120,14 @@ declare global {
     buttons?: ExButtonGroup
     /** 列表元素右边按钮 */
     itemButtons?: ExButtonGroup<'del' | 'edit'>
-  }
-  interface ExGroupOption extends ExBaseOption {
-    title?: string | Fn<VNode>
-    gutter?: number
-    subItems: UniOption[]
-  }
-  interface ExInputGroupOption extends ExBaseOption {
-    span: number
-    gutter?: number
-    subItems: UniOption[]
-  }
-  interface ExCardOption extends ExBaseOption {
-    buttons?: ExButtonGroup
-    title?: string | VNode
-    subItems: UniOption[]
+    /** 弹窗属性 */
+    modalProps?: ModalFuncProps
+    /** 弹窗表单属性 */
+    formProps?: FormProps
+    /** 弹窗表单中的行间排版属性 */
+    rowProps?: RowProps
+    /** 表单元素的统一排列属性， */
+    wrapperCol?: ColProps
   }
   interface ExListOption extends ExBaseOption {
     field: string
@@ -134,13 +136,32 @@ declare global {
     /** 列表元素右边按钮 */
     itemButtons?: ExButtonGroup<'del' | 'edit'>
   }
+  interface ExGroupOption extends ExBaseOption {
+    title?: string | Fn<VNode>
+    gutter?: number
+    buttons?: ExButtonGroup
+    subItems: UniOption[]
+    /** 弹窗表单中的行间排版属性 */
+    rowProps?: RowProps
+    /** 子元素的统一排列属性， */
+    wrapperCol?: ColProps
+  }
+  interface ExInputGroupOption extends ExBaseOption {
+    span: number
+    gutter?: number
+    subItems: UniOption[]
+  }
+  // interface ExCardOption extends ExGroupOption {
+  //   title?: string | VNode
+  //   subItems: UniOption[]
+  // }
   interface ExTabsOption extends ExBaseOption {
     activeKey?: string | Ref<string>
     forceRender?: boolean
     buttons?: ExButtonGroup<'add' | 'refresh'>
     subItems: TabItem[]
   }
-  interface TabItem extends Omit<ExBaseOption, 'type'> {
+  interface TabItem extends Omit<ExGroupOption, 'type'> {
     label: string
     key?: string
     icon?: string
@@ -150,24 +171,26 @@ declare global {
     activeKey?: string | Ref<string>
     subItems: CollapseItem[]
   }
-  interface CollapseItem extends Omit<ExBaseOption, 'type'> {
+  interface CollapseItem extends Omit<ExGroupOption, 'type'> {
     label: string
     key?: string
     icon?: string
     subItems: UniOption[]
     buttons?: ExButtonGroup
+    formAttrs?: FormProps
   }
-
-  interface ExFormOption extends ExBaseOption {
+  /** 表单元素属性 */
+  interface ExFormItemOption extends ExBaseOption {
     field: string
+    label?: string
     initialValue?: any
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     rules?: RuleConfig | RuleConfig[]
+    formItemProps?: FormItemProps
   }
 
-  interface ExInputOption extends ExFormOption {
-    keepField?: string
+  interface ExInputOption extends ExFormItemOption {
     addonAfterIcon?: string
     addonBeforeIcon?: string
     prefixIcon?: string
@@ -175,44 +198,43 @@ declare global {
     suffixTips?: string
     btnClick?: (FormData: Obj, e: MouseEvent) => void
     onChange?: (FormData: Obj, e: InputEvent) => void
-    onBlur?: Fn
-    onClick?: Fn
-    onPressEnter?: Fn
+    attrs?: InputProps
   }
   type SelectOptions = DefaultOptionType[]
 
-  interface ExSelectOption extends ExFormOption {
-    keepField?: string
+  interface ExSelectOption extends ExFormItemOption {
+    labelField?: string
     options?: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
     attrs?: SelectProps
   }
-  interface ExTreeOption extends ExFormOption {
+  interface ExTreeOption extends ExFormItemOption {
     data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
   }
-  interface ExSwitchOption extends ExFormOption {
+  interface ExSwitchOption extends ExFormItemOption {
     valueLabels?: [string, string]
   }
 
-  interface ExDateRange extends ExFormOption {
+  interface ExDateRange extends ExFormItemOption {
     /** 绑定结束日期字段 */
     keepField?: string
   }
-  interface ExRadioOption extends ExFormOption {
+  interface ExRadioOption extends ExFormItemOption {
     options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
   }
 
   type OptionType = {
+    Text: ExBaseOption
     Group: ExGroupOption
     InputGroup: ExInputGroupOption
-    Card: ExCardOption
+    Card: ExGroupOption
     List: ExListOption
     Tabs: ExTabsOption
     Table: ExTableOption
     Collapse: ExCollapseOption
     Input: ExInputOption
-    InputNumber: ExFormOption
-    DatePicker: ExFormOption
-    TimePicker: ExFormOption
+    InputNumber: ExFormItemOption
+    DatePicker: ExFormItemOption
+    TimePicker: ExFormItemOption
     DateRange: ExDateRange
     Select: ExSelectOption
     TreeSelect: ExTreeOption
@@ -223,8 +245,8 @@ declare global {
     // Password: d
   }
 
-  type UniOption = { [K in keyof OptionType]: { type: K } & OptionType[K] }[keyof OptionType] | ExFormOption
-  type UniInputOption = Extract<UniOption, ExFormOption | ExGroupOption>
+  type UniOption = { [K in keyof OptionType]: { type: K } & OptionType[K] }[keyof OptionType] | ExFormItemOption
+  type UniInputOption = Extract<UniOption, ExFormItemOption | ExGroupOption>
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]> & { type: string }) => void
   }[keyof OptionType] extends (k: infer U) => void

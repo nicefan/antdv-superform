@@ -1,7 +1,7 @@
 import { getEffectData } from '../utils/util'
 import { toRef, reactive, watch, onMounted } from 'vue'
 type Param = {
-  option: ExFormOption
+  option: ExFormItemOption
   model: Obj
 }
 
