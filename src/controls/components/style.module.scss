@@ -7,3 +7,10 @@
     }
   }
 }
+.exa-form-compact {
+  :global {
+    .ant-form-item{
+      margin-bottom: 8px !important
+    }
+  }
+}

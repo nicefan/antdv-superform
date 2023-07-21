@@ -14,7 +14,7 @@ import useControl from '../useControl'
 import base from '../override'
 
 /** 生成编辑表单 */
-function buildInlineForm(modelsMap: ModelsMap<ExFormOption>, data) {
+function buildInlineForm(modelsMap: ModelsMap<ExFormItemOption>, data) {
   const editData = reactive(cloneDeep(data))
   const rules: Obj = {}
   const nodes = new Map()
@@ -50,9 +50,13 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }) {
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
   const editMap: Obj = shallowReactive({})
-  watch(shallowReactive(orgList), () => {
-    list.value = orgList.concat(newItems.value)
-  })
+  watch(
+    shallowReactive(orgList),
+    (org) => {
+      list.value = org.concat(newItems.value)
+    },
+    { immediate: true, deep: true }
+  )
 
   watch(
     () => newItems.value,

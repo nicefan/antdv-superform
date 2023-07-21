@@ -23,7 +23,7 @@ const props = defineProps<{
   attrs: Obj
   effectData: Obj
 }>()
-const { value } = useVModel(props)
+const { value } = useVModel(props, 0)
 
 const [falseName, trueName] = props.option.valueLabels || []
 </script>

@@ -1,12 +1,13 @@
 /* eslint-disable vue/one-component-per-file */
-import { ref, reactive, h, PropType, defineComponent, inject } from 'vue'
+import { ref, reactive, h, PropType, defineComponent, inject, onMounted, toRef, toRefs } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneModels } from '../../utils/util'
+import { buildModelMaps, cloneModels } from '../../utils/util'
 import { createModal } from '../../Modal'
 import cloneDeep from 'lodash/cloneDeep'
-import BottonGroup from './ButtonGroup.vue'
+import ButtonGroup from './ButtonGroup.vue'
 import inlineRender from './TableEdit'
 import Collections from '../Collections'
+import Controls from './index'
 import base from '../override'
 
 function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
@@ -39,7 +40,7 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
         title: '新增',
         onOk() {
           return formRef.value.validate().then(() => {
-            orgList.push(cloneDeep(modelRef))
+            orgList.value.push(cloneDeep(modelRef))
           })
         },
       })
@@ -51,8 +52,8 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
         title: '修改',
         onOk() {
           return formRef.value.validate().then(() => {
-            const idx = orgList.indexOf(data)
-            Object.assign(orgList[idx], cloneDeep(modelRef))
+            const idx = orgList.value.indexOf(data)
+            Object.assign(orgList.value[idx], cloneDeep(modelRef))
           })
         },
       })
@@ -60,7 +61,7 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
     del({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
       items.forEach((item) => {
-        orgList.splice(orgList.indexOf(item), 1)
+        orgList.value.splice(orgList.value.indexOf(item), 1)
       })
     },
   }
@@ -105,7 +106,7 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   return columns
 }
 
-type BuildDataParam = { option: ExTableOption; listData: ListModels; orgList: Obj[]; rowKey: string }
+type BuildDataParam = { option: ExTableOption; listData: ListModels; orgList: Ref<Obj[]>; rowKey: string }
 
 function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
   const { itemButtons } = option
@@ -138,7 +139,7 @@ function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
   } else {
     const columns = buildColumns(modelsMap)
     const { modalSlot, methods } = modalEdit(_param, option)
-    context = { modalSlot, methods, columns, list: ref(orgList) }
+    context = { modalSlot, methods, columns, list: orgList }
   }
 
   if (itemButtons) {
@@ -146,7 +147,7 @@ function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
       title: '操作',
       key: 'action',
       customRender: (param) => {
-        return context.actionSlot?.(param) || h(BottonGroup, { config: itemButtons, param, methods: context.methods })
+        return context.actionSlot?.(param) || h(ButtonGroup, { config: itemButtons, param, methods: context.methods })
       },
     })
   }
@@ -170,15 +171,16 @@ export default defineComponent({
       type: Object as PropType<ListModels>,
     },
     attrs: {
-      required: true,
+      default: () => ({}),
       type: Object as PropType<Obj>,
     },
     effectData: Object,
   },
+  emits: ['register'],
   setup({ option, model, listData, attrs }, ctx) {
     const editInline = option.editMode === 'inline'
     const rowKey = attrs.rowKey || 'id'
-    const orgList = model.parent[model.refName]
+    const orgList = toRef(model.parent, model.refName)
 
     const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey })
 
@@ -208,21 +210,35 @@ export default defineComponent({
       },
       ...(editInline && {
         getCheckboxProps: (record) => ({
-          disabled: !orgList.includes(record),
+          disabled: !orgList.value.includes(record),
         }),
       }),
     })
+    const searchForm = option.searchSechma && buildSearchForm(option)
+
     const actions =
       option.buttons &&
       (() =>
         option.buttons && (
-          <BottonGroup config={option.buttons} param={{ selectedRows, selectedRowKeys }} methods={methods} />
+          <ButtonGroup config={option.buttons} param={{ selectedRows, selectedRowKeys }} methods={methods} />
         ))
+    const compRef = ref()
 
+    const getTable = (el) => {
+      if (!el) return
+      if (compRef.value) {
+        Object.assign(compRef.value, el)
+      } else {
+        compRef.value = reactive(el)
+        ctx.emit('register', compRef.value)
+      }
+    }
     return () => (
       <>
         {modalSlot?.()}
+        {searchForm?.()}
         <base.Table
+          ref={getTable}
           dataSource={list.value}
           columns={columns}
           {...ctx.attrs}
@@ -238,3 +254,31 @@ export default defineComponent({
     )
   },
 })
+
+function buildSearchForm({ searchSechma, columns }) {
+  const formOption: FormOption = {
+    buttons: { actions: ['submit', 'reset'] },
+    compact: true,
+    ignoreRules: true,
+    ...searchSechma,
+  }
+  formOption.subItems = searchSechma.subItems.map((item) => {
+    if (typeof item === 'string') {
+      return columns.find((col) => col.field === item)
+    } else {
+      return item
+    }
+  })
+  const formRef = ref()
+  const formData: Obj = reactive({})
+
+  const defaultAction = {
+    submit() {
+      console.log(formData)
+    },
+    reset() {},
+  }
+
+  const searchForm = () => <Controls.Form option={formOption} model={formData} ref={formRef} methods={defaultAction} />
+  return searchForm
+}

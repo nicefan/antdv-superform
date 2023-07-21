@@ -16,7 +16,7 @@ const props = defineProps<{
 <template>
   <form-item style="margin: 0">
     <input-group v-bind="attrs">
-      <Collections v-bind="props" />
+      <Collections v-bind="{ option, model, children }" />
     </input-group>
   </form-item>
 </template>

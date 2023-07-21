@@ -6,5 +6,6 @@ import plugin from './plugin'
 export * from './ExaForm'
 // export { default as VIcon } from './icon/VIcon'
 export { useModal } from './Modal'
+export * from './ExaTable'
 
 export default plugin

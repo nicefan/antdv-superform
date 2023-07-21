@@ -12,7 +12,7 @@ import baseComps from '../override'
 const { FormItem, TimePicker } = baseComps
 
 const props = defineProps<{
-  option: ExFormOption
+  option: ExFormItemOption
   model: ModelData
   attrs: Obj
   effectData: Obj

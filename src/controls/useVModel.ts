@@ -5,9 +5,10 @@ type Param = {
   model: Obj
 }
 
-export default function useVModel({ option, model }: Param) {
+export default function useVModel({ option, model }: Param, defaultValue?: any) {
   const { type, keepField, computed: __computed }: MixOption = option
   const { refName, parent } = model
+  if (defaultValue !== undefined) parent[refName] ??= defaultValue
   // 实际存储变量
   const refValue = toRef(parent, refName)
   // 创建一个静态对象，用于传递到计算属性

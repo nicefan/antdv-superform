@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { ref, toRef, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../../utils/util'
 import ButtonGroup from './ButtonGroup.vue'
@@ -23,18 +23,18 @@ const defaultData = props.listData.model.parent
 const modelsMap = props.listData.children
 
 const { parent, refName } = props.model
-const orgList = parent[refName]
+const orgList = toRef(parent, refName)
 
 const rowKey = props.attrs?.rowKey || 'id'
 const itemsMap: Obj = {}
 
 const methods = {
   add() {
-    orgList.push(cloneDeep(defaultData))
+    orgList.value.push(cloneDeep(defaultData))
   },
   del({ record }) {
-    const orgIdx = orgList.indexOf(record)
-    orgList.splice(orgIdx, 1)
+    const orgIdx = orgList.value.indexOf(record)
+    orgList.value.splice(orgIdx, 1)
     delete itemsMap[record[rowKey]]
   },
 }
@@ -42,9 +42,9 @@ const methods = {
 const listItems = ref<ModelsMap[]>([])
 // 监听数据变化
 watch(
-  () => orgList.length,
+  () => orgList.value.length,
   () => {
-    listItems.value = orgList.map((item) => {
+    listItems.value = orgList.value.map((item) => {
       const hash = item[rowKey] || nanoid(12)
       let itemModel = itemsMap[hash]
       if (!itemModel) {

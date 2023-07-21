@@ -1,5 +1,6 @@
 import { defineComponent, h, reactive } from 'vue'
 import Group from './Group.vue'
+import Form from './Form.vue'
 import InputGroup from './InputGroup.vue'
 import Card from './Card.vue'
 import List from './List.vue'
@@ -20,6 +21,7 @@ import useVModel from '../useVModel'
 import base from '../override'
 
 const components = {
+  Form,
   Group,
   InputGroup,
   Card,
@@ -46,11 +48,11 @@ export function addComponent(name, component) {
 
     setup({ option, model, effectData, attrs }) {
       const valueProps = useVModel({ option, model })
-      const allAttrs = reactive({ valueProps, ...attrs })
+      const allAttrs = reactive({ ...valueProps, ...attrs })
 
       return () =>
         h(base.FormItem, {}, () =>
-          typeof component === 'function' ? component({ option, effectData, attrs: allAttrs }) : h(component, attrs)
+          typeof component === 'function' ? component({ option, effectData, attrs: allAttrs }) : h(component, allAttrs)
         )
     },
   })

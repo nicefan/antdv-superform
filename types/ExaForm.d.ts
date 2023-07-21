@@ -66,7 +66,12 @@ declare global {
     rowProps?: RowProps
     /** 表单元素的统一排列属性， */
     wrapperCol?: ColProps
+    /** 减少行距 */
+    compact?: boolean
+    /** 不做校验 */
+    ignoreRules?: boolean
     subItems: UniOption[]
+    buttons?: ExButtonGroup<'submit' | 'reset'>
   }
 
   interface ButtonItem {
@@ -88,12 +93,13 @@ declare global {
     iconOnly?: boolean
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
-    actions?: T[] | { [K in T]?: ButtonItem }
-    subItems?: ButtonItem[]
+    actions?: (T | (ButtonItem & { name?: T }))[]
+    // subItems?: ButtonItem[]
   }
   interface ExBaseOption {
     type: string
     field?: string
+    label?: string
     /** 配置复用合并时方便插入 */
     sort?: number
     attrs?: Obj | Fn<Obj>
@@ -128,6 +134,7 @@ declare global {
     rowProps?: RowProps
     /** 表单元素的统一排列属性， */
     wrapperCol?: ColProps
+    searchSechma?: FormOption | { subItems: (UniOption | string)[] }
   }
   interface ExListOption extends ExBaseOption {
     field: string
@@ -182,7 +189,6 @@ declare global {
   /** 表单元素属性 */
   interface ExFormItemOption extends ExBaseOption {
     field: string
-    label?: string
     initialValue?: any
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any

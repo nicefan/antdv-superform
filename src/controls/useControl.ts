@@ -33,7 +33,7 @@ export default function render({ option, model }: Param) {
   const ruleName = currentRules && computed(() => (unref(disabled) ? undefined : propChain))
 
   // 创建元素并进行数据绑定, name和label不做props接收将会自动绑定到根组件上
-  const attrs: Obj = reactive({ ...listener, ...computedAttr, disabled })
+  const attrs: Obj = reactive({ ...listener, ...computedAttr, disabled, ...option.attrs })
 
   return { effectData, attrs, ruleName, hidden }
 }

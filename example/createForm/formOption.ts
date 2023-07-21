@@ -19,6 +19,10 @@ export const useFormOption = () => {
         wrapperCol: {
           span: 24,
         },
+        searchSechma: {
+          attrs: {},
+          subItems: ['fieldName', 'title'],
+        },
         columns: [
           {
             type: 'Input',

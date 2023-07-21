@@ -61,7 +61,7 @@ interface RegistPram {
   /** 绑定到组件上的动态属性 */
   attrs: Obj
 }
-async function registComponent(name: string, component: ((param: RegistPram) => Component) | VNode) {
+function registComponent(name: string, component: ((param: RegistPram) => VNode) | Component) {
   addComponent(name, component)
 }
 export default {

@@ -1,14 +1,20 @@
-import { createApp, h } from 'vue'
+import { createApp, defineComponent, h } from 'vue'
 import App from './App.vue'
 import superForm from '../src'
 import 'ant-design-vue/dist/antd.css'
-import { InputNumber, Table } from 'ant-design-vue'
+import { InputNumber, Table, Textarea } from 'ant-design-vue'
 const app = createApp(App)
-superForm.registComponent('InNumber', ({ attrs, option }) => {
-  return h(
-    InputNumber,
-    Object.assign(attrs, { style: 'width:100%', type: 'number', placeholder: '请输入' + option.label })
-  )
+// const InNumber = defineComponent({
+//   setup(_, {attrs}) {
+//     return () => h(
+//       InputNumber,
+//       {...props}, { style: 'width:100%', type: 'number', placeholder: '请输入' + option.label })
+//     )
+//   }
+// })
+superForm.registComponent('InNumber', InputNumber)
+superForm.registComponent('Textarea', ({ attrs, option }) => {
+  return h(Textarea, Object.assign(attrs, { placeholder: '请输入' + option.label }))
 })
 app
   .use(superForm, {

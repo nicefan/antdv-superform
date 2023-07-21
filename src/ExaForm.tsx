@@ -1,91 +1,118 @@
-import { defineComponent, PropType, provide, reactive, readonly, ref, h, toRaw, inject } from 'vue'
+import { defineComponent, PropType, provide, reactive, readonly, ref, h, inject, watch, onMounted, toRefs } from 'vue'
 
 import { useModal } from './Modal'
-import { buildModelDeep, setFieldsValue } from './utils/util'
-import { ConfigProvider, Form } from 'ant-design-vue'
+import { ConfigProvider, ModalFuncProps } from 'ant-design-vue'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
-import { Collections } from './controls'
+import Controls from './controls/components'
 
 export function defineForm(option: FormOption) {
   return option
 }
 
-export function buildForm(optionData) {
+export function useForm(option: FormOption, data: Obj = {}) {
+  const model = ref(data)
   const formRef = ref()
-  const FormComponent = () => h(ExaForm, { ...optionData, ref: formRef })
-  const onSubmit = () => formRef.value.onSubmit()
+  const actionsRef = ref()
+
+  const register = (actions?: Obj, _ref?: Obj): any => {
+    if (actions) {
+      if (!actionsRef.value) {
+        actions.setOption(option)
+        actions.setData(model.value)
+      }
+      actionsRef.value = actions
+      formRef.value = _ref
+    } else {
+      return () => h(ExaForm, { config: option, model: model.value, onRegister: register })
+    }
+  }
+  const _promise = new Promise((resolve) => watch(formRef, resolve))
+
+  const getForm = async (key?: string, param?: any) => {
+    const form = (await _promise) as Obj
+    if (key && key in form) {
+      if (typeof form[key] === 'function') {
+        return form[key](param)
+      } else {
+        return form[key]
+      }
+    } else if (!key) {
+      return form
+    }
+  }
+
+  return [
+    register,
+    {
+      setData(data) {
+        if (actionsRef.value) {
+          actionsRef.value.setData(data)
+        } else {
+          model.value = data
+        }
+      },
+      getForm,
+      onSubmit: () => getForm('onSubmit'),
+      // resetFields: () => formRef.value.getExpose().resetFields(),
+      setFieldsValue: (data) => getForm('setFieldsValue', data),
+    },
+  ] as const
+}
+
+export function useFormModal(optionData: FormOption, config?: ModalFuncProps) {
+  const [register, form] = useForm(optionData)
+  const modal = useModal(register() as Fn, config)
+
   return {
-    FormComponent,
-    onSubmit,
-    resetFields: () => formRef.value.getExpose().resetFields(),
-    setFieldsValue: (data) => formRef.value.setFieldsValue(data),
+    openModal: (onMounted: Fn) => {
+      modal.openModal()
+      form.getForm().then((form) => onMounted(form))
+    },
+    ...form,
   }
 }
 
-export function buildModal(optionData) {
-  const formRef = ref()
-  const FormComponent = () => h(ExaForm, { ...optionData, ref: formRef })
-  const { openModal } = useModal(FormComponent)
-  const onSubmit = () => formRef.value.onSubmit()
-  return {
-    openModal,
-    onSubmit,
-  }
-}
-
-const ExaForm = defineComponent({
+export const ExaForm = defineComponent({
   name: 'ExaForm',
   props: {
-    attrs: Object,
-    subItems: {
-      type: Array as PropType<UniOption[]>,
-      default: () => [],
-    },
-    sectionClass: String,
-    wrapperCol: Object,
-    rowProps: Object,
+    config: Object as PropType<FormOption>,
+    model: Object,
   },
-  setup(props, { slots, expose, attrs }) {
-    const formData: Obj = reactive({})
-    const formRef = ref()
-    const modelData = {
-      rules: {},
-      parent: formData,
-    }
-    const modelsMap = buildModelDeep(props.subItems, modelData)
+  emits: ['register'],
+  setup(props, { slots, expose, attrs, emit }) {
+    const formData: Obj = ref(props.model || {})
     provide('formData', readonly(formData))
-    // provide('ExConfig', readonly({ sectional: props.sectional }))
-    expose({
-      getExpose() {
-        return formRef.value
+    const formRef = ref()
+    const formOption = reactive<any>({ ...props.config, attrs: { ...props.config?.attrs, ...attrs } })
+
+    const actions = {
+      setOption: (_option: FormOption) => {
+        Object.assign(formOption, _option, { attrs: { ...formOption.attrs, ..._option.attrs } })
       },
-      onSubmit: () => {
-        return formRef.value.validate().then((...args) => {
-          console.log(args)
-          return toRaw(formData)
-        })
+      setData: (data) => {
+        //TODO formData重置，Form组件重新生成modalsMap
+        formData.value = data
       },
-      setFieldsValue(data) {
-        return setFieldsValue(modelsMap, data)
-      },
-    })
+    }
+
+    watch(() => props.model, actions.setData)
+
+    expose(actions)
+
+    const register = (compRef) => {
+      formRef.value = compRef
+      emit('register', actions, reactive({ ...toRefs(compRef), ...actions }))
+    }
+    emit('register', actions)
+
+    const formNode = () =>
+      formOption.subItems && (
+        <Controls.Form option={formOption} model={formData.value} onRegister={register} v-slots={slots} />
+      )
+
     let locale = inject<any>('configProvider')?.locale
-    const formNode = () => (
-      <Form
-        ref={formRef}
-        class="exa-form"
-        model={formData}
-        rules={modelData.rules}
-        layout="vertical"
-        {...props.attrs}
-        {...attrs}
-      >
-        <Collections option={props} children={modelsMap} />
-        {slots.default}
-      </Form>
-    )
     if (!locale) {
       locale = inject<any>('localeData')?.locale || zhCN
       dayjs.locale(locale.locale)

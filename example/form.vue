@@ -11,8 +11,8 @@
 <script setup lang="ts">
 import { inject, reactive, ref } from 'vue'
 import { Row, Button } from 'ant-design-vue'
-import useOption, { useExampleForm, useExampleModal } from './useExForm'
-import { buildForm } from '../src'
+import useOption from './useExForm'
+import { useForm } from '../src'
 
 const props = defineProps<{
   msg: string
@@ -20,9 +20,9 @@ const props = defineProps<{
 }>()
 // const myModel = useExampleModal()
 const { options, changeSelect } = useOption()
-const form = buildForm(options)
+const [formRegister, form] = useForm(options)
+const MyForm = formRegister()
 
-const MyForm = form.FormComponent
 const onSubmit = () => {
   return form.onSubmit().then((data) => {
     console.log(data)
@@ -39,7 +39,7 @@ const setValue = () => {
     },
     list: [{ tab1: 'tab1' }],
   }
-  form.setFieldsValue(data)
+  form.setData(data)
 }
 </script>
 <style>

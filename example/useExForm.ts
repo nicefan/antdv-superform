@@ -1,5 +1,5 @@
 import { h, ref } from 'vue'
-import { buildForm, buildModal, defineForm, useModal } from '../src'
+import { useForm, useFormModal, defineForm, useModal } from '../src'
 
 export default function exampleForm() {
   const list = ref<any[]>([{ value: '一', label: '一' }])
@@ -346,14 +346,4 @@ export default function exampleForm() {
     changeSelect,
     options,
   }
-}
-export function useExampleForm() {
-  const { options } = exampleForm()
-  const { FormComponent, onSubmit } = buildForm(options)
-  return { FormComponent, onSubmit }
-}
-export function useExampleModal() {
-  const { options } = exampleForm()
-  const { openModal, onSubmit } = buildModal(options)
-  return { openModal, onSubmit }
 }

@@ -60,7 +60,7 @@ export function getListener(option: Obj<Fn> = {}, formData) {
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
-export function buildModel(option: Obj, { parent, propChain = [], rules = {}, refName }: ParentModel) {
+export function buildModelData(option: Obj, { parent, propChain = [], rules = {}, refName }: ParentModel) {
   const { field = '', keepField = option.labelField, label, rules: _rules, initialValue } = option
   const nameArr = field.split('.')
   let current = refName ? parent[refName] : parent
@@ -96,29 +96,33 @@ export function buildModel(option: Obj, { parent, propChain = [], rules = {}, re
     propChain: propChain.concat(nameArr),
   }
 }
-
+export function buildModel(option, parentModel) {
+  const { field, subItems, columns } = option
+  const currentModel = field
+    ? buildModelData(option, parentModel)
+    : { propChain: [], rules: {}, refName: '', ...parentModel }
+  const data: ModelChildren = {
+    model: currentModel,
+  }
+  if (subItems) {
+    data.children = buildModelMaps(subItems, currentModel)
+  } else if (columns) {
+    // 列表控件子表单模型
+    const initModel = { parent: reactive({}), rules: {} }
+    data.listData = {
+      model: initModel,
+      children: buildModelMaps(columns, initModel),
+    }
+  }
+  return data
+}
 /** 生成默认数据结构 */
-export function buildModelDeep(children: any[], { parent, propChain = [], rules = {}, refName = '' }: ParentModel) {
-  const currentModel = { parent, propChain, rules, refName }
+export function buildModelMaps(children: any[], parentModel: ParentModel) {
   const cols = children.sort(({ sort = 1 }, { sort: b_sort = 1 }) => sort - b_sort)
 
   const models: ModelsMap = new Map()
   cols.forEach((child) => {
-    const { field, subItems, columns } = child
-    const subModel = field ? buildModel(child, currentModel) : currentModel
-    const item: ModelChildren = {
-      model: subModel,
-    }
-    if (subItems) {
-      item.children = buildModelDeep(subItems, subModel)
-    } else if (columns) {
-      // 列表控件子表单模型
-      const initModel = { parent: reactive({}), rules: {} }
-      item.listData = {
-        model: initModel,
-        children: buildModelDeep(columns, initModel),
-      }
-    }
+    const item = buildModel(child, parentModel)
     models.set(child, item)
   })
   return models

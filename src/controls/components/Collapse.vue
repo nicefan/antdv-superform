@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, toRefs } from 'vue'
+import { reactive, ref, toRefs, inject } from 'vue'
 import ButtonGroup from './ButtonGroup.vue'
 import Collections from '../Collections'
 import baseComps from '../override'
@@ -44,7 +44,11 @@ const acKey = ref(activeKey || panels[0].key)
         v-bind="panel.attrs"
       >
         <template #extra>
-          <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons"></ButtonGroup>
+          <ButtonGroup
+            v-if="panel.option.buttons"
+            :config="panel.option.buttons"
+            :param="{ formData: inject('formData') }"
+          />
         </template>
         <Collections :option="panel.option" v-bind="panel.propsData" />
       </CollapsePanel>

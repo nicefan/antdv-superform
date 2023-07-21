@@ -9,12 +9,13 @@ const props = defineProps<{
   attrs: Obj
   effectData: Obj
 }>()
+const title = props.option.title || props.option.label
 </script>
 <template>
   <div v-bind="attrs">
-    <Row v-if="option.title" :span="24" class="title">
+    <Row v-if="title" :span="24" class="title">
       <slot name="title">
-        <Divider orientation="left">{{ option.title }}</Divider>
+        <Divider orientation="left">{{ title }}</Divider>
       </slot>
     </Row>
     <Collections v-bind="{ option, model, children }" />

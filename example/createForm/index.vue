@@ -12,7 +12,7 @@
 import { inject, reactive, ref } from 'vue'
 import { Row, Button } from 'ant-design-vue'
 import { useFormOption } from './formOption'
-import { buildForm } from '../../src'
+import { useForm } from '../../src'
 
 const props = defineProps<{
   msg: string
@@ -20,9 +20,9 @@ const props = defineProps<{
 }>()
 // const myModel = useExampleModal()
 const options = useFormOption()
-const form = buildForm(options)
+const [register, form] = useForm(options)
 
-const MyForm = form.FormComponent
+const MyForm = register()
 
 const onSubmit = () => {
   return form.onSubmit().then((data) => {
