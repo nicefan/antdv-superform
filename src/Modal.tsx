@@ -2,7 +2,7 @@ import { defineComponent, ref, reactive, render, getCurrentInstance, createVNode
 import { ModalFuncProps } from 'ant-design-vue/es'
 import { VueNode } from 'ant-design-vue/es/_util/type'
 import base from './controls/override'
-import ButtonGroup from './controls/components/ButtonGroup.vue'
+import { ButtonGroup } from './controls/buttons'
 
 const comp = defineComponent({
   props: {

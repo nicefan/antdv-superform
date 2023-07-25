@@ -66,9 +66,8 @@ export function useFormModal(optionData: FormOption, config?: ModalFuncProps) {
   const modal = useModal(register() as Fn, config)
 
   return {
-    openModal: (onMounted: Fn) => {
-      modal.openModal()
-      form.getForm().then((form) => onMounted(form))
+    openModal: (option?: ModalFuncProps) => {
+      return modal.openModal(option).then(() => form.getForm())
     },
     ...form,
   }

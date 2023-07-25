@@ -5,13 +5,13 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h } from 'vue'
 import { nanoid } from 'nanoid'
 import cloneDeep from 'lodash/cloneDeep'
-import { useForm } from 'ant-design-vue/es/form'
-import Controls from './'
 import message from 'ant-design-vue/es/message'
-import style from './style.module.scss'
-import { flatModels } from '../../utils/util'
-import useControl from '../useControl'
-import base from '../override'
+import { useForm } from 'ant-design-vue/es/form'
+import Controls from '../'
+import style from '../style.module.scss'
+import { flatModels } from '../../../utils/util'
+import useControl from '../../useControl'
+import base from '../../override'
 
 /** 生成编辑表单 */
 function buildInlineForm(modelsMap: ModelsMap<ExFormItemOption>, data) {

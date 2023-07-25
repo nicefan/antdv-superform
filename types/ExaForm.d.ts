@@ -61,7 +61,7 @@ declare global {
 
   interface FormOption {
     attrs?: FormProps | Fn<FormProps>
-    sectionClass?: string
+    isContainer?: boolean
     /** 弹窗表单中的行间排版属性 */
     rowProps?: RowProps
     /** 表单元素的统一排列属性， */
@@ -87,9 +87,15 @@ declare global {
 
   interface ExButtonGroup<T extends string = string> {
     limit?: number
-    type?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
-    shape?: 'circle' | 'round'
-    size?: 'large' | 'middle' | 'small'
+    defaultAttrs?: {
+      type?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
+      shape?: 'circle' | 'round' | 'default'
+      size?: 'large' | 'middle' | 'small'
+    }
+    align?: 'left' | 'right' | 'center'
+    /** 是否独立行，默认true */
+    isBlock?: boolean
+    /** 是否只显示图标 */
     iconOnly?: boolean
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
@@ -247,11 +253,17 @@ declare global {
     Radio: ExRadioOption
     Checkbox: ExRadioOption
     Switch: ExSwitchOption
+    Buttons: ExBaseOption & ExButtonGroup
     // [key: string]: ExFormOption
     // Password: d
   }
 
-  type UniOption = { [K in keyof OptionType]: { type: K } & OptionType[K] }[keyof OptionType] | ExFormItemOption
+  type UniOption = (
+    | { [K in keyof OptionType]: { type: K } & OptionType[K] }
+    | {
+        [k: string]: ExFormItemOption
+      }
+  )[keyof OptionType]
   type UniInputOption = Extract<UniOption, ExFormItemOption | ExGroupOption>
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]> & { type: string }) => void

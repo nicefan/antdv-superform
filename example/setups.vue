@@ -5,7 +5,9 @@
     <a-button @click="openForm">弹窗表单</a-button>
     <a-button @click="openTable">显示表格</a-button>
     <a-button @click="setTable">表格赋值</a-button>
-    <exa-table @register="registTable" />
+    <div style="margin-top: 16px">
+      <exa-table @register="registTable" />
+    </div>
   </div>
 </template>
 <script lang="ts">

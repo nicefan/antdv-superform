@@ -13,14 +13,16 @@ export const useFormOption = () => {
           actions: ['add', 'edit', 'del'],
         },
         itemButtons: {
-          type: 'link',
+          defaultAttrs: { type: 'link' },
           actions: ['edit', 'del'],
         },
         wrapperCol: {
           span: 24,
         },
         searchSechma: {
-          attrs: {},
+          attrs: {
+            labelCol: { span: 6 },
+          },
           subItems: ['fieldName', 'title'],
         },
         columns: [

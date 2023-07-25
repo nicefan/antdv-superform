@@ -9,7 +9,7 @@ export default {
 
 <script setup lang="tsx">
 import Collections from '../Collections'
-import ButtonGroup from './ButtonGroup.vue'
+import { ButtonGroup } from '../buttons'
 import VIcon from '../../icon/VIcon'
 import baseComps from '../override'
 

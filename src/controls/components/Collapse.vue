@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, toRefs, inject } from 'vue'
-import ButtonGroup from './ButtonGroup.vue'
+import { ButtonGroup } from '../buttons'
 import Collections from '../Collections'
 import baseComps from '../override'
 import useControl from '../useControl'

@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, provide, reactive, readonly, ref, toRefs, watch } from 'vue'
 import { buildModel } from './utils/util'
 import Controls from './controls/components'
+import { mergeActions } from './controls/buttons'
 
 const DataProvider = defineComponent({
   props: {
@@ -49,13 +50,55 @@ export const ExaTable = defineComponent({
       return buildModel({ ...option, field: 'records' }, modelData)
     })
 
+    const searchForm = option.searchSechma && buildSearchForm(option as any, tableRef)
+
     return () =>
       option.columns &&
-      h(DataProvider, { data: formData }, () =>
-        h(Controls.Table, { option: option, ...model.value, onRegister: register } as any)
-      )
+      h(DataProvider, { data: formData }, [
+        h('div', { class: 'exa-form-section exa-table-search' }, searchForm()),
+        h(
+          'div',
+          { class: 'exa-form-section' },
+          h(Controls.Table, { option: option, ...model.value, onRegister: register } as any)
+        ),
+      ])
   },
 })
+
+function buildSearchForm({ searchSechma, columns }, tableRef) {
+  const { buttons = {}, ...formOption }: FormOption = {
+    compact: true,
+    ignoreRules: true,
+    ...searchSechma,
+  }
+  formOption.subItems = searchSechma.subItems.map((item) => {
+    if (typeof item === 'string') {
+      return columns.find((col) => col.field === item)
+    } else {
+      return item
+    }
+  })
+  const formRef = ref()
+  const formData: Obj = reactive({})
+
+  const defaultAction = {
+    submit() {
+      console.log(formData)
+    },
+    reset() {},
+  }
+  const actions = mergeActions(buttons.actions || ['submit', 'reset'], defaultAction)
+
+  formOption.subItems.push({
+    type: 'Buttons',
+    align: 'right',
+    colProps: { flex: 1 },
+    ...buttons,
+    actions,
+  })
+  const searchForm = () => h(Controls.Form, { option: formOption, model: formData, ref: formRef })
+  return searchForm
+}
 
 type RegisterMethod = {
   (): () => VNode

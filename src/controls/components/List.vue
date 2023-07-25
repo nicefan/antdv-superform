@@ -2,7 +2,7 @@
 import { ref, toRef, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../../utils/util'
-import ButtonGroup from './ButtonGroup.vue'
+import { ButtonGroup } from '../buttons'
 import Collections from '../Collections'
 import cloneDeep from 'lodash/cloneDeep'
 import baseComps from '../override'

@@ -1,7 +1,7 @@
 <template>
   <AForm
     :ref="getForm"
-    :class="['exa-form', option.compact && $style['exa-form-compact']]"
+    :class="['exa-form', option.compact && 'exa-form-compact']"
     :model="model"
     :rules="!option.ignoreRules ? modelData.rules : undefined"
     v-bind="option.attrs"
@@ -18,7 +18,7 @@ import { buildModelMaps, setFieldsValue } from '../../utils/util'
 import { PropType, computed, nextTick, onMounted, reactive, ref, toRaw, toRefs, watch } from 'vue'
 import baseComp from '../override'
 import Collections from '../Collections'
-import ButtonGroup from './ButtonGroup.vue'
+import { ButtonGroup } from '../buttons'
 
 export default {
   name: 'ExaForm',

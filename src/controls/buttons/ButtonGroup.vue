@@ -6,7 +6,7 @@
     </a-button>
 
     <a-dropdown v-if="moreBtns.length">
-      <a-button v-bind="defAttr"> 更多 <v-icon type="down" /> </a-button>
+      <a-button v-bind="defaultAttrs"> 更多 <v-icon type="down" /> </a-button>
       <template #overlay>
         <a-menu v-for="{ attrs, icon, label } of moreBtns" :key="label">
           <a-menu-item :disabled="attrs.disabled">
@@ -22,6 +22,7 @@ import { ref, watchEffect, defineComponent, inject, PropType, readonly, reactive
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Modal } from 'ant-design-vue'
 import VIcon from '../../icon/VIcon'
 import { useDisabled, useShow } from '../../utils/util'
+import { mergeActions } from './actions'
 
 export default defineComponent({
   components: {
@@ -44,85 +45,21 @@ export default defineComponent({
   setup(props) {
     const { config, methods, param } = props
     // const formData = inject('formData')
-    const { btns, moreBtns, defAttr } = useButton(config, param, methods)
+    const { btns, moreBtns, defaultAttrs } = useButton(config, reactive(param || {}), methods)
     return {
       btns,
       moreBtns,
-      defAttr,
+      defaultAttrs,
     }
   },
 })
-const _defaultActions = {
-  add: {
-    label: '新增',
-    attrs: {
-      type: 'primary',
-    },
-  },
-  del: {
-    label: '删除',
-    attrs: {
-      danger: true,
-    },
-    confirmText: '确定要删除吗？',
-    disabled: (param) => !param.record && !(param.selectedRowKeys?.length > 0),
-  },
-  edit: {
-    label: '修改',
-    disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
-  },
-  submit: {
-    label: '确定',
-    attrs: {
-      type: 'primary',
-    },
-    onClick(param) {
-      console.log(param)
-    },
-  },
-  reset: {
-    label: '重置',
-  },
-}
 
-function buildDefaultActions(methods) {
-  const actions: Obj = { ..._defaultActions }
-  Object.keys(methods).forEach((key) => {
-    if (typeof methods[key] === 'function') {
-      actions[key] && (actions[key].onClick = methods[key])
-    } else {
-      actions[key] = { ..._defaultActions[key], ...methods[key] }
-    }
-  })
-  return actions
-}
-
-function useButton(config: ExButtonGroup, param, methods = {}) {
-  const { type, shape, limit = 3, hidden, disabled, size, actions } = config
+function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
+  const { defaultAttrs, limit = 3, hidden, disabled, actions } = config
   const dis = useDisabled(disabled, param)
   const show = useShow(hidden, param)
 
-  const defaultActions = buildDefaultActions(methods)
-
-  const actionBtns: ButtonItem[] = []
-
-  if (Array.isArray(actions)) {
-    actions.forEach((item) => {
-      const name = typeof item === 'string' ? item : item.name
-      const button = { ...defaultActions[name] }
-      if (typeof item === 'object') {
-        const method = button.onClick
-        Object.assign(button, item, { attrs: { ...button.attrs, ...item.attrs } })
-        if (method && item.onClick) {
-          button.onClick = (param) => {
-            method(param)
-            button.onClick(param)
-          }
-        }
-      }
-      button.onClick && actionBtns.push(button)
-    })
-  }
+  const actionBtns = mergeActions(actions, methods)
 
   const allBtns = actionBtns.map((item) => {
     const show = useShow(item.hidden, param)
@@ -142,7 +79,7 @@ function useButton(config: ExButtonGroup, param, methods = {}) {
         item.onClick?.(reactive(param))
       }
     }
-    return { show, ...item, attrs: { size, type, shape, ...item.attrs, disabled, onClick } }
+    return { show, ...item, attrs: { ...defaultAttrs, ...item.attrs, disabled, onClick } }
   })
 
   const btns = ref<any[]>([])
@@ -154,6 +91,6 @@ function useButton(config: ExButtonGroup, param, methods = {}) {
     btns.value = items.slice(0, count)
     moreBtns.value = items.slice(count)
   })
-  return { btns, moreBtns, defAttr: { size, type, shape } }
+  return { btns, moreBtns, defaultAttrs }
 }
 </script>

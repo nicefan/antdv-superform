@@ -98,7 +98,7 @@ export default function exampleForm() {
             field: 'startDate',
             keepField: 'endDate',
           },
-        ]
+        ],
       },
       {
         type: 'Table',
@@ -111,7 +111,7 @@ export default function exampleForm() {
           actions: ['add', 'edit', 'del'],
         },
         itemButtons: {
-          type: 'link',
+          defaultAttrs: { type: 'link' },
           actions: ['edit', 'del'],
         },
         columns: [
@@ -133,27 +133,41 @@ export default function exampleForm() {
           { type: 'Input', field: 'col2', label: 'col2' },
         ],
       },
-
+      {
+        type: 'Buttons',
+        align: 'center',
+        isBlock: true,
+        actions: [
+          {
+            label: '导入',
+            onClick() {},
+          },
+        ],
+      },
       {
         type: 'Card',
         field: 'group',
         title: '分格线',
         buttons: {
           limit: 3,
-          size: 'small',
-          type: 'primary',
+          defaultAttrs: {
+            size: 'small',
+            type: 'primary',
+          },
           iconOnly: true,
-          subItems: [
+          actions: [
             {
               disabled: (data) => {
                 console.log(data)
                 return data.formData.forever === 2
               },
               label: '新增',
+              onClick() {},
             },
             {
               label: '修改',
               hidden: ({ formData }) => formData.forever === 3,
+              onClick() {},
             },
             {
               label: '删除',
@@ -161,6 +175,7 @@ export default function exampleForm() {
               confirmText: '确定删除吗？',
               disabled: ({ formData }) => formData.forever === 2,
               attrs: { danger: true },
+              onClick() {},
             },
           ],
         },
@@ -224,12 +239,14 @@ export default function exampleForm() {
                 field: 'list',
                 label: '列表',
                 buttons: {
-                  actions: {
-                    add: {},
-                  },
+                  actions: [
+                    {
+                      name: 'add',
+                    },
+                  ],
                 },
                 itemButtons: {
-                  type: 'link',
+                  defaultAttrs: { type: 'link' },
                   actions: ['del'],
                 },
                 columns: [
@@ -294,10 +311,12 @@ export default function exampleForm() {
             // disabled: true,
             buttons: {
               limit: 1,
-              size: 'small',
-              type: 'primary',
+              defaultAttrs: {
+                size: 'small',
+                type: 'primary',
+              },
               iconOnly: true,
-              subItems: [
+              actions: [
                 {
                   label: '新增',
                   onClick(arg) {
@@ -308,6 +327,7 @@ export default function exampleForm() {
                 {
                   label: '修改',
                   hidden: ({ formData }) => formData.forever === 3,
+                  onClick() {},
                 },
                 {
                   label: '删除',
@@ -315,6 +335,7 @@ export default function exampleForm() {
                   confirmText: '确定删除吗？',
                   disabled: ({ formData }) => formData.forever === 2,
                   attrs: { danger: true },
+                  onClick() {},
                 },
               ],
             },

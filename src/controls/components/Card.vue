@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Collections from '../Collections'
-import ButtonGroup from './ButtonGroup.vue'
+import { ButtonGroup } from '../buttons'
 import base from '../override'
 import { inject } from 'vue'
 
