@@ -37,16 +37,21 @@ type BaseComps =
   | 'CheckboxGroup'
   | 'TreeSelect'
 
+type Dict = { label: string; value: string | number; [k: string]: string | number }
 interface InstallConfig {
   locale?: Locale
   components?: { [k in BaseComps]?: Component }
+  dictApi?: (name: string) => Promise<Dict[]>
 }
-
+interface GlobalConfig {
+  dictApi?: (name: string) => Promise<Dict[]>
+}
+const globalConfig: GlobalConfig = {}
 const install = async (app: App, config: InstallConfig = {}) => {
   const { locale = zhCN, components } = config
   app.provide('localeData', { locale: locale, exist: true })
   app.component('VIcon', VIcon)
-
+  globalConfig.dictApi = config.dictApi
   components && override(components)
 }
 
@@ -68,3 +73,4 @@ export default {
   install,
   registComponent,
 }
+export { globalConfig }

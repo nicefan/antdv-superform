@@ -1,5 +1,5 @@
 <template>
-  <div style="background: #eee; padding: 16px;">
+  <div style="background: #eee; padding: 16px">
     <MyForm class="hi" />
     <Row :gutter="10">
       <Button @click="changeSelect">切换选项</Button>
@@ -20,7 +20,7 @@ const props = defineProps<{
 }>()
 // const myModel = useExampleModal()
 const { options, changeSelect } = useOption()
-const [formRegister, form] = useForm(options)
+const [formRegister, form] = useForm({ isContainer: true, ...options })
 const MyForm = formRegister()
 
 const onSubmit = () => {
@@ -45,7 +45,7 @@ const setValue = () => {
 <style>
 .exform-section {
   background-color: #fff;
-  padding:16px;
-  margin-bottom:16px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 </style>

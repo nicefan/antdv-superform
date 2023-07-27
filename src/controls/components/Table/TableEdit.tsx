@@ -45,7 +45,7 @@ function buildInlineForm(modelsMap: ModelsMap<ExFormItemOption>, data) {
   }
 }
 
-export default function ({ parentModel, modelsMap, orgList, rowKey }) {
+export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) {
   // 数据监听
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
@@ -87,9 +87,9 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }) {
     del({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
       items.forEach((item) => {
-        orgList.splice(orgList.indexOf(item), 1)
         delete editMap[item[rowKey]]
       })
+      listener.onDelete(items)
     },
   }
   const save = ({ record }) => {
@@ -101,9 +101,9 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }) {
         if (editInfo.isNew) {
           newItems.value.splice(newItems.value.indexOf(record), 1)
           editInfo.isNew = false
-          orgList.push({ ...record, ...raw })
+          listener.onSave({ ...record, ...raw })
         } else {
-          Object.assign(toRaw(record), raw)
+          listener.onUpdate(record, raw)
         }
         editInfo.isEdit = false
       })

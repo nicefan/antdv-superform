@@ -3,7 +3,7 @@ import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
 import Vue from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
-import { FormProps } from 'ant-design-vue'
+import { FormProps, PaginationProps } from 'ant-design-vue'
 import { ModalFuncProps, ColProps, RowProps, FormItemProps, InputProps } from 'ant-design-vue/es'
 
 export interface RuleConfig {
@@ -84,7 +84,12 @@ declare global {
     disabled?: boolean | Fn<boolean>
     onClick?: Fn
   }
-
+  type TableApis = {
+    query: Fn<Promise<any>>
+    save?: Fn<Promise<any>>
+    update?: Fn<Promise<any>>
+    delete?: Fn<Promise<any>>
+  }
   interface ExButtonGroup<T extends string = string> {
     limit?: number
     defaultAttrs?: {
@@ -128,26 +133,25 @@ declare global {
     title?: string | Fn<VNode>
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
-    columns: UniInputOption[]
+    columns: (UniInputOption & { hideFor?: 'table' | 'form' })[]
     buttons?: ExButtonGroup
     /** 列表元素右边按钮 */
-    itemButtons?: ExButtonGroup<'del' | 'edit'>
+    rowButtons?: ExButtonGroup<'del' | 'edit'>
     /** 弹窗属性 */
     modalProps?: ModalFuncProps
     /** 弹窗表单属性 */
-    formProps?: FormProps
-    /** 弹窗表单中的行间排版属性 */
-    rowProps?: RowProps
-    /** 表单元素的统一排列属性， */
-    wrapperCol?: ColProps
+    formSechma?: Omit<FormOption, 'subItems'>
     searchSechma?: FormOption | { subItems: (UniOption | string)[] }
+    apis?: TableApis | TableApis['query']
+    params?: Obj
+    pagination?: PaginationProps
   }
   interface ExListOption extends ExBaseOption {
     field: string
     buttons?: ExButtonGroup<'add' | 'refresh'>
     columns: UniInputOption[]
     /** 列表元素右边按钮 */
-    itemButtons?: ExButtonGroup<'del' | 'edit'>
+    rowButtons?: ExButtonGroup<'del' | 'edit'>
   }
   interface ExGroupOption extends ExBaseOption {
     title?: string | Fn<VNode>
@@ -217,6 +221,8 @@ declare global {
   interface ExSelectOption extends ExFormItemOption {
     labelField?: string
     options?: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
+    /** 字典名称 */
+    dictName?: string
     attrs?: SelectProps
   }
   interface ExTreeOption extends ExFormItemOption {

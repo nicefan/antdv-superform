@@ -170,7 +170,7 @@ export function setFieldsValue(modelsMap: ModelsMap<MixOption>, data) {
       setFieldsValue(children, data)
     } else {
       const parent = getPropertyDeep(data, model.propChain.slice(0, -1))
-      if (!parent) continue
+      if (!parent || !model.refName) continue
       const curValue = parent[model.refName]
       if (listData) {
         model.parent[model.refName].splice(0)

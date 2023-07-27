@@ -3,14 +3,21 @@
     margin-bottom: 10px !important
   }
 }
-.exa-form-section {
+
+.exa-container .exa-form-section {
   background-color: #fff;
   padding:16px;
-  margin-bottom:16px;
+  // margin-bottom: 16px;
   &.exa-table-search {
     padding-bottom: 6px;
   }
+  // &:not(.section-last) {
+  //   margin-bottom: 16px;
+  // }
   .ant-table:not(.ant-table-bordered) .ant-table-title {
     padding-top: 0;
   }
+}
+.exa-form-section:not(.section-last) {
+    margin-bottom: 16px;
 }

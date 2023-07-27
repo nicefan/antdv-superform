@@ -9,33 +9,38 @@ import Collections from '../../Collections'
 import Controls from '../index'
 import base from '../../override'
 
-function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
+function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption, listener) {
   // 生成新增表单
   const { parent, rules } = parentModel
   const modelRef = reactive(cloneDeep(parent))
   const formRef = ref()
-  const children = cloneModels(modelsMap, modelRef)
+  // const children = cloneModels(modelsMap, modelRef)
+
+  // const editForm = () =>
+  //   h(
+  //     base.Form,
+  //     {
+  //       ref: formRef,
+  //       class: 'exa-form',
+  //       model: modelRef,
+  //       rules: rules,
+  //       layout: 'vertical',
+  //       ...tableOption.fromProps,
+  //     },
+  //     h(Collections, { option: tableOption, children: children })
+  //   )
+
+  const formOption: FormOption = { ...tableOption.formSechma }
+  // buttons: { actions: ['submit', 'reset'] },
+  formOption.subItems = tableOption.columns.filter((item) => item.hideFor !== 'form')
 
   const editForm = () =>
-    h(
-      base.Form,
-      {
-        ref: formRef,
-        class: 'exa-form',
-        model: modelRef,
-        rules: rules,
-        layout: 'vertical',
-        ...tableOption.fromProps,
-      },
-      h(Collections, { option: tableOption, children: children })
-    )
-
-  // const formOption: FormOption = {
-  //   buttons: { actions: ['submit', 'reset'] },
-  //   attrs: tableOption.formProps,
-  //   subItems: tableOption.columns,
-  // }
-  // const editForm = () => <Controls.Form option={formOption} model={modelRef} rules={rules} ref={formRef} />
+    h(Controls.Form, {
+      option: formOption,
+      model: modelRef,
+      rules: rules,
+      onRegister: (data) => (formRef.value = data),
+    })
 
   const { modalSlot, openModal } = createModal(editForm, { maskClosable: false, ...tableOption.modalProps })
 
@@ -46,7 +51,7 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
         title: '新增',
         onOk() {
           return formRef.value.validate().then(() => {
-            orgList.value.push(cloneDeep(modelRef))
+            return listener.onSave(cloneDeep(modelRef))
           })
         },
       })
@@ -58,17 +63,14 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption) {
         title: '修改',
         onOk() {
           return formRef.value.validate().then(() => {
-            const idx = orgList.value.indexOf(data)
-            Object.assign(orgList.value[idx], cloneDeep(modelRef))
+            return listener.onUpdate(data, cloneDeep(modelRef))
           })
         },
       })
     },
     del({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
-      items.forEach((item) => {
-        orgList.value.splice(orgList.value.indexOf(item), 1)
-      })
+      return listener.onDelete(items)
     },
   }
   return { modalSlot, methods }
@@ -115,13 +117,47 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
 type BuildDataParam = { option: ExTableOption; listData: ListModels; orgList: Ref<Obj[]>; rowKey: string }
 
 function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
-  const { itemButtons } = option
+  const { rowButtons } = option
+  const apis = (option.apis as TableApis) || {}
   const parentModel = listData.model
   const modelsMap = listData.children
+
+  const listener = {
+    async onSave(data) {
+      if (apis.save) {
+        await apis.save(data)
+        return apis.query()
+      } else {
+        orgList.value.push(data)
+        const idx = orgList.value.indexOf(data)
+        Object.assign(orgList.value[idx], data)
+      }
+    },
+    async onUpdate(oldData, newData) {
+      if (apis.update) {
+        await apis.update(newData)
+        return apis.query()
+      } else {
+        const idx = orgList.value.indexOf(oldData)
+        Object.assign(orgList.value[idx], newData)
+      }
+    },
+    async onDelete(items) {
+      if (apis.delete) {
+        await apis.delete(items)
+        return apis.query()
+      } else {
+        items.forEach((item) => {
+          orgList.value.splice(orgList.value.indexOf(item), 1)
+        })
+      }
+    },
+  }
 
   let context: {
     list: Ref
     columns: Obj[]
+    rowMethods?: Obj
     methods: Obj
     actionSlot?: Fn
     modalSlot?: Fn
@@ -129,31 +165,31 @@ function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
   const _param = { parentModel, modelsMap, orgList, rowKey }
 
   if (option.editMode === 'inline') {
-    const { list, actionSlot, colRenderMap, methods } = inlineRender(_param)
+    const { list, actionSlot, colRenderMap, methods: rowMethods } = inlineRender(_param, listener)
     const columns = buildColumns(modelsMap, colRenderMap)
 
-    context = { columns, list, methods, actionSlot }
+    context = { columns, list, rowMethods, methods: rowMethods, actionSlot }
 
     if (option.addMode === 'modal') {
       const {
         modalSlot,
-        methods: { add },
-      } = modalEdit(_param, option)
-      context.methods.add = add
+        methods: { add, del },
+      } = modalEdit(_param, option, listener)
+      Object.assign(context.methods, { add, del })
       context.modalSlot = modalSlot
     }
   } else {
     const columns = buildColumns(modelsMap)
-    const { modalSlot, methods } = modalEdit(_param, option)
+    const { modalSlot, methods } = modalEdit(_param, option, listener)
     context = { modalSlot, methods, columns, list: orgList }
   }
 
-  if (itemButtons) {
+  if (rowButtons) {
     context.columns.push({
       title: '操作',
       key: 'action',
       customRender: (param) => {
-        return context.actionSlot?.(param) || h(ButtonGroup, { config: itemButtons, param, methods: context.methods })
+        return context.actionSlot?.(param) || h(ButtonGroup, { config: rowButtons, param, methods: context.rowMethods })
       },
     })
   }

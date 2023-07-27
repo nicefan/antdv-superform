@@ -31,7 +31,14 @@ export default function exampleForm() {
   ]
   const acKey = ref('')
   const options = defineForm({
-    sectionClass: 'exform-section',
+    attrs: {
+      layout: 'vertical',
+      // labelCol: { span: 5 },
+      // wrapperCol: {span: 18}
+    },
+    wrapperCol: {
+      span: 12,
+    },
     subItems: [
       {
         type: 'Group',
@@ -68,6 +75,13 @@ export default function exampleForm() {
             // disabled: (data) => data.age > 20,
           },
           {
+            type: 'Select',
+            field: 'other',
+            // labelField: 'foreverName',
+            label: '其它',
+            options: list,
+          },
+          {
             type: 'Switch',
             label: '是否注册',
             field: 'isReg',
@@ -88,6 +102,7 @@ export default function exampleForm() {
               {
                 type: 'Input',
                 field: 'street',
+                span: 8,
                 // label: '街道',
               },
             ],
@@ -110,9 +125,17 @@ export default function exampleForm() {
         buttons: {
           actions: ['add', 'edit', 'del'],
         },
-        itemButtons: {
+        rowButtons: {
           defaultAttrs: { type: 'link' },
           actions: ['edit', 'del'],
+        },
+        formSechma: {
+          wrapperCol: {
+            span: 12,
+          },
+          attrs: {
+            layout: 'vertical',
+          },
         },
         columns: [
           {
@@ -125,6 +148,7 @@ export default function exampleForm() {
           {
             type: 'Group',
             label: '分组',
+            span: 24,
             subItems: [
               { type: 'Input', field: 'group1', label: '分组1' },
               { type: 'Input', field: 'group2', label: '分组2' },
@@ -245,7 +269,7 @@ export default function exampleForm() {
                     },
                   ],
                 },
-                itemButtons: {
+                rowButtons: {
                   defaultAttrs: { type: 'link' },
                   actions: ['del'],
                 },

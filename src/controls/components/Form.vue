@@ -44,7 +44,7 @@ export default {
     /** 按钮事件 */
     methods: Object,
   },
-  emits: ['register'],
+  emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit }) {
     const formRef = ref()
     const modelData = {
@@ -55,14 +55,22 @@ export default {
     const modelsMap = buildModelMaps(subItems, modelData)
 
     const actions = {
-      onSubmit: () => {
+      submit: () => {
         return formRef.value.validate().then((...args) => {
           console.log(args)
-          return toRaw(props.model)
+          const data = toRaw(props.model)
+          emit('submit', data)
+          return data
         })
       },
       setFieldsValue(data) {
         return setFieldsValue(modelsMap, data)
+      },
+      resetFields() {
+        setFieldsValue(modelsMap, {})
+        const data = toRaw(modelData.parent)
+        emit('reset', data)
+        return data
       },
     }
 

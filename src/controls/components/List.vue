@@ -17,7 +17,7 @@ const props = defineProps<{
   effectData: Obj
 }>()
 
-const { buttons, itemButtons, label } = props.option
+const { buttons, rowButtons, label } = props.option
 // 先构建一个数据结构
 const defaultData = props.listData.model.parent
 const modelsMap = props.listData.children
@@ -70,8 +70,8 @@ watch(
       <ListItem :key="model.parent[rowKey]">
         <template #actions>
           <ButtonGroup
-            v-if="itemButtons"
-            :config="itemButtons"
+            v-if="rowButtons"
+            :config="rowButtons"
             :methods="methods"
             :param="{ listData: orgList, index, record: model.parent }"
           />

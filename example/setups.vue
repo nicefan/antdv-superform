@@ -34,9 +34,20 @@ export default defineComponent({
   emits: ['my-test'],
   setup(props, { attrs }) {
     const option = useFormOption()
-    const [tableRegister, myTable] = useTable(option.subItems[0] as any)
+    const data = [
+      {
+        fieldName: 'la',
+        title: '大因',
+        dataType: 'text',
+        isRequire: 1,
+        col2: '12',
+        id: 'lCBZmUm6_XET',
+      },
+    ]
 
+    const [tableRegister, myTable] = useTable(option.subItems[0] as any)
     const myTableModal = useModal(tableRegister(), {
+      title: '弹窗表格',
       width: 1400,
       buttons: [
         {
@@ -53,16 +64,6 @@ export default defineComponent({
         },
       ],
     })
-    const data = [
-      {
-        fieldName: 'la',
-        title: '大因',
-        dataType: 'text',
-        isRequire: 1,
-        col2: '12',
-        id: 'lCBZmUm6_XET',
-      },
-    ]
     const openTable = async () => {
       await myTableModal.openModal()
       const table = await myTable.getTable()
@@ -71,7 +72,21 @@ export default defineComponent({
     }
 
     /** 页面组件注册表格 */
-    const [registTable, { setData: setTableData2 }] = useTable(option.subItems[0] as any)
+    const [registTable, { setData: setTableData2 }] = useTable({
+      isContainer: true,
+      ...option.subItems[0],
+      apis: {
+        query: (arg) =>
+          Promise.resolve().then(() => {
+            console.log(arg)
+            return []
+          }),
+        save: (data) =>
+          Promise.resolve().then(() => {
+            console.log(data)
+          }),
+      },
+    } as any)
 
     /** 弹窗表单 */
     const formModal = useFormModal(exampleForm().options, {
@@ -85,7 +100,7 @@ export default defineComponent({
     })
     const openForm = () => {
       setModalFormValue()
-      formModal.openModal((form) => {
+      formModal.openModal().then((form) => {
         console.log(form)
       })
     }

@@ -5,10 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref, reactive } from 'vue'
+import { ref, watchPostEffect, unref, reactive, watch } from 'vue'
 import { useVModel } from '../'
 import baseComps from '../override'
-
+import { globalConfig } from '../../plugin'
 const { FormItem, Select } = baseComps
 
 const props = defineProps<{
@@ -20,7 +20,7 @@ const props = defineProps<{
 const valueProps = useVModel(props)
 const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
-const options = ref<Obj[] | undefined>(props.attrs?.options || [])
+const options = ref<Obj[]>(props.attrs?.options || [])
 const _options = props.option.options
 if (typeof _options === 'function') {
   watchPostEffect(() => {
@@ -29,13 +29,13 @@ if (typeof _options === 'function') {
     })
   })
 } else if (_options) {
-  options.value = unref(_options)
+  watch(
+    () => props.option.options,
+    (data) => (options.value = unref(data as any)),
+    { immediate: true }
+  )
+  // options.value = unref(_options)
+} else if (props.option.dictName && globalConfig.dictApi) {
+  globalConfig.dictApi(props.option.dictName).then((data) => (options.value = data))
 }
-// 异步获取
-// 字典配置
-/**
- *  动态切换
- *  依赖某值变化切换
- *
- */
 </script>

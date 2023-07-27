@@ -1,4 +1,4 @@
-import { defineComponent, h, PropType, reactive } from 'vue'
+import { defineComponent, h, inject, PropType, provide, reactive } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import useControl from './useControl'
 import Controls from './components'
@@ -15,7 +15,7 @@ export default defineComponent({
         gutter?: number
         rowProps?: RowProps
         wrapperCol?: Obj
-        sectionClass?: string
+        isContainer?: boolean
         subItems: UniOption[]
       }>,
     },
@@ -29,14 +29,15 @@ export default defineComponent({
   },
   setup({ option = {}, children }, ctx) {
     const rowProps = { gutter: option.gutter ?? 16, ...option.rowProps }
-
-    const nodes = [...children].map(([subOption, subData]) => {
+    const wrapperCol = option.wrapperCol || inject('wrapperCol')
+    provide('wrapperCol', wrapperCol)
+    const nodes = [...children].map(([subOption, subData], idx) => {
       const { type, label } = subOption
       const props = { option: subOption, ...subData }
       const { effectData, attrs, ruleName, hidden } = useControl(props)
 
-      const isContainer = !!subData.children || !!subOption.columns || type === 'Buttons'
-      const colProps = { ...option.wrapperCol, ...subOption.colProps }
+      const colProps = { ...wrapperCol, ...subOption.colProps }
+      let span = subOption.colProps?.span ?? subOption.span
       if (subOption.align) colProps.style = 'text-align: ' + subOption.align
 
       const slotAttrs = reactive({ ...props, attrs, effectData, name: ruleName, label })
@@ -44,17 +45,20 @@ export default defineComponent({
       if (type === 'Buttons') slot = () => h(ButtonGroup, { config: subOption, param: effectData })
       let content = slot
       if (sectionList.includes(type) || subOption.isBlock) {
-        colProps.span ??= subOption.span ?? 24
-        content = () => h('div', { class: 'exa-form-section' }, slot())
+        span ??= 24
+        const end = idx + 1 === children.size
+        content = () => h('div', { class: ['exa-form-section', end && 'section-last'] }, slot())
       }
-      colProps.span = subOption.span ?? colProps.span ?? (isContainer ? 24 : 8)
-      return () => !hidden.value && <Col {...colProps} v-slots={{ default: content }} />
+      const isContainer = !!subData.children || !!subOption.columns || type === 'Buttons'
+      span ??= colProps.span ?? (isContainer ? 24 : 8)
+      return () => !hidden.value && <Col {...colProps} span={span} v-slots={{ default: content }} />
     })
+
     const slots = {
       default() {
         return [...nodes.map((node) => node()), ctx.slots?.default?.()]
       },
     }
-    return () => <Row {...rowProps} v-slots={slots}></Row>
+    return () => <Row {...rowProps} class={option.isContainer && 'exa-container'} v-slots={slots}></Row>
   },
 })

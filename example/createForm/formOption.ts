@@ -7,17 +7,22 @@ export const useFormOption = () => {
         field: 'table',
         label: '表格',
         attrs: { bordered: true },
-        editMode: 'inline',
+        // editMode: 'inline',
         addMode: 'modal',
         buttons: {
           actions: ['add', 'edit', 'del'],
         },
-        itemButtons: {
+        rowButtons: {
           defaultAttrs: { type: 'link' },
           actions: ['edit', 'del'],
         },
-        wrapperCol: {
-          span: 24,
+        formSechma: {
+          attrs: {
+            layout: 'vertical',
+          },
+          wrapperCol: {
+            span: 24,
+          },
         },
         searchSechma: {
           attrs: {
