@@ -1,11 +1,10 @@
 <template>
   <form-item>
-    <time-picker v-bind="allAttrs" />
+    <time-picker v-bind="{ ...valueProps, ...props.attrs }" />
   </form-item>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
 import useVModel from '../useVModel'
 import baseComps from '../override'
 
@@ -18,5 +17,4 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 </script>

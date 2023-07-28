@@ -1,7 +1,7 @@
 <template>
   <form-item>
     <Switch
-      v-model:checked="value"
+      v-model:checked="valueProps.value"
       :checked-children="trueName"
       :un-checked-children="falseName"
       :checked-value="1"
@@ -23,7 +23,7 @@ const props = defineProps<{
   attrs: Obj
   effectData: Obj
 }>()
-const { value } = useVModel(props, 0)
+const valueProps = useVModel(props, 0)
 
 const [falseName, trueName] = props.option.valueLabels || []
 </script>

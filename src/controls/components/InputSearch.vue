@@ -1,6 +1,11 @@
 <template>
   <FormItem>
-    <InputSearch :placeholder="'请输入' + option.label" allow-clear max-length="100" v-bind="allAttrs">
+    <InputSearch
+      :placeholder="'请输入' + option.label"
+      allow-clear
+      max-length="100"
+      v-bind="{ ...valueProps, ...props.attrs }"
+    >
       <template #enterButton>
         <Button v-if="option.addonAfterIcon">
           <a-icon :type="option.addonAfterIcon" />
@@ -26,7 +31,6 @@
 </template>
 <script setup lang="ts">
 import { useVModel } from '../'
-import { reactive } from 'vue'
 import baseComps from '../override'
 
 const { FormItem, Tooltip, Button, InputSearch } = baseComps
@@ -38,5 +42,4 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 </script>

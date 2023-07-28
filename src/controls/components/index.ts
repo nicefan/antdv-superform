@@ -1,4 +1,4 @@
-import { defineComponent, h, reactive } from 'vue'
+import { defineComponent, h, reactive, toRefs } from 'vue'
 import Group from './Group.vue'
 import Form from './Form.vue'
 import InputGroup from './InputGroup.vue'
@@ -48,7 +48,7 @@ export function addComponent(name, component) {
 
     setup({ option, model, effectData, attrs }) {
       const valueProps = useVModel({ option, model })
-      const allAttrs = reactive({ ...valueProps, ...attrs })
+      const allAttrs = reactive({ ...toRefs(valueProps), ...toRefs(attrs) })
 
       return () =>
         h(base.FormItem, {}, () =>

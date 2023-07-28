@@ -1,6 +1,6 @@
 <template>
   <form-item>
-    <tree-select :placeholder="'请选择' + option.label" v-bind="allAttrs" :tree-data="treeData" />
+    <tree-select :placeholder="'请选择' + option.label" v-bind="{ ...valueProps, ...props.attrs }" :tree-data="treeData" />
   </form-item>
 </template>
 
@@ -18,7 +18,6 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
 const treeData = ref<Obj[]>([])
 const _data = props.option.data

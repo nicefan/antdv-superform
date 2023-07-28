@@ -4,7 +4,7 @@
       :placeholder="'请输入' + (option.label || '')"
       max-length="100"
       :class="option.btnClick ? 'ant-input-search ant-input-search-enter-button' : ''"
-      v-bind="allAttrs"
+      v-bind="{ ...attrs, ...valueProps }"
     >
       <template #addonAfter>
         <Button
@@ -38,7 +38,6 @@
 import VIcon from '../../icon/VIcon'
 import baseComps from '../override'
 import { useVModel } from '../'
-import { reactive } from 'vue'
 
 const { Input, Button, Tooltip, FormItem } = baseComps
 
@@ -48,7 +47,5 @@ const props = defineProps<{
   attrs: Obj
   effectData: Obj
 }>()
-// const defData = reactive(defaultData || {})
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 </script>

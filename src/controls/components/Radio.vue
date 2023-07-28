@@ -1,6 +1,6 @@
 <template>
   <form-item>
-    <radio-group :name="option.field" v-bind="allAttrs">
+    <radio-group :name="option.field" v-bind="{ ...valueProps, ...props.attrs }">
       <template v-if="attrs.buttonStyle">
         <radio-button v-for="{ label, value, disabled } of options" :key="value" :value="value" :disabled="disabled">
           {{ label }}
@@ -27,7 +27,6 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
 const options = ref<any[] | undefined>(props.attrs.options || [])
 const _options = props.option.options

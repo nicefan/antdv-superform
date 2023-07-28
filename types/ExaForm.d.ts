@@ -113,13 +113,13 @@ declare global {
     label?: string
     /** 配置复用合并时方便插入 */
     sort?: number
-    attrs?: Obj | Fn<Obj>
+    attrs?: Obj
+    dynamicAttrs?: Fn<Obj>
     /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
-    hidden?: boolean | ((formData: Readonly<Obj>) => boolean)
+    hidden?: boolean | ((data: Readonly<Obj>) => boolean)
     /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
     disabled?: boolean | Fn
     on?: Obj<Fn>
-    // dynamicAttrs?: Fn<Obj>
     // renderView?: Fn<VNode>
     // customRender?: Fn
     // row?: boolean
@@ -141,13 +141,13 @@ declare global {
     modalProps?: ModalFuncProps
     /** 弹窗表单属性 */
     formSechma?: Omit<FormOption, 'subItems'>
-    pagination?: PaginationProps
   }
 
   interface RootTableOption extends Omit<ExTableOption, 'type' | 'field'> {
     apis?: TableApis | TableApis['query']
     params?: Obj
     searchSechma?: FormOption | { subItems: (UniOption | string)[] }
+    pagination?: PaginationProps
   }
   interface ExListOption extends ExBaseOption {
     field: string

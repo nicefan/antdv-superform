@@ -1,12 +1,16 @@
 <template>
   <form-item>
-    <input-number style="width: 100%" type="number" :placeholder="'请输入' + option.label" v-bind="allAttrs" />
+    <input-number
+      style="width: 100%"
+      type="number"
+      :placeholder="'请输入' + option.label"
+      v-bind="{ ...valueProps, ...props.attrs }"
+    />
   </form-item>
 </template>
 
 <script setup lang="ts">
 import { useVModel } from '../'
-import { reactive } from 'vue'
 import baseComps from '../override'
 
 const { FormItem, InputNumber } = baseComps
@@ -18,5 +22,4 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 </script>

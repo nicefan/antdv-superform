@@ -14,7 +14,7 @@ const panels = [...props.children].map(([option, data], idx) => {
   const { attrs: __attrs, hidden } = useControl({ option: option as any, model: data })
 
   const { key, field } = option
-  const { disabled, ...attrs } = toRefs(__attrs)
+  const { disabled, ...attrs } = __attrs
   // console.log(__attrs, disabled)
   return {
     attrs: reactive(attrs),

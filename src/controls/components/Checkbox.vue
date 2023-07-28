@@ -1,6 +1,6 @@
 <template>
   <form-item>
-    <checkbox-group :name="option.field" v-bind="allAttrs" :options="options" />
+    <checkbox-group :name="option.field" v-bind="{ ...valueProps, ...props.attrs }" :options="options" />
   </form-item>
 </template>
 
@@ -18,7 +18,6 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
 const options = ref<any[] | undefined>(props.attrs.options || [])
 const _options = props.option.options

@@ -1,13 +1,13 @@
-import { unref, onMounted, reactive, toRef, watch, inject, computed, toRefs, mergeProps } from 'vue'
+import { unref, computed, toRefs, mergeProps } from 'vue'
 import { getListener, getComputedAttr, getEffectData, getComputedStatus } from '../utils/util'
-import { merge } from 'lodash-es'
+import merge from 'lodash/merge'
 type Param = {
   option: Partial<MixOption>
   model: Obj
 }
 
 export default function render({ option, model }: Param) {
-  const { type, labelField, attrs: __attrs, disabled: __disabled, hidden: __hidden } = option
+  const { type, labelField, dynamicAttrs: __attrs, disabled: __disabled, hidden: __hidden } = option
   const { parent, currentRules, propChain } = model
 
   // 动态属性方法需要传递的参数
@@ -19,8 +19,7 @@ export default function render({ option, model }: Param) {
   const disabled = getComputedStatus(__disabled, effectData)
 
   const listener = getListener(option.on, effectData)
-  const computedAttr =
-    typeof __attrs === 'function' ? { ...toRefs(getComputedAttr(__attrs, effectData)) } : __attrs || {}
+  const computedAttr = typeof __attrs === 'function' ? { ...toRefs(getComputedAttr(__attrs, effectData)) } : {}
 
   if (type === 'Select' && labelField) {
     const change = listener.onChange
@@ -35,7 +34,7 @@ export default function render({ option, model }: Param) {
 
   // 创建元素并进行数据绑定, name和label不做props接收将会自动绑定到根组件上
   const __merged = mergeProps({ ...option.attrs }, listener, computedAttr)
-  const attrs: Obj = reactive(merge({}, option.attrs, __merged, { disabled }))
+  const attrs: Obj = merge({}, option.attrs, __merged, { disabled })
 
   return { effectData, attrs, ruleName, hidden }
 }

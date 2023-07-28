@@ -1,5 +1,5 @@
 import { getEffectData } from '../utils/util'
-import { toRef, reactive, watch, onMounted, computed } from 'vue'
+import { toRef, reactive, watch, onMounted, ref, unref } from 'vue'
 type Param = {
   option: ExFormItemOption
   model: Obj
@@ -14,12 +14,12 @@ export default function useVModel({ option, model }: Param, defaultValue?: any) 
   // 创建一个静态对象，用于传递到计算属性
   const tempData = reactive({ [refName]: parent[refName] })
 
-  const vModel = {
+  const vModel = reactive({
     value: toRef(tempData, refName),
     'onUpdate:value': (val) => {
       tempData[refName] = val
     },
-  }
+  })
 
   let raw = tempData[refName] // 阻止监听自身数据变化
   // 表单绑定值，变更后同步处理后再改到实际存储变量中
@@ -45,8 +45,12 @@ export default function useVModel({ option, model }: Param, defaultValue?: any) 
 
   if (__computed) {
     const effectData = getEffectData({ record: parent })
-    const changeVal = computed(() => __computed(raw, effectData))
-    onMounted(() => watch(changeVal, effect))
+    onMounted(() =>
+      watch(
+        () => ref(__computed(raw, effectData)),
+        (val) => effect(unref(val))
+      )
+    )
   }
   return vModel
 }

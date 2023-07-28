@@ -2,7 +2,7 @@ import { h, ref } from 'vue'
 import { useForm, useFormModal, defineForm, useModal } from '../src'
 
 export default function exampleForm() {
-  const list = ref<any[]>([{ value: '一', label: '一' }])
+  const list = ref<any[]>([{ value: 'a', label: '一' },{value:'b', label:'二'}])
   const { openModal } = useModal(() => '这是内容')
   const selectList = ['游戏', '唱歌', '跑步', '打牌'].map((label, value) => ({ label, value }))
   const treeData = [
@@ -89,9 +89,11 @@ export default function exampleForm() {
             field: 'memo',
             // labelField: 'foreverName',
             label: '备注',
+            disabled(data) {
+              return data.record.forever === 2
+            },
             computed(val, data) {
-              console.log(data.record)
-              return (data.record.forever) ? 'a' : val
+              return data.record.forever ? 'a' : val
             }
           },
           {

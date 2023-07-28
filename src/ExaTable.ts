@@ -14,7 +14,7 @@ import {
   watchSyncEffect,
 } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import { merge } from 'lodash-es'
+import merge from 'lodash/merge'
 import { buildModel } from './utils/util'
 import Controls from './controls/components'
 import { mergeActions } from './controls/buttons'

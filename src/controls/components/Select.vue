@@ -1,11 +1,15 @@
 <template>
   <FormItem>
-    <Select option-filter-prop="label" :placeholder="'请选择' + option.label" v-bind="allAttrs" :options="options" />
+    <Select
+      option-filter-prop="label"
+      :placeholder="'请选择' + option.label"
+      v-bind="{ ...valueProps, ...props.attrs, options }"
+    />
   </FormItem>
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref, reactive, watch } from 'vue'
+import { ref, watchPostEffect, unref, watch } from 'vue'
 import { useVModel } from '../'
 import baseComps from '../override'
 import { globalConfig } from '../../plugin'
@@ -18,7 +22,6 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
-const allAttrs = reactive({ ...valueProps, ...props.attrs })
 
 const options = ref<Obj[]>(props.attrs?.options || [])
 const _options = props.option.options
