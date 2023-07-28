@@ -1,4 +1,5 @@
 import {
+  PropType,
   computed,
   defineComponent,
   h,
@@ -13,41 +14,48 @@ import {
   watchSyncEffect,
 } from 'vue'
 import { watchDebounced } from '@vueuse/core'
+import { merge } from 'lodash-es'
 import { buildModel } from './utils/util'
 import Controls from './controls/components'
 import { mergeActions } from './controls/buttons'
+import { useControl } from './controls'
 
 const DataProvider = defineComponent({
   props: {
     data: Object,
+    apis: Object,
   },
   setup(props, ctx) {
-    provide('formData', readonly(props.data || {}))
+    provide('exaProvider', readonly(props || {}))
     return ctx.slots.default
   },
 })
-
+export function defineTable(option: RootTableOption) {
+  return option
+}
 export const ExaTable = defineComponent({
   name: 'ExaTable',
   inheritAttrs: false,
   props: {
     dataSource: Object,
+    option: Object as PropType<FormOption>,
   },
   emits: ['register'],
-  setup(props, { expose, emit, attrs }) {
-    const option: Obj = reactive({ ...attrs })
-
-    const formData: Obj = reactive({ records: props.dataSource || [] })
+  setup(props, ctx) {
     const tableRef = ref()
+    const formData: Obj = reactive({ records: props.dataSource || [] })
     const modelData = reactive({
       parent: formData,
     })
+    const option: Obj = reactive(props.option || {})
+    merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
 
-    const { dataSource, pagination, apis, goPage, request, onSearch } = useQuery(option)
+    const { dataSource, pagination, onLoaded, apis, goPage, request, onSearch } = useQuery(option)
 
     const actions = {
-      setOption: (_option: ExTableOption) => {
-        Object.assign(option, _option)
+      setOption: (_option: RootTableOption) => {
+        const attrs = mergeProps({ ..._option.attrs }, option.attrs)
+        merge(option, _option, { attrs })
       },
       setData: (data) => {
         formData.records = data
@@ -55,48 +63,63 @@ export const ExaTable = defineComponent({
       goPage,
       request,
       onSearch,
+      onLoaded,
     }
     watch(() => dataSource || props.dataSource, actions.setData)
 
-    expose(actions)
+    ctx.expose(actions)
 
     const register = (compRef) => {
       tableRef.value = compRef
-      emit('register', actions, reactive({ ...toRefs(compRef), ...actions }))
+      ctx.emit('register', actions, reactive({ ...toRefs(compRef), ...actions }))
     }
-    emit('register', actions)
-
-    const currentModel = computed(() => {
-      return buildModel({ ...option, field: 'records' }, modelData)
-    })
+    ctx.emit('register', actions)
 
     const handleTableChange = (pag: { pageSize: number; current: number }, filters: any, sorter: any) => {
       console.log(pag)
     }
 
-    const searchForm =
-      option.searchSechma &&
-      buildSearchForm(option as any, (data) => {
-        onSearch(data)
-      })
+    const currentModel = ref()
+    const searchForm = ref()
+    const tableAttrs = ref()
+    watch(
+      option,
+      (data) => {
+        if (!data?.columns) return
+        const { columns, searchSechma } = data
+        currentModel.value ??= buildModel({ columns, field: 'records' }, modelData)
+
+        const { effectData, attrs } = useControl({ option: data, model: currentModel })
+
+        if (searchSechma) {
+          searchForm.value = buildSearchForm(option as any, (data) => {
+            onSearch(data)
+          })
+        }
+        tableAttrs.value = reactive({
+          option,
+          ...currentModel.value,
+          effectData,
+          apis,
+          ...attrs,
+          pagination,
+          onRegister: register,
+          onChange: handleTableChange,
+        })
+      },
+      {
+        immediate: true,
+      }
+    )
 
     return () =>
       option.columns &&
       h(
         DataProvider,
-        { data: formData },
+        { data: formData, apis }, () =>
         h('div', { class: option.isContainer && 'exa-container' }, [
-          h('div', { class: 'exa-form-section exa-table-search' }, searchForm()),
-          h(
-            'div',
-            { class: 'exa-form-section section-last' },
-            h(Controls.Table, {
-              option: { ...option, pagination, apis: apis.value },
-              ...currentModel.value,
-              onRegister: register,
-              onChange: handleTableChange,
-            } as any)
-          ),
+          searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value()),
+          option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs.value)),
         ])
       )
   },
@@ -115,6 +138,8 @@ function useQuery(option) {
   }))
   const loading = ref(false)
   const dataSource = ref()
+  const callbacks: Fn[] = []
+  const onLoaded = (cb: Fn) => callbacks.push(cb)
 
   const request = (params = {}) => {
     const _params = {
@@ -131,12 +156,12 @@ function useQuery(option) {
           dataSource.value = res.records
           pagination.value &&= { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
         }
+        callbacks.forEach((cb) => cb(res))
       })
     ).finally(() => {
       loading.value = false
     })
   }
-  watch([queryApi, requestParams], () => queryApi.value && request(), { immediate: true })
 
   const goPage = (current, size = pageParam.size) => {
     pageParam.current = current
@@ -148,34 +173,40 @@ function useQuery(option) {
 
   const pagination = ref<false | Obj>(false)
   watch(
-    () => option.pagination,
+    () => option.pagination || option.attrs.pagination,
     (def) => {
       pagination.value =
-        def !== false &&
+        (def || def !== false) &&
         mergeProps(
           {
             // TODO 默认分页参数
             onChange: goPage,
             onShowSizeChange: goPage,
           },
-          option.attrs?.pagination
+          def
         )
       if (def?.pageSize) pageParam.size = def.pageSize
     },
     {
       immediate: true,
+      flush: 'sync',
     }
   )
   const apis = computed(() => {
     return queryApi.value && { ...option.apis, query: queryApi.value }
   })
+
+  watch([apis, requestParams], () => queryApi.value && request(), { immediate: true })
+
   return {
     apis,
     goPage,
     request,
     onSearch,
+    requestParams,
     pagination,
     dataSource,
+    onLoaded,
   }
 }
 
@@ -231,7 +262,7 @@ type RegisterMethod = {
   (actions?: Obj, _tableRef?: Obj): void
 }
 
-export const useTable = (option: Omit<ExTableOption, 'field'>, data?: any[]) => {
+export const useTable = (option: RootTableOption, data?: any[]) => {
   const tableRef = ref()
   const dataSource = ref(data || [])
   const actionsRef = ref<Obj>()

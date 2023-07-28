@@ -1,12 +1,13 @@
-import { unref, onMounted, reactive, toRef, watch, inject, computed, toRefs } from 'vue'
+import { unref, onMounted, reactive, toRef, watch, inject, computed, toRefs, mergeProps } from 'vue'
 import { getListener, getComputedAttr, getEffectData, getComputedStatus } from '../utils/util'
+import { merge } from 'lodash-es'
 type Param = {
-  option: ExFormItemOption
+  option: Partial<MixOption>
   model: Obj
 }
 
 export default function render({ option, model }: Param) {
-  const { type, labelField, attrs: __attrs, disabled: __disabled, hidden: __hidden }: MixOption = option
+  const { type, labelField, attrs: __attrs, disabled: __disabled, hidden: __hidden } = option
   const { parent, currentRules, propChain } = model
 
   // 动态属性方法需要传递的参数
@@ -33,7 +34,8 @@ export default function render({ option, model }: Param) {
   const ruleName = currentRules && computed(() => (unref(disabled) ? undefined : propChain))
 
   // 创建元素并进行数据绑定, name和label不做props接收将会自动绑定到根组件上
-  const attrs: Obj = reactive({ ...listener, ...computedAttr, disabled, ...option.attrs })
+  const __merged = mergeProps({ ...option.attrs }, listener, computedAttr)
+  const attrs: Obj = reactive(merge({}, option.attrs, __merged, { disabled }))
 
   return { effectData, attrs, ruleName, hidden }
 }

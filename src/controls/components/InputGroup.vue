@@ -8,7 +8,7 @@ const props = defineProps<{
   option: ExInputGroupOption
   model: ModelData
   children: ModelsMap
-  attrs: Obj
+  attrs?: Obj
   effectData: Obj
 }>()
 </script>

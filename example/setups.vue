@@ -6,7 +6,7 @@
     <a-button @click="openTable">显示表格</a-button>
     <a-button @click="setTable">表格赋值</a-button>
     <div style="margin-top: 16px">
-      <exa-table @register="registTable" />
+      <exa-table @register="registTable" :rowSelection="false" />
     </div>
   </div>
 </template>
@@ -17,7 +17,7 @@ import VIcon from '../src/icon/VIcon'
 import exampleForm from './useExForm'
 import { useTable, ExaTable } from '../src/ExaTable'
 import { useModal } from '../src/Modal'
-import { useFormOption } from './createForm/formOption'
+import { myTableOption } from './createForm/formOption'
 import { useFormModal } from '../src/ExaForm'
 
 export default defineComponent({
@@ -33,7 +33,6 @@ export default defineComponent({
   },
   emits: ['my-test'],
   setup(props, { attrs }) {
-    const option = useFormOption()
     const data = [
       {
         fieldName: 'la',
@@ -45,7 +44,7 @@ export default defineComponent({
       },
     ]
 
-    const [tableRegister, myTable] = useTable(option.subItems[0] as any)
+    const [tableRegister, myTable] = useTable(myTableOption)
     const myTableModal = useModal(tableRegister(), {
       title: '弹窗表格',
       width: 1400,
@@ -74,7 +73,8 @@ export default defineComponent({
     /** 页面组件注册表格 */
     const [registTable, { setData: setTableData2 }] = useTable({
       isContainer: true,
-      ...option.subItems[0],
+      ...myTableOption,
+      attrs:{ bordered: true},
       apis: {
         query: (arg) =>
           Promise.resolve().then(() => {

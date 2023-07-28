@@ -114,11 +114,17 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   return columns
 }
 
-type BuildDataParam = { option: ExTableOption; listData: ListModels; orgList: Ref<Obj[]>; rowKey: string }
+type BuildDataParam = {
+  option: RootTableOption
+  listData: ListModels
+  orgList: Ref<Obj[]>
+  rowKey: string
+  apis?: TableApis
+}
 
-function buildData({ option, listData, orgList, rowKey }: BuildDataParam) {
+function buildData({ option, listData, orgList, rowKey, apis = {} as any }: BuildDataParam) {
   const { rowButtons } = option
-  const apis = (option.apis as TableApis) || {}
+
   const parentModel = listData.model
   const modelsMap = listData.children
 

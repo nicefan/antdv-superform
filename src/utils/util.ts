@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid'
 
 /** 统一生成动态属性参数 */
 export function getEffectData<T extends { record: Obj; [k: string]: any }>(param: T) {
-  const formData = inject('formData')
+  const formData = inject<any>('exaProvider')?.data
   return readonly({ formData, ...toRefs(shallowReactive(param)) } as { formData: Obj } & T)
 }
 

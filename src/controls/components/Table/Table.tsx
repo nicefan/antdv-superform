@@ -1,11 +1,12 @@
 /* eslint-disable vue/one-component-per-file */
-import { ref, reactive, PropType, defineComponent, toRef } from 'vue'
+import { ref, reactive, PropType, defineComponent, toRef, mergeProps } from 'vue'
 import { ButtonGroup, mergeActions } from '../../buttons'
 import base from '../../override'
 import { buildData } from './utils'
 
 export default defineComponent({
   name: 'ExaTable',
+  inheritAttrs: false,
   props: {
     option: {
       required: true,
@@ -19,19 +20,21 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ListModels>,
     },
-    attrs: {
-      default: () => ({}),
-      type: Object as PropType<Obj>,
-    },
+    // attrs: {
+    //   default: () => ({}),
+    //   type: Object as PropType<Obj>,
+    // },
     effectData: Object,
+    apis: Object as PropType<TableApis>,
   },
   emits: ['register'],
-  setup({ option, model, listData, attrs }, ctx) {
+  setup({ option, model, listData, apis }, ctx) {
     const editInline = option.editMode === 'inline'
+    const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
     const orgList = toRef(model.parent, model.refName)
 
-    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey })
+    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, apis })
 
     const selectedRowKeys = ref<string[]>([])
     const selectedRows = ref<Obj[]>([])
@@ -50,19 +53,24 @@ export default defineComponent({
     // watch(selectedRowKeys, (keys) => {
     //   selectedRows.value = listItems.value.filter((item) => keys.includes(item.hash))
     // },{flush:'sync'})
-    const rowSelection = reactive({
-      fixed: true,
-      selectedRowKeys,
-      onChange: (_selectedRowKeys, _selectedRows) => {
-        selectedRowKeys.value = _selectedRowKeys
-        selectedRows.value = _selectedRows
-      },
-      ...(editInline && {
-        getCheckboxProps: (record) => ({
-          disabled: !orgList.value.includes(record),
-        }),
-      }),
-    })
+    const rowSelection =
+      !attrs.rowSelection && attrs.rowSelection !== undefined
+        ? undefined
+        : reactive(
+            mergeProps(attrs.rowSelection, {
+              fixed: true,
+              selectedRowKeys,
+              onChange: (_selectedRowKeys, _selectedRows) => {
+                selectedRowKeys.value = _selectedRowKeys
+                selectedRows.value = _selectedRows
+              },
+              ...(editInline && {
+                getCheckboxProps: (record) => ({
+                  disabled: !orgList.value.includes(record),
+                }),
+              }),
+            })
+          )
 
     const actions =
       option.buttons &&
@@ -88,7 +96,6 @@ export default defineComponent({
           ref={getTable}
           dataSource={list.value}
           columns={columns}
-          {...ctx.attrs}
           {...attrs}
           rowSelection={rowSelection}
           rowKey={rowKey}

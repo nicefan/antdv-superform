@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import Collections from '../Collections'
 import { Row, Divider } from 'ant-design-vue'
+import { ExGroupProps } from '../propTypes';
 
-const props = defineProps<{
-  option: ExGroupOption
-  model: ModelData
-  children: ModelsMap<UniOption>
-  attrs: Obj
-  effectData: Obj
-}>()
+const props = defineProps<ExGroupProps>()
 const title = props.option.title || props.option.label
 </script>
 <template>

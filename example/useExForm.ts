@@ -80,6 +80,19 @@ export default function exampleForm() {
             // labelField: 'foreverName',
             label: '其它',
             options: list,
+            computed(val, data) {
+              return (data.record.forever!==null) && 'a'
+            }
+          },
+          {
+            type: 'Input',
+            field: 'memo',
+            // labelField: 'foreverName',
+            label: '备注',
+            computed(val, data) {
+              console.log(data.record)
+              return (data.record.forever) ? 'a' : val
+            }
           },
           {
             type: 'Switch',
@@ -210,7 +223,10 @@ export default function exampleForm() {
             label: '体重',
             initialValue: 120,
             disabled: (data) => data.formData.forever === 2,
-            computed: (val, { record }) => (record.forever === 1 ? val + 1 : val),
+            computed: (val, data) =>{
+              console.log(data.record)
+              return (data.formData.forever === 1 ? 110 : val)
+            } ,
             attrs: { max: 200, min: 110 },
             rules: { required: true, type: 'number', min: 110 },
           },
@@ -218,7 +234,7 @@ export default function exampleForm() {
             type: 'Input',
             field: 'height',
             label: '身高',
-            disabled: ({ record }) => record?.forever === 2,
+            disabled: (data) => data.formData.forever === 2,
             initialValue: 170,
             attrs: { type: 'number' },
             rules: { type: 'number', min: 150 },

@@ -1,5 +1,5 @@
 import { getEffectData } from '../utils/util'
-import { toRef, reactive, watch, onMounted } from 'vue'
+import { toRef, reactive, watch, onMounted, computed } from 'vue'
 type Param = {
   option: ExFormItemOption
   model: Obj
@@ -21,12 +21,14 @@ export default function useVModel({ option, model }: Param, defaultValue?: any) 
     },
   }
 
+  let raw = tempData[refName] // 阻止监听自身数据变化
   // 表单绑定值，变更后同步处理后再改到实际存储变量中
   let effect: Fn
   if (type === 'DateRange' && keepField) {
     tempData[refName] = []
     effect = ([start, end]) => {
       refValue.value = start
+      raw = start
       parent[keepField] = end
     }
     // 源数据变化通知表单同步
@@ -34,6 +36,7 @@ export default function useVModel({ option, model }: Param, defaultValue?: any) 
   } else {
     effect = (value) => {
       refValue.value = value
+      raw = value
     }
     watch(refValue, vModel['onUpdate:value'])
   }
@@ -42,8 +45,8 @@ export default function useVModel({ option, model }: Param, defaultValue?: any) 
 
   if (__computed) {
     const effectData = getEffectData({ record: parent })
-    const raw = tempData[refName] // 阻止监听自身数据变化
-    onMounted(() => watch(() => __computed(raw, effectData), effect))
+    const changeVal = computed(() => __computed(raw, effectData))
+    onMounted(() => watch(changeVal, effect))
   }
   return vModel
 }

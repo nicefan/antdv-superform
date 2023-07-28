@@ -4,16 +4,11 @@ import { ButtonGroup } from '../buttons'
 import Collections from '../Collections'
 import baseComps from '../override'
 import useControl from '../useControl'
+import { ExCollapseProps } from '../propTypes'
 
 const { Collapse, CollapsePanel } = baseComps
 
-const props = defineProps<{
-  option: ExCollapseOption
-  model: ModelData
-  children: ModelsMap<CollapseItem>
-  attrs: Obj
-  effectData: Obj
-}>()
+const props = defineProps<ExCollapseProps>()
 
 const panels = [...props.children].map(([option, data], idx) => {
   const { attrs: __attrs, hidden } = useControl({ option: option as any, model: data })
@@ -32,6 +27,7 @@ const panels = [...props.children].map(([option, data], idx) => {
 })
 const { activeKey } = props.option
 const acKey = ref(activeKey || panels[0].key)
+const formData = inject<any>('exaProvider').data
 </script>
 
 <template>
@@ -44,11 +40,7 @@ const acKey = ref(activeKey || panels[0].key)
         v-bind="panel.attrs"
       >
         <template #extra>
-          <ButtonGroup
-            v-if="panel.option.buttons"
-            :config="panel.option.buttons"
-            :param="{ formData: inject('formData') }"
-          />
+          <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons" :param="{ formData }" />
         </template>
         <Collections :option="panel.option" v-bind="panel.propsData" />
       </CollapsePanel>

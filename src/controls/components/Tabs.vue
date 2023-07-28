@@ -1,6 +1,7 @@
 <script lang="tsx">
-import { reactive, ref, unref, watch } from 'vue'
+import { reactive, ref, unref, useAttrs, watch } from 'vue'
 import useControl from '../useControl'
+import { ExInputProps } from '../propTypes'
 
 export default {
   name: 'ExTabs',
@@ -15,12 +16,8 @@ import baseComps from '../override'
 
 const {Card} = baseComps
 
-const props = defineProps<{
-  option: ExTabsOption
-  model: ModelData
+const props = defineProps<ExInputProps<ExTabsOption> &{
   children: ModelsMap<TabItem>
-  attrs: Obj
-  effectData: Obj
 }>()
 
 const { activeKey, buttons } = props.option
@@ -55,10 +52,10 @@ watch(
   },
   { deep: true }
 )
-
+const inhertAttrs:Obj = useAttrs()
 const onTabChange = (key) => {
   acKey.value = key
-  props.attrs.onTabChange?.(key)
+  inhertAttrs.onTabChange?.(key)
 }
 
 

@@ -54,9 +54,9 @@ export function useForm(option: FormOption, data: Obj = {}) {
         }
       },
       getForm,
-      onSubmit: () => getForm('onSubmit'),
+      submit: () => getForm('submit'),
       // resetFields: () => formRef.value.getExpose().resetFields(),
-      setFieldsValue: (data) => getForm('setFieldsValue', data),
+      // setFieldsValue: (data) => getForm('setFieldsValue', data),
     },
   ] as const
 }
@@ -82,7 +82,7 @@ export const ExaForm = defineComponent({
   emits: ['register'],
   setup(props, { slots, expose, attrs, emit }) {
     const formData: Obj = ref(props.model || {})
-    provide('formData', readonly(formData))
+    provide('exaProvider', { data: readonly(formData) })
     const formRef = ref()
     const formOption = reactive<any>({ ...props.config, attrs: { ...props.config?.attrs, ...attrs } })
 

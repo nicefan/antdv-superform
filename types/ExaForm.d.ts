@@ -141,10 +141,13 @@ declare global {
     modalProps?: ModalFuncProps
     /** 弹窗表单属性 */
     formSechma?: Omit<FormOption, 'subItems'>
-    searchSechma?: FormOption | { subItems: (UniOption | string)[] }
+    pagination?: PaginationProps
+  }
+
+  interface RootTableOption extends Omit<ExTableOption, 'type' | 'field'> {
     apis?: TableApis | TableApis['query']
     params?: Obj
-    pagination?: PaginationProps
+    searchSechma?: FormOption | { subItems: (UniOption | string)[] }
   }
   interface ExListOption extends ExBaseOption {
     field: string

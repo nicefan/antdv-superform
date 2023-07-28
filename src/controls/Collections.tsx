@@ -32,26 +32,22 @@ export default defineComponent({
     const wrapperCol = option.wrapperCol || inject('wrapperCol')
     provide('wrapperCol', wrapperCol)
     const nodes = [...children].map(([subOption, subData], idx) => {
-      const { type, label } = subOption
-      const props = { option: subOption, ...subData }
-      const { effectData, attrs, ruleName, hidden } = useControl(props)
+      const { node, hidden } = useBuildNode(subOption, subData)
 
+      const { type, align } = subOption
       const colProps = { ...wrapperCol, ...subOption.colProps }
       let span = subOption.colProps?.span ?? subOption.span
-      if (subOption.align) colProps.style = 'text-align: ' + subOption.align
+      if (align) colProps.style = 'text-align: ' + align
 
-      const slotAttrs = reactive({ ...props, attrs, effectData, name: ruleName, label })
-      let slot = () => h(Controls[type], slotAttrs)
-      if (type === 'Buttons') slot = () => h(ButtonGroup, { config: subOption, param: effectData })
-      let content = slot
+      let slot = node
       if (sectionList.includes(type) || subOption.isBlock) {
         span ??= 24
         const end = idx + 1 === children.size
-        content = () => h('div', { class: ['exa-form-section', end && 'section-last'] }, slot())
+        slot = () => h('div', { class: ['exa-form-section', end && 'section-last'] }, node())
       }
       const isContainer = !!subData.children || !!subOption.columns || type === 'Buttons'
       span ??= colProps.span ?? (isContainer ? 24 : 8)
-      return () => !hidden.value && <Col {...colProps} span={span} v-slots={{ default: content }} />
+      return () => !hidden.value && <Col {...colProps} span={span} v-slots={{ default: slot }} />
     })
 
     const slots = {
@@ -62,3 +58,19 @@ export default defineComponent({
     return () => <Row {...rowProps} class={option.isContainer && 'exa-container'} v-slots={slots}></Row>
   },
 })
+
+export function useBuildNode(option, model) {
+  const { type, label } = option
+  const props = { option: option, ...model }
+  const { effectData, attrs, ruleName, hidden } = useControl(props)
+  const slotAttrs = reactive({ ...props, effectData, name: ruleName, label })
+  if (sectionList.includes(type)) {
+    Object.assign(slotAttrs, attrs)
+  } else {
+    slotAttrs.attrs = attrs
+  }
+
+  let node = () => h(Controls[type], slotAttrs)
+  if (type === 'Buttons') node = () => h(ButtonGroup, { config: option, param: effectData })
+  return { node, hidden }
+}

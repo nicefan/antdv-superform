@@ -13,7 +13,7 @@ const props = defineProps<{
   option: ExListOption
   model: ModelData
   listData: ListModels
-  attrs: Obj
+  attrs?: Obj
   effectData: Obj
 }>()
 
