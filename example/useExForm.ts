@@ -337,7 +337,7 @@ export default function exampleForm() {
             subItems: [
               {
                 type: 'Input',
-                field: 'tab3',
+                field: 'tab3.input',
                 label: 'tab3',
               },
             ],

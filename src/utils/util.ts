@@ -1,6 +1,7 @@
 import buildRule from './buildRule'
 import { inject, reactive, readonly, ref, shallowReactive, toRef, toRefs, unref, watchEffect } from 'vue'
 import cloneDeep from 'lodash/cloneDeep'
+import mergeWith from 'lodash/mergeWith'
 import { nanoid } from 'nanoid'
 
 /** 统一生成动态属性参数 */
@@ -67,9 +68,8 @@ export function buildModelData(option: Obj, { parent, propChain = [], rules = {}
   let _refName
   let currentRules
   nameArr.forEach((name, idx, arr) => {
-    const isLast = idx === arr.length - 1
     const isWrap = !!(option.columns || option.subItems)
-    if (!isLast) {
+    if (idx < arr.length - 1) {
       current[name] ||= {}
       current = reactive(current[name])
       rules = rules[name] ||= {}
@@ -164,27 +164,37 @@ export function flatModels<T>(orgModels: ModelsMap<T>, data?: Obj) {
   return new Map(models)
 }
 
+// export function setFieldsValue(origin, data) {
+//   mergeWith(origin, data, (objValue, srcValue) => {
+//     if (Array.isArray(objValue)) {
+//       objValue.splice(0, objValue.length, ...srcValue)
+//       // objValue.push(...srcValue)
+//       return [...srcValue]
+//     }
+//   })
+// }
 export function setFieldsValue(modelsMap: ModelsMap<MixOption>, data) {
   for (const [option, { model, children, listData }] of modelsMap) {
     if (children) {
       setFieldsValue(children, data)
     } else {
-      const parent = getPropertyDeep(data, model.propChain.slice(0, -1))
-      if (!parent || !model.refName) continue
-      const curValue = parent[model.refName]
+      const { parent, refName, propChain } = model
+      const newParent = getPropertyDeep(data, propChain.slice(0, -1))
+      if (!newParent || !refName || !Object.hasOwn(newParent, refName)) continue
+      const curValue = newParent[refName]
       if (listData) {
-        model.parent[model.refName].splice(0)
+        parent[refName].splice(0)
         const rowKey = (option.attrs as Obj)?.rowKey || 'id'
         curValue?.forEach((item) => {
           const def = cloneDeep(listData.model.parent)
           setFieldsValue(cloneModels(listData.children, def), item)
           def[rowKey] = item[rowKey] || nanoid(12)
-          model.parent[model.refName].push(def)
+          parent[refName].push(def)
         })
       } else {
         const keepField = option.keepField || option.labelField
-        keepField && (model.parent[keepField] = parent[keepField])
-        model.parent[model.refName] = curValue
+        keepField && (parent[keepField] = newParent[keepField])
+        parent[refName] = curValue
       }
     }
   }

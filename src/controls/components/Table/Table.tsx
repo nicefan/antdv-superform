@@ -32,7 +32,7 @@ export default defineComponent({
     const editInline = option.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
-    const orgList = toRef(model.parent, model.refName)
+    const orgList = model.refName ? toRef(model.parent, model.refName) : toRef(model, 'parent')
 
     const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, apis })
 

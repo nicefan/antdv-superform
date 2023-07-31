@@ -82,7 +82,6 @@ export const ExaForm = defineComponent({
   emits: ['register'],
   setup(props, { slots, expose, attrs, emit }) {
     const formData: Obj = ref(props.model || {})
-    provide('exaProvider', { data: readonly(formData) })
     const formRef = ref()
     const formOption = reactive<any>({ ...props.config, attrs: { ...props.config?.attrs, ...attrs } })
 

@@ -52,7 +52,7 @@ export default defineComponent({
         {
           label: '赋值',
           onClick: () => {
-            myTable.setData(data)
+            myTable.setData([...data])
           },
         },
         {
@@ -66,7 +66,7 @@ export default defineComponent({
     const openTable = async () => {
       await myTableModal.openModal()
       const table = await myTable.getTable()
-      table.setData(data)
+      table.setData([...data])
       console.log(table)
     }
 

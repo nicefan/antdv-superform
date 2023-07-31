@@ -23,7 +23,7 @@ const defaultData = props.listData.model.parent
 const modelsMap = props.listData.children
 
 const { parent, refName } = props.model
-const orgList = toRef(parent, refName)
+const orgList = refName ? toRef(parent, refName) : toRef(props.model, 'parent')
 
 const rowKey = props.attrs?.rowKey || 'id'
 const itemsMap: Obj = {}
@@ -52,7 +52,7 @@ watch(
         // 原数据已经存在, 此处建立表单绑定
         itemModel = itemsMap[hash] = cloneModels(modelsMap, item)
       }
-      return itemModel
+      return { modelsMap: itemModel, record: item }
     })
   }
 )
@@ -66,17 +66,17 @@ watch(
         <ButtonGroup v-if="buttons" :config="buttons" :param="{ listData: orgList }" :methods="methods" />
       </Row>
     </template>
-    <template #renderItem="{ item: models, index }">
-      <ListItem :key="model.parent[rowKey]">
+    <template #renderItem="{ item, index }">
+      <ListItem :key="item.record[rowKey]">
         <template #actions>
           <ButtonGroup
             v-if="rowButtons"
             :config="rowButtons"
             :methods="methods"
-            :param="{ listData: orgList, index, record: model.parent }"
+            :param="{ listData: orgList, index, record: item.record }"
           />
         </template>
-        <Collections style="width: 100%" :children="models" />
+        <Collections style="width: 100%" :children="item.modelsMap" />
       </ListItem>
     </template>
   </List>

@@ -2,7 +2,7 @@
   <AForm
     :ref="getForm"
     :class="['exa-form', option.compact && 'exa-form-compact']"
-    :model="model"
+    :model="modelData.parent"
     :rules="!option.ignoreRules ? modelData.rules : undefined"
     v-bind="option.attrs"
   >
@@ -15,7 +15,7 @@
 </template>
 <script lang="ts">
 import { buildModelMaps, setFieldsValue } from '../../utils/util'
-import { PropType, computed, nextTick, onMounted, reactive, ref, toRaw, toRefs, watch } from 'vue'
+import { PropType, computed, nextTick, onMounted, provide, reactive, readonly, ref, toRaw, toRefs, watch } from 'vue'
 import baseComp from '../override'
 import Collections from '../Collections'
 import { ButtonGroup } from '../buttons'
@@ -53,6 +53,7 @@ export default {
     }
     const { subItems, buttons } = props.option
     const modelsMap = buildModelMaps(subItems, modelData)
+    provide('exaProvider', { data: readonly(modelData.parent) })
 
     const actions = {
       submit: () => {

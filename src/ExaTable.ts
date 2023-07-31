@@ -11,11 +11,10 @@ import {
   toRefs,
   unref,
   watch,
-  watchSyncEffect,
 } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import merge from 'lodash/merge'
-import { buildModel } from './utils/util'
+import { buildModel, buildModelMaps, setFieldsValue } from './utils/util'
 import Controls from './controls/components'
 import { mergeActions } from './controls/buttons'
 import { useControl } from './controls'
@@ -43,9 +42,9 @@ export const ExaTable = defineComponent({
   emits: ['register'],
   setup(props, ctx) {
     const tableRef = ref()
-    const formData: Obj = reactive({ records: props.dataSource || [] })
+    // const formData: Obj = reactive({ records: props.dataSource || [] })
     const modelData = reactive({
-      parent: formData,
+      parent: props.dataSource || [],
     })
     const option: Obj = reactive(props.option || {})
     merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
@@ -58,7 +57,7 @@ export const ExaTable = defineComponent({
         merge(option, _option, { attrs })
       },
       setData: (data) => {
-        formData.records = data
+        modelData.parent = data
       },
       goPage,
       request,
@@ -79,7 +78,6 @@ export const ExaTable = defineComponent({
       console.log(pag)
     }
 
-    const currentModel = ref()
     const searchForm = ref()
     const tableAttrs = ref()
     watch(
@@ -87,18 +85,26 @@ export const ExaTable = defineComponent({
       (data) => {
         if (!data?.columns) return
         const { columns, searchSechma } = data
-        currentModel.value ??= buildModel({ columns, field: 'records' }, modelData)
+        // 列表控件子表单模型
+        const initModel = { parent: reactive({}), rules: {} }
+        const listData = {
+          model: initModel,
+          children: buildModelMaps(columns, initModel),
+        }
 
-        const { effectData, attrs } = useControl({ option: data, model: currentModel })
+        // const currentModel = { model: modelData, listData }
+
+        const { effectData, attrs } = useControl({ option: data, model: modelData })
 
         if (searchSechma) {
-          searchForm.value = buildSearchForm(option as any, (data) => {
+          searchForm.value = buildSearchForm(columns, searchSechma, (data) => {
             onSearch(data)
           })
         }
         tableAttrs.value = reactive({
           option,
-          ...currentModel.value,
+          listData,
+          model: modelData,
           effectData,
           apis,
           ...attrs,
@@ -114,9 +120,7 @@ export const ExaTable = defineComponent({
 
     return () =>
       option.columns &&
-      h(
-        DataProvider,
-        { data: formData, apis }, () =>
+      h(DataProvider, { data: modelData.parent, apis }, () =>
         h('div', { class: option.isContainer && 'exa-container' }, [
           searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value()),
           option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs.value)),
@@ -210,7 +214,7 @@ function useQuery(option) {
   }
 }
 
-function buildSearchForm({ searchSechma, columns }, onChange) {
+function buildSearchForm(columns, searchSechma, onChange) {
   const { buttons = {}, ...formOption }: FormOption = {
     compact: true,
     ignoreRules: true,

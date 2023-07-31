@@ -29,7 +29,7 @@ function buildInlineForm(modelsMap: ModelsMap<ExFormItemOption>, data) {
       return h(Controls[option.type], {
         option,
         model,
-        attrs,
+        attrs: reactive(attrs),
         effectData,
         ...form.validateInfos[ruleName],
         class: style['table-form-item'],
@@ -49,7 +49,7 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) 
   // 数据监听
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
-  const editMap: Obj = shallowReactive({})
+  const editMap = new WeakMap()
   watch(
     shallowReactive(orgList),
     (org) => {
@@ -67,45 +67,48 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) 
 
   const methods = {
     add() {
-      const hash = nanoid(12)
-      editMap[hash] = shallowReactive<Obj>({
-        isEdit: true,
-        isNew: true,
-        ...buildInlineForm(modelsMap, parentModel.parent),
-      })
-      newItems.value = newItems.value.concat({ [rowKey]: hash })
+      const item = { [rowKey]: nanoid(12) }
+      newItems.value = newItems.value.concat()
+      editMap.set(
+        item,
+        shallowReactive<Obj>({
+          isEdit: true,
+          isNew: true,
+          ...buildInlineForm(modelsMap, parentModel.parent),
+        })
+      )
     },
     edit({ record, selectedRows }) {
       const data = record || selectedRows[0]
-      const editInfo = editMap[data[rowKey]]
+      const editInfo = editMap.get(data) // TODO： 如果非同一个引用，需使用[rowKey]从list里面取
       if (editInfo) {
         editInfo.isEdit = true
       } else {
-        editMap[data[rowKey]] = shallowReactive<Obj>({ isEdit: true, ...buildInlineForm(modelsMap, data) })
+        editMap.set(data, shallowReactive<Obj>({ isEdit: true, ...buildInlineForm(modelsMap, data) }))
       }
     },
     del({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
-      items.forEach((item) => {
-        delete editMap[item[rowKey]]
-      })
+      // 自动垃圾处理
+      // items.forEach((item) => {
+      //   delete editMap[item[rowKey]]
+      // })
       listener.onDelete(items)
     },
   }
   const save = ({ record }) => {
-    const editInfo = editMap[record[rowKey]]
+    const editInfo = editMap.get(record)
     editInfo.form
       .validate()
       .then(() => {
         const raw = toRaw(editInfo.form.modelRef)
         if (editInfo.isNew) {
           newItems.value.splice(newItems.value.indexOf(record), 1)
-          editInfo.isNew = false
           listener.onSave({ ...record, ...raw })
         } else {
           listener.onUpdate(record, raw)
+          editInfo.isEdit = false
         }
-        editInfo.isEdit = false
       })
       .catch((err) => {
         console.log('error', err)
@@ -114,10 +117,10 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) 
   }
   const cancel = ({ record }) => {
     const key = record[rowKey]
-    const editInfo = editMap[key]
+    const editInfo = editMap.get(record)
     if (editInfo.isNew) {
       newItems.value = newItems.value.filter((item) => item[rowKey] !== key)
-      delete editMap[key]
+      // delete editMap[key]
     } else {
       editInfo.isEdit = false
       editInfo.form.resetFields(record)
@@ -136,7 +139,7 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) 
   )
 
   const actionSlot = (param) => {
-    const editInfo = editMap[param.record[rowKey]]
+    const editInfo = editMap.get(param.record)
     if (editInfo?.isEdit) {
       return editButtons(param)
     }
@@ -145,7 +148,7 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) 
   const models = flatModels(modelsMap)
   for (const col of models.keys()) {
     const customRender = ({ record, text }) => {
-      const editInfo = editMap[record[rowKey]]
+      const editInfo = editMap.get(record)
       return (editInfo?.isEdit && editInfo.nodes.get(col)?.()) || text
     }
     colRenderMap.set(col, customRender)

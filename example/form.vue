@@ -24,7 +24,7 @@ const [formRegister, form] = useForm({ isContainer: true, ...options })
 const MyForm = formRegister()
 
 const onSubmit = () => {
-  return form.onSubmit().then((data) => {
+  return form.submit().then((data) => {
     console.log(data)
   })
 }
@@ -37,6 +37,7 @@ const setValue = () => {
     'group': {
       'food': ['1'],
     },
+    tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
   }
   form.setData(data)
