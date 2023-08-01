@@ -12,7 +12,7 @@ import base from '../../override'
 function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption, listener) {
   // 生成新增表单
   const { parent, rules } = parentModel
-  const modelRef = reactive(cloneDeep(parent))
+  const model = cloneDeep(parent)
   const formRef = ref()
   // const children = cloneModels(modelsMap, modelRef)
 
@@ -37,7 +37,7 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption, lis
   const editForm = () =>
     h(Controls.Form, {
       option: formOption,
-      model: modelRef,
+      model: model,
       rules: rules,
       onRegister: (data) => (formRef.value = data),
     })
@@ -46,24 +46,24 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption, lis
 
   const methods = {
     add() {
-      Object.assign(modelRef, cloneDeep(parent), { [rowKey]: nanoid(12) })
+      Object.assign(model, cloneDeep(parent), { [rowKey]: nanoid(12) })
       openModal({
         title: '新增',
         onOk() {
           return formRef.value.validate().then(() => {
-            return listener.onSave(cloneDeep(modelRef))
+            return listener.onSave(cloneDeep(model))
           })
         },
       })
     },
     edit({ record, selectedRows }) {
       const data = record || selectedRows[0]
-      Object.assign(modelRef, cloneDeep(data))
+      Object.assign(model, cloneDeep(data))
       openModal({
         title: '修改',
         onOk() {
           return formRef.value.validate().then(() => {
-            return listener.onUpdate(data, cloneDeep(modelRef))
+            return listener.onUpdate(data, cloneDeep(model))
           })
         },
       })

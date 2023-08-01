@@ -1,6 +1,7 @@
 import buildRule from './buildRule'
 import { inject, reactive, readonly, ref, shallowReactive, toRef, toRefs, unref, watchEffect } from 'vue'
 import cloneDeep from 'lodash/cloneDeep'
+import cloneDeepWith from 'lodash/cloneDeepWith'
 import mergeWith from 'lodash/mergeWith'
 import { nanoid } from 'nanoid'
 
@@ -164,16 +165,28 @@ export function flatModels<T>(orgModels: ModelsMap<T>, data?: Obj) {
   return new Map(models)
 }
 
-// export function setFieldsValue(origin, data) {
-//   mergeWith(origin, data, (objValue, srcValue) => {
-//     if (Array.isArray(objValue)) {
-//       objValue.splice(0, objValue.length, ...srcValue)
-//       // objValue.push(...srcValue)
-//       return [...srcValue]
-//     }
-//   })
-// }
-export function setFieldsValue(modelsMap: ModelsMap<MixOption>, data) {
+export function resetFields(origin) {
+  cloneDeepWith(origin, (objValue, key, object) => {
+    if (Array.isArray(objValue)) {
+      objValue.splice(0)
+      return false
+    } else if (typeof objValue !== 'object') {
+      object[key] = undefined
+    }
+  })
+}
+
+export function setFieldsValue(origin, data) {
+  mergeWith(origin, data, (objValue, srcValue) => {
+    if (Array.isArray(objValue)) {
+      objValue.splice(0, objValue.length, ...srcValue)
+      // objValue.push(...srcValue)
+      return objValue
+    }
+  })
+}
+
+export function setFieldsValue2(modelsMap: ModelsMap<MixOption>, data) {
   for (const [option, { model, children, listData }] of modelsMap) {
     if (children) {
       setFieldsValue(children, data)

@@ -5,6 +5,7 @@
       <Button @click="changeSelect">切换选项</Button>
       <Button @click="onSubmit">校验</Button>
       <Button @click="setValue">赋值</Button>
+      <Button @click="reset">重置</Button>
     </Row>
   </div>
 </template>
@@ -41,6 +42,9 @@ const setValue = () => {
     list: [{ tab1: 'tab1' }],
   }
   form.setData(data)
+}
+const reset = () => {
+  form.getForm('resetFields')
 }
 </script>
 <style>

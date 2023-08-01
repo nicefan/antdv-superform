@@ -29,9 +29,11 @@ const DataProvider = defineComponent({
     return ctx.slots.default
   },
 })
+
 export function defineTable(option: RootTableOption) {
   return option
 }
+
 export const ExaTable = defineComponent({
   name: 'ExaTable',
   inheritAttrs: false,
@@ -42,7 +44,6 @@ export const ExaTable = defineComponent({
   emits: ['register'],
   setup(props, ctx) {
     const tableRef = ref()
-    // const formData: Obj = reactive({ records: props.dataSource || [] })
     const modelData = reactive({
       parent: props.dataSource || [],
     })

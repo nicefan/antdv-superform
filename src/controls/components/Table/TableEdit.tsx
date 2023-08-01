@@ -51,7 +51,7 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) 
   const list = ref<Obj[]>([])
   const editMap = new WeakMap()
   watch(
-    shallowReactive(orgList),
+    shallowReactive(orgList.value),
     (org) => {
       list.value = org.concat(newItems.value)
     },

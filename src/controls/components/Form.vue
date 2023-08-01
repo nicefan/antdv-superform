@@ -14,7 +14,7 @@
   </AForm>
 </template>
 <script lang="ts">
-import { buildModelMaps, setFieldsValue } from '../../utils/util'
+import { buildModelMaps, resetFields, setFieldsValue } from '../../utils/util'
 import { PropType, computed, nextTick, onMounted, provide, reactive, readonly, ref, toRaw, toRefs, watch } from 'vue'
 import baseComp from '../override'
 import Collections from '../Collections'
@@ -65,10 +65,10 @@ export default {
         })
       },
       setFieldsValue(data) {
-        return setFieldsValue(modelsMap, data)
+        return setFieldsValue(modelData.parent, data)
       },
       resetFields() {
-        setFieldsValue(modelsMap, {})
+        resetFields(modelData.parent)
         const data = toRaw(modelData.parent)
         emit('reset', data)
         return data
