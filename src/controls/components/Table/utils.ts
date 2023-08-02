@@ -1,18 +1,18 @@
 import { reactive, ref, h } from 'vue'
 import { nanoid } from 'nanoid'
-import cloneDeep from 'lodash/cloneDeep'
+import { cloneDeep } from 'lodash-es'
 import { createModal } from '../../../Modal'
-import { cloneModels } from '../../../utils/util'
+import { cloneModels, resetFields } from '../../../utils/util'
 import { ButtonGroup, mergeActions } from '../../buttons'
 import inlineRender from './TableEdit'
 import Collections from '../../Collections'
 import Controls from '../index'
 import base from '../../override'
 
-function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption, listener) {
+function modalEdit({ listModel, rowKey }, tableOption, listener) {
   // 生成新增表单
-  const { parent, rules } = parentModel
-  const model = cloneDeep(parent)
+  const { parent, rules } = listModel
+  const model = ref({})
   const formRef = ref()
   // const children = cloneModels(modelsMap, modelRef)
 
@@ -37,7 +37,7 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption, lis
   const editForm = () =>
     h(Controls.Form, {
       option: formOption,
-      model: model,
+      model: model.value,
       rules: rules,
       onRegister: (data) => (formRef.value = data),
     })
@@ -46,24 +46,24 @@ function modalEdit({ parentModel, modelsMap, orgList, rowKey }, tableOption, lis
 
   const methods = {
     add() {
-      Object.assign(model, cloneDeep(parent), { [rowKey]: nanoid(12) })
+      model.value = { ...parent, [rowKey]: nanoid(12) }
       openModal({
         title: '新增',
         onOk() {
-          return formRef.value.validate().then(() => {
-            return listener.onSave(cloneDeep(model))
+          return formRef.value.submit().then((data) => {
+            return listener.onSave(data)
           })
         },
       })
     },
     edit({ record, selectedRows }) {
       const data = record || selectedRows[0]
-      Object.assign(model, cloneDeep(data))
+      model.value = data
       openModal({
         title: '修改',
         onOk() {
-          return formRef.value.validate().then(() => {
-            return listener.onUpdate(data, cloneDeep(model))
+          return formRef.value.submit().then((newData) => {
+            return listener.onUpdate(data, newData)
           })
         },
       })
@@ -125,7 +125,7 @@ type BuildDataParam = {
 function buildData({ option, listData, orgList, rowKey, apis = {} as any }: BuildDataParam) {
   const { rowButtons } = option
 
-  const parentModel = listData.model
+  const listModel = listData.model
   const modelsMap = listData.children
 
   const listener = {
@@ -168,7 +168,7 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
     actionSlot?: Fn
     modalSlot?: Fn
   }
-  const _param = { parentModel, modelsMap, orgList, rowKey }
+  const _param = { listModel, modelsMap, orgList, rowKey }
 
   if (option.editMode === 'inline') {
     const { list, actionSlot, colRenderMap, methods: rowMethods } = inlineRender(_param, listener)

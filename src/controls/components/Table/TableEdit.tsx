@@ -4,7 +4,7 @@
 
 import { ref, shallowReactive, toRaw, watch, reactive, h } from 'vue'
 import { nanoid } from 'nanoid'
-import cloneDeep from 'lodash/cloneDeep'
+import { cloneDeep } from 'lodash-es'
 import message from 'ant-design-vue/es/message'
 import { useForm } from 'ant-design-vue/es/form'
 import Controls from '../'
@@ -45,7 +45,7 @@ function buildInlineForm(modelsMap: ModelsMap<ExFormItemOption>, data) {
   }
 }
 
-export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) {
+export default function ({ listModel, modelsMap, orgList, rowKey }, listener) {
   // 数据监听
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
@@ -74,7 +74,7 @@ export default function ({ parentModel, modelsMap, orgList, rowKey }, listener) 
         shallowReactive<Obj>({
           isEdit: true,
           isNew: true,
-          ...buildInlineForm(modelsMap, parentModel.parent),
+          ...buildInlineForm(modelsMap, listModel.parent),
         })
       )
     },

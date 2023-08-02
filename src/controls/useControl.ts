@@ -1,6 +1,6 @@
 import { unref, computed, toRefs, mergeProps } from 'vue'
 import { getListener, getComputedAttr, getEffectData, getComputedStatus } from '../utils/util'
-import merge from 'lodash/merge'
+import { merge } from 'lodash-es'
 type Param = {
   option: Partial<MixOption>
   model: Obj

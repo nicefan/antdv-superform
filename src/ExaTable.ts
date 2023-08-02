@@ -13,8 +13,8 @@ import {
   watch,
 } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import merge from 'lodash/merge'
-import { buildModel, buildModelMaps, setFieldsValue } from './utils/util'
+import { merge } from 'lodash-es'
+import { buildModelMaps } from './utils/util'
 import Controls from './controls/components'
 import { mergeActions } from './controls/buttons'
 import { useControl } from './controls'

@@ -19,6 +19,7 @@ import { PropType, computed, nextTick, onMounted, provide, reactive, readonly, r
 import baseComp from '../override'
 import Collections from '../Collections'
 import { ButtonGroup } from '../buttons'
+import { cloneDeep } from 'lodash-es'
 
 export default {
   name: 'ExaForm',
@@ -39,7 +40,6 @@ export default {
     },
     model: {
       type: Object,
-      required: true,
     },
     /** 按钮事件 */
     methods: Object,
@@ -47,19 +47,20 @@ export default {
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit }) {
     const formRef = ref()
-    const modelData = {
+    const modelData = reactive({
       rules: props.rules || {},
-      parent: props.model,
-    }
+      parent: {},
+    })
     const { subItems, buttons } = props.option
     const modelsMap = buildModelMaps(subItems, modelData)
+    const initialModel = cloneDeep(modelData.parent)
     provide('exaProvider', { data: readonly(modelData.parent) })
+    provide('wrapperCol', props.option.wrapperCol)
 
     const actions = {
       submit: () => {
         return formRef.value.validate().then((...args) => {
-          console.log(args)
-          const data = toRaw(props.model)
+          const data = cloneDeep(modelData.parent)
           emit('submit', data)
           return data
         })
@@ -67,15 +68,15 @@ export default {
       setFieldsValue(data) {
         return setFieldsValue(modelData.parent, data)
       },
-      resetFields() {
-        resetFields(modelData.parent)
-        const data = toRaw(modelData.parent)
+      resetFields(defData = initialModel) {
+        resetFields(modelData.parent, defData)
+        const data = cloneDeep(modelData.parent)
         emit('reset', data)
         return data
       },
     }
 
-    watch(() => props.model, actions.setFieldsValue)
+    watch(() => props.model, actions.resetFields, { immediate: true })
 
     expose(actions)
     const getForm = (form) => {

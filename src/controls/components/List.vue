@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid'
 import { cloneModels } from '../../utils/util'
 import { ButtonGroup } from '../buttons'
 import Collections from '../Collections'
-import cloneDeep from 'lodash/cloneDeep'
+import { cloneDeep } from 'lodash-es'
 import baseComps from '../override'
 
 const { Row, List, ListItem } = baseComps

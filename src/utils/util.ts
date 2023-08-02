@@ -1,8 +1,6 @@
 import buildRule from './buildRule'
 import { inject, reactive, readonly, ref, shallowReactive, toRef, toRefs, unref, watchEffect } from 'vue'
-import cloneDeep from 'lodash/cloneDeep'
-import cloneDeepWith from 'lodash/cloneDeepWith'
-import mergeWith from 'lodash/mergeWith'
+import { cloneDeep, mergeWith } from 'lodash-es'
 import { nanoid } from 'nanoid'
 
 /** 统一生成动态属性参数 */
@@ -46,12 +44,12 @@ export function getComputedAttr(handler: Fn<Obj>, dataRef: { record: Obj } & Obj
 }
 
 export function getListener(option: Obj<Fn> = {}, formData) {
-  // 查找on开头的属性进行事件绑定
   const listener: Obj<Fn> = {}
   Object.entries(option).forEach(([key, fn]) => {
     const name = 'on' + key.charAt(0).toUpperCase() + key.slice(1)
     listener[name] = (...args) => fn(readonly(formData), ...args)
   })
+  // 查找on开头的属性进行事件绑定
   // Object.keys(option).forEach((key) => {
   //   if (key.startsWith('on')) {
   //     listener[key] = (...args) => option[key](formData, ...args)
@@ -165,21 +163,23 @@ export function flatModels<T>(orgModels: ModelsMap<T>, data?: Obj) {
   return new Map(models)
 }
 
-export function resetFields(origin) {
-  cloneDeepWith(origin, (objValue, key, object) => {
-    if (Array.isArray(objValue)) {
-      objValue.splice(0)
-      return false
-    } else if (typeof objValue !== 'object') {
-      object[key] = undefined
+export function resetFields(origin, initial = {}) {
+  for (const [key, value] of Object.entries(origin)) {
+    if (Array.isArray(value)) {
+      value.splice(0)
+      if (initial[key]?.length) value.push(...cloneDeep(initial[key]))
+    } else if (Object.prototype.toString.call(value) === '[object Object]') {
+      resetFields(value, initial[key])
+    } else {
+      origin[key] = initial[key]
     }
-  })
+  }
 }
 
 export function setFieldsValue(origin, data) {
   mergeWith(origin, data, (objValue, srcValue) => {
     if (Array.isArray(objValue)) {
-      objValue.splice(0, objValue.length, ...srcValue)
+      objValue.splice(0, objValue.length, ...cloneDeep(srcValue))
       // objValue.push(...srcValue)
       return objValue
     }
