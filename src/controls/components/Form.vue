@@ -76,7 +76,11 @@ export default {
       },
     }
 
-    watch(() => props.model, actions.resetFields, { immediate: true })
+    watch(
+      () => props.model,
+      (data) => data && actions.resetFields(data),
+      { immediate: true }
+    )
 
     expose(actions)
     const getForm = (form) => {

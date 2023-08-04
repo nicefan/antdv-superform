@@ -1,12 +1,18 @@
 <template>
-  <h1>关于</h1>
-  <Tabs :default-active-key="tab" @change="changeTab">
-    <Tabs.TabPane v-for="name of tabNames" :key="name" :tab="name" />
-  </Tabs>
-  <component :is="comp" msg="about" />
+  <ConfigProvider :locale="zhCN">
+    <h1>关于</h1>
+    <Tabs :default-active-key="tab" @change="changeTab">
+      <Tabs.TabPane v-for="name of tabNames" :key="name" :tab="name" />
+    </Tabs>
+    <component :is="comp" msg="about" />
+  </ConfigProvider>
 </template>
 
 <script lang="ts" setup>
+import { ConfigProvider } from 'ant-design-vue'
+import 'dayjs/locale/zh-cn'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
+
 import { ref, computed } from 'vue'
 import { Tabs } from 'ant-design-vue'
 import Setups from './setups.vue'
@@ -16,7 +22,7 @@ import CreateForm from './createForm/index.vue'
 const tabs = {
   Setups,
   FirstForm,
-  CreateForm
+  CreateForm,
 }
 
 const tabNames = Object.keys(tabs)
@@ -25,7 +31,6 @@ const comp = computed(() => tabs[tab.value])
 const changeTab = (name) => {
   tab.value = name
 }
-
 </script>
 
 <style>

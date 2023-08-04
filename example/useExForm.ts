@@ -1,5 +1,6 @@
 import { h, ref } from 'vue'
 import { useForm, useFormModal, defineForm, useModal } from '../src'
+import { render } from 'less'
 
 export default function exampleForm() {
   const list = ref<any[]>([{ value: 'a', label: '一' },{value:'b', label:'二'}])
@@ -54,6 +55,29 @@ export default function exampleForm() {
             },
           },
           {
+            type: 'Hidden',
+            field: 'subName',
+          },
+          {
+            type: 'Slot',
+            label: 'render',
+            render: (props) => {
+              console.log(props)
+              return h('h2', '这是一个slot')
+            }
+          },
+          {
+            type: 'Slot',
+            label: '模板插槽',
+            slotName: 'test',
+          },
+          {
+            type: 'Text',
+            label: '提示',
+            field: 'text',
+            initialValue: '默认消息。',
+          },
+          {
             type: 'DatePicker',
             field: 'born',
             label: '生日',
@@ -93,7 +117,7 @@ export default function exampleForm() {
               return data.record.forever === 2
             },
             computed(val, data) {
-              return data.record.forever ? 'a' : val
+              return data.record.forever ? undefined : val
             }
           },
           {

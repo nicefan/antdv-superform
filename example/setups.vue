@@ -1,10 +1,6 @@
 <template>
   <div style="background: #eee; padding: 16px">
-    <VIcon type="user"></VIcon>
-    <VIcon type="mail2"></VIcon>
-    <a-button @click="openForm">弹窗表单</a-button>
-    <a-button @click="openTable">显示表格</a-button>
-    <a-button @click="setTable">表格赋值</a-button>
+    <exa-buttons :actions="btnActions" />
     <div style="margin-top: 16px">
       <exa-table @register="registTable" :rowSelection="false" />
     </div>
@@ -12,19 +8,19 @@
 </template>
 <script lang="ts">
 import { ref, defineComponent, inject, toRefs } from 'vue'
-import { Button } from 'ant-design-vue'
 import VIcon from '../src/icon/VIcon'
 import exampleForm from './useExForm'
-import { useTable, ExaTable } from '../src/ExaTable'
-import { useModal } from '../src/Modal'
+import { useTable, ExaTable } from '../src'
+import { ExaButtons } from '../src/exaButtons'
+import { useModal } from '../src'
 import { myTableOption } from './createForm/formOption'
-import { useFormModal } from '../src/ExaForm'
+import { useFormModal } from '../src'
 
 export default defineComponent({
   components: {
-    VIcon,
-    AButton: Button,
+    // VIcon,
     ExaTable,
+    ExaButtons,
   },
   props: {
     msg: {
@@ -74,7 +70,7 @@ export default defineComponent({
     const [registTable, { setData: setTableData2 }] = useTable({
       isContainer: true,
       ...myTableOption,
-      attrs:{ bordered: true},
+      attrs: { bordered: true },
       apis: {
         query: (arg) =>
           Promise.resolve().then(() => {
@@ -116,13 +112,23 @@ export default defineComponent({
         list: [{ tab1: 'tab1' }],
       })
     }
-    return {
-      registTable,
-      openForm,
-      openTable,
-      setTable() {
-        setTableData2(data)
+    const btnActions: ButtonItem[] = [
+      {
+        label: '弹窗表单',
+        onClick: openForm,
       },
+      {
+        label: '显示表格',
+        onClick: openTable,
+      },
+      {
+        label: '表格赋值',
+        onClick: () => setTableData2(data),
+      },
+    ]
+    return {
+      btnActions,
+      registTable,
     }
   },
 })

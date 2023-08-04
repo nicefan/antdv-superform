@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
-import Vue from 'vue'
+import Vue, { VNodeChild } from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
 import { FormProps, PaginationProps } from 'ant-design-vue'
 import { ModalFuncProps, ColProps, RowProps, FormItemProps, InputProps } from 'ant-design-vue/es'
@@ -98,7 +98,7 @@ declare global {
       size?: 'large' | 'middle' | 'small'
     }
     align?: 'left' | 'right' | 'center'
-    /** 是否独立行，默认true */
+    /** 是否独立行 */
     isBlock?: boolean
     /** 是否只显示图标 */
     iconOnly?: boolean
@@ -242,8 +242,10 @@ declare global {
   interface ExRadioOption extends ExFormItemOption {
     options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
   }
-
+  type ExSlotOption = ExBaseOption & ({ slotName: string } | { render: string | Fn<VNodeChild> })
   type OptionType = {
+    Hidden: { field: string }
+    Slot: ExSlotOption
     Text: ExBaseOption
     Group: ExGroupOption
     InputGroup: ExInputGroupOption
@@ -280,4 +282,5 @@ declare global {
     ? U // & { type: keyof OptionType}
     : never
 }
+
 export {}

@@ -3,9 +3,10 @@
 
 import plugin from './plugin'
 import './style.less'
-export * from './ExaForm'
+export * from './exaForm'
+export * from './exaTable'
+export * from './exaButtons'
 // export { default as VIcon } from './icon/VIcon'
-export { useModal } from './Modal'
-export * from './ExaTable'
+export { useModal } from './exaModal'
 
 export default plugin

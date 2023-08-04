@@ -1,7 +1,7 @@
 import { reactive, ref, h } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep } from 'lodash-es'
-import { createModal } from '../../../Modal'
+import { createModal } from '../../../exaModal'
 import { cloneModels, resetFields } from '../../../utils/util'
 import { ButtonGroup, mergeActions } from '../../buttons'
 import inlineRender from './TableEdit'
