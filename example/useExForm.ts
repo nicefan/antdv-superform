@@ -3,7 +3,10 @@ import { useForm, useFormModal, defineForm, useModal } from '../src'
 import { render } from 'less'
 
 export default function exampleForm() {
-  const list = ref<any[]>([{ value: 'a', label: '一' },{value:'b', label:'二'}])
+  const list = ref<any[]>([
+    { value: 'a', label: '一' },
+    { value: 'b', label: '二' },
+  ])
   const { openModal } = useModal(() => '这是内容')
   const selectList = ['游戏', '唱歌', '跑步', '打牌'].map((label, value) => ({ label, value }))
   const treeData = [
@@ -64,7 +67,7 @@ export default function exampleForm() {
             render: (props) => {
               console.log(props)
               return h('h2', '这是一个slot')
-            }
+            },
           },
           {
             type: 'Slot',
@@ -105,8 +108,8 @@ export default function exampleForm() {
             label: '其它',
             options: list,
             computed(val, data) {
-              return (data.record.forever!==null) && 'a'
-            }
+              return data.record.forever !== null && 'a'
+            },
           },
           {
             type: 'Input',
@@ -118,7 +121,7 @@ export default function exampleForm() {
             },
             computed(val, data) {
               return data.record.forever ? undefined : val
-            }
+            },
           },
           {
             type: 'Switch',
@@ -249,10 +252,10 @@ export default function exampleForm() {
             label: '体重',
             initialValue: 120,
             disabled: (data) => data.formData.forever === 2,
-            computed: (val, data) =>{
+            computed: (val, data) => {
               console.log(data.record)
-              return (data.formData.forever === 1 ? 110 : val)
-            } ,
+              return data.formData.forever === 1 ? 110 : val
+            },
             attrs: { max: 200, min: 110 },
             rules: { required: true, type: 'number', min: 110 },
           },
@@ -304,6 +307,7 @@ export default function exampleForm() {
                 type: 'List',
                 field: 'list',
                 label: '列表',
+                rules: { min: 1 },
                 buttons: {
                   actions: [
                     {
@@ -313,7 +317,20 @@ export default function exampleForm() {
                 },
                 rowButtons: {
                   defaultAttrs: { type: 'link' },
-                  actions: ['del'],
+                  actions: [
+                    {
+                      name: 'del',
+                      onClick(data, action) {
+                        if (data.listData.length === 1) {
+                          alert('必须保留一条记录')
+                        } else {
+                          action().then(() => {
+                            alert('删除成功')
+                          })
+                        }
+                      },
+                    },
+                  ],
                 },
                 columns: [
                   {

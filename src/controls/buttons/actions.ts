@@ -1,3 +1,5 @@
+import { Modal } from 'ant-design-vue'
+
 const _defaultActions = {
   add: {
     label: '新增',
@@ -22,9 +24,9 @@ const _defaultActions = {
     attrs: {
       type: 'primary',
     },
-    onClick(param) {
-      console.log(param)
-    },
+    // onClick(param) {
+    //   console.log(param)
+    // },
   },
   reset: {
     label: '重置',
@@ -51,18 +53,35 @@ export function mergeActions(actions, methods = {}) {
   if (Array.isArray(actions)) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
-      const button = { ...defaultActions[name] }
+      const config = { ...defaultActions[name] }
       if (typeof item === 'object') {
-        const method = button.onClick
-        Object.assign(button, item, { attrs: { ...button.attrs, ...item.attrs } })
-        if (method && item.onClick) {
-          button.onClick = (param) => {
-            method(param)
-            button.onClick(param)
+        const innerMethod = config.onClick
+        const _onClick = item.onClick
+        Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
+        if (_onClick) {
+          config.onClick = (param) => {
+            const action = async (text = config.confirmText) => {
+              if (text) {
+                return new Promise((resolve) =>
+                  Modal.confirm({
+                    title: text,
+                    okText: '确定',
+                    cancelText: '取消',
+                    onOk() {
+                      innerMethod?.(param)
+                      resolve(undefined)
+                    },
+                  })
+                )
+              } else {
+                item.method?.(param)
+              }
+            }
+            _onClick(param, action)
           }
         }
       }
-      button.onClick && actionBtns.push(button)
+      actionBtns.push(config)
     })
   }
   return actionBtns

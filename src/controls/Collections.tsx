@@ -36,16 +36,16 @@ export default defineComponent({
 
     const nodes: any[] = []
     let currentGroup: any[] | undefined
-    for (const [subOption, subData] of children) {
+    [...children].forEach(([subOption, subData], idx) => {
       const { type, align, isBlock, columns } = subOption
-      if (type === 'Hidden') continue
+      if (type === 'Hidden') return
       // const isContainer = !!subData.children || !!columns || type === 'Buttons'
       const { node, hidden } = useBuildNode(subOption, subData)
       if (sectionList.includes(type) || isBlock) {
         currentGroup = undefined
-        nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section' }, node()))
+        nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', key: idx }, node()))
       } else {
-        const colProps = { ...wrapperCol, ...subOption.colProps }
+        const colProps = { ...wrapperCol, ...subOption.colProps, key: idx }
         if (align) colProps.style = 'text-align: ' + align
         colProps.span = subOption.span ?? colProps.span ?? 8
         if (!currentGroup) {
@@ -54,7 +54,7 @@ export default defineComponent({
         currentGroup.push(() => !hidden.value && h(Col, colProps, { default: node }))
         if (subOption.isWrap) currentGroup = undefined
       }
-    }
+    })
 
     return () =>
       nodes.map((item) => {

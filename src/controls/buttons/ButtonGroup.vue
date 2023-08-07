@@ -65,19 +65,8 @@ function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
     const show = useShow(item.hidden, param)
     const disabled = item.disabled !== undefined ? useDisabled(item.disabled, param) : dis
     const onClick = (e) => {
-      if (item.confirmText) {
-        Modal.confirm({
-          title: item.confirmText,
-          okText: '确定',
-          cancelText: '取消',
-          onOk() {
-            item.onClick?.(param)
-          },
-        })
-      } else {
-        e.stopPropagation()
-        item.onClick?.(reactive(param))
-      }
+      e.stopPropagation()
+      item.onClick?.(param)
     }
     return { show, ...item, attrs: { ...defaultAttrs, ...item.attrs, disabled, onClick } }
   })

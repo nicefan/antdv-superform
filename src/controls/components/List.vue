@@ -41,18 +41,24 @@ const methods = {
 
 const listItems = ref<ModelsMap[]>([])
 // 监听数据变化
-watch(shallowReactive(orgList.value), (org) => {
-  listItems.value = org.map((item) => {
-    const hash = item[rowKey] || nanoid(12)
-    let itemModel = itemsMap[hash]
-    if (!itemModel) {
-      item[rowKey] = hash
-      // 原数据已经存在, 此处建立表单绑定
-      itemModel = itemsMap[hash] = cloneModels(modelsMap, item)
-    }
-    return { modelsMap: itemModel, record: item }
-  })
-})
+watch(
+  shallowReactive(orgList.value),
+  (org) => {
+    listItems.value = org.map((item) => {
+      const hash = item[rowKey] || nanoid(12)
+      let itemModel = itemsMap[hash]
+      if (!itemModel) {
+        item[rowKey] = hash
+        // 原数据已经存在, 此处建立表单绑定
+        itemModel = itemsMap[hash] = cloneModels(modelsMap, item)
+      }
+      return { modelsMap: itemModel, record: item }
+    })
+  },
+  {
+    immediate: true,
+  }
+)
 </script>
 
 <template>
