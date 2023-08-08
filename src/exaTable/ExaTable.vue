@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, mergeProps, watch, toRefs, h } from 'vue'
+import { defineComponent, PropType, ref, reactive, mergeProps, watch, toRefs, h, provide } from 'vue'
 import { merge } from 'lodash-es'
 import { useControl } from '../controls'
 import { buildModelMaps } from '../utils/util'
@@ -92,6 +92,7 @@ export default defineComponent({
         immediate: true,
       }
     )
+    provide('rootSlots', ctx.slots)
 
     return () =>
       option.columns &&

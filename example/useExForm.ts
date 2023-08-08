@@ -1,5 +1,5 @@
 import { h, ref } from 'vue'
-import { useForm, useFormModal, defineForm, useModal } from '../src'
+import { useForm, defineForm, useModal } from '../src'
 import { render } from 'less'
 
 export default function exampleForm() {

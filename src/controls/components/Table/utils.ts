@@ -30,7 +30,7 @@ function modalEdit({ listModel, rowKey }, tableOption, listener) {
   //     h(Collections, { option: tableOption, children: children })
   //   )
 
-  const formOption: FormOption = { ...tableOption.formSechma }
+  const formOption: ExFormOption = { ...tableOption.formSechma }
   // buttons: { actions: ['submit', 'reset'] },
   formOption.subItems = tableOption.columns.filter((item) => item.hideFor !== 'form')
 

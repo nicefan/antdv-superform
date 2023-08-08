@@ -4,17 +4,17 @@
     <div style="margin-top: 16px">
       <exa-table @register="registTable" :rowSelection="false" />
     </div>
+    <component :is="FormModalSlot" />
   </div>
 </template>
 <script lang="ts">
 import { ref, defineComponent, inject, toRefs } from 'vue'
 import VIcon from '../src/icon/VIcon'
 import exampleForm from './useExForm'
-import { useTable, ExaTable } from '../src'
+import { useTable, ExaTable, useForm } from '../src'
 import { ExaButtons } from '../src/exaButtons'
 import { useModal } from '../src'
 import { myTableOption } from './createForm/formOption'
-import { useFormModal } from '../src'
 
 export default defineComponent({
   components: {
@@ -85,11 +85,12 @@ export default defineComponent({
     } as any)
 
     /** 弹窗表单 */
-    const formModal = useFormModal(exampleForm().options, {
+    const [exampleFormReg, form] = useForm(exampleForm().options)
+    const formModal = useModal(exampleFormReg(), {
       title: '新增测试数据',
       width: 1600,
       onOk() {
-        return formModal.getForm('onSubmit').then((data) => {
+        return form.submit().then((data) => {
           console.log(data)
         })
       },
@@ -101,7 +102,7 @@ export default defineComponent({
       })
     }
     const setModalFormValue = () => {
-      formModal.setData({
+      form.setData({
         name: '白龙',
         street: '白龙',
         isReg: 1,
@@ -127,6 +128,7 @@ export default defineComponent({
       },
     ]
     return {
+      FormModalSlot: formModal.modalSlot,
       btnActions,
       registTable,
     }

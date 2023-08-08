@@ -1,9 +1,7 @@
-import type { ModalFuncProps } from 'ant-design-vue'
-import { useModal } from '../exaModal'
 import { ref, h, useSlots, watch } from 'vue'
 import { ExaForm } from './'
 
-export function useForm(option: FormOption, data?: Obj) {
+export function useForm(option: ExFormOption, data?: Obj) {
   const model = ref(data)
   const formRef = ref()
   const actionsRef = ref()
@@ -47,20 +45,20 @@ export function useForm(option: FormOption, data?: Obj) {
       },
       getForm,
       submit: () => getForm('submit'),
-      // resetFields: () => formRef.value.getExpose().resetFields(),
-      // setFieldsValue: (data) => getForm('setFieldsValue', data),
+      resetFields: (rest?: Obj) => getForm('resetFields', rest),
+      setFieldsValue: (data: Obj) => getForm('setFieldsValue', data),
     },
   ] as const
 }
 
-export function useFormModal(optionData: FormOption, config?: ModalFuncProps) {
-  const [register, form] = useForm(optionData)
-  const modal = useModal(register() as Fn, config)
+// export function useFormModal(optionData: FormOption, config?: ModalFuncProps) {
+//   const [register, form] = useForm(optionData)
+//   const modal = useModal(register() as Fn, config)
 
-  return {
-    openModal: (option?: ModalFuncProps) => {
-      return modal.openModal(option).then(() => form.getForm())
-    },
-    ...form,
-  }
-}
+//   return {
+//     openModal: (option?: ModalFuncProps) => {
+//       return modal.openModal(option).then(() => form.getForm())
+//     },
+//     ...form,
+//   }
+// }

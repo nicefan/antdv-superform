@@ -75,7 +75,7 @@ export function buildModelData(option: Obj, { parent, propChain = [], rules = {}
     } else if (isWrap) {
       _refName = name
       current[name] ??= option.columns ? [] : {}
-      rules = rules[name] ||= {}
+      currentRules = rules = rules[name] ||= {}
     } else {
       _refName = name
       current[name] ??= initialValue
@@ -135,12 +135,13 @@ function getPropertyDeep(target: Obj, names: string[]) {
   return result
 }
 
-export function cloneModels(orgModels: ModelsMap, data) {
+export function cloneModels(orgModels: ModelsMap, data, parentName: any[] = []) {
   const models = [...orgModels].map(([option, { model, children }]) => {
     const parent = getPropertyDeep(data, model.propChain.slice(0, -1))
+    const propChain = parentName.concat(model.propChain)
     const item = {
-      model: { ...model, parent },
-      ...(children && { children: cloneModels(children, data) }),
+      model: { ...model, parent, propChain },
+      ...(children && { children: cloneModels(children, data, parentName) }),
     }
     return [option, item] as [ExBaseOption, ModelChildren]
   })

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, shallowReactive, toRef, watch } from 'vue'
+import { ref, toRef, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../../utils/util'
 import { ButtonGroup } from '../buttons'
@@ -19,14 +19,13 @@ const props = defineProps<{
 
 const { buttons, rowButtons, label } = props.option
 // 先构建一个数据结构
-const defaultData = props.listData.model.parent
-const modelsMap = props.listData.children
+const { children: childrenMap, model: listModel } = props.listData
+const defaultData = listModel.parent
 
-const { parent, refName } = props.model
+const { parent, refName, currentRules, propChain } = props.model as Required<ModelData>
 const orgList = refName ? toRef(parent, refName) : toRef(props.model, 'parent')
 
 const rowKey = props.attrs?.rowKey || 'id'
-const itemsMap: Obj = {}
 
 const methods = {
   add() {
@@ -35,25 +34,23 @@ const methods = {
   del({ record }) {
     const orgIdx = orgList.value.indexOf(record)
     orgList.value.splice(orgIdx, 1)
-    delete itemsMap[record[rowKey]]
   },
 }
 
-const listItems = ref<ModelsMap[]>([])
+const listItems = ref<any[]>([])
 // 监听数据变化
 watch(
-  shallowReactive(orgList.value),
+  () => [...orgList.value],
   (org) => {
-    listItems.value = org.map((item) => {
+    listItems.value = org.map((item, idx) => {
       const hash = item[rowKey] || nanoid(12)
-      let itemModel = itemsMap[hash]
-      if (!itemModel) {
-        item[rowKey] = hash
-        // 原数据已经存在, 此处建立表单绑定
-        itemModel = itemsMap[hash] = cloneModels(modelsMap, item)
-      }
+      item[rowKey] = hash
+      // 原数据已经存在, 此处建立表单绑定
+      const itemModel = cloneModels(childrenMap, item, [...propChain, idx])
+      currentRules[idx] = listModel.rules
       return { modelsMap: itemModel, record: item }
     })
+    Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
   },
   {
     immediate: true,

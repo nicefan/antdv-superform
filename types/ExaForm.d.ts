@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
-import Vue, { VNodeChild } from 'vue'
+import Vue, { HTMLAttributes, VNodeChild } from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
 import { FormProps, PaginationProps } from 'ant-design-vue'
 import { ModalFuncProps, ColProps, RowProps, FormItemProps, InputProps } from 'ant-design-vue/es'
@@ -59,18 +59,47 @@ declare global {
     listData?: ListModels
   }
 
-  interface FormOption {
-    attrs?: FormProps | Fn<FormProps>
-    isContainer?: boolean
+  interface ExBaseOption {
+    type: string
+    field?: string
+    label?: string
+    /** 配置复用合并时方便插入 */
+    sort?: number
+    attrs?: Obj
+    dynamicAttrs?: Fn<Obj>
+    /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
+    hidden?: boolean | ((data: Readonly<Obj>) => boolean)
+    /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
+    disabled?: boolean | Fn
+    on?: Obj<Fn>
+    // renderView?: Fn<VNode>
+    // customRender?: Fn
+    // row?: boolean
+    colProps?: ColProps & HTMLAttributes
+    /** 快捷实现col span */
+    span?: number
+    slots?: Obj<Fn>
+  }
+
+  interface ExGroupOption extends ExBaseOption {
+    title?: string | Fn<VNode>
+    gutter?: number
+    buttons?: ExButtonGroup
+    subItems: UniOption[]
     /** 弹窗表单中的行间排版属性 */
-    rowProps?: RowProps
-    /** 表单元素的统一排列属性， */
+    rowProps?: RowProps & HTMLAttributes
+    /** 子元素的统一排列属性， */
     wrapperCol?: ColProps
+  }
+
+  interface ExFormOption extends Omit<ExGroupOption, 'type'> {
+    // type?: 'Form'
+    attrs?: FormProps & HTMLAttributes
+    isContainer?: boolean
     /** 减少行距 */
     compact?: boolean
     /** 不做校验 */
     ignoreRules?: boolean
-    subItems: UniOption[]
     buttons?: ExButtonGroup<'submit' | 'reset'>
   }
 
@@ -79,7 +108,7 @@ declare global {
     /** 确认提示文本 */
     confirmText?: string
     icon?: string
-    attrs?: Obj
+    attrs?: Obj & HTMLAttributes
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     onClick?: Fn
@@ -104,30 +133,10 @@ declare global {
     iconOnly?: boolean
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
-    actions?: (T | (ButtonItem & { name?: T }))[]
+    actions?: (T | (ButtonItem & ({ name: T } | {name?: string})))[]
     // subItems?: ButtonItem[]
   }
-  interface ExBaseOption {
-    type: string
-    field?: string
-    label?: string
-    /** 配置复用合并时方便插入 */
-    sort?: number
-    attrs?: Obj
-    dynamicAttrs?: Fn<Obj>
-    /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
-    hidden?: boolean | ((data: Readonly<Obj>) => boolean)
-    /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
-    disabled?: boolean | Fn
-    on?: Obj<Fn>
-    // renderView?: Fn<VNode>
-    // customRender?: Fn
-    // row?: boolean
-    colProps?: ColProps
-    /** 快捷实现col span */
-    span?: number
-    slots?: Obj<Fn>
-  }
+
   interface ExTableOption extends ExBaseOption {
     field: string
     title?: string | Fn<VNode>
@@ -140,13 +149,13 @@ declare global {
     /** 弹窗属性 */
     modalProps?: ModalFuncProps
     /** 弹窗表单属性 */
-    formSechma?: Omit<FormOption, 'subItems'>
+    formSechma?: Omit<ExFormOption, 'subItems'>
   }
 
   interface RootTableOption extends Omit<ExTableOption, 'type' | 'field'> {
     apis?: TableApis | TableApis['query']
     params?: Obj
-    searchSechma?: FormOption | { subItems: (UniOption | string)[] }
+    searchSechma?: ExFormOption | { subItems: (UniOption | string)[] }
     pagination?: PaginationProps
   }
   interface ExListOption extends ExBaseOption {
@@ -155,16 +164,6 @@ declare global {
     columns: UniInputOption[]
     /** 列表元素右边按钮 */
     rowButtons?: ExButtonGroup<'del' | 'edit'>
-  }
-  interface ExGroupOption extends ExBaseOption {
-    title?: string | Fn<VNode>
-    gutter?: number
-    buttons?: ExButtonGroup
-    subItems: UniOption[]
-    /** 弹窗表单中的行间排版属性 */
-    rowProps?: RowProps
-    /** 子元素的统一排列属性， */
-    wrapperCol?: ColProps
   }
   interface ExInputGroupOption extends ExBaseOption {
     span: number
@@ -197,7 +196,7 @@ declare global {
     icon?: string
     subItems: UniOption[]
     buttons?: ExButtonGroup
-    formAttrs?: FormProps
+    formAttrs?: FormProps & HTMLAttributes
   }
   /** 表单元素属性 */
   interface ExFormItemOption extends ExBaseOption {
@@ -217,7 +216,7 @@ declare global {
     suffixTips?: string
     btnClick?: (FormData: Obj, e: MouseEvent) => void
     onChange?: (FormData: Obj, e: InputEvent) => void
-    attrs?: InputProps
+    attrs?: InputProps & HTMLAttributes
   }
   type SelectOptions = DefaultOptionType[]
 
@@ -226,7 +225,7 @@ declare global {
     options?: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
     /** 字典名称 */
     dictName?: string
-    attrs?: SelectProps
+    attrs?: SelectProps & HTMLAttributes
   }
   interface ExTreeOption extends ExFormItemOption {
     data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
@@ -247,6 +246,7 @@ declare global {
     Hidden: { field: string }
     Slot: ExSlotOption
     Text: ExBaseOption
+    Form: ExFormOption
     Group: ExGroupOption
     InputGroup: ExInputGroupOption
     Card: ExGroupOption
@@ -275,6 +275,7 @@ declare global {
         [k: string]: ExFormItemOption
       }
   )[keyof OptionType]
+  type GetUniOption<T extends keyof OptionType> = OptionType[T] & { type?: T }
   type UniInputOption = Extract<UniOption, ExFormItemOption | ExGroupOption>
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]> & { type: string }) => void

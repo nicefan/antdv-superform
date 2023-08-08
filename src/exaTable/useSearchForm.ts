@@ -4,7 +4,7 @@ import { ref, reactive, h } from 'vue'
 import Controls from '../controls/components'
 
 export function useSearchForm(columns, searchSechma, onChange) {
-  const { buttons = {}, ...formOption }: FormOption = {
+  const { buttons = {}, ...formOption }: GetUniOption<'Form'> = {
     compact: true,
     ignoreRules: true,
     ...searchSechma,

@@ -20,7 +20,7 @@ export const useTable = (option: RootTableOption, data?: any[]) => {
       tableRef.value = _tableRef
       actionsRef.value = actions
     } else {
-      return () => h(ExaTable, { dataSource: dataSource.value, onRegister: register })
+      return (props, ctx) => h(ExaTable, { dataSource: dataSource.value, ...props, onRegister: register }, ctx?.slots)
     }
   }
   const _promise = new Promise((resolve) => watch(tableRef, resolve))
