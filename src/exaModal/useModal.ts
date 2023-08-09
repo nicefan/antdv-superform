@@ -1,7 +1,8 @@
 import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, onMounted, render } from 'vue'
-import { ButtonGroup, ModalFuncProps } from 'ant-design-vue'
+import { ModalFuncProps } from 'ant-design-vue'
 import type { VueNode } from 'ant-design-vue/es/_util/type'
 import base from '../controls/override'
+import { ButtonGroup } from '../controls'
 
 export function createModal(content: (() => VueNode) | VueNode, { buttons, ...config }: Obj = {}) {
   const visible = ref(false)

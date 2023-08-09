@@ -38,6 +38,13 @@ export const myTableOption = defineTable({
       rules: { required: true },
     },
     {
+      type: 'Input',
+      label: '说明',
+      field: 'tip',
+      applyTo: 'form',
+      rules: { required: true },
+    },
+    {
       type: 'Select',
       label: '数据类型',
       field: 'dataType',

@@ -77,18 +77,22 @@ function modalEdit({ listModel, rowKey }, tableOption, listener) {
 }
 
 function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
-  const columns = (function getConfig(_models: ModelsMap) {
-    return [...(_models as ModelsMap<MixOption>)].map(([col, { model, children }]) => {
+  const columns = (function getConfig(_models: ModelsMap<MixOption>) {
+    const _columns: any[] = []
+    ;[..._models].forEach(([col, { model, children }]) => {
+      if (col.type === 'Hidden' || col.applyTo === 'form') return
       if (children) {
-        return {
+        _columns.push({
           title: col.label,
           children: getConfig(children),
-        }
+        })
       } else {
         const colRender = colRenderMap?.get(col)
         const customRender = ({ record, text }) => {
           let renderText = text
-          if (Array.isArray(col.options)) {
+          if (col.labelField) {
+            renderText = col.labelField
+          } else if (Array.isArray(col.options)) {
             col.options.find(({ value, label }) => {
               if (value === text) {
                 renderText = label
@@ -101,14 +105,15 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
           return colRender ? colRender({ record, text: renderText }) : renderText
         }
 
-        return {
+        _columns.push({
           title: col.label,
           dataIndex: model.propChain.join('.'),
           customRender,
           ...(col.attrs as Obj),
-        }
+        })
       }
     })
+    return _columns
   })(models)
 
   return columns

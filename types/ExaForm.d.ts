@@ -133,16 +133,20 @@ declare global {
     iconOnly?: boolean
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
-    actions?: (T | (ButtonItem & ({ name: T } | {name?: string})))[]
+    actions?: (T | (ButtonItem & ({ name: T } | { name?: string })))[]
     // subItems?: ButtonItem[]
   }
 
+  type ColumnsOption = (UniWidgetOption | ExInputGroupOption) & {
+    /** 应用于表格或编辑表单 */
+    applyTo?: 'table' | 'form'
+  }
   interface ExTableOption extends ExBaseOption {
     field: string
     title?: string | Fn<VNode>
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
-    columns: (UniInputOption & { hideFor?: 'table' | 'form' })[]
+    columns: ColumnsOption[]
     buttons?: ExButtonGroup
     /** 列表元素右边按钮 */
     rowButtons?: ExButtonGroup<'del' | 'edit'>
@@ -161,7 +165,7 @@ declare global {
   interface ExListOption extends ExBaseOption {
     field: string
     buttons?: ExButtonGroup<'add' | 'refresh'>
-    columns: UniInputOption[]
+    columns: UniWidgetOption[]
     /** 列表元素右边按钮 */
     rowButtons?: ExButtonGroup<'del' | 'edit'>
   }
@@ -242,10 +246,8 @@ declare global {
     options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
   }
   type ExSlotOption = ExBaseOption & ({ slotName: string } | { render: string | Fn<VNodeChild> })
-  type OptionType = {
-    Hidden: { field: string }
-    Slot: ExSlotOption
-    Text: ExBaseOption
+  type WrapperTypes = {
+    InfoSlot: ExSlotOption
     Form: ExFormOption
     Group: ExGroupOption
     InputGroup: ExInputGroupOption
@@ -254,6 +256,12 @@ declare global {
     Tabs: ExTabsOption
     Table: ExTableOption
     Collapse: ExCollapseOption
+    Buttons: ExBaseOption & ExButtonGroup
+  }
+  type WidgetTypes = {
+    Hidden: { field: string }
+    InputSlot: ExSlotOption
+    Text: ExBaseOption
     Input: ExInputOption
     InputNumber: ExFormItemOption
     DatePicker: ExFormItemOption
@@ -264,23 +272,22 @@ declare global {
     Radio: ExRadioOption
     Checkbox: ExRadioOption
     Switch: ExSwitchOption
-    Buttons: ExBaseOption & ExButtonGroup
-    // [key: string]: ExFormOption
-    // Password: d
   }
+  type OptionType = WrapperTypes & WidgetTypes
 
-  type UniOption = (
-    | { [K in keyof OptionType]: { type: K } & OptionType[K] }
-    | {
-        [k: string]: ExFormItemOption
-      }
-  )[keyof OptionType]
+  type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
+  type UniWidgetOption =
+    | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
+    | ExFormItemOption
+
+  type UniOption = UniWrapperOption | UniWidgetOption
+
   type GetUniOption<T extends keyof OptionType> = OptionType[T] & { type?: T }
-  type UniInputOption = Extract<UniOption, ExFormItemOption | ExGroupOption>
+
   type MixOption = {
-    [K in keyof OptionType]: (k: Partial<OptionType[K]> & { type: string }) => void
+    [K in keyof OptionType]: (k: Partial<OptionType[K]>) => void
   }[keyof OptionType] extends (k: infer U) => void
-    ? U // & { type: keyof OptionType}
+    ? U & { type: string; applyTo?: 'table' | 'form' } // & { type: keyof OptionType}
     : never
 }
 

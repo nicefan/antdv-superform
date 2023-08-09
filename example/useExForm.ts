@@ -62,7 +62,7 @@ export default function exampleForm() {
             field: 'subName',
           },
           {
-            type: 'Slot',
+            type: 'InfoSlot',
             label: 'render',
             render: (props) => {
               console.log(props)
@@ -70,7 +70,7 @@ export default function exampleForm() {
             },
           },
           {
-            type: 'Slot',
+            type: 'InfoSlot',
             label: '模板插槽',
             slotName: 'test',
           },
@@ -196,7 +196,7 @@ export default function exampleForm() {
               { type: 'Input', field: 'group2', label: '分组2' },
             ],
           },
-          { type: 'Input', field: 'col2', label: 'col2' },
+          { type: 'Input', field: 'col2', label: 'col2', applyTo: 'form' },
         ],
       },
       {

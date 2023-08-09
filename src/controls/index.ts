@@ -3,5 +3,6 @@ import { addComponent } from './components'
 import Collections from './Collections'
 import useControl from './useControl'
 import useVModel from './useVModel'
+import { ButtonGroup } from './buttons'
 
-export { override, Collections, addComponent, useControl, useVModel }
+export { override, Collections, addComponent, useControl, useVModel, ButtonGroup }

@@ -17,6 +17,7 @@ import TimePicker from './TimePicker.vue'
 import Radio from './Radio.vue'
 import Checkbox from './Checkbox.vue'
 import TreeSelect from './TreeSelect.vue'
+import InputSlot from './InputSlot.vue'
 import useVModel from '../useVModel'
 import base from '../override'
 
@@ -39,6 +40,7 @@ const components = {
   Radio,
   Checkbox,
   TreeSelect,
+  InputSlot,
 }
 
 export function addComponent(name, component) {

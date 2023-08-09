@@ -36,7 +36,7 @@ export default defineComponent({
 
     const nodes: any[] = []
     let currentGroup: any[] | undefined
-    [...children].forEach(([subOption, subData], idx) => {
+    ;[...children].forEach(([subOption, subData], idx) => {
       const { type, align, isBlock, columns } = subOption
       if (type === 'Hidden') return
       // const isContainer = !!subData.children || !!columns || type === 'Buttons'
@@ -76,11 +76,9 @@ export function useBuildNode(option, subData) {
   const slots = inject<Obj>('rootSlots', {})
   const node = (() => {
     switch (type) {
-      case 'Slot': {
+      case 'InfoSlot': {
         const slot = slots[option.slotName] || option.render
-        const valueProps = option.field && useVModel({ option, model })
-        const allAttrs = reactive({ ...toRefs(valueProps), ...toRefs(attrs) })
-        const node = () => (typeof slot === 'string' ? slot : slot?.({ effectData, attrs: allAttrs }))
+        const node = () => (typeof slot === 'string' ? slot : slot?.({ effectData, attrs }))
         return option.isBlock ? node : () => h(base.FormItem, { name: ruleName, label }, { default: node })
       }
       case 'Text':
