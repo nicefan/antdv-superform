@@ -163,7 +163,7 @@ export default function exampleForm() {
         label: '表格',
         attrs: { bordered: true },
         editMode: 'inline',
-        addMode: 'modal',
+        // addMode: 'modal',
         buttons: {
           actions: ['add', 'edit', 'del'],
         },

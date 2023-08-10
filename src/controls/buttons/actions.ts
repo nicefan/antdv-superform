@@ -1,45 +1,47 @@
 import { Modal } from 'ant-design-vue'
 
-const _defaultActions = {
-  add: {
-    label: '新增',
-    attrs: {
-      type: 'primary',
+const getDefault = () => {
+  return {
+    add: {
+      label: '新增',
+      attrs: {
+        type: 'primary',
+      },
     },
-  },
-  del: {
-    label: '删除',
-    attrs: {
-      danger: true,
+    del: {
+      label: '删除',
+      attrs: {
+        danger: true,
+      },
+      confirmText: '确定要删除吗？',
+      disabled: (param) => !param.record && !(param.selectedRowKeys?.length > 0),
     },
-    confirmText: '确定要删除吗？',
-    disabled: (param) => !param.record && !(param.selectedRowKeys?.length > 0),
-  },
-  edit: {
-    label: '修改',
-    disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
-  },
-  submit: {
-    label: '确定',
-    attrs: {
-      type: 'primary',
+    edit: {
+      label: '修改',
+      disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
     },
-    // onClick(param) {
-    //   console.log(param)
-    // },
-  },
-  reset: {
-    label: '重置',
-  },
+    submit: {
+      label: '确定',
+      attrs: {
+        type: 'primary',
+      },
+      // onClick(param) {
+      //   console.log(param)
+      // },
+    },
+    reset: {
+      label: '重置',
+    },
+  }
 }
 
 function buildDefaultActions(methods) {
-  const actions: Obj = { ..._defaultActions }
+  const actions: Obj = getDefault()
   Object.keys(methods).forEach((key) => {
     if (typeof methods[key] === 'function') {
       actions[key] && (actions[key].onClick = methods[key])
     } else {
-      actions[key] = { ..._defaultActions[key], ...methods[key] }
+      Object.assign(actions[key], methods[key])
     }
   })
   return actions

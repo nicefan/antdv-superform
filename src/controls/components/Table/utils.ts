@@ -1,4 +1,4 @@
-import { reactive, ref, h } from 'vue'
+import { reactive, ref, h, inject, unref } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep } from 'lodash-es'
 import { createModal } from '../../../exaModal'
@@ -63,7 +63,7 @@ function modalEdit({ listModel, rowKey }, tableOption, listener) {
         title: '修改',
         onOk() {
           return formRef.value.submit().then((newData) => {
-            return listener.onUpdate(data, newData)
+            return listener.onUpdate( newData, data)
           })
         },
       })
@@ -77,6 +77,7 @@ function modalEdit({ listModel, rowKey }, tableOption, listener) {
 }
 
 function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
+  const rootSlots = inject('rootSlots', {})
   const columns = (function getConfig(_models: ModelsMap<MixOption>) {
     const _columns: any[] = []
     ;[..._models].forEach(([col, { model, children }]) => {
@@ -88,27 +89,24 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
         })
       } else {
         const colRender = colRenderMap?.get(col)
-        const customRender = ({ record, text }) => {
-          let renderText = text
-          if (col.labelField) {
-            renderText = col.labelField
-          } else if (Array.isArray(col.options)) {
-            col.options.find(({ value, label }) => {
-              if (value === text) {
-                renderText = label
-                return true
-              }
-            })
-          } else if (col.type === 'Switch') {
-            renderText = (col.valueLabels || '否是')[text]
+        let textRender: Fn | undefined
+        if (col.customRender) {
+          textRender = typeof col.customRender === 'string' ? rootSlots[col.customRender] : col.customRender
+        } else if (col.labelField) {
+          textRender = ({ record }) => record[col.labelField as string]
+        } else if (col.options && typeof col.options?.[0] !== 'string') {
+          textRender = async ({ record, index, text }) => {
+            const options =
+              typeof col.options === 'function' ? await col.options({ record, index }) : unref(col.options)
+            return options?.find(({ value }) => value === text)?.label
           }
-          return colRender ? colRender({ record, text: renderText }) : renderText
+        } else if (col.type === 'Switch') {
+          textRender = ({ text }) => (col.valueLabels || '否是')[text]
         }
-
         _columns.push({
           title: col.label,
           dataIndex: model.propChain.join('.'),
-          customRender,
+          customRender: colRender ? (props) => colRender(props, textRender) : textRender,
           ...(col.attrs as Obj),
         })
       }
@@ -140,17 +138,14 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
         return apis.query()
       } else {
         orgList.value.push(data)
-        const idx = orgList.value.indexOf(data)
-        Object.assign(orgList.value[idx], data)
       }
     },
-    async onUpdate(oldData, newData) {
+    async onUpdate(newData, oldData) {
       if (apis.update) {
         await apis.update(newData)
         return apis.query()
       } else {
-        const idx = orgList.value.indexOf(oldData)
-        Object.assign(orgList.value[idx], newData)
+        Object.assign(oldData, newData)
       }
     },
     async onDelete(items) {
@@ -192,7 +187,7 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
   } else {
     const columns = buildColumns(modelsMap)
     const { modalSlot, methods } = modalEdit(_param, option, listener)
-    context = { modalSlot, methods, columns, list: orgList }
+    context = { modalSlot, methods, rowMethods: { ...methods }, columns, list: orgList }
   }
 
   if (rowButtons) {

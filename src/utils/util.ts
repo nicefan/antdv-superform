@@ -61,8 +61,8 @@ export function getListener(option: Obj<Fn> = {}, formData) {
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
 export function buildModelData(option: Obj, { parent, propChain = [], rules = {}, refName }: ParentModel) {
-  const { field = '', keepField = option.labelField, label, rules: _rules, initialValue } = option
-  const nameArr = field.split('.')
+  const { field, keepField = option.labelField, label, rules: _rules, initialValue } = option
+  const nameArr = field ? field.split('.') : []
   let current = refName ? parent[refName] : parent
   let _refName
   let currentRules
@@ -96,10 +96,9 @@ export function buildModelData(option: Obj, { parent, propChain = [], rules = {}
   }
 }
 export function buildModel(option, parentModel) {
-  const { field, subItems, columns } = option
-  const currentModel = field
-    ? buildModelData(option, parentModel)
-    : { propChain: [], rules: {}, refName: '', ...parentModel }
+  const { subItems, columns } = option
+  const currentModel = buildModelData(option, parentModel)
+
   const data: ModelChildren = {
     model: currentModel,
   }
@@ -149,14 +148,16 @@ export function cloneModels(orgModels: ModelsMap, data, parentName: any[] = []) 
 }
 
 /** 针对表格行生成平铺数据模型 */
-export function flatModels<T>(orgModels: ModelsMap<T>, data?: Obj) {
+export function cloneModelsFlat<T>(orgModels: ModelsMap<T>, data?: Obj) {
   const models: [T, ModelData][] = []
   for (const [option, { model, children }] of orgModels) {
+    if (data && model.refName) {
+      data[model.refName] ??= cloneDeep(model.parent[model.refName])
+    }
     if (children) {
-      models.push(...flatModels(children, data))
+      models.push(...cloneModelsFlat(children, data))
     } else if (data) {
-      const parent = getPropertyDeep(data, model.propChain.slice(0, -1))
-      models.push([option, { ...model, parent }])
+      models.push([option, { ...model, parent: data }])
     } else {
       models.push([option, model])
     }

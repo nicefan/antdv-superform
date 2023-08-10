@@ -26,7 +26,7 @@ export interface RuleConfig {
   message?: string
 }
 declare global {
-  type VNode = Vue.VNode
+  type VNode = VNodeChild
   type Ref<T = any> = Vue.Ref<T>
   // type Readonly<T = any> = Vue.DeepReadonly<T>
   interface ModelData {
@@ -136,11 +136,13 @@ declare global {
     actions?: (T | (ButtonItem & ({ name: T } | { name?: string })))[]
     // subItems?: ButtonItem[]
   }
-
-  type ColumnsOption = (UniWidgetOption | ExInputGroupOption) & {
+  type ExColumnsItem = {
     /** 应用于表格或编辑表单 */
     applyTo?: 'table' | 'form'
+    /** 表格内容渲染 */
+    customRender?: string | Fn<VNodeChild>
   }
+  type ColumnsOption = (UniWidgetOption | ExInputGroupOption) & ExColumnsItem
   interface ExTableOption extends ExBaseOption {
     field: string
     title?: string | Fn<VNode>
@@ -245,7 +247,10 @@ declare global {
   interface ExRadioOption extends ExFormItemOption {
     options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
   }
-  type ExSlotOption = ExBaseOption & ({ slotName: string } | { render: string | Fn<VNodeChild> })
+  type ExSlotOption = { slotName: string } | { render: string | Fn<VNodeChild> }
+  type ExInfoSlotOption = ExBaseOption & ExSlotOption
+  type ExInputSlotOption = ExFormItemOption & ExSlotOption
+
   type WrapperTypes = {
     InfoSlot: ExSlotOption
     Form: ExFormOption
@@ -287,7 +292,7 @@ declare global {
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]>) => void
   }[keyof OptionType] extends (k: infer U) => void
-    ? U & { type: string; applyTo?: 'table' | 'form' } // & { type: keyof OptionType}
+    ? U & ExColumnsItem & { type: string }
     : never
 }
 
