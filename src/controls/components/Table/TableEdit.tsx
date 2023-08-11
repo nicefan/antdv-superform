@@ -39,7 +39,7 @@ function buildWidget(models) {
   return { colSlots, rules }
 }
 
-export default function ({ listModel, modelsMap, orgList, rowKey }, listener) {
+export default function ({ modelsMap, orgList, rowKey }, listener) {
   // 数据监听
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
@@ -75,7 +75,6 @@ export default function ({ listModel, modelsMap, orgList, rowKey }, listener) {
     }
     return editInfo
   }
-
   const methods = {
     add() {
       const item = { [rowKey]: nanoid(12) }

@@ -21,9 +21,9 @@ export default defineComponent({
         subItems: UniOption[]
       }>,
     },
-    model: {
-      type: Object as PropType<ParentModel>,
-    },
+    // model: {
+    //   type: Object as PropType<ModelData>,
+    // },
     children: {
       required: true,
       type: Object as PropType<ModelsMap<any>>,
@@ -67,10 +67,9 @@ export default defineComponent({
   },
 })
 
-export function useBuildNode(option, subData) {
+export function useBuildNode(option, model) {
   const { type, label } = option
-  const { model } = subData
-  const props = { option: option, ...subData }
+  const props = { option: option, model }
   const { effectData, attrs, ruleName, hidden } = useControl(props)
   const slotAttrs = reactive({ ...props, effectData, name: ruleName, label })
   const slots = inject<Obj>('rootSlots', {})

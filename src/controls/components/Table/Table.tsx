@@ -2,7 +2,7 @@
 import { ref, reactive, PropType, defineComponent, toRef, mergeProps } from 'vue'
 import { ButtonGroup, mergeActions } from '../../buttons'
 import base from '../../override'
-import { buildData } from './utils'
+import { buildData } from './buildData'
 
 export default defineComponent({
   name: 'ExaTable',

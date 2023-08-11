@@ -76,7 +76,7 @@ function modalEdit({ listModel, rowKey }, tableOption, listener) {
   return { modalSlot, methods }
 }
 
-function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
+function buildColumns(childrenMap: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   const rootSlots = inject('rootSlots', {})
   const columns = (function getConfig(_models: ModelsMap<MixOption>) {
     const _columns: any[] = []
@@ -112,7 +112,7 @@ function buildColumns(models: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
       }
     })
     return _columns
-  })(models)
+  })(childrenMap)
 
   return columns
 }
@@ -129,7 +129,7 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
   const { rowButtons } = option
 
   const listModel = listData.model
-  const modelsMap = listData.children
+  const childrenMap = listData.children
 
   const listener = {
     async onSave(data) {
@@ -168,11 +168,11 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
     actionSlot?: Fn
     modalSlot?: Fn
   }
-  const _param = { listModel, modelsMap, orgList, rowKey }
+  const _param = { listModel, childrenMap, orgList, rowKey }
 
   if (option.editMode === 'inline') {
     const { list, actionSlot, colRenderMap, methods: rowMethods } = inlineRender(_param, listener)
-    const columns = buildColumns(modelsMap, colRenderMap)
+    const columns = buildColumns(childrenMap, colRenderMap)
 
     context = { columns, list, rowMethods, methods: rowMethods, actionSlot }
 
@@ -185,7 +185,7 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
       context.modalSlot = modalSlot
     }
   } else {
-    const columns = buildColumns(modelsMap)
+    const columns = buildColumns(childrenMap)
     const { modalSlot, methods } = modalEdit(_param, option, listener)
     context = { modalSlot, methods, rowMethods: { ...methods }, columns, list: orgList }
   }

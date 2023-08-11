@@ -29,34 +29,25 @@ declare global {
   type VNode = VNodeChild
   type Ref<T = any> = Vue.Ref<T>
   // type Readonly<T = any> = Vue.DeepReadonly<T>
-  interface ModelData {
-    refName: string
-    // propRef: Ref
-    parent: Obj
-    propChain: string[]
-    rules: Obj
-    currentRules?: Obj
-  }
-  interface ParentModel {
-    /** 父对象 */
-    parent: Obj
-    /** 属性名链条数组 */
-    propChain?: string[]
-    rules?: Obj
-    propRef?: Ref
-    /** 对象属性名 */
+
+  interface ModelData<T = ExBaseOption> {
+    refData: any
+    /**@deprecated  */
     refName?: string
-  }
-  interface ListModels {
-    model: ParentModel
-    children: ModelsMap
-  }
-  type ModelsMap<T = ExBaseOption> = Map<T, T extends { subItems: any } ? Required<ModelChildren<T>> : ModelChildren<T>>
-  interface ModelChildren<T = ExBaseOption> {
-    model: ModelData
-    children?: ModelsMap<T>
+    /**@deprecated  */
+    parent: Obj
+    fieldName?: string
+    propChain: string[]
+    rules?: Obj[]
+    children?: ModelChildren<T>
     /** 存储列表配置默认数据 */
-    listData?: ListModels
+    listData?: ModelChildren<T>
+  }
+  type ModelsMap<T = ExBaseOption> = Map<T, ModelData>
+  interface ModelChildren<T = ExBaseOption> {
+    modelsMap: ModelsMap<T>
+    rules: Obj
+    initialData: Ref<Obj>
   }
 
   interface ExBaseOption {

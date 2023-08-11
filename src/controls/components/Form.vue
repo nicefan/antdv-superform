@@ -2,19 +2,20 @@
   <AForm
     :ref="getForm"
     :class="['exa-form', option.compact && 'exa-form-compact']"
-    :model="modelData.parent"
-    :rules="!option.ignoreRules ? modelData.rules : undefined"
+    :model="modelData"
+    :rules="!option.ignoreRules ? rules : undefined"
     v-bind="option.attrs"
   >
     <Collections :option="option" :children="modelsMap" />
     <ARow v-if="option.buttons" justify="end">
-      <ButtonGroup :config="option.buttons" :methods="methods" :param="{ formData: model, formRef }" />
+      <ButtonGroup :config="option.buttons" :methods="methods" :param="{ formData: modelData, formRef }" />
     </ARow>
     <slot />
   </AForm>
 </template>
 <script lang="ts">
-import { buildModelMaps, resetFields, setFieldsValue } from '../../utils/util'
+import { resetFields, setFieldsValue } from '../../utils/util'
+import { buildModelsMap } from '../../utils/buildModel'
 import { PropType, computed, nextTick, onMounted, provide, reactive, readonly, ref, toRaw, toRefs, watch } from 'vue'
 import baseComp from '../override'
 import Collections from '../Collections'
@@ -32,11 +33,7 @@ export default {
   props: {
     option: {
       required: true,
-      type: Object as PropType<FormOption>,
-    },
-    rules: {
-      type: Object,
-      default: () => {},
+      type: Object as PropType<ExFormOption>,
     },
     model: {
       type: Object,
@@ -47,30 +44,27 @@ export default {
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit }) {
     const formRef = ref()
-    const modelData = reactive({
-      rules: props.rules || {},
-      parent: {},
-    })
+    const modelData = ref(props.model || {})
+
     const { subItems, buttons } = props.option
-    const modelsMap = buildModelMaps(subItems, modelData)
-    const initialModel = cloneDeep(modelData.parent)
-    provide('exaProvider', { data: readonly(modelData.parent) })
+    const { modelsMap, rules, initialData } = buildModelsMap(subItems, modelData)
+    provide('exaProvider', reactive({ data: readonly(modelData) }))
     provide('wrapperCol', props.option.wrapperCol)
 
     const actions = {
       submit: () => {
         return formRef.value.validate().then((...args) => {
-          const data = cloneDeep(modelData.parent)
+          const data = cloneDeep(modelData.value)
           emit('submit', data)
           return data
         })
       },
       setFieldsValue(data) {
-        return setFieldsValue(modelData.parent, data)
+        return setFieldsValue(modelData.value, data)
       },
-      resetFields(defData = initialModel) {
-        resetFields(modelData.parent, defData)
-        const data = cloneDeep(modelData.parent)
+      resetFields(defData = initialData) {
+        resetFields(modelData.value, defData)
+        const data = cloneDeep(modelData.value)
         emit('reset', data)
         return data
       },
@@ -99,6 +93,7 @@ export default {
       getForm,
       modelsMap,
       modelData,
+      rules
     }
   },
 }
