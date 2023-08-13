@@ -3,7 +3,6 @@
     :ref="getForm"
     :class="['exa-form', option.compact && 'exa-form-compact']"
     :model="modelData"
-    :rules="!option.ignoreRules ? rules : undefined"
     v-bind="option.attrs"
   >
     <Collections :option="option" :children="modelsMap" />
@@ -16,7 +15,7 @@
 <script lang="ts">
 import { resetFields, setFieldsValue } from '../../utils/util'
 import { buildModelsMap } from '../../utils/buildModel'
-import { PropType, computed, nextTick, onMounted, provide, reactive, readonly, ref, toRaw, toRefs, watch } from 'vue'
+import { PropType, provide, reactive, readonly, ref, watch } from 'vue'
 import baseComp from '../override'
 import Collections from '../Collections'
 import { ButtonGroup } from '../buttons'
@@ -35,7 +34,7 @@ export default {
       required: true,
       type: Object as PropType<ExFormOption>,
     },
-    model: {
+    source: {
       type: Object,
     },
     /** 按钮事件 */
@@ -44,12 +43,11 @@ export default {
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit }) {
     const formRef = ref()
-    const modelData = ref(props.model || {})
+    const modelData = ref(props.source || {})
 
-    const { subItems, buttons } = props.option
+    const { subItems, buttons, ignoreRules } = props.option
     const { modelsMap, rules, initialData } = buildModelsMap(subItems, modelData)
-    provide('exaProvider', reactive({ data: readonly(modelData) }))
-    provide('wrapperCol', props.option.wrapperCol)
+    provide('exaProvider', { data: readonly(modelData), ignoreRules })
 
     const actions = {
       submit: () => {
@@ -71,7 +69,7 @@ export default {
     }
 
     watch(
-      () => props.model,
+      () => props.source,
       (data) => data && actions.resetFields(data),
       { immediate: true }
     )

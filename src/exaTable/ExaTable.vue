@@ -1,8 +1,8 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, mergeProps, watch, toRefs, h, provide } from 'vue'
+import { defineComponent, PropType, ref, reactive, mergeProps, watch, toRefs, h, provide, nextTick } from 'vue';
 import { merge } from 'lodash-es'
 import { useControl } from '../controls'
-import { buildModelMaps } from '../utils/util'
+import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
 import { DataProvider } from '../dataProvider'
@@ -13,14 +13,13 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     dataSource: Object,
-    option: Object as PropType<FormOption>,
+    option: Object as PropType<RootTableOption>,
   },
   emits: ['register'],
   setup(props, ctx) {
     const tableRef = ref()
-    const modelData = reactive({
-      parent: props.dataSource || [],
-    })
+    const refData = ref(props.dataSource || [])
+
     const option: Obj = reactive(props.option || {})
     merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
 
@@ -32,12 +31,13 @@ export default defineComponent({
         merge(option, _option, { attrs })
       },
       setData: (data) => {
-        modelData.parent = data
+        refData.value = data
       },
       goPage,
       request,
       onSearch,
       onLoaded,
+      refData,
     }
     watch(() => dataSource || props.dataSource, actions.setData)
 
@@ -45,61 +45,62 @@ export default defineComponent({
 
     const register = (compRef) => {
       tableRef.value = compRef
-      ctx.emit('register', actions, reactive({ ...toRefs(compRef), ...actions }))
+      ctx.emit('register', actions, reactive({ ...compRef, ...actions }))
     }
     ctx.emit('register', actions)
 
-    const handleTableChange = (pag: { pageSize: number; current: number }, filters: any, sorter: any) => {
-      console.log(pag)
-    }
+    // const handleTableChange = (pag: { pageSize: number; current: number }, filters: any, sorter: any) => {
+    //   console.log(pag)
+    // }
+
+    const tableAttrs: Obj = reactive({
+      option,
+      apis,
+      pagination,
+      onRegister: register,
+      // onChange: handleTableChange,
+    })
 
     const searchForm = ref()
-    const tableAttrs = ref()
-    watch(
-      option,
+    const unWatch = watch(
+      () => option as any,
       (data) => {
         if (!data?.columns) return
         const { columns, searchSechma } = data
         // 列表控件子表单模型
-        const initModel = { parent: reactive({}), rules: {} }
-        const listData = {
-          model: initModel,
-          children: buildModelMaps(columns, initModel),
-        }
+        const listData = buildModelsMap(columns)
 
-        // const currentModel = { model: modelData, listData }
+        const { effectData, attrs } = useControl({ option: data, model: { parent: refData } })
 
-        const { effectData, attrs } = useControl({ option: data, model: modelData })
-
-        if (searchSechma) {
-          searchForm.value = useSearchForm(columns, searchSechma, (data) => {
-            onSearch(data)
-          })
-        }
-        tableAttrs.value = reactive({
-          option,
-          listData,
-          model: modelData,
+        searchForm.value = useSearchForm(columns, searchSechma, (data) => {
+          onSearch(data)
+        })
+        Object.assign(tableAttrs, {
+          model: {
+            refData,
+            listData,
+          },
+          searchForm,
           effectData,
-          apis,
           ...attrs,
-          pagination,
-          onRegister: register,
-          onChange: handleTableChange,
+        })
+        nextTick(() => {
+          unWatch()
         })
       },
       {
         immediate: true,
       }
     )
+
     provide('rootSlots', ctx.slots)
 
     return () =>
       option.columns &&
-      h(DataProvider, { data: modelData.parent, apis }, () =>
+      h(DataProvider, { data: refData, apis }, () =>
         h('div', { class: option.isContainer && 'exa-container' }, [
           searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value()),
-          option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs.value)),
+          option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any)),
         ])
       )
   },

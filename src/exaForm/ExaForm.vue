@@ -6,7 +6,7 @@ import Controls from '../controls/components'
 export default defineComponent({
   name: 'ExaForm',
   props: {
-    config: Object as PropType<FormOption>,
+    config: Object as PropType<ExFormOption>,
     model: Object,
   },
   emits: ['register'],
@@ -16,7 +16,7 @@ export default defineComponent({
     const formOption = reactive<any>({ ...props.config, attrs: { ...props.config?.attrs, ...attrs } })
 
     const actions = {
-      setOption: (_option: FormOption) => {
+      setOption: (_option: ExFormOption) => {
         merge(formOption, _option, { attrs: { ...formOption.attrs, ..._option.attrs } })
       },
       setData: (data) => {
@@ -51,7 +51,7 @@ export default defineComponent({
         Controls.Form,
         {
           option: formOption,
-          model: formData.value,
+          source: formData.value,
           class: formOption.isContainer && 'exa-container',
           onRegister: register,
         },

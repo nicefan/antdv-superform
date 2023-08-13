@@ -1,7 +1,6 @@
 <script lang="tsx">
 import { reactive, ref, unref, useAttrs, watch } from 'vue'
 import useControl from '../useControl'
-import { ExInputProps } from '../propTypes'
 
 export default {
   name: 'ExTabs',
@@ -16,14 +15,17 @@ import baseComps from '../override'
 
 const {Card} = baseComps
 
-const props = defineProps<ExInputProps<ExTabsOption> &{
-  children: ModelsMap<TabItem>
+const props = defineProps<{
+  option: ExTabsOption
+  model: ModelDataGroup<TabItem>
+  attrs?: Obj
+  effectData: Obj
 }>()
 
 const { activeKey, buttons } = props.option
 
 const tabMap: Obj = {}
-const allList = [...props.children].map(([itemOption, data], idx) => {
+const allList = [...props.model.children].map(([itemOption, data], idx) => {
   const { attrs, hidden } = useControl({ option: itemOption as any, model: data })
 
   const { key, field, label, icon } = itemOption

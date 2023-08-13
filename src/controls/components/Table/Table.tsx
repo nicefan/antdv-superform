@@ -1,8 +1,9 @@
 /* eslint-disable vue/one-component-per-file */
-import { ref, reactive, PropType, defineComponent, toRef, mergeProps } from 'vue'
+import { ref, reactive, PropType, defineComponent, toRef, mergeProps, toRefs } from 'vue'
 import { ButtonGroup, mergeActions } from '../../buttons'
 import base from '../../override'
 import { buildData } from './buildData'
+import { getEffectData } from '../../../utils/util'
 
 export default defineComponent({
   name: 'ExaTable',
@@ -14,12 +15,12 @@ export default defineComponent({
     },
     model: {
       required: true,
-      type: Object as PropType<ModelData>,
+      type: Object as PropType<ModelDataGroup>,
     },
-    listData: {
-      required: true,
-      type: Object as PropType<ListModels>,
-    },
+    // listData: {
+    //   required: true,
+    //   type: Object as PropType<ListModels>,
+    // },
     // attrs: {
     //   default: () => ({}),
     //   type: Object as PropType<Obj>,
@@ -28,11 +29,12 @@ export default defineComponent({
     apis: Object as PropType<TableApis>,
   },
   emits: ['register'],
-  setup({ option, model, listData, apis }, ctx) {
+  setup({ option, model, apis }, ctx) {
     const editInline = option.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
-    const orgList = model.refName ? toRef(model.parent, model.refName) : toRef(model, 'parent')
+    const orgList = toRef(model, 'refData')
+    const listData = model.listData
 
     const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, apis })
 
@@ -76,7 +78,11 @@ export default defineComponent({
       option.buttons &&
       (() =>
         option.buttons && (
-          <ButtonGroup config={option.buttons} param={{ selectedRows, selectedRowKeys }} methods={methods} />
+          <ButtonGroup
+            config={option.buttons}
+            param={getEffectData({ selectedRows, selectedRowKeys })}
+            methods={methods}
+          />
         ))
     const compRef = ref()
 

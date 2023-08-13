@@ -46,6 +46,6 @@ export function useSearchForm(columns, searchSechma, onChange) {
     watchDebounced(formData, (data) => onChange(data), { debounce: 500, maxWait: 1000 })
   }
 
-  const searchForm = () => h(Controls.Form, { option: formOption, model: formData, onRegister })
+  const searchForm = () => h(Controls.Form, { option: formOption, source: formData, onRegister })
   return searchForm
 }

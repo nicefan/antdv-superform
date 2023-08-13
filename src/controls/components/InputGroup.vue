@@ -6,8 +6,7 @@ const { FormItem, InputGroup } = baseComps
 
 const props = defineProps<{
   option: ExInputGroupOption
-  model: ModelData
-  children: ModelsMap
+  model: ModelDataGroup
   attrs?: Obj
   effectData: Obj
 }>()
@@ -16,7 +15,7 @@ const props = defineProps<{
 <template>
   <form-item style="margin: 0">
     <input-group v-bind="attrs">
-      <Collections v-bind="{ option, model, children }" />
+      <Collections v-bind="{ option, children: model.children }" />
     </input-group>
   </form-item>
 </template>

@@ -32,16 +32,20 @@ declare global {
 
   interface ModelData<T = ExBaseOption> {
     refData: any
-    /**@deprecated  */
     refName?: string
-    /**@deprecated  */
     parent: Obj
+    initialValue: any
     fieldName?: string
     propChain: string[]
     rules?: Obj[]
-    children?: ModelChildren<T>
+    children?: ModelsMap<T>
     /** 存储列表配置默认数据 */
     listData?: ModelChildren<T>
+  }
+  interface ModelDataGroup<T = ExGroupOption> extends ModelData<T> {
+    children: Map<T, ModelDataGroup>
+    /** 存储列表配置默认数据 */
+    listData: ModelChildren<T>
   }
   type ModelsMap<T = ExBaseOption> = Map<T, ModelData>
   interface ModelChildren<T = ExBaseOption> {
@@ -283,7 +287,7 @@ declare global {
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]>) => void
   }[keyof OptionType] extends (k: infer U) => void
-    ? U & ExColumnsItem & { type: string }
+    ? U & ExColumnsItem & Partial<CollapseItem> & { type: string }
     : never
 }
 

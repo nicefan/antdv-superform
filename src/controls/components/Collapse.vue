@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { reactive, ref, toRefs, inject } from 'vue'
+import { reactive, ref } from 'vue'
 import { ButtonGroup } from '../buttons'
 import Collections from '../Collections'
 import baseComps from '../override'
 import useControl from '../useControl'
-import { ExCollapseProps } from '../propTypes'
 
 const { Collapse, CollapsePanel } = baseComps
 
-const props = defineProps<ExCollapseProps>()
+const props = defineProps<{
+  option: ExCollapseOption
+  model: ModelDataGroup<CollapseItem>
+  attrs?: Obj
+  effectData: Obj
+}>()
 
-const panels = [...props.children].map(([option, data], idx) => {
+const panels = [...props.model.children].map(([option, data], idx) => {
   const { attrs: __attrs, hidden } = useControl({ option: option as any, model: data })
 
   const { key, field } = option
@@ -19,15 +23,13 @@ const panels = [...props.children].map(([option, data], idx) => {
   return {
     attrs: reactive(attrs),
     option,
-    propsData: data,
+    children: data.children,
     key: key || field || String(idx),
     hidden,
     disabled,
   }
 })
-const { activeKey } = props.option
-const acKey = ref(activeKey || panels[0].key)
-const formData = inject<any>('exaProvider').data
+const acKey = ref(props.option.activeKey || panels[0].key)
 </script>
 
 <template>
@@ -40,9 +42,9 @@ const formData = inject<any>('exaProvider').data
         v-bind="panel.attrs"
       >
         <template #extra>
-          <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons" :param="{ formData }" />
+          <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons" :param="effectData" />
         </template>
-        <Collections :option="panel.option" v-bind="panel.propsData" />
+        <Collections :option="panel.option" :children="panel.children" />
       </CollapsePanel>
     </template>
   </Collapse>

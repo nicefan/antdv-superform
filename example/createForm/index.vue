@@ -4,7 +4,7 @@
     <Row :gutter="10">
       <!-- <a-button @click="changeSelect">切换选项</a-button> -->
       <!-- <Button @click="onSubmit">校验</Button> -->
-      <a-button @click="setValue">赋值</a-button>
+      <Button @click="setValue">赋值</Button>
     </Row>
   </div>
 </template>

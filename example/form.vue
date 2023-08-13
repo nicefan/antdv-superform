@@ -37,7 +37,7 @@ const setValue = () => {
     street: '白龙',
     text: 'text',
     isReg: 1,
-    'table': [{ id: 'dadf', col2: 'col2' }],
+    'table': [{ id: 'dadf', col1: 'dadf', col2: 'col2' }],
     'group': {
       'food': ['1'],
     },

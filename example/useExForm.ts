@@ -57,23 +57,23 @@ export default function exampleForm() {
               acKey.value = 'tab1'
             },
           },
-          {
-            type: 'Hidden',
-            field: 'subName',
-          },
-          {
-            type: 'InfoSlot',
-            label: 'render',
-            render: (props) => {
-              console.log(props)
-              return h('h2', '这是一个slot')
-            },
-          },
-          {
-            type: 'InfoSlot',
-            label: '模板插槽',
-            slotName: 'test',
-          },
+          // {
+          //   type: 'Hidden',
+          //   field: 'subName',
+          // },
+          // {
+          //   type: 'InfoSlot',
+          //   label: 'render',
+          //   render: (props) => {
+          //     console.log(props)
+          //     return h('h2', '这是一个slot')
+          //   },
+          // },
+          // {
+          //   type: 'InfoSlot',
+          //   label: '模板插槽',
+          //   slotName: 'test',
+          // },
           {
             type: 'Text',
             label: '提示',
@@ -108,7 +108,7 @@ export default function exampleForm() {
             label: '其它',
             options: list,
             computed(val, data) {
-              return data.record.forever !== null && 'a'
+              return data.formData.forever !== null && 'a'
             },
           },
           {
@@ -117,10 +117,10 @@ export default function exampleForm() {
             // labelField: 'foreverName',
             label: '备注',
             disabled(data) {
-              return data.record.forever === 2
+              return !!data.record.foreverName
             },
             computed(val, data) {
-              return data.record.forever ? undefined : val
+              return data.formData.foreverName
             },
           },
           {

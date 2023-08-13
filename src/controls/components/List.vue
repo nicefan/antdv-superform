@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, toRef, watch } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneModels } from '../../utils/util'
+import { cloneModels } from '../../utils/buildModel'
 import { ButtonGroup } from '../buttons'
 import Collections from '../Collections'
 import { cloneDeep } from 'lodash-es'
@@ -11,25 +11,23 @@ const { Row, List, ListItem } = baseComps
 
 const props = defineProps<{
   option: ExListOption
-  model: ModelData
-  listData: ListModels
+  model: ModelDataGroup
   attrs?: Obj
   effectData: Obj
 }>()
 
 const { buttons, rowButtons, label } = props.option
 // 先构建一个数据结构
-const { children: childrenMap, model: listModel } = props.listData
-const defaultData = listModel.parent
+const { modelsMap: childrenMap, initialData, rules } = props.model.listData
 
-const { parent, refName, currentRules, propChain } = props.model as Required<ModelData>
-const orgList = refName ? toRef(parent, refName) : toRef(props.model, 'parent')
+const { propChain } = props.model
+const orgList = toRef(props.model, 'refData')
 
 const rowKey = props.attrs?.rowKey || 'id'
 
 const methods = {
   add() {
-    orgList.value.push(cloneDeep(defaultData))
+    orgList.value.push(cloneDeep(initialData))
   },
   del({ record }) {
     const orgIdx = orgList.value.indexOf(record)
@@ -46,11 +44,11 @@ watch(
       const hash = item[rowKey] || nanoid(12)
       item[rowKey] = hash
       // 原数据已经存在, 此处建立表单绑定
-      const itemModel = cloneModels(childrenMap, item, [...propChain, idx])
-      currentRules[idx] = listModel.rules
-      return { modelsMap: itemModel, record: item }
+      const { modelsMap } = cloneModels(childrenMap, item, [...propChain, idx])
+      // currentRules[idx] = listModel.rules
+      return { modelsMap, record: item }
     })
-    Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
+    // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
   },
   {
     immediate: true,
@@ -73,7 +71,7 @@ watch(
             v-if="rowButtons"
             :config="rowButtons"
             :methods="methods"
-            :param="{ listData: orgList, index, record: item.record }"
+            :param="{ ...effectData, listData: orgList, index, record: item.record }"
           />
         </template>
         <Collections style="width: 100%" :children="item.modelsMap" />

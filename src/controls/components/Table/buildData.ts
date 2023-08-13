@@ -1,52 +1,33 @@
-import { reactive, ref, h, inject, unref } from 'vue'
+import { ref, h, inject, unref } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneDeep } from 'lodash-es'
+import { merge } from 'lodash-es'
 import { createModal } from '../../../exaModal'
-import { cloneModels, resetFields } from '../../../utils/util'
-import { ButtonGroup, mergeActions } from '../../buttons'
+import { ButtonGroup } from '../../buttons'
 import inlineRender from './TableEdit'
-import Collections from '../../Collections'
 import Controls from '../index'
-import base from '../../override'
 
-function modalEdit({ listModel, rowKey }, tableOption, listener) {
+function modalEdit({ listData, rowKey, option, listener }) {
   // 生成新增表单
-  const { parent, rules } = listModel
-  const model = ref({})
+  const { initialData, rules } = listData as ModelChildren
+  const source = ref({})
   const formRef = ref()
-  // const children = cloneModels(modelsMap, modelRef)
 
-  // const editForm = () =>
-  //   h(
-  //     base.Form,
-  //     {
-  //       ref: formRef,
-  //       class: 'exa-form',
-  //       model: modelRef,
-  //       rules: rules,
-  //       layout: 'vertical',
-  //       ...tableOption.fromProps,
-  //     },
-  //     h(Collections, { option: tableOption, children: children })
-  //   )
-
-  const formOption: ExFormOption = { ...tableOption.formSechma }
+  const formOption: ExFormOption = { ...option.formSechma }
   // buttons: { actions: ['submit', 'reset'] },
-  formOption.subItems = tableOption.columns.filter((item) => item.hideFor !== 'form')
+  formOption.subItems = option.columns.filter((item) => item.hideFor !== 'form')
 
   const editForm = () =>
     h(Controls.Form, {
       option: formOption,
-      model: model.value,
-      rules: rules,
+      source: source.value,
       onRegister: (data) => (formRef.value = data),
     })
 
-  const { modalSlot, openModal } = createModal(editForm, { maskClosable: false, ...tableOption.modalProps })
+  const { modalSlot, openModal } = createModal(editForm, { maskClosable: false, ...option.modalProps })
 
   const methods = {
     add() {
-      model.value = { ...parent, [rowKey]: nanoid(12) }
+      source.value = merge({}, initialData, { [rowKey]: nanoid(12) } )
       openModal({
         title: '新增',
         onOk() {
@@ -58,7 +39,7 @@ function modalEdit({ listModel, rowKey }, tableOption, listener) {
     },
     edit({ record, selectedRows }) {
       const data = record || selectedRows[0]
-      model.value = data
+      source.value = data
       openModal({
         title: '修改',
         onOk() {
@@ -80,12 +61,12 @@ function buildColumns(childrenMap: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   const rootSlots = inject('rootSlots', {})
   const columns = (function getConfig(_models: ModelsMap<MixOption>) {
     const _columns: any[] = []
-    ;[..._models].forEach(([col, { model, children }]) => {
+    ;[..._models].forEach(([col, model]) => {
       if (col.type === 'Hidden' || col.applyTo === 'form') return
-      if (children) {
+      if (model.children) {
         _columns.push({
           title: col.label,
-          children: getConfig(children),
+          children: getConfig(model.children),
         })
       } else {
         const colRender = colRenderMap?.get(col)
@@ -119,7 +100,7 @@ function buildColumns(childrenMap: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
 
 type BuildDataParam = {
   option: RootTableOption
-  listData: ListModels
+  listData: ModelChildren
   orgList: Ref<Obj[]>
   rowKey: string
   apis?: TableApis
@@ -128,8 +109,7 @@ type BuildDataParam = {
 function buildData({ option, listData, orgList, rowKey, apis = {} as any }: BuildDataParam) {
   const { rowButtons } = option
 
-  const listModel = listData.model
-  const childrenMap = listData.children
+  const { modelsMap: childrenMap, initialData } = listData
 
   const listener = {
     async onSave(data) {
@@ -168,7 +148,7 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
     actionSlot?: Fn
     modalSlot?: Fn
   }
-  const _param = { listModel, childrenMap, orgList, rowKey }
+  const _param = { childrenMap, orgList, rowKey }
 
   if (option.editMode === 'inline') {
     const { list, actionSlot, colRenderMap, methods: rowMethods } = inlineRender(_param, listener)
@@ -180,13 +160,13 @@ function buildData({ option, listData, orgList, rowKey, apis = {} as any }: Buil
       const {
         modalSlot,
         methods: { add, del },
-      } = modalEdit(_param, option, listener)
+      } = modalEdit({ listData, rowKey, option, listener })
       Object.assign(context.methods, { add, del })
       context.modalSlot = modalSlot
     }
   } else {
     const columns = buildColumns(childrenMap)
-    const { modalSlot, methods } = modalEdit(_param, option, listener)
+    const { modalSlot, methods } = modalEdit({ listData, rowKey, option, listener })
     context = { modalSlot, methods, rowMethods: { ...methods }, columns, list: orgList }
   }
 

@@ -3,7 +3,6 @@ import { Col, Row } from 'ant-design-vue'
 import useControl from './useControl'
 import Controls from './components'
 import { ButtonGroup } from './buttons'
-import useVModel from './useVModel'
 import base from './override'
 
 const sectionList = ['List', 'Group', 'Tabs', 'Table', 'Collapse', 'Card']
@@ -21,9 +20,6 @@ export default defineComponent({
         subItems: UniOption[]
       }>,
     },
-    // model: {
-    //   type: Object as PropType<ModelData>,
-    // },
     children: {
       required: true,
       type: Object as PropType<ModelsMap<any>>,
@@ -67,30 +63,30 @@ export default defineComponent({
   },
 })
 
-export function useBuildNode(option, model) {
+export function useBuildNode(option, model: ModelData) {
   const { type, label } = option
-  const props = { option: option, model }
-  const { effectData, attrs, ruleName, hidden } = useControl(props)
-  const slotAttrs = reactive({ ...props, effectData, name: ruleName, label })
+  const { effectData, attrs, rules, hidden } = useControl({ option, model })
   const slots = inject<Obj>('rootSlots', {})
   const node = (() => {
     switch (type) {
       case 'InfoSlot': {
         const slot = slots[option.slotName] || option.render
         const node = () => (typeof slot === 'string' ? slot : slot?.({ effectData, attrs }))
-        return option.isBlock ? node : () => h(base.FormItem, { name: ruleName, label }, { default: node })
+        return option.isBlock ? node : () => h(base.FormItem, reactive({ label }), { default: node })
       }
       case 'Text':
-        return () => h(base.FormItem, reactive({ label, ...attrs }), { default: () => model.parent[model.refName] })
+        return () => h(base.FormItem, reactive({ label, ...attrs }), { default: () => model.refData })
       case 'Buttons':
         return () => h(ButtonGroup, { config: option, param: effectData })
-      default:
+      default: {
+        const slotAttrs: Obj = reactive({ option, model, effectData })
         if (sectionList.includes(type)) {
           Object.assign(slotAttrs, attrs)
         } else {
-          slotAttrs.attrs = attrs
+          Object.assign(slotAttrs, { attrs, name: model.propChain, label, rules })
         }
         return () => h(Controls[type], slotAttrs)
+      }
     }
   })()
 
