@@ -10,7 +10,8 @@ import { useForm } from 'ant-design-vue/es/form'
 import Controls from '../'
 import style from '../style.module.scss'
 import { cloneModelsFlat } from '../../../utils/buildModel'
-import { resetFields } from '../../../utils/util'
+import { getEffectData } from '../../hooks/reactivity'
+import { resetFields } from '../../../utils/fields'
 import useControl from '../../useControl'
 import base from '../../override'
 
@@ -33,7 +34,8 @@ export default function ({ childrenMap, orgList, rowKey }, listener) {
       list.value = orgList.value.concat(items)
     }
   )
-
+  const effectData = getEffectData()
+  /** 初始model */
   const { modelsMap: fModels } = cloneModelsFlat<ExBaseOption & ExColumnsItem>(childrenMap)
 
   const setEditMap = (data, info) => {
@@ -42,6 +44,7 @@ export default function ({ childrenMap, orgList, rowKey }, listener) {
       const editData = cloneDeep(data)
       const { modelsMap, rules } = cloneModelsFlat(childrenMap, editData)
       const form = useForm(reactive(editData), ref(rules))
+
       editInfo = shallowReactive<Obj>({ ...info, form, modelsMap, editData })
       editMap.set(data, editInfo)
     } else {
@@ -129,8 +132,8 @@ export default function ({ childrenMap, orgList, rowKey }, listener) {
     const component = Controls[option.type]
     if (!component || option.applyTo === 'form') continue
 
-    const node = ({ model, validateInfo }) => {
-      const { effectData, attrs } = useControl({ option, model })
+    const node = ({ model, validateInfo, editData }) => {
+      const { attrs } = useControl({ option, effectData: reactive({ ...effectData, current: editData }) })
       return h(Controls[option.type], {
         option,
         model,
@@ -143,11 +146,11 @@ export default function ({ childrenMap, orgList, rowKey }, listener) {
 
     const ruleName = _model.propChain.join('.')
     const customRender = (props, textRender?: Fn) => {
-      const editInfo = editMap.get(toRaw(props.record))
-      if (editInfo?.isEdit) {
-        const model = editInfo.modelsMap.get(option)
-        const validateInfo = editInfo.form.validateInfos[ruleName]
-        return node({ model, validateInfo })
+      const { modelsMap, isEdit, form, editData } = editMap.get(toRaw(props.record)) || {}
+      if (isEdit) {
+        const model = modelsMap.get(option)
+        const validateInfo = form.validateInfos[ruleName]
+        return node({ model, validateInfo, editData })
       } else if (textRender) {
         return textRender?.(props)
       } else {

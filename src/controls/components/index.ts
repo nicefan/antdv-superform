@@ -49,7 +49,7 @@ export function addComponent(name, component) {
     props: ['option', 'model', 'effectData', 'attrs'],
 
     setup({ option, model, effectData, attrs }) {
-      const valueProps = useVModel({ option, model })
+      const valueProps = useVModel({ option, model, effectData })
       const allAttrs = reactive({ ...toRefs(valueProps), ...toRefs(attrs) })
 
       return () =>

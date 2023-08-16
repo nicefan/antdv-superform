@@ -7,6 +7,7 @@ import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
 import { DataProvider } from '../dataProvider'
 import Controls from '../controls/components'
+import { getEffectData } from '../controls/hooks/reactivity'
 
 export default defineComponent({
   name: 'ExaTable',
@@ -64,13 +65,14 @@ export default defineComponent({
     const searchForm = ref()
     const unWatch = watch(
       () => option as any,
-      (data) => {
-        if (!data?.columns) return
-        const { columns, searchSechma } = data
+      (opt) => {
+        if (!opt?.columns) return
+        const { columns, searchSechma } = opt
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
+        const effectData = getEffectData({ current: refData })
 
-        const { effectData, attrs } = useControl({ option: data, model: { parent: refData } })
+        const { attrs } = useControl({ option: opt, effectData })
 
         searchForm.value = useSearchForm(columns, searchSechma, (data) => {
           onSearch(data)
@@ -80,7 +82,6 @@ export default defineComponent({
             refData,
             listData,
           },
-          searchForm,
           effectData,
           ...attrs,
         })

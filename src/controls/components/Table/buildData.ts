@@ -1,10 +1,11 @@
-import { ref, h, inject, unref } from 'vue'
+import { ref, h, inject, unref, toRaw, computed, watch, reactive } from 'vue'
 import { nanoid } from 'nanoid'
 import { merge } from 'lodash-es'
 import { createModal } from '../../../exaModal'
 import { ButtonGroup } from '../../buttons'
 import inlineRender from './TableEdit'
 import Controls from '../index'
+import { getEffectData } from '../../hooks/reactivity'
 
 function modalEdit({ listData, rowKey, option, listener }) {
   // 生成新增表单
@@ -27,7 +28,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
 
   const methods = {
     add() {
-      source.value = merge({}, initialData, { [rowKey]: nanoid(12) } )
+      source.value = merge({}, initialData, { [rowKey]: nanoid(12) })
       openModal({
         title: '新增',
         onOk() {
@@ -44,7 +45,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
         title: '修改',
         onOk() {
           return formRef.value.submit().then((newData) => {
-            return listener.onUpdate( newData, data)
+            return listener.onUpdate(newData, data)
           })
         },
       })
@@ -59,6 +60,25 @@ function modalEdit({ listData, rowKey, option, listener }) {
 
 function buildColumns(childrenMap: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   const rootSlots = inject('rootSlots', {})
+  const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
+
+  /** 阻止表格customRender无效的渲染 */
+  const renderProduce = (param, render) => {
+    const record = toRaw(param.record)
+    const row = renderMap.get(record) || new Map()
+    renderMap.set(record, row)
+    if (!row.has(param.column)) {
+      const activeParam = reactive(param)
+      const node = computed(() => render(activeParam))
+      row.set(param.column, { activeParam, node })
+      return node.value
+    } else {
+      const { activeParam, node } = row.get(param.column)
+      Object.assign(activeParam, param)
+      return node.value
+    }
+  }
+
   const columns = (function getConfig(_models: ModelsMap<MixOption>) {
     const _columns: any[] = []
     ;[..._models].forEach(([col, model]) => {
@@ -76,18 +96,29 @@ function buildColumns(childrenMap: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
         } else if (col.labelField) {
           textRender = ({ record }) => record[col.labelField as string]
         } else if (col.options && typeof col.options?.[0] !== 'string') {
-          textRender = async ({ record, index, text }) => {
-            const options =
-              typeof col.options === 'function' ? await col.options({ record, index }) : unref(col.options)
+          let options: any[] | undefined
+          if (typeof col.options === 'function') {
+            Promise.resolve(col.options(getEffectData())).then((data) => (options = data))
+          } else {
+            options = unref(col.options)
+          }
+          textRender = ({ text }) => {
             return options?.find(({ value }) => value === text)?.label
           }
         } else if (col.type === 'Switch') {
           textRender = ({ text }) => (col.valueLabels || '否是')[text]
+        } else {
+          // textRender为undefined将直接返回绑定的值
+        }
+        let customRender
+        if (colRender || textRender) {
+          const __render = colRender ? (props) => colRender(props, textRender) : textRender
+          customRender = (param) => renderProduce(param, __render)
         }
         _columns.push({
           title: col.label,
           dataIndex: model.propChain.join('.'),
-          customRender: colRender ? (props) => colRender(props, textRender) : textRender,
+          customRender,
           ...(col.attrs as Obj),
         })
       }

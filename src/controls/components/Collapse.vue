@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, toRef } from 'vue'
 import { ButtonGroup } from '../buttons'
 import Collections from '../Collections'
 import baseComps from '../override'
 import useControl from '../useControl'
+import { getEffectData } from '../hooks/reactivity'
 
 const { Collapse, CollapsePanel } = baseComps
 
 const props = defineProps<{
   option: ExCollapseOption
   model: ModelDataGroup<CollapseItem>
-  attrs?: Obj
   effectData: Obj
+  // disabled?: boolean
+  wrapperCol?: Obj
 }>()
 
-const panels = [...props.model.children].map(([option, data], idx) => {
-  const { attrs: __attrs, hidden } = useControl({ option: option as any, model: data })
+const panels = [...props.model.children].map(([option, model], idx) => {
+  const effectData = getEffectData({ current: toRef(props.model, 'refData') })
+  const { attrs: __attrs, hidden } = useControl({ option: option, effectData })
 
   const { key, field } = option
   const { disabled, ...attrs } = __attrs
@@ -23,7 +26,8 @@ const panels = [...props.model.children].map(([option, data], idx) => {
   return {
     attrs: reactive(attrs),
     option,
-    children: data.children,
+    effectData,
+    model,
     key: key || field || String(idx),
     hidden,
     disabled,
@@ -33,7 +37,7 @@ const acKey = ref(props.option.activeKey || panels[0].key)
 </script>
 
 <template>
-  <Collapse v-model:activeKey="acKey" v-bind="attrs">
+  <Collapse v-model:activeKey="acKey">
     <template v-for="panel of panels" :key="panel.key">
       <CollapsePanel
         v-if="!panel.hidden.value"
@@ -44,7 +48,7 @@ const acKey = ref(props.option.activeKey || panels[0].key)
         <template #extra>
           <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons" :param="effectData" />
         </template>
-        <Collections :option="panel.option" :children="panel.children" />
+        <Collections :option="panel.option" :model="panel.model" :wrapperCol="props.wrapperCol" />
       </CollapsePanel>
     </template>
   </Collapse>

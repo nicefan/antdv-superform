@@ -1,5 +1,5 @@
 <template>
-  <ButtonGroup :config="config" v-bind="attrs"></ButtonGroup>
+  <ButtonGroup :config="config"></ButtonGroup>
 </template>
 <script setup lang="ts">
 import { SpaceProps } from 'ant-design-vue'
@@ -25,7 +25,6 @@ const {
   hidden,
   disabled,
   actions,
-  ...attrs
 } = defineProps<ButtonsProps>()
 const config: ExButtonGroup = {
   defaultAttrs: { type, size, shape },

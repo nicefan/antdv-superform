@@ -1,6 +1,6 @@
 import { h, ref } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
-import { render } from 'less'
+import { AppleOutlined, AndroidOutlined } from '@ant-design/icons-vue';
 
 export default function exampleForm() {
   const list = ref<any[]>([
@@ -33,7 +33,7 @@ export default function exampleForm() {
       key: '0-1',
     },
   ]
-  const acKey = ref('')
+  const acKey = ref()
   const options = defineForm({
     attrs: {
       layout: 'vertical',
@@ -117,7 +117,7 @@ export default function exampleForm() {
             // labelField: 'foreverName',
             label: '备注',
             disabled(data) {
-              return !!data.record.foreverName
+              return !!data.current.foreverName
             },
             computed(val, data) {
               return data.formData.foreverName
@@ -154,6 +154,92 @@ export default function exampleForm() {
             label: '有效期',
             field: 'startDate',
             keepField: 'endDate',
+          },
+        ],
+      },
+      {
+        type: 'Card',
+        field: 'group',
+        title: '分格线',
+        disabled: ({ formData }) => !!formData.isReg,
+        buttons: {
+          limit: 3,
+          defaultAttrs: {
+            size: 'small',
+            type: 'primary',
+          },
+          iconOnly: true,
+          actions: [
+            {
+              disabled: (data) => {
+                console.log(data)
+                return data.formData.forever === 2
+              },
+              label: '新增',
+              onClick() {},
+            },
+            {
+              label: '修改',
+              hidden: ({ formData }) => formData.forever === 3,
+              onClick() {},
+            },
+            {
+              label: '删除',
+              icon: AndroidOutlined,
+              confirmText: '确定删除吗？',
+              disabled: ({ formData }) => formData.forever === 2,
+              attrs: { danger: true },
+              onClick() {},
+            },
+          ],
+        },
+        subItems: [
+          {
+            type: 'InNumber',
+            field: 'width',
+            label: '体重',
+            initialValue: 120,
+            disabled: (data) => data.formData.forever === 2,
+            computed: (val, data) => {
+              console.log(data.current)
+              return data.formData.forever === 1 ? 110 : val
+            },
+            attrs: { max: 200, min: 110 },
+            rules: { required: true, type: 'number', min: 110 },
+          },
+          {
+            type: 'Input',
+            field: 'height',
+            label: '身高',
+            disabled: (data) => data.formData.forever === 2,
+            initialValue: 170,
+            attrs: { type: 'number' },
+            rules: { type: 'number', min: 150 },
+          },
+          {
+            type: 'Radio',
+            field: 'radio',
+            label: '天气',
+            attrs: { buttonStyle: 'outline' },
+            options: [
+              { label: '晴天', value: '1' },
+              { label: '雨天', value: '2' },
+            ],
+          },
+          {
+            type: 'Checkbox',
+            field: 'food',
+            label: '食物',
+            options: [
+              { label: '中餐', value: '1' },
+              { label: '西餐', value: '2' },
+            ],
+          },
+          {
+            type: 'TreeSelect',
+            field: 'tree',
+            label: '树形',
+            data: treeData,
           },
         ],
       },
@@ -205,93 +291,9 @@ export default function exampleForm() {
         isBlock: true,
         actions: [
           {
+            icon: AndroidOutlined,
             label: '导入',
             onClick() {},
-          },
-        ],
-      },
-      {
-        type: 'Card',
-        field: 'group',
-        title: '分格线',
-        buttons: {
-          limit: 3,
-          defaultAttrs: {
-            size: 'small',
-            type: 'primary',
-          },
-          iconOnly: true,
-          actions: [
-            {
-              disabled: (data) => {
-                console.log(data)
-                return data.formData.forever === 2
-              },
-              label: '新增',
-              onClick() {},
-            },
-            {
-              label: '修改',
-              hidden: ({ formData }) => formData.forever === 3,
-              onClick() {},
-            },
-            {
-              label: '删除',
-              icon: 'user',
-              confirmText: '确定删除吗？',
-              disabled: ({ formData }) => formData.forever === 2,
-              attrs: { danger: true },
-              onClick() {},
-            },
-          ],
-        },
-        subItems: [
-          {
-            type: 'InNumber',
-            field: 'width',
-            label: '体重',
-            initialValue: 120,
-            disabled: (data) => data.formData.forever === 2,
-            computed: (val, data) => {
-              console.log(data.record)
-              return data.formData.forever === 1 ? 110 : val
-            },
-            attrs: { max: 200, min: 110 },
-            rules: { required: true, type: 'number', min: 110 },
-          },
-          {
-            type: 'Input',
-            field: 'height',
-            label: '身高',
-            disabled: (data) => data.formData.forever === 2,
-            initialValue: 170,
-            attrs: { type: 'number' },
-            rules: { type: 'number', min: 150 },
-          },
-          {
-            type: 'Radio',
-            field: 'radio',
-            label: '天气',
-            attrs: { buttonStyle: 'outline' },
-            options: [
-              { label: '晴天', value: '1' },
-              { label: '雨天', value: '2' },
-            ],
-          },
-          {
-            type: 'Checkbox',
-            field: 'food',
-            label: '食物',
-            options: [
-              { label: '中餐', value: '1' },
-              { label: '西餐', value: '2' },
-            ],
-          },
-          {
-            type: 'TreeSelect',
-            field: 'tree',
-            label: '树形',
-            data: treeData,
           },
         ],
       },
@@ -302,6 +304,7 @@ export default function exampleForm() {
           {
             key: 'tab1',
             label: '第一页',
+            icon: AppleOutlined,
             subItems: [
               {
                 type: 'List',

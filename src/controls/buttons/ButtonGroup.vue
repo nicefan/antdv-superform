@@ -1,59 +1,47 @@
 <template>
-  <a-space @click.stop="">
-    <a-button v-for="{ attrs, icon, label } of btns" :key="label" v-bind="attrs">
-      <a-tooltip v-if="$props.config.iconOnly && icon" :title="label"><v-icon :type="icon" /></a-tooltip>
-      <span v-else><v-icon v-if="icon" :type="icon" /> {{ label }}</span>
-    </a-button>
+  <Space @click.stop="">
+    <Button v-for="{ attrs, icon, label } of btns" :key="label" v-bind="attrs">
+      <Tooltip v-if="$props.config.iconOnly && icon" :title="label"><component :is="useIcon(icon)" /></Tooltip>
+      <span v-else><component v-if="icon" :is="useIcon(icon)" /> {{ label }}</span>
+    </Button>
 
-    <a-dropdown v-if="moreBtns.length">
-      <a-button v-bind="defaultAttrs"> 更多 <v-icon type="down" /> </a-button>
+    <Dropdown v-if="moreBtns.length">
+      <Button v-bind="defaultAttrs"> <ellipsis-outlined /> </Button>
       <template #overlay>
-        <a-menu v-for="{ attrs, icon, label } of moreBtns" :key="label">
-          <a-menu-item :disabled="attrs.disabled">
-            <a-button block v-bind="attrs" shape=""> <v-icon v-if="icon" :type="icon" />{{ label }} </a-button>
-          </a-menu-item>
-        </a-menu>
+        <Menu v-for="{ attrs, icon, label } of moreBtns" :key="label">
+          <menu-item :disabled="attrs.disabled">
+            <Button block v-bind="attrs" shape="">
+              <component v-if="icon" :is="useIcon(icon)" />
+              {{ label }}
+            </Button>
+          </menu-item>
+        </Menu>
       </template>
-    </a-dropdown>
-  </a-space>
+    </Dropdown>
+  </Space>
 </template>
-<script lang="ts">
-import { ref, watchEffect, defineComponent, inject, PropType, readonly, reactive } from 'vue'
-import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Modal } from 'ant-design-vue'
-import VIcon from '../../icon/VIcon'
-import { useDisabled, useShow } from '../../utils/util'
+<script setup lang="ts">
+import { ref, watchEffect, PropType, reactive } from 'vue'
+import { Space, Button, Tooltip, Dropdown, Menu, MenuItem } from 'ant-design-vue'
+import { EllipsisOutlined } from '@ant-design/icons-vue'
+import { useDisabled, useShow } from '../hooks/reactivity'
+import { useIcon } from '../hooks/useIcon'
 import { mergeActions } from './actions'
 
-export default defineComponent({
-  components: {
-    VIcon,
-    ASpace: Space,
-    AButton: Button,
-    ATooltip: Tooltip,
-    ADropdown: Dropdown,
-    AMenu: Menu,
-    AMenuItem: MenuItem,
+const props = defineProps({
+  config: {
+    required: true,
+    type: Object as PropType<ExButtonGroup>,
   },
-  props: {
-    config: {
-      required: true,
-      type: Object as PropType<ExButtonGroup>,
-    },
-    methods: Object,
-    param: Object,
-  },
-  setup(props) {
-    const { config, methods, param } = props
-    // const formData = inject('formData')
-    const { btns, moreBtns, defaultAttrs } = useButton(config, reactive(param || {}), methods)
-    return {
-      btns,
-      moreBtns,
-      defaultAttrs,
-    }
-  },
+  methods: Object,
+  param: Object,
 })
 
+const { config, methods, param } = props
+const { btns, moreBtns, defaultAttrs } = useButton(config, reactive(param || {}), methods)
+</script>
+
+<script lang="ts">
 function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
   const { defaultAttrs, limit = 3, hidden, disabled, actions } = config
   const dis = useDisabled(disabled, param)

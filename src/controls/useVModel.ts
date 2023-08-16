@@ -1,13 +1,13 @@
-import { getEffectData } from '../utils/util'
 import { toRef, reactive, watch, onMounted, ref, unref, toValue } from 'vue'
 type Param = {
   option: ExFormItemOption
   model: ModelData
+  effectData: Obj
 }
 
-export default function useVModel({ option, model }: Param, defaultValue?: any) {
+export default function useVModel({ option, model, effectData }: Param, defaultValue?: any) {
   const { type, keepField, computed: __computed }: MixOption = option
-  if (defaultValue !== undefined) model.refData ??= defaultValue
+  if (defaultValue !== undefined) model.refData ??= toValue(defaultValue)
   // 实际存储变量
   const refValue = toRef(model, 'refData')
   // 临时存储值，用于传递到计算属性
@@ -15,8 +15,10 @@ export default function useVModel({ option, model }: Param, defaultValue?: any) 
 
   const vModel = reactive({
     value: tempData,
-    'onUpdate:value': (val) => {
+    'onUpdate:value': (val = toValue(defaultValue)) => {
       tempData.value = val
+      // 数据重置时还原为默认值
+      refValue.value = val
     },
   })
 
@@ -43,7 +45,6 @@ export default function useVModel({ option, model }: Param, defaultValue?: any) 
   watch(tempData, effect, { flush: 'sync' })
 
   if (__computed) {
-    const effectData = getEffectData({ record: model.parent })
     onMounted(() =>
       watch(
         () => ref(__computed(raw, effectData)),

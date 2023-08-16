@@ -68,7 +68,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     }
   )
   const apis = computed(() => {
-    return queryApi.value && { ...option.apis, query: queryApi.value }
+    return queryApi.value && { ...option.apis, query: request }
   })
 
   watch([apis, requestParams], () => queryApi.value && request(), { immediate: true })

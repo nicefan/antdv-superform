@@ -1,7 +1,7 @@
 /* eslint-disable no-use-before-define */
 import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
-import Vue, { HTMLAttributes, VNodeChild } from 'vue'
+import Vue, { Component, HTMLAttributes, VNodeChild } from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
 import { FormProps, PaginationProps } from 'ant-design-vue'
 import { ModalFuncProps, ColProps, RowProps, FormItemProps, InputProps } from 'ant-design-vue/es'
@@ -102,7 +102,7 @@ declare global {
     label?: string
     /** 确认提示文本 */
     confirmText?: string
-    icon?: string
+    icon?: string | Component
     attrs?: Obj & HTMLAttributes
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
@@ -176,7 +176,7 @@ declare global {
   //   subItems: UniOption[]
   // }
   interface ExTabsOption extends ExBaseOption {
-    activeKey?: string | Ref<string>
+    activeKey?: Ref<string>
     forceRender?: boolean
     buttons?: ExButtonGroup<'add' | 'refresh'>
     subItems: TabItem[]
@@ -184,7 +184,7 @@ declare global {
   interface TabItem extends Omit<ExGroupOption, 'type'> {
     label: string
     key?: string
-    icon?: string
+    icon?: string | Component
     subItems: UniOption[]
   }
   interface ExCollapseOption extends ExBaseOption {
@@ -194,7 +194,7 @@ declare global {
   interface CollapseItem extends Omit<ExGroupOption, 'type'> {
     label: string
     key?: string
-    icon?: string
+    icon?: string | Component
     subItems: UniOption[]
     buttons?: ExButtonGroup
     formAttrs?: FormProps & HTMLAttributes
@@ -210,10 +210,10 @@ declare global {
   }
 
   interface ExInputOption extends ExFormItemOption {
-    addonAfterIcon?: string
-    addonBeforeIcon?: string
-    prefixIcon?: string
-    suffixIcon?: string
+    addonAfterIcon?: string | Component
+    addonBeforeIcon?: string | Component
+    prefixIcon?: string | Component
+    suffixIcon?: string | Component
     suffixTips?: string
     btnClick?: (FormData: Obj, e: MouseEvent) => void
     onChange?: (FormData: Obj, e: InputEvent) => void
@@ -287,7 +287,7 @@ declare global {
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]>) => void
   }[keyof OptionType] extends (k: infer U) => void
-    ? U & ExColumnsItem & Partial<CollapseItem> & { type: string }
+    ? U & ExColumnsItem & Partial<CollapseItem> & { type?: string }
     : never
 }
 

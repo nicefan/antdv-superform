@@ -1,9 +1,11 @@
-import { defineComponent, h, inject, PropType, provide, reactive, toRefs } from 'vue'
+import { computed, defineComponent, h, inject, PropType, provide, reactive, toRef, toRefs } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import useControl from './useControl'
 import Controls from './components'
 import { ButtonGroup } from './buttons'
 import base from './override'
+import { getEffectData } from './hooks/reactivity'
+import { globalProps } from '../plugin'
 
 const sectionList = ['List', 'Group', 'Tabs', 'Table', 'Collapse', 'Card']
 
@@ -19,36 +21,46 @@ export default defineComponent({
         isContainer?: boolean
         subItems: UniOption[]
       }>,
+      default: () => ({}),
     },
-    children: {
+    model: {
       required: true,
-      type: Object as PropType<ModelsMap<any>>,
+      type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
+    wrapperCol: Object,
+    disabled: Object as PropType<Ref<boolean | undefined>>,
   },
-  setup({ option = {}, children }) {
-    const rowProps = { gutter: option.gutter ?? 16, ...option.rowProps }
-    const wrapperCol = option.wrapperCol || inject('wrapperCol', undefined)
-    provide('wrapperCol', wrapperCol)
+  setup(props) {
+    const rowProps = { gutter: props.option.gutter ?? 16, ...props.option.rowProps }
+    const wrapperCol = props.option.wrapperCol || props.wrapperCol
+    // provide('wrapperCol', wrapperCol)
+    const effectData = getEffectData({ current: toRef(props.model, 'refData') })
 
     const nodes: any[] = []
     let currentGroup: any[] | undefined
-    ;[...children].forEach(([subOption, subData], idx) => {
-      const { type, align, isBlock, columns } = subOption
+    ;[...props.model.children].forEach(([option, subData], idx) => {
+      const { type, align, isBlock, columns } = option
       if (type === 'Hidden') return
       // const isContainer = !!subData.children || !!columns || type === 'Buttons'
-      const { node, hidden } = useBuildNode(subOption, subData)
+      const { attrs, hidden } = useControl({
+        option,
+        effectData: effectData,
+        inheritDisabled: toRef(props, 'disabled') as Ref<boolean | undefined>,
+      })
+
+      const node = useBuildNode(option, subData, effectData, attrs, wrapperCol)
       if (sectionList.includes(type) || isBlock) {
         currentGroup = undefined
         nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', key: idx }, node()))
       } else {
-        const colProps = { ...wrapperCol, ...subOption.colProps, key: idx }
+        const colProps = { ...wrapperCol, ...option.colProps, key: idx }
         if (align) colProps.style = 'text-align: ' + align
-        colProps.span = subOption.span ?? colProps.span ?? 8
+        colProps.span = option.span ?? colProps.span ?? 8
         if (!currentGroup) {
           nodes.push((currentGroup = []))
         }
         currentGroup.push(() => !hidden.value && h(Col, colProps, { default: node }))
-        if (subOption.isWrap) currentGroup = undefined
+        if (option.isWrap) currentGroup = undefined
       }
     })
 
@@ -63,9 +75,8 @@ export default defineComponent({
   },
 })
 
-export function useBuildNode(option, model: ModelData) {
+export function useBuildNode(option, model: ModelData, effectData, attrs, wrapperCol) {
   const { type, label } = option
-  const { effectData, attrs, rules, hidden } = useControl({ option, model })
   const slots = inject<Obj>('rootSlots', {})
   const node = (() => {
     switch (type) {
@@ -79,16 +90,26 @@ export function useBuildNode(option, model: ModelData) {
       case 'Buttons':
         return () => h(ButtonGroup, { config: option, param: effectData })
       default: {
-        const slotAttrs: Obj = reactive({ option, model, effectData })
+        let slotAttrs: Obj = { option, model, effectData }
         if (sectionList.includes(type)) {
-          Object.assign(slotAttrs, attrs)
+          Object.assign(slotAttrs, { ...attrs, wrapperCol })
         } else {
-          Object.assign(slotAttrs, { attrs, name: model.propChain, label, rules })
+          const ignoreRules = inject<Obj>('exaProvider', {}).ignoreRules
+          const rules = computed(() => (ignoreRules || attrs.disabled.value ? undefined : model.rules))
+          slotAttrs = reactive({
+            ...slotAttrs,
+            attrs,
+            ...globalProps.formItem,
+            ...option.formItemProps,
+            name: model.propChain,
+            label,
+            rules,
+          })
         }
         return () => h(Controls[type], slotAttrs)
       }
     }
   })()
 
-  return { node, hidden }
+  return node
 }

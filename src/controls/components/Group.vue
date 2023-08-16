@@ -1,18 +1,23 @@
 <script setup lang="ts">
 import Collections from '../Collections'
 import { Row, Divider } from 'ant-design-vue'
-import { CommonProps } from '../propTypes'
 
-const props = defineProps<CommonProps<ExGroupOption>>()
+const props = defineProps<{
+  option: ExGroupOption
+  model: ModelDataGroup
+  effectData: Obj
+  disabled?: Ref<boolean | undefined>
+  wrapperCol?: Obj
+}>()
 const title = props.option.title || props.option.label
 </script>
 <template>
-  <div v-bind="attrs">
+  <div>
     <Row v-if="title" :span="24" class="title">
       <slot name="title">
         <Divider orientation="left">{{ title }}</Divider>
       </slot>
     </Row>
-    <Collections :option="option" :children="model.children" />
+    <Collections v-bind="props" />
   </div>
 </template>

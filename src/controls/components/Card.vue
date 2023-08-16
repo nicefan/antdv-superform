@@ -2,17 +2,22 @@
 import Collections from '../Collections'
 import { ButtonGroup } from '../buttons'
 import base from '../override'
-import { CommonProps } from '../propTypes';
 
-const props = defineProps<CommonProps<ExGroupOption>>()
+const props = defineProps<{
+  option: ExGroupOption
+  model: ModelDataGroup
+  effectData: Obj
+  disabled?: Ref<boolean | undefined>
+  wrapperCol?: Obj
+}>()
 const { label, title = label, buttons } = props.option
 </script>
 
 <template>
-  <base.Card :title="title" v-bind="attrs">
+  <base.Card :title="title">
     <template #extra>
       <ButtonGroup v-if="buttons" :config="buttons" :param="props.effectData"></ButtonGroup>
     </template>
-    <Collections :option="props.option" :children="props.model.children" />
+    <Collections v-bind="props" />
   </base.Card>
 </template>

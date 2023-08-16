@@ -3,7 +3,7 @@ import { ref, reactive, PropType, defineComponent, toRef, mergeProps, toRefs } f
 import { ButtonGroup, mergeActions } from '../../buttons'
 import base from '../../override'
 import { buildData } from './buildData'
-import { getEffectData } from '../../../utils/util'
+import { getEffectData } from '../../hooks/reactivity'
 
 export default defineComponent({
   name: 'ExaTable',
@@ -17,14 +17,6 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ModelDataGroup>,
     },
-    // listData: {
-    //   required: true,
-    //   type: Object as PropType<ListModels>,
-    // },
-    // attrs: {
-    //   default: () => ({}),
-    //   type: Object as PropType<Obj>,
-    // },
     effectData: Object,
     apis: Object as PropType<TableApis>,
   },

@@ -1,6 +1,8 @@
 <script lang="tsx">
-import { reactive, ref, unref, useAttrs, watch } from 'vue'
+import { onMounted, reactive, ref, toRef, useAttrs, watchEffect } from 'vue'
 import useControl from '../useControl'
+import { getEffectData } from '../hooks/reactivity'
+import { useIcon } from '../hooks/useIcon'
 
 export default {
   name: 'ExTabs',
@@ -10,65 +12,60 @@ export default {
 <script setup lang="tsx">
 import Collections from '../Collections'
 import { ButtonGroup } from '../buttons'
-import VIcon from '../../icon/VIcon'
 import baseComps from '../override'
 
-const {Card} = baseComps
+const { Tabs, TabPane } = baseComps
 
 const props = defineProps<{
   option: ExTabsOption
   model: ModelDataGroup<TabItem>
-  attrs?: Obj
   effectData: Obj
+  wrapperCol?: Obj
 }>()
 
-const { activeKey, buttons } = props.option
-
-const tabMap: Obj = {}
-const allList = [...props.model.children].map(([itemOption, data], idx) => {
-  const { attrs, hidden } = useControl({ option: itemOption as any, model: data })
-
-  const { key, field, label, icon } = itemOption
-  const tabKey = key || field || String(idx)
-  const tabLabel = (icon ? <VIcon type={icon} /> : '') + label
-  tabMap[tabKey] = { children: data.children, option: itemOption }
-  return reactive({ key: tabKey, tab: tabLabel, disabled: attrs.disabled, hidden })
-})
-
-const acKey = ref(unref(activeKey) || allList[0].key)
-// const tabList = computed(() => _tabList.filter(({ key }) => contents[key].show.value))
-const tabList = ref(allList)
-watch(
-  allList,
-  () => {
-    let validKey
-    tabList.value = allList.filter((item) => {
-      if (!item.hidden && !item.disabled) {
-        validKey = validKey ?? item.key
-      } else if (acKey.value === item.key) {
-        acKey.value = validKey
-      }
-      return !item.hidden
-    })
-    acKey.value = acKey.value ?? validKey
-  },
-  { deep: true }
-)
-const inhertAttrs:Obj = useAttrs()
-const onTabChange = (key) => {
-  acKey.value = key
-  inhertAttrs.onTabChange?.(key)
+const activeKey = ref(toRef(props.option, 'activeKey') as any)
+const paneKeys: string[] = []
+const planeHideEvent = (idx, key, invalid) => {
+  paneKeys[idx] = !invalid && key
+  if (invalid && activeKey.value === key) {
+    activeKey.value = paneKeys.find((val) => val)
+  }
 }
+onMounted(() => {
+  activeKey.value ??= paneKeys.find((val) => val)
+})
+const panes = [...props.model.children].map(([option, model], idx) => {
+  const { key, field, label, icon } = option
+  const effectData = getEffectData({ current: toRef(props.model, 'refData') })
 
-
+  const { attrs, hidden } = useControl({ option, effectData })
+  const tabKey = key || field || String(idx)
+  const tabLabel = () => [useIcon(icon), label]
+  watchEffect(() => {
+    planeHideEvent(idx, tabKey, hidden.value || attrs.disabled.value)
+  })
+  return {
+    attrs: reactive({
+      ...attrs,
+      key: tabKey,
+      tab: tabLabel,
+    }),
+    hidden,
+    option,
+    model,
+  }
+})
 </script>
 <template>
-  <Card :tab-list="tabList" :active-tab-key="acKey" v-bind="attrs" @tab-change="onTabChange">
-    <template #tabBarExtraContent>
-      <ButtonGroup v-if="buttons" :config="buttons"></ButtonGroup>
+  <Tabs v-model:activeKey="activeKey">
+    <template #rightExtra>
+      <ButtonGroup v-if="option.buttons" :config="option.buttons"></ButtonGroup>
     </template>
-    <keep-alive>
-      <Collections v-bind="tabMap[acKey]" :key="acKey" />
-    </keep-alive>
-  </Card>
+
+    <template v-for="{ attrs, hidden, option, model } of panes" :key="attrs.key">
+      <TabPane v-bind="attrs" v-if="!hidden.value">
+        <Collections :option="option" :model="model" :wrapperCol="wrapperCol" />
+      </TabPane>
+    </template>
+  </Tabs>
 </template>

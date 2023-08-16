@@ -1,25 +1,21 @@
 <template>
-  <AForm
-    :ref="getForm"
-    :class="['exa-form', option.compact && 'exa-form-compact']"
-    :model="modelData"
-    v-bind="option.attrs"
-  >
-    <Collections :option="option" :children="modelsMap" />
+  <AForm :ref="getForm" :class="['exa-form', option.compact && 'exa-form-compact']" :model="modelData" v-bind="attrs">
+    <Collections :option="option" :model="model" :wrapper-col="option.wrapperCol" :disabled="attrs.disabled" />
     <ARow v-if="option.buttons" justify="end">
-      <ButtonGroup :config="option.buttons" :methods="methods" :param="{ formData: modelData, formRef }" />
+      <ButtonGroup :config="option.buttons" :methods="methods" :param="{ ...effectData, formRef }" />
     </ARow>
     <slot />
   </AForm>
 </template>
 <script lang="ts">
-import { resetFields, setFieldsValue } from '../../utils/util'
+import { resetFields, setFieldsValue } from '../../utils/fields'
 import { buildModelsMap } from '../../utils/buildModel'
 import { PropType, provide, reactive, readonly, ref, watch } from 'vue'
 import baseComp from '../override'
 import Collections from '../Collections'
 import { ButtonGroup } from '../buttons'
 import { cloneDeep } from 'lodash-es'
+import useControl from '../useControl'
 
 export default {
   name: 'ExaForm',
@@ -48,6 +44,9 @@ export default {
     const { subItems, buttons, ignoreRules } = props.option
     const { modelsMap, rules, initialData } = buildModelsMap(subItems, modelData)
     provide('exaProvider', { data: readonly(modelData), ignoreRules })
+    const effectData = reactive({ formData: modelData, current: modelData })
+
+    const { attrs } = useControl({ option: props.option, effectData })
 
     const actions = {
       submit: () => {
@@ -62,6 +61,7 @@ export default {
       },
       resetFields(defData = initialData) {
         resetFields(modelData.value, defData)
+        formRef.value?.clearValidate()
         const data = cloneDeep(modelData.value)
         emit('reset', data)
         return data
@@ -89,9 +89,14 @@ export default {
     return {
       formRef,
       getForm,
-      modelsMap,
       modelData,
-      rules
+      model: {
+        refData: modelData,
+        children: modelsMap,
+      },
+      attrs,
+      effectData,
+      rules,
     }
   },
 }

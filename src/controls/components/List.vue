@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, toRef, watch } from 'vue'
+import { reactive, ref, toRef, toRefs, useAttrs, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../../utils/buildModel'
 import { ButtonGroup } from '../buttons'
@@ -12,8 +12,9 @@ const { Row, List, ListItem } = baseComps
 const props = defineProps<{
   option: ExListOption
   model: ModelDataGroup
-  attrs?: Obj
   effectData: Obj
+  disabled?: Ref<boolean | undefined>
+  wrapperCol?: Obj
 }>()
 
 const { buttons, rowButtons, label } = props.option
@@ -23,7 +24,8 @@ const { modelsMap: childrenMap, initialData, rules } = props.model.listData
 const { propChain } = props.model
 const orgList = toRef(props.model, 'refData')
 
-const rowKey = props.attrs?.rowKey || 'id'
+const attrs: Obj = useAttrs()
+const rowKey = attrs.rowKey || 'id'
 
 const methods = {
   add() {
@@ -40,13 +42,17 @@ const listItems = ref<any[]>([])
 watch(
   () => [...orgList.value],
   (org) => {
-    listItems.value = org.map((item, idx) => {
-      const hash = item[rowKey] || nanoid(12)
-      item[rowKey] = hash
+    listItems.value = org.map((record, idx) => {
+      const hash = record[rowKey] || nanoid(12)
+      record[rowKey] = hash
       // 原数据已经存在, 此处建立表单绑定
-      const { modelsMap } = cloneModels(childrenMap, item, [...propChain, idx])
+      const { modelsMap } = cloneModels(childrenMap, record, [...propChain, idx])
       // currentRules[idx] = listModel.rules
-      return { modelsMap, record: item }
+      return {
+        hash,
+        model: { refData: ref(record), children: modelsMap },
+        effectData: reactive({ ...toRefs(props.effectData), index: idx, record }),
+      }
     })
     // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
   },
@@ -61,20 +67,15 @@ watch(
     <template #header>
       <Row v-if="label || buttons" type="flex" justify="space-between" align="middle">
         <span style="font-size: 16px">{{ label }}</span>
-        <ButtonGroup v-if="buttons" :config="buttons" :param="{ listData: orgList }" :methods="methods" />
+        <ButtonGroup v-if="buttons" :config="buttons" :param="effectData" :methods="methods" />
       </Row>
     </template>
-    <template #renderItem="{ item, index }">
-      <ListItem :key="item.record[rowKey]">
+    <template #renderItem="{ item }">
+      <ListItem :key="item.hash">
         <template #actions>
-          <ButtonGroup
-            v-if="rowButtons"
-            :config="rowButtons"
-            :methods="methods"
-            :param="{ ...effectData, listData: orgList, index, record: item.record }"
-          />
+          <ButtonGroup v-if="rowButtons" :config="rowButtons" :methods="methods" :param="item.effectData" />
         </template>
-        <Collections style="width: 100%" :children="item.modelsMap" />
+        <Collections style="width: 100%" :model="item.model" :disabled="disabled" :wrapper-col="wrapperCol" />
       </ListItem>
     </template>
   </List>
