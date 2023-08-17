@@ -3,14 +3,23 @@
     margin-bottom: 10px !important
   }
 }
+.exa-table-search>.ant-form {
+  margin-top: -6px;
+  margin-bottom: -6px;
+  .ant-form-item{
+    margin-bottom: 6px;
+    margin-top: 6px;
+  }
+}
 
 .exa-container .exa-form-section {
   background-color: #fff;
   padding:16px;
   // margin-bottom: 16px;
-  &.exa-table-search {
-    padding-bottom: 6px;
-  }
+  // &.exa-table-search {
+  //   padding-top: 10px;
+  //   padding-bottom: 10px;
+  // }
   // &:not(.section-last) {
   //   margin-bottom: 16px;
   // }
@@ -18,6 +27,6 @@
     padding-top: 0;
   }
 }
-.exa-form-section:not(.section-last) {
-    margin-bottom: 16px;
+.exa-form-section:not(:first-child) {
+    margin-top: 16px;
 }

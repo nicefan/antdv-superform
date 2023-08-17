@@ -22,7 +22,10 @@ export const myTableOption = defineTable({
     attrs: {
       labelCol: { span: 6 },
     },
-    subItems: ['fieldName', 'title'],
+    wrapperCol: {
+      span: 8,
+    },
+    subItems: ['fieldName', 'title', 'tip'],
   },
   columns: [
     {
@@ -41,7 +44,7 @@ export const myTableOption = defineTable({
       type: 'Input',
       label: '说明',
       field: 'tip',
-      applyTo: 'form',
+      applyTo: 'Form',
       rules: { required: true },
     },
     {

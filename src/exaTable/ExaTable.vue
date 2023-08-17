@@ -8,6 +8,7 @@ import { useSearchForm } from './useSearchForm'
 import { DataProvider } from '../dataProvider'
 import Controls from '../controls/components'
 import { getEffectData } from '../controls/hooks/reactivity'
+import { globalProps } from '../plugin'
 
 export default defineComponent({
   name: 'ExaTable',
@@ -28,7 +29,7 @@ export default defineComponent({
 
     const actions = {
       setOption: (_option: RootTableOption) => {
-        const attrs = mergeProps({ ..._option.attrs }, option.attrs)
+        const attrs = mergeProps(globalProps.Table, { ..._option.attrs }, option.attrs)
         merge(option, _option, { attrs })
       },
       setData: (data) => {
@@ -101,7 +102,7 @@ export default defineComponent({
       h(DataProvider, { data: refData, apis }, () =>
         h('div', { class: option.isContainer && 'exa-container' }, [
           searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value()),
-          option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any)),
+          option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
         ])
       )
   },

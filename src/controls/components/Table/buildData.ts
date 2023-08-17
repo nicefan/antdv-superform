@@ -57,9 +57,15 @@ function modalEdit({ listData, rowKey, option, listener }) {
   }
   return { modalSlot, methods }
 }
-
-function buildColumns(childrenMap: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
-  const rootSlots = inject('rootSlots', {})
+interface BuildColumnsParam {
+  childrenMap: ModelsMap
+  methods?: Obj // 按钮组件绑定方法
+  effectData?: Obj // 按钮组件绑定传参
+  actionSlot?: Obj // 行操作按钮绑定到指定forSlot
+  colEditMap?: Map<Obj, Fn> // 行内编辑render方法
+}
+function buildColumns({ childrenMap, methods, actionSlot, colEditMap, effectData }: BuildColumnsParam) {
+  const rootSlots = { ...inject('rootSlots', {}), ...actionSlot }
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
 
   /** 阻止表格customRender无效的渲染 */
@@ -82,44 +88,48 @@ function buildColumns(childrenMap: ModelsMap, colRenderMap?: Map<Obj, Fn>) {
   const columns = (function getConfig(_models: ModelsMap<MixOption>) {
     const _columns: any[] = []
     ;[..._models].forEach(([col, model]) => {
-      if (col.type === 'Hidden' || col.applyTo === 'form') return
+      if (col.type === 'Hidden' || col.applyTo === 'Form') return
       if (model.children) {
         _columns.push({
           title: col.label,
           children: getConfig(model.children),
         })
       } else {
-        const colRender = colRenderMap?.get(col)
+        const { type: colType, viewRender, render, options: colOptions, labelField } = col as any
+        const colEditRender = colEditMap?.get(col)
         let textRender: Fn | undefined
-        if (col.customRender) {
-          textRender = typeof col.customRender === 'string' ? rootSlots[col.customRender] : col.customRender
-        } else if (col.labelField) {
-          textRender = ({ record }) => record[col.labelField as string]
-        } else if (col.options && typeof col.options?.[0] !== 'string') {
+        if (viewRender || colType === 'InfoSlot') {
+          const _render = viewRender | render
+          textRender = typeof _render === 'string' ? rootSlots[_render] : viewRender
+        } else if (labelField) {
+          textRender = ({ record }) => record[labelField as string]
+        } else if (colOptions && typeof colOptions?.[0] !== 'string') {
           let options: any[] | undefined
-          if (typeof col.options === 'function') {
-            Promise.resolve(col.options(getEffectData())).then((data) => (options = data))
+          if (typeof colOptions === 'function') {
+            Promise.resolve(colOptions(getEffectData())).then((data) => (options = data))
           } else {
-            options = unref(col.options)
+            options = unref(colOptions)
           }
           textRender = ({ text }) => {
             return options?.find(({ value }) => value === text)?.label
           }
-        } else if (col.type === 'Switch') {
+        } else if (colType === 'Switch') {
           textRender = ({ text }) => (col.valueLabels || '否是')[text]
+        } else if (colType === 'Buttons') {
+          textRender = (param) => h(ButtonGroup, { config: col, param: reactive({ ...effectData, ...param }), methods })
         } else {
           // textRender为undefined将直接返回绑定的值
         }
         let customRender
-        if (colRender || textRender) {
-          const __render = colRender ? (props) => colRender(props, textRender) : textRender
+        if (colEditRender || textRender) {
+          const __render = (param) => colEditRender?.(param) || textRender?.(param) || param.text
           customRender = (param) => renderProduce(param, __render)
         }
         _columns.push({
           title: col.label,
           dataIndex: model.propChain.join('.'),
+          ...(col.columnProps as Obj),
           customRender,
-          ...(col.attrs as Obj),
         })
       }
     })
@@ -134,83 +144,70 @@ type BuildDataParam = {
   listData: ModelChildren
   orgList: Ref<Obj[]>
   rowKey: string
-  apis?: TableApis
+  listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
 }
 
-function buildData({ option, listData, orgList, rowKey, apis = {} as any }: BuildDataParam) {
-  const { rowButtons } = option
-
+function buildData({ option, listData, orgList, rowKey, listener }: BuildDataParam) {
   const { modelsMap: childrenMap, initialData } = listData
+  const effectData = { ...getEffectData(), current: orgList }
 
-  const listener = {
-    async onSave(data) {
-      if (apis.save) {
-        await apis.save(data)
-        return apis.query()
-      } else {
-        orgList.value.push(data)
-      }
-    },
-    async onUpdate(newData, oldData) {
-      if (apis.update) {
-        await apis.update(newData)
-        return apis.query()
-      } else {
-        Object.assign(oldData, newData)
-      }
-    },
-    async onDelete(items) {
-      if (apis.delete) {
-        await apis.delete(items)
-        return apis.query()
-      } else {
-        items.forEach((item) => {
-          orgList.value.splice(orgList.value.indexOf(item), 1)
-        })
-      }
-    },
-  }
-
-  let context: {
+  const { editMode, addMode, rowButtons } = option
+  const context: {
     list: Ref
     columns: Obj[]
-    rowMethods?: Obj
-    methods: Obj
-    actionSlot?: Fn
+    methods?: Obj
     modalSlot?: Fn
-  }
-  const _param = { childrenMap, orgList, rowKey }
-
-  if (option.editMode === 'inline') {
-    const { list, actionSlot, colRenderMap, methods: rowMethods } = inlineRender(_param, listener)
-    const columns = buildColumns(childrenMap, colRenderMap)
-
-    context = { columns, list, rowMethods, methods: rowMethods, actionSlot }
-
-    if (option.addMode === 'modal') {
-      const {
-        modalSlot,
-        methods: { add, del },
-      } = modalEdit({ listData, rowKey, option, listener })
-      Object.assign(context.methods, { add, del })
-      context.modalSlot = modalSlot
-    }
-  } else {
-    const columns = buildColumns(childrenMap)
-    const { modalSlot, methods } = modalEdit({ listData, rowKey, option, listener })
-    context = { modalSlot, methods, rowMethods: { ...methods }, columns, list: orgList }
-  }
-
-  if (rowButtons) {
-    context.columns.push({
-      title: '操作',
-      key: 'action',
-      customRender: (param) => {
-        return context.actionSlot?.(param) || h(ButtonGroup, { config: rowButtons, param, methods: context.rowMethods })
-      },
+  } = { list: orgList, columns: [] }
+  let editActionSlot: Fn
+  let colEditMap
+  if (editMode === 'inline') {
+    const { list, actionSlot, colRenderMap, methods } = inlineRender({ childrenMap, orgList, rowKey, listener })
+    context.list = list
+    context.methods = methods
+    Object.assign(context, {
+      list,
+      methods,
     })
+    editActionSlot = actionSlot
+    colEditMap = colRenderMap
+  }
+  if (editMode === 'modal' || addMode === 'modal') {
+    const { modalSlot, methods } = modalEdit({ listData, rowKey, option, listener })
+    if (context.methods) {
+      // 编辑模式为行内编辑时，新增按钮使用弹窗模式
+      context.methods.add = methods.add
+    } else {
+      context.methods = methods
+    }
+    context.modalSlot = modalSlot
   }
 
+  let actionSlot
+  let actionColumn
+  if (rowButtons) {
+    const { columnProps, forSlot, ...buttons } = rowButtons
+    const render = (param) => {
+      return (
+        editActionSlot?.(param) ||
+        h(ButtonGroup, { config: buttons, param: reactive({ ...effectData, ...param }), methods: context.methods })
+      )
+    }
+    if (forSlot) {
+      actionSlot = { [forSlot]: render }
+    } else {
+      actionColumn = {
+        title: '操作',
+        key: 'action',
+        fixed: 'right',
+        minWidth: '100',
+        align: 'center',
+        ...columnProps,
+        customRender: render,
+      }
+    }
+  }
+  context.columns = buildColumns({ childrenMap, methods: context.methods, actionSlot, colEditMap, effectData })
+  if (actionColumn) context.columns.push(actionColumn)
   return context
 }
 

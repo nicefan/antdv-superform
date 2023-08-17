@@ -1,10 +1,9 @@
-import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, onMounted, render } from 'vue'
+import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render } from 'vue'
 import { ModalFuncProps } from 'ant-design-vue'
-import type { VueNode } from 'ant-design-vue/es/_util/type'
 import base from '../controls/override'
 import { ButtonGroup } from '../controls'
 
-export function createModal(content: (() => VueNode) | VueNode, { buttons, ...config }: Obj = {}) {
+export function createModal(content: (() => VNode) | VNode, { buttons, ...config }: Obj = {}) {
   const visible = ref(false)
   const _config = reactive(config)
   const modalRef = ref()
@@ -49,7 +48,7 @@ export function createModal(content: (() => VueNode) | VueNode, { buttons, ...co
 }
 
 export function useModal(
-  content: () => VueNode,
+  content: () => VNode,
   config: ModalFuncProps & { buttons?: ButtonItem[] | ExButtonGroup } = {}
 ) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)

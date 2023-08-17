@@ -15,7 +15,7 @@ import { resetFields } from '../../../utils/fields'
 import useControl from '../../useControl'
 import base from '../../override'
 
-export default function ({ childrenMap, orgList, rowKey }, listener) {
+export default function ({ childrenMap, orgList, rowKey, listener }) {
   // 数据监听
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
@@ -130,7 +130,7 @@ export default function ({ childrenMap, orgList, rowKey }, listener) {
   const colRenderMap = new Map()
   for (const [option, _model] of fModels) {
     const component = Controls[option.type]
-    if (!component || option.applyTo === 'form') continue
+    if (!component || option.applyTo === 'Form') continue
 
     const node = ({ model, validateInfo, editData }) => {
       const { attrs } = useControl({ option, effectData: reactive({ ...effectData, current: editData }) })
@@ -145,16 +145,12 @@ export default function ({ childrenMap, orgList, rowKey }, listener) {
     }
 
     const ruleName = _model.propChain.join('.')
-    const customRender = (props, textRender?: Fn) => {
+    const customRender = (props) => {
       const { modelsMap, isEdit, form, editData } = editMap.get(toRaw(props.record)) || {}
       if (isEdit) {
         const model = modelsMap.get(option)
         const validateInfo = form.validateInfos[ruleName]
         return node({ model, validateInfo, editData })
-      } else if (textRender) {
-        return textRender?.(props)
-      } else {
-        return props.text
       }
     }
     colRenderMap.set(option, customRender)

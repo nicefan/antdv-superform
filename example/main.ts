@@ -16,10 +16,18 @@ superForm.registComponent('InNumber', InputNumber)
 superForm.registComponent('Textarea', ({ attrs, option }) => {
   return h(Textarea, Object.assign(attrs, { placeholder: '请输入' + option.label }))
 })
+const defaultProps = {
+  Form: {
+    layout: 'vertical'
+  }
+}
 app
   .use(superForm, {
+    // 覆盖Antd组件，
     components: {
       Table: Table,
     },
+    // 配置组件默认参数
+    defaultProps,
   })
   .mount('#app')

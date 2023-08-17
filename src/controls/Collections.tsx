@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, inject, PropType, provide, reactive, toRef, toRefs } from 'vue'
+import { computed, defineComponent, h, inject, mergeProps, PropType, provide, reactive, toRef, toRefs } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import useControl from './useControl'
 import Controls from './components'
@@ -47,19 +47,23 @@ export default defineComponent({
         effectData: effectData,
         inheritDisabled: toRef(props, 'disabled') as Ref<boolean | undefined>,
       })
-
-      const node = useBuildNode(option, subData, effectData, attrs, wrapperCol)
-      if (sectionList.includes(type) || isBlock) {
+      const _attrs = mergeProps(globalProps[type], attrs)
+      const node = useBuildNode(option, subData, effectData, _attrs, wrapperCol)
+      if (isBlock || (sectionList.includes(type) && isBlock !== false)) {
         currentGroup = undefined
         nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', key: idx }, node()))
       } else {
-        const colProps = { ...wrapperCol, ...option.colProps, key: idx }
+        let colProps: Obj = option.colProps
+        if (!colProps) {
+          colProps = { ...wrapperCol }
+          colProps.span = option.span ?? colProps.span ?? 8
+        }
         if (align) colProps.style = 'text-align: ' + align
-        colProps.span = option.span ?? colProps.span ?? 8
+
         if (!currentGroup) {
           nodes.push((currentGroup = []))
         }
-        currentGroup.push(() => !hidden.value && h(Col, colProps, { default: node }))
+        currentGroup.push(() => !hidden.value && h(Col, { ...colProps, key: idx }, { default: node }))
         if (option.isWrap) currentGroup = undefined
       }
     })
@@ -78,17 +82,21 @@ export default defineComponent({
 export function useBuildNode(option, model: ModelData, effectData, attrs, wrapperCol) {
   const { type, label } = option
   const slots = inject<Obj>('rootSlots', {})
+  const getWrapperNode = (node, isBlock) =>
+    isBlock
+      ? node
+      : () => h(base.FormItem, reactive({ label, ...globalProps.formItem, ...option.formItemProps }), { default: node })
   const node = (() => {
     switch (type) {
       case 'InfoSlot': {
         const slot = slots[option.slotName] || option.render
         const node = () => (typeof slot === 'string' ? slot : slot?.({ effectData, attrs }))
-        return option.isBlock ? node : () => h(base.FormItem, reactive({ label }), { default: node })
+        return getWrapperNode(node, option.isBlock)
       }
       case 'Text':
-        return () => h(base.FormItem, reactive({ label, ...attrs }), { default: () => model.refData })
+        return getWrapperNode(() => model.refData, option.isBlock)
       case 'Buttons':
-        return () => h(ButtonGroup, { config: option, param: effectData })
+        return getWrapperNode(() => h(ButtonGroup, { config: option, param: effectData }), option.isBlock)
       default: {
         let slotAttrs: Obj = { option, model, effectData }
         if (sectionList.includes(type)) {

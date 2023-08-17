@@ -1,7 +1,8 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, watch, toRefs, provide, h } from 'vue'
+import { defineComponent, PropType, ref, reactive, watch, toRefs, provide, h, mergeProps } from 'vue'
 import { merge } from 'lodash-es'
 import Controls from '../controls/components'
+import { globalProps } from '../plugin'
 
 export default defineComponent({
   name: 'ExaForm',
@@ -13,7 +14,10 @@ export default defineComponent({
   setup(props, { slots, expose, attrs, emit }) {
     const formData: Obj = ref(props.model)
     const formRef = ref()
-    const formOption = reactive<any>({ ...props.config, attrs: { ...props.config?.attrs, ...attrs } })
+    const formOption = reactive<any>({
+      ...props.config,
+      attrs: mergeProps({ ...globalProps.Form }, { ...props.config?.attrs }, attrs),
+    })
 
     const actions = {
       setOption: (_option: ExFormOption) => {

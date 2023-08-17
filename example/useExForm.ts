@@ -282,7 +282,7 @@ export default function exampleForm() {
               { type: 'Input', field: 'group2', label: '分组2' },
             ],
           },
-          { type: 'Input', field: 'col2', label: 'col2', applyTo: 'form' },
+          { type: 'Input', field: 'col2', label: 'col2', applyTo: 'Form' },
         ],
       },
       {

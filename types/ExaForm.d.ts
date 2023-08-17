@@ -3,8 +3,9 @@ import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
 import Vue, { Component, HTMLAttributes, VNodeChild } from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
-import { FormProps, PaginationProps } from 'ant-design-vue'
+import { FormProps, PaginationProps, TableColumnProps } from 'ant-design-vue'
 import { ModalFuncProps, ColProps, RowProps, FormItemProps, InputProps } from 'ant-design-vue/es'
+import { ColumnProps } from 'ant-design-vue/es/table'
 
 export interface RuleConfig {
   /** 验证类型 */
@@ -67,12 +68,14 @@ declare global {
     /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
     disabled?: boolean | Fn
     on?: Obj<Fn>
-    // renderView?: Fn<VNode>
-    // customRender?: Fn
     // row?: boolean
     colProps?: ColProps & HTMLAttributes
     /** 快捷实现col span */
     span?: number
+    /** 是否为独立块，分组元素默认为true */
+    isBlock?: boolean
+    /** 是否换行 */
+    isBreak?: boolean
     slots?: Obj<Fn>
   }
 
@@ -121,21 +124,25 @@ declare global {
       shape?: 'circle' | 'round' | 'default'
       size?: 'large' | 'middle' | 'small'
     }
-    align?: 'left' | 'right' | 'center'
     /** 是否独立行 */
     isBlock?: boolean
     /** 是否只显示图标 */
     iconOnly?: boolean
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
+    /** 将按钮放置到组件的指定slot中 */
+    forSlot?: string
     actions?: (T | (ButtonItem & ({ name: T } | { name?: string })))[]
     // subItems?: ButtonItem[]
   }
+  type ExButtons<T extends string = string> = ExButtonGroup<T> | ExButtonGroup<T>['actions']
+
   type ExColumnsItem = {
     /** 应用于表格或编辑表单 */
-    applyTo?: 'table' | 'form'
+    applyTo?: 'Table' | 'Form' | 'Descriptions'
     /** 表格内容渲染 */
-    customRender?: string | Fn<VNodeChild>
+    viewRender?: string | Fn<VNodeChild>
+    columnProps?: ColumnProps
   }
   type ColumnsOption = (UniWidgetOption | ExInputGroupOption) & ExColumnsItem
   interface ExTableOption extends ExBaseOption {
@@ -146,7 +153,7 @@ declare global {
     columns: ColumnsOption[]
     buttons?: ExButtonGroup
     /** 列表元素右边按钮 */
-    rowButtons?: ExButtonGroup<'del' | 'edit'>
+    rowButtons?: ExButtonGroup<'del' | 'edit'> & { columnProps?: TableColumnProps }
     /** 弹窗属性 */
     modalProps?: ModalFuncProps
     /** 弹窗表单属性 */
@@ -256,11 +263,12 @@ declare global {
     Tabs: ExTabsOption
     Table: ExTableOption
     Collapse: ExCollapseOption
-    Buttons: ExBaseOption & ExButtonGroup
   }
   type WidgetTypes = {
+    Buttons: ExBaseOption & ExButtonGroup & { align?: 'left' | 'right' | 'center' }
     Hidden: { field: string }
     InputSlot: ExSlotOption
+    InfoSlot: ExSlotOption
     Text: ExBaseOption
     Input: ExInputOption
     InputNumber: ExFormItemOption

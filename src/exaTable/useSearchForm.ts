@@ -5,7 +5,6 @@ import Controls from '../controls/components'
 
 export function useSearchForm(columns, searchSechma, onChange) {
   const { buttons = {}, ...formOption }: GetUniOption<'Form'> = {
-    compact: true,
     ignoreRules: true,
     ...searchSechma,
   }
@@ -34,10 +33,29 @@ export function useSearchForm(columns, searchSechma, onChange) {
   }
   const actions = mergeActions(buttons.actions || ['submit', 'reset'], defaultAction)
   if (actions?.length) {
+    // Object.assign(formOption, {
+    //   rowProps: { align: 'middle' },
+    //   subItems: [
+    //     {
+    //       type: 'Group',
+    //       isBlock: false,
+    //       colProps: { flex: 'auto' },
+    //       subItems: formOption.subItems,
+    //     },
+    //     {
+    //       type: 'Buttons',
+    //       align: 'right',
+    //       colProps: { flex: 0, offset: 1 },
+    //       ...buttons,
+    //       actions,
+    //     },
+    //   ],
+    // })
+
     formOption.subItems.push({
       type: 'Buttons',
       align: 'right',
-      colProps: { flex: 1 },
+      colProps: { flex: 'auto' },
       ...buttons,
       actions,
     })
