@@ -130,11 +130,11 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
   const colRenderMap = new Map()
   for (const [option, _model] of fModels) {
     const component = Controls[option.type]
-    if (!component || option.applyTo === 'Form') continue
+    if (!component || !option.field || option.hideInTable) continue
 
     const node = ({ model, validateInfo, editData }) => {
       const { attrs } = useControl({ option, effectData: reactive({ ...effectData, current: editData }) })
-      return h(Controls[option.type], {
+      return h(component, {
         option,
         model,
         attrs: reactive(attrs),

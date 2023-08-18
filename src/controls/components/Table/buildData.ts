@@ -15,7 +15,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
 
   const formOption: ExFormOption = { ...option.formSechma }
   // buttons: { actions: ['submit', 'reset'] },
-  formOption.subItems = option.columns.filter((item) => item.hideFor !== 'form')
+  formOption.subItems = formOption.subItems || option.columns.filter((item) => !item.hideInForm)
 
   const editForm = () =>
     h(Controls.Form, {
@@ -88,7 +88,7 @@ function buildColumns({ childrenMap, methods, actionSlot, colEditMap, effectData
   const columns = (function getConfig(_models: ModelsMap<MixOption>) {
     const _columns: any[] = []
     ;[..._models].forEach(([col, model]) => {
-      if (col.type === 'Hidden' || col.applyTo === 'Form') return
+      if (col.type === 'Hidden' || col.hideInForm) return
       if (model.children) {
         _columns.push({
           title: col.label,

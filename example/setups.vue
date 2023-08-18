@@ -44,6 +44,7 @@ export default defineComponent({
     const myTableModal = useModal(tableRegister(), {
       title: '弹窗表格',
       width: 1400,
+      height: 300,
       buttons: [
         {
           label: '赋值',
@@ -82,7 +83,7 @@ export default defineComponent({
             console.log(data)
           }),
       },
-    } as any)
+    })
 
     /** 弹窗表单 */
     const [exampleFormReg, form] = useForm(exampleForm().options)
@@ -105,6 +106,7 @@ export default defineComponent({
       form.setData({
         name: '白龙',
         street: '白龙',
+        array: ['a', 'b'],
         isReg: 1,
         'table': [{ id: 'dadf', col2: 'col2' }],
         'group': {

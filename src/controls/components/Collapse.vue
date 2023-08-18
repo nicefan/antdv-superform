@@ -13,7 +13,6 @@ const props = defineProps<{
   model: ModelDataGroup<CollapseItem>
   effectData: Obj
   // disabled?: boolean
-  wrapperCol?: Obj
 }>()
 
 const panels = [...props.model.children].map(([option, model], idx) => {
@@ -48,7 +47,7 @@ const acKey = ref(props.option.activeKey || panels[0].key)
         <template #extra>
           <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons" :param="effectData" />
         </template>
-        <Collections :option="panel.option" :model="panel.model" :wrapperCol="props.wrapperCol" />
+        <Collections :option="panel.option" :model="panel.model" />
       </CollapsePanel>
     </template>
   </Collapse>

@@ -36,6 +36,7 @@ const setValue = () => {
     name: '白龙',
     street: '白龙',
     text: 'text',
+    array: ['a','b'],
     isReg: 1,
     'table': [{ id: 'dadf', col1: 'dadf', col2: 'col2' }],
     'group': {

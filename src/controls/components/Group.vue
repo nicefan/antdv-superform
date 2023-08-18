@@ -7,7 +7,6 @@ const props = defineProps<{
   model: ModelDataGroup
   effectData: Obj
   disabled?: Ref<boolean | undefined>
-  wrapperCol?: Obj
 }>()
 const title = props.option.title || props.option.label
 </script>

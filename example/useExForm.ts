@@ -40,9 +40,7 @@ export default function exampleForm() {
       // labelCol: { span: 5 },
       // wrapperCol: {span: 18}
     },
-    wrapperCol: {
-      span: 12,
-    },
+    subSpan: 12,
     subItems: [
       {
         type: 'Group',
@@ -61,14 +59,14 @@ export default function exampleForm() {
           //   type: 'Hidden',
           //   field: 'subName',
           // },
-          // {
-          //   type: 'InfoSlot',
-          //   label: 'render',
-          //   render: (props) => {
-          //     console.log(props)
-          //     return h('h2', '这是一个slot')
-          //   },
-          // },
+          {
+            type: 'InfoSlot',
+            field: 'array',
+            label: 'render',
+            render: (props) => {
+              return h('h2', props.effectData.value?.[0])
+            },
+          },
           // {
           //   type: 'InfoSlot',
           //   label: '模板插槽',
@@ -164,10 +162,8 @@ export default function exampleForm() {
         disabled: ({ formData }) => !!formData.isReg,
         buttons: {
           limit: 3,
-          defaultAttrs: {
-            size: 'small',
-            type: 'primary',
-          },
+          size: 'small',
+          buttonType: 'primary',
           iconOnly: true,
           actions: [
             {
@@ -254,13 +250,11 @@ export default function exampleForm() {
           actions: ['add', 'edit', 'del'],
         },
         rowButtons: {
-          defaultAttrs: { type: 'link' },
+          buttonType: 'link',
           actions: ['edit', 'del'],
         },
         formSechma: {
-          wrapperCol: {
-            span: 12,
-          },
+          subSpan: 12,
           attrs: {
             layout: 'vertical',
           },
@@ -282,7 +276,7 @@ export default function exampleForm() {
               { type: 'Input', field: 'group2', label: '分组2' },
             ],
           },
-          { type: 'Input', field: 'col2', label: 'col2', applyTo: 'Form' },
+          { type: 'Input', field: 'col2', label: 'col2', hideInTable: true },
         ],
       },
       {
@@ -319,7 +313,7 @@ export default function exampleForm() {
                   ],
                 },
                 rowButtons: {
-                  defaultAttrs: { type: 'link' },
+                  buttonType: 'link',
                   actions: [
                     {
                       name: 'del',
@@ -397,10 +391,8 @@ export default function exampleForm() {
             // disabled: true,
             buttons: {
               limit: 1,
-              defaultAttrs: {
-                size: 'small',
-                type: 'primary',
-              },
+              size: 'small',
+              buttonType: 'primary',
               iconOnly: true,
               actions: [
                 {

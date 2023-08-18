@@ -1,6 +1,6 @@
 <template>
   <AForm :ref="getForm" :class="['exa-form', option.compact && 'exa-form-compact']" :model="modelData" v-bind="attrs">
-    <Collections :option="option" :model="model" :wrapper-col="option.wrapperCol" :disabled="attrs.disabled" />
+    <Collections :option="option" :model="model" :disabled="attrs.disabled" />
     <ARow v-if="option.buttons" justify="end">
       <ButtonGroup :config="option.buttons" :methods="methods" :param="{ ...effectData, formRef }" />
     </ARow>
@@ -39,7 +39,7 @@ export default {
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit }) {
     const formRef = ref()
-    const modelData = ref(props.source || {})
+    const modelData = ref({})
 
     const { subItems, buttons, ignoreRules } = props.option
     const { modelsMap, rules, initialData } = buildModelsMap(subItems, modelData)

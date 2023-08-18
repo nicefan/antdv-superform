@@ -43,7 +43,8 @@ const { btns, moreBtns, defaultAttrs } = useButton(config, reactive(param || {})
 
 <script lang="ts">
 function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
-  const { defaultAttrs, limit = 3, hidden, disabled, actions } = config
+  const { size, buttonShape, buttonType, limit = 3, hidden, disabled, actions } = config
+  const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)
   const show = useShow(hidden, param)
 

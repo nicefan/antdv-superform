@@ -14,7 +14,6 @@ const props = defineProps<{
   model: ModelDataGroup
   effectData: Obj
   disabled?: Ref<boolean | undefined>
-  wrapperCol?: Obj
 }>()
 
 const { buttons, rowButtons, label } = props.option
@@ -75,7 +74,7 @@ watch(
         <template #actions>
           <ButtonGroup v-if="rowButtons" :config="rowButtons" :methods="methods" :param="item.effectData" />
         </template>
-        <Collections style="width: 100%" :model="item.model" :disabled="disabled" :wrapper-col="wrapperCol" />
+        <Collections style="width: 100%" :model="item.model" :disabled="disabled" />
       </ListItem>
     </template>
   </List>

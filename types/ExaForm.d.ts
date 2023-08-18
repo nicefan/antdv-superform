@@ -3,9 +3,16 @@ import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
 import Vue, { Component, HTMLAttributes, VNodeChild } from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
-import { FormProps, PaginationProps, TableColumnProps } from 'ant-design-vue'
-import { ModalFuncProps, ColProps, RowProps, FormItemProps, InputProps } from 'ant-design-vue/es'
-import { ColumnProps } from 'ant-design-vue/es/table'
+import {
+  FormProps,
+  PaginationProps,
+  TableColumnProps,
+  ModalFuncProps,
+  ColProps,
+  RowProps,
+  FormItemProps,
+  InputProps,
+} from 'ant-design-vue'
 
 export interface RuleConfig {
   /** 验证类型 */
@@ -87,7 +94,7 @@ declare global {
     /** 弹窗表单中的行间排版属性 */
     rowProps?: RowProps & HTMLAttributes
     /** 子元素的统一排列属性， */
-    wrapperCol?: ColProps
+    subSpan?: number
   }
 
   interface ExFormOption extends Omit<ExGroupOption, 'type'> {
@@ -119,11 +126,9 @@ declare global {
   }
   interface ExButtonGroup<T extends string = string> {
     limit?: number
-    defaultAttrs?: {
-      type?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
-      shape?: 'circle' | 'round' | 'default'
-      size?: 'large' | 'middle' | 'small'
-    }
+    buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
+    buttonShape?: 'circle' | 'round' | 'default'
+    size?: 'large' | 'middle' | 'small'
     /** 是否独立行 */
     isBlock?: boolean
     /** 是否只显示图标 */
@@ -139,10 +144,12 @@ declare global {
 
   type ExColumnsItem = {
     /** 应用于表格或编辑表单 */
-    applyTo?: 'Table' | 'Form' | 'Descriptions'
+    hideInTable?: boolean
+    hideInForm?: boolean
+    hideInDescription?: boolean
     /** 表格内容渲染 */
     viewRender?: string | Fn<VNodeChild>
-    columnProps?: ColumnProps
+    columnProps?: TableColumnProps
   }
   type ColumnsOption = (UniWidgetOption | ExInputGroupOption) & ExColumnsItem
   interface ExTableOption extends ExBaseOption {
@@ -157,13 +164,14 @@ declare global {
     /** 弹窗属性 */
     modalProps?: ModalFuncProps
     /** 弹窗表单属性 */
-    formSechma?: Omit<ExFormOption, 'subItems'>
+    formSechma?: Omit<ExFormOption, 'subItems'> & { 'subItems'?: UniOption[]}
   }
 
   interface RootTableOption extends Omit<ExTableOption, 'type' | 'field'> {
+    isContainer?: boolean
     apis?: TableApis | TableApis['query']
     params?: Obj
-    searchSechma?: ExFormOption | { subItems: (UniOption | string)[] }
+    searchSechma?: ExFormOption | { subItems: string[] }
     pagination?: PaginationProps
   }
   interface ExListOption extends ExBaseOption {
@@ -204,7 +212,6 @@ declare global {
     icon?: string | Component
     subItems: UniOption[]
     buttons?: ExButtonGroup
-    formAttrs?: FormProps & HTMLAttributes
   }
   /** 表单元素属性 */
   interface ExFormItemOption extends ExBaseOption {

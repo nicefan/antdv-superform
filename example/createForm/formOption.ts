@@ -7,24 +7,20 @@ export const myTableOption = defineTable({
     actions: ['add', 'edit', 'del'],
   },
   rowButtons: {
-    defaultAttrs: { type: 'link' },
+    buttonType: 'link',
     actions: ['edit', 'del'],
   },
   formSechma: {
     attrs: {
       layout: 'vertical',
     },
-    wrapperCol: {
-      span: 24,
-    },
+    subSpan: 24,
   },
   searchSechma: {
     attrs: {
       labelCol: { span: 6 },
     },
-    wrapperCol: {
-      span: 8,
-    },
+    subSpan: 8,
     subItems: ['fieldName', 'title', 'tip'],
   },
   columns: [
@@ -44,7 +40,7 @@ export const myTableOption = defineTable({
       type: 'Input',
       label: '说明',
       field: 'tip',
-      applyTo: 'Form',
+      hideInTable: true,
       rules: { required: true },
     },
     {

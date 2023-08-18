@@ -26,7 +26,7 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...config
       { ...ctx?.slots, ...slots }
     )
 
-  const openModal = async (option?: ModalFuncProps) => {
+  const openModal = async (option?: ModalFuncProps | Obj) => {
     Object.assign(_config, option)
     visible.value = true
     return nextTick()
@@ -35,7 +35,7 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...config
     visible.value = false
     return nextTick()
   }
-  const setModal = (option?: ModalFuncProps) => {
+  const setModal = (option?: ModalFuncProps | Obj) => {
     Object.assign(_config, option)
   }
   return {
@@ -49,12 +49,12 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...config
 
 export function useModal(
   content: () => VNode,
-  config: ModalFuncProps & { buttons?: ButtonItem[] | ExButtonGroup } = {}
+  config: (ModalFuncProps & { buttons?: ButtonItem[] | ExButtonGroup }) | Obj = {}
 ) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
 
-  const open = (option?: ModalFuncProps) => {
+  const open = (option?: ModalFuncProps | Obj) => {
     if (modalRef.value) {
       return openModal(option)
     } else {

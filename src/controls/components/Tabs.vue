@@ -20,7 +20,6 @@ const props = defineProps<{
   option: ExTabsOption
   model: ModelDataGroup<TabItem>
   effectData: Obj
-  wrapperCol?: Obj
 }>()
 
 const activeKey = ref(toRef(props.option, 'activeKey') as any)
@@ -64,7 +63,7 @@ const panes = [...props.model.children].map(([option, model], idx) => {
 
     <template v-for="{ attrs, hidden, option, model } of panes" :key="attrs.key">
       <TabPane v-bind="attrs" v-if="!hidden.value">
-        <Collections :option="option" :model="model" :wrapperCol="wrapperCol" />
+        <Collections :option="option" :model="model" />
       </TabPane>
     </template>
   </Tabs>

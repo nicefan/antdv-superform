@@ -17,7 +17,7 @@ export default defineComponent({
       type: Object as PropType<{
         gutter?: number
         rowProps?: Obj
-        wrapperCol?: Obj
+        subSpan?: number
         isContainer?: boolean
         subItems: UniOption[]
       }>,
@@ -27,43 +27,43 @@ export default defineComponent({
       required: true,
       type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
-    wrapperCol: Object,
     disabled: Object as PropType<Ref<boolean | undefined>>,
   },
   setup(props) {
     const rowProps = { gutter: props.option.gutter ?? 16, ...props.option.rowProps }
-    const wrapperCol = props.option.wrapperCol || props.wrapperCol
-    // provide('wrapperCol', wrapperCol)
-    const effectData = getEffectData({ current: toRef(props.model, 'refData') })
+    const presetSpan = props.option.subSpan ?? inject('subSpan', undefined)
+    if ('subSpan' in props.option) provide('subSpan', props.option.subSpan)
 
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
       const { type, align, isBlock, columns } = option
       if (type === 'Hidden') return
+      const effectData = getEffectData({ current: toRef(props.model, 'refData'), value: toRef(subData, 'refData') })
       // const isContainer = !!subData.children || !!columns || type === 'Buttons'
       const { attrs, hidden } = useControl({
         option,
-        effectData: effectData,
+        effectData,
         inheritDisabled: toRef(props, 'disabled') as Ref<boolean | undefined>,
       })
       const _attrs = mergeProps(globalProps[type], attrs)
-      const node = useBuildNode(option, subData, effectData, _attrs, wrapperCol)
+      const node = useBuildNode(option, subData, effectData, _attrs)
+
       if (isBlock || (sectionList.includes(type) && isBlock !== false)) {
         currentGroup = undefined
         nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', key: idx }, node()))
       } else {
         let colProps: Obj = option.colProps
         if (!colProps) {
-          colProps = { ...wrapperCol }
-          colProps.span = option.span ?? colProps.span ?? 8
+          colProps = { ...globalProps.Col }
+          colProps.span = option.span ?? presetSpan ?? colProps.span ?? 8
         }
         if (align) colProps.style = 'text-align: ' + align
 
         if (!currentGroup) {
           nodes.push((currentGroup = []))
         }
-        currentGroup.push(() => !hidden.value && h(Col, { ...colProps, key: idx }, { default: node }))
+        currentGroup.push(() => !hidden.value && h(Col, { ...colProps, key: idx }, node))
         if (option.isWrap) currentGroup = undefined
       }
     })
@@ -71,7 +71,7 @@ export default defineComponent({
     return () =>
       nodes.map((item) => {
         if (Array.isArray(item)) {
-          return h(Row, rowProps, { default: () => item.map((node) => node()) })
+          return h(Row, rowProps, () => item.map((node) => node()))
         } else {
           return item()
         }
@@ -79,13 +79,11 @@ export default defineComponent({
   },
 })
 
-export function useBuildNode(option, model: ModelData, effectData, attrs, wrapperCol) {
+export function useBuildNode(option, model: ModelData, effectData, attrs) {
   const { type, label } = option
   const slots = inject<Obj>('rootSlots', {})
   const getWrapperNode = (node, isBlock) =>
-    isBlock
-      ? node
-      : () => h(base.FormItem, reactive({ label, ...globalProps.formItem, ...option.formItemProps }), { default: node })
+    isBlock ? node : () => h(base.FormItem, reactive({ label, ...globalProps.formItem, ...option.formItemProps }), node)
   const node = (() => {
     switch (type) {
       case 'InfoSlot': {
@@ -94,13 +92,13 @@ export function useBuildNode(option, model: ModelData, effectData, attrs, wrappe
         return getWrapperNode(node, option.isBlock)
       }
       case 'Text':
-        return getWrapperNode(() => model.refData, option.isBlock)
+        return getWrapperNode(() => h('span', attrs, model.refData), option.isBlock)
       case 'Buttons':
         return getWrapperNode(() => h(ButtonGroup, { config: option, param: effectData }), option.isBlock)
       default: {
         let slotAttrs: Obj = { option, model, effectData }
         if (sectionList.includes(type)) {
-          Object.assign(slotAttrs, { ...attrs, wrapperCol })
+          Object.assign(slotAttrs, attrs)
         } else {
           const ignoreRules = inject<Obj>('exaProvider', {}).ignoreRules
           const rules = computed(() => (ignoreRules || attrs.disabled.value ? undefined : model.rules))
