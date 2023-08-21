@@ -7,7 +7,6 @@ const props = defineProps<{
   option: ExGroupOption
   model: ModelDataGroup
   effectData: Obj
-  disabled?: Ref<boolean | undefined>
 }>()
 const { label, title = label, buttons } = props.option
 </script>

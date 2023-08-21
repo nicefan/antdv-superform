@@ -12,7 +12,6 @@ const props = defineProps<{
   option: ExCollapseOption
   model: ModelDataGroup<CollapseItem>
   effectData: Obj
-  // disabled?: boolean
 }>()
 
 const panels = [...props.model.children].map(([option, model], idx) => {

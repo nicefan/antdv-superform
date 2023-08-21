@@ -1,6 +1,6 @@
 <script lang="ts">
-import { h, ref, reactive, PropType, defineComponent, toRef, mergeProps, toRefs, inject } from 'vue'
-import { ButtonGroup, mergeActions } from '../../buttons'
+import { h, ref, reactive, PropType, defineComponent, toRef, mergeProps, inject } from 'vue'
+import { ButtonGroup } from '../../buttons'
 import base from '../../override'
 import { buildData } from './buildData'
 
@@ -87,26 +87,34 @@ export default defineComponent({
 
     const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener })
 
-    const actions =
+    const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys })
+    const buttons =
       option.buttons &&
       (() =>
         option.buttons &&
         h(ButtonGroup, {
           config: option.buttons,
-          param: reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys }),
+          param: editParam,
           methods,
         }))
-    const compRef = ref()
 
+    const exposed = reactive({
+      selectedRowKeys,
+      selectedRows,
+      add: () => methods?.add(),
+      edit: () => methods?.edit(editParam),
+      delete: () => methods?.delete(editParam),
+    })
+    const tableRef = ref()
     const getTable = (el) => {
       if (!el) return
-      if (compRef.value) {
-        Object.assign(compRef.value, el)
-      } else {
-        compRef.value = reactive(el)
-        ctx.emit('register', compRef.value)
+      Object.assign(exposed, el)
+      if (!tableRef.value) {
+        tableRef.value = el
+        ctx.emit('register', exposed)
       }
     }
+
     const rootSlots = inject('rootSlot', {})
     const slots: Obj = { ...ctx.slots }
     if (option.slots) {
@@ -114,7 +122,7 @@ export default defineComponent({
         slots[key] = typeof value === 'string' ? rootSlots[value] : value
       })
     }
-    slots[option.buttons?.forSlot || 'title'] = actions
+    slots[option.buttons?.forSlot || 'title'] = buttons
 
     return () => [
       modalSlot?.(),

@@ -83,13 +83,14 @@ declare global {
     isBlock?: boolean
     /** 是否换行 */
     isBreak?: boolean
+    align?: 'left' | 'right' | 'center'
     slots?: Obj<Fn>
   }
 
   interface ExGroupOption extends ExBaseOption {
     title?: string | Fn<VNode>
     gutter?: number
-    buttons?: ExButtonGroup
+    buttons?: ExButtonGroup | ExButtonGroup['actions']
     subItems: UniOption[]
     /** 弹窗表单中的行间排版属性 */
     rowProps?: RowProps & HTMLAttributes
@@ -105,7 +106,7 @@ declare global {
     compact?: boolean
     /** 不做校验 */
     ignoreRules?: boolean
-    buttons?: ExButtonGroup<'submit' | 'reset'>
+    buttons?: ExButtonGroup<'submit' | 'reset'> | ExButtonGroup<'submit' | 'reset'>['actions']
   }
 
   interface ButtonItem {
@@ -158,7 +159,7 @@ declare global {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     columns: ColumnsOption[]
-    buttons?: ExButtonGroup
+    buttons?: ExButtonGroup | ExButtonGroup['actions']
     /** 列表元素右边按钮 */
     rowButtons?: ExButtonGroup<'del' | 'edit'> & { columnProps?: TableColumnProps }
     /** 弹窗属性 */
@@ -171,7 +172,7 @@ declare global {
     isContainer?: boolean
     apis?: TableApis | TableApis['query']
     params?: Obj
-    searchSechma?: ExFormOption | { subItems: string[] }
+    searchSechma?: ExFormOption | { subItems: (UniOption | string)[] }
     pagination?: PaginationProps
   }
   interface ExListOption extends ExBaseOption {

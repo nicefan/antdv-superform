@@ -1,6 +1,7 @@
 import { ref, unref, toRefs, mergeProps, watchEffect } from 'vue'
 import { getListener, getComputedAttr, getComputedStatus } from './hooks/reactivity'
 import { merge } from 'lodash-es'
+import { globalProps } from '../plugin'
 type Param = {
   option: Obj
   effectData: Obj
@@ -45,7 +46,7 @@ export default function render({ option, effectData, inheritDisabled }: Param) {
   // const ruleName = rules && computed(() => (unref(disabled) ? undefined : propChain))
 
   // 创建元素并进行数据绑定, name和label不做props接收将会自动绑定到根组件上
-  const __merged = mergeProps({ ...option.attrs }, listener, computedAttr)
+  const __merged = mergeProps({ ...globalProps[type] }, { ...option.attrs }, listener, computedAttr)
   const attrs: Obj = merge({}, option.attrs, __merged, { disabled })
 
   return { attrs, hidden }

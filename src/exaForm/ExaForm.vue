@@ -47,7 +47,6 @@ export default defineComponent({
     //     <slot />
     //   </>
     // )
-    provide('rootSlots', slots)
 
     const formNode = () =>
       formOption.subItems &&

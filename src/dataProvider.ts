@@ -1,12 +1,19 @@
 import { defineComponent, provide, readonly } from 'vue';
 
 export const DataProvider = defineComponent({
+  name: 'DataProvider',
   props: {
-    data: Object,
-    apis: Object,
+    name: {
+      type: String,
+      require: true,
+    },
+    data: {
+      type: undefined,
+      require: true,
+    }
   },
   setup(props, ctx) {
-    provide('exaProvider', readonly(props || {}))
+    provide(props.name, readonly(props.data || {}))
     return ctx.slots.default
   },
 })

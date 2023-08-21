@@ -6,6 +6,7 @@ import { ButtonGroup } from './buttons'
 import base from './override'
 import { getEffectData } from './hooks/reactivity'
 import { globalProps } from '../plugin'
+import { DataProvider } from '../dataProvider'
 
 const sectionList = ['List', 'Group', 'Tabs', 'Table', 'Collapse', 'Card']
 
@@ -27,7 +28,6 @@ export default defineComponent({
       required: true,
       type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
-    disabled: Object as PropType<Ref<boolean | undefined>>,
   },
   setup(props) {
     const rowProps = { gutter: props.option.gutter ?? 16, ...props.option.rowProps }
@@ -44,21 +44,22 @@ export default defineComponent({
       const { attrs, hidden } = useControl({
         option,
         effectData,
-        inheritDisabled: toRef(props, 'disabled') as Ref<boolean | undefined>,
+        inheritDisabled: inject('disabled', undefined),
       })
-      const _attrs = mergeProps(globalProps[type], attrs)
-      const node = useBuildNode(option, subData, effectData, _attrs)
+      const __node = useBuildNode(option, subData, effectData, attrs)
+      const node = subData.children ? () => h(DataProvider, { name: 'disabled', data: attrs.disabled }, __node) : __node
+      const alignStyle = align && 'text-align: ' + align
 
       if (isBlock || (sectionList.includes(type) && isBlock !== false)) {
         currentGroup = undefined
-        nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', key: idx }, node()))
+        nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', style: alignStyle, key: idx }, node()))
       } else {
         let colProps: Obj = option.colProps
         if (!colProps) {
           colProps = { ...globalProps.Col }
           colProps.span = option.span ?? presetSpan ?? colProps.span ?? 8
         }
-        if (align) colProps.style = 'text-align: ' + align
+        if (align) colProps.style = alignStyle
 
         if (!currentGroup) {
           nodes.push((currentGroup = []))

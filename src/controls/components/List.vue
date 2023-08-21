@@ -13,7 +13,6 @@ const props = defineProps<{
   option: ExListOption
   model: ModelDataGroup
   effectData: Obj
-  disabled?: Ref<boolean | undefined>
 }>()
 
 const { buttons, rowButtons, label } = props.option
@@ -74,7 +73,7 @@ watch(
         <template #actions>
           <ButtonGroup v-if="rowButtons" :config="rowButtons" :methods="methods" :param="item.effectData" />
         </template>
-        <Collections style="width: 100%" :model="item.model" :disabled="disabled" />
+        <Collections style="width: 100%" :model="item.model" />
       </ListItem>
     </template>
   </List>

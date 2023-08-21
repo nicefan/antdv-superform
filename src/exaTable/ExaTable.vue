@@ -19,37 +19,37 @@ export default defineComponent({
   },
   emits: ['register'],
   setup(props, ctx) {
-    const tableRef = ref()
-    const refData = ref(props.dataSource || [])
+    const dataRef = ref(props.dataSource || [])
 
     const option: Obj = reactive(props.option || {})
     merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
 
     const { dataSource, pagination, onLoaded, apis, goPage, request, onSearch } = useQuery(option)
 
-    const actions = {
+    const exposed = {
       setOption: (_option: RootTableOption) => {
         const attrs = mergeProps(globalProps.Table, { ..._option.attrs }, option.attrs)
         merge(option, _option, { attrs })
       },
       setData: (data) => {
-        refData.value = data
+        dataRef.value = data
       },
       goPage,
       request,
       onSearch,
       onLoaded,
-      refData,
+      dataRef,
     }
-    watch(() => dataSource || props.dataSource, actions.setData)
+    watch(() => dataSource || props.dataSource, exposed.setData)
 
-    ctx.expose(actions)
+    ctx.expose(exposed)
 
-    const register = (compRef) => {
-      tableRef.value = compRef
-      ctx.emit('register', actions, reactive({ ...compRef, ...actions }))
+    const table = {}
+    const register = (comp) => {
+      Object.assign(table, comp, exposed)
+      ctx.emit('register', exposed, reactive(table))
     }
-    ctx.emit('register', actions)
+    ctx.emit('register', exposed)
 
     // const handleTableChange = (pag: { pageSize: number; current: number }, filters: any, sorter: any) => {
     //   console.log(pag)
@@ -71,16 +71,16 @@ export default defineComponent({
         const { columns, searchSechma } = opt
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
-        const effectData = getEffectData({ current: refData })
+        const effectData = getEffectData({ current: dataRef })
 
         const { attrs } = useControl({ option: opt, effectData })
 
-        searchForm.value = useSearchForm(columns, searchSechma, (data) => {
+        searchForm.value = useSearchForm(columns, searchSechma, { ...effectData, table }, (data) => {
           onSearch(data)
         })
         Object.assign(tableAttrs, {
           model: {
-            refData,
+            refData: dataRef,
             listData,
           },
           effectData,
@@ -99,7 +99,7 @@ export default defineComponent({
 
     return () =>
       option.columns &&
-      h(DataProvider, { data: refData, apis }, () =>
+      h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
         h('div', { class: option.isContainer && 'exa-container' }, [
           searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value()),
           option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),

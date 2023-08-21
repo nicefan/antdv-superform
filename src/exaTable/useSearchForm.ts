@@ -1,9 +1,9 @@
 import { watchDebounced } from '@vueuse/core'
-import { mergeActions } from '../controls/buttons'
+import { ButtonGroup, mergeActions } from '../controls/buttons'
 import { ref, reactive, h } from 'vue'
 import Controls from '../controls/components'
 
-export function useSearchForm(columns, searchSechma, onChange) {
+export function useSearchForm(columns, searchSechma, effectData, onChange) {
   const { buttons = {}, ...formOption }: GetUniOption<'Form'> = {
     ignoreRules: true,
     ...searchSechma,
@@ -31,7 +31,8 @@ export function useSearchForm(columns, searchSechma, onChange) {
       onChange(data)
     },
   }
-  const actions = mergeActions(buttons.actions || ['submit', 'reset'], defaultAction)
+  const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
+  const actions = mergeActions(buttonsConfig.actions || ['submit', 'reset'], defaultAction)
   if (actions?.length) {
     // Object.assign(formOption, {
     //   rowProps: { align: 'middle' },
@@ -53,11 +54,10 @@ export function useSearchForm(columns, searchSechma, onChange) {
     // })
 
     formOption.subItems.push({
-      type: 'Buttons',
+      type: 'InfoSlot',
       align: 'right',
       colProps: { flex: 'auto' },
-      ...buttons,
-      actions,
+      render: () => h(ButtonGroup, { config: { ...buttonsConfig, actions }, param: effectData }),
     })
   } else {
     //  不带按钮实时搜索

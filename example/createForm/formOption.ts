@@ -20,8 +20,9 @@ export const myTableOption = defineTable({
     attrs: {
       labelCol: { span: 6 },
     },
+    buttons: ['submit', 'reset', { label: '新增', onClick: ({ table }) => table.add() }],
     subSpan: 8,
-    subItems: ['fieldName', 'title', 'tip'],
+    subItems: ['fieldName', 'title', 'tip', { type: 'Input', label: '其它', field: 'other' }],
   },
   columns: [
     {

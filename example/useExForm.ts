@@ -40,6 +40,7 @@ export default function exampleForm() {
       // labelCol: { span: 5 },
       // wrapperCol: {span: 18}
     },
+    buttons: ['submit'],
     subSpan: 12,
     subItems: [
       {
