@@ -1,13 +1,12 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, mergeProps, watch, toRefs, h, provide, nextTick } from 'vue';
+import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick } from 'vue';
 import { merge } from 'lodash-es'
-import { useControl } from '../controls'
+import { useControl, getEffectData } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
 import { DataProvider } from '../dataProvider'
-import Controls from '../controls/components'
-import { getEffectData } from '../controls/hooks/reactivity'
+import Controls from '../components'
 import { globalProps } from '../plugin'
 
 export default defineComponent({
@@ -40,7 +39,7 @@ export default defineComponent({
       onLoaded,
       dataRef,
     }
-    watch(() => dataSource || props.dataSource, exposed.setData)
+    watch(() => dataSource.value || props.dataSource, exposed.setData)
 
     ctx.expose(exposed)
 

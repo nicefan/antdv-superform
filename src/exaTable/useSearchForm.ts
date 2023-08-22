@@ -1,7 +1,7 @@
-import { watchDebounced } from '@vueuse/core'
-import { ButtonGroup, mergeActions } from '../controls/buttons'
+// import { watchDebounced } from '@vueuse/core'
+import { ButtonGroup, mergeActions } from '../components/buttons'
 import { ref, reactive, h } from 'vue'
-import Controls from '../controls/components'
+import Controls from '../components'
 
 export function useSearchForm(columns, searchSechma, effectData, onChange) {
   const { buttons = {}, ...formOption }: GetUniOption<'Form'> = {
@@ -61,7 +61,7 @@ export function useSearchForm(columns, searchSechma, effectData, onChange) {
     })
   } else {
     //  不带按钮实时搜索
-    watchDebounced(formData, (data) => onChange(data), { debounce: 500, maxWait: 1000 })
+    // watchDebounced(formData, (data) => onChange(data), { debounce: 500, maxWait: 1000 })
   }
 
   const searchForm = () => h(Controls.Form, { option: formOption, source: formData, onRegister })

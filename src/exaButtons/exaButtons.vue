@@ -3,9 +3,9 @@
 </template>
 <script setup lang="ts">
 import { SpaceProps } from 'ant-design-vue'
-import { ButtonGroup } from '../controls/buttons'
+import { ButtonGroup } from '../components/buttons'
 
-interface ButtonsProps extends SpaceProps {
+interface ButtonsProps {
   limit?: number
   buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
   buttonShape?: 'circle' | 'round' | 'default'
@@ -18,5 +18,4 @@ interface ButtonsProps extends SpaceProps {
 }
 
 defineProps<ButtonsProps>()
-
 </script>

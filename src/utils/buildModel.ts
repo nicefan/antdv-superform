@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
-export function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
+function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
   const { field, initialValue, columns, subItems } = option
   const nameArr = field ? field.split('.') : []
   const propChain = __chain.concat(nameArr)

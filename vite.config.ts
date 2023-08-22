@@ -4,9 +4,6 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import dts from 'rollup-plugin-dts'
 import viteDts from 'vite-plugin-dts'
 // import ViteComponents, { AntDesignVueResolver } from 'vite-plugin-components'
-import Components from 'unplugin-vue-components/vite'
-import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
-import svgSymbol from 'vite-svg-symbol-loader'
 // import svgSprite from 'vite-plugin-svg-sprite'
 import resolvePlugin from '@rollup/plugin-node-resolve'
 
@@ -38,7 +35,7 @@ export default defineConfig({
       // input: {
       //   main: resolve(__dirname, 'example/index.html'),
       // },
-      external: ['vue', /moment/, 'nanoid', /dayjs/, /lodash/, /ant-design-vue/, /@ant-design/],
+      external: ['vue', /moment/, 'nanoid', /dayjs/, /lodash/, /ant-design-vue/, /@ant-design/, '@vueuse/core'],
       // input: [`dist/index.d.ts`],
       // output: {
       //   format: 'es',
@@ -69,22 +66,6 @@ export default defineConfig({
     vueJsx(),
     viteDts({
       outDir: 'dist',
-    }),
-    // Components({
-    //   dts: true,
-    //   deep: false,
-    //   // extensions: ['vue', 'tsx'],
-    //   resolvers: [AntDesignVueResolver()],
-    //   include: [/\.vue$/, /\.vue\?vue/, /\.tsx$/, /\.ts$/],
-    //   types: [],
-    // }),
-    //   svgSprite({
-    //   symbolId: 'icon-[name]-[hash]',
-    // }),
-
-    svgSymbol({
-      id: 'icon-[name]',
-      svgo: ['removeXMLNS']
     }),
   ],
   css: {

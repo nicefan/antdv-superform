@@ -4,4 +4,30 @@
 ._table-form-item_1f50l_1 .ant-form-item-control > .ant-form-item-explain,
 ._table-form-item_1f50l_1 .ant-form-item-label {
   display: none;
+}._table-form-item_1f50l_1 {
+  margin-bottom: 0 !important;
+}
+._table-form-item_1f50l_1 .ant-form-item-control > .ant-form-item-explain,
+._table-form-item_1f50l_1 .ant-form-item-label {
+  display: none;
+}.exa-form-compact .ant-form-item {
+  margin-bottom: 10px !important;
+}
+.exa-table-search > .ant-form {
+  margin-top: -6px;
+  margin-bottom: -6px;
+}
+.exa-table-search > .ant-form .ant-form-item {
+  margin-bottom: 6px;
+  margin-top: 6px;
+}
+.exa-container .exa-form-section {
+  background-color: #fff;
+  padding: 16px;
+}
+.exa-container .exa-form-section .ant-table:not(.ant-table-bordered) .ant-table-title {
+  padding-top: 0;
+}
+.exa-form-section:not(:first-child) {
+  margin-top: 16px;
 }

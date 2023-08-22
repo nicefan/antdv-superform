@@ -1,33 +1,33 @@
 import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render } from 'vue'
 import { ModalFuncProps } from 'ant-design-vue'
-import base from '../controls/override'
-import { ButtonGroup } from '../controls'
+import base from '../components/base'
+import { ButtonGroup } from '../components'
+import { globalProps } from '../plugin'
 
-export function createModal(content: (() => VNode) | VNode, { buttons, ...config }: Obj = {}) {
+export function createModal(content: (() => VNode) | VNode, { buttons, ...__config }: Obj = {}) {
   const visible = ref(false)
-  const _config = reactive(config)
+  const config = reactive({ ...__config, ...globalProps.Modal })
   const modalRef = ref()
   const slots: Obj = {
     default: content,
   }
   if (buttons) {
-    const _buttons = Array.isArray(buttons) ? { actions: buttons } : buttons
-    slots.footer = () => h(ButtonGroup, { config: _buttons, param: { modalRef } })
+    slots.footer = () => h(ButtonGroup, { config: buttons, param: { modalRef } })
   }
   const onOk = () =>
-    Promise.resolve(_config.onOk?.()).then(() => {
+    Promise.resolve(config.onOk?.()).then(() => {
       visible.value = false
     })
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>
     h(
       base.Modal,
-      { ref: modalRef, visible: visible.value, 'onUpdate:visible': updateVisible, ..._config, ...props, onOk },
+      { ref: modalRef, visible: visible.value, 'onUpdate:visible': updateVisible, ...config, ...props, onOk },
       { ...ctx?.slots, ...slots }
     )
 
   const openModal = async (option?: ModalFuncProps | Obj) => {
-    Object.assign(_config, option)
+    Object.assign(config, option)
     visible.value = true
     return nextTick()
   }
@@ -36,7 +36,7 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...config
     return nextTick()
   }
   const setModal = (option?: ModalFuncProps | Obj) => {
-    Object.assign(_config, option)
+    Object.assign(config, option)
   }
   return {
     modalRef,
@@ -47,10 +47,7 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...config
   }
 }
 
-export function useModal(
-  content: () => VNode,
-  config: (ModalFuncProps & { buttons?: ButtonItem[] | ExButtonGroup }) | Obj = {}
-) {
+export function useModal(content: () => VNode, config: (ModalFuncProps & { buttons?: ExButtons }) | Obj = {}) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
 

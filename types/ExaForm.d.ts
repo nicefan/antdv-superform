@@ -90,7 +90,7 @@ declare global {
   interface ExGroupOption extends ExBaseOption {
     title?: string | Fn<VNode>
     gutter?: number
-    buttons?: ExButtonGroup | ExButtonGroup['actions']
+    buttons?: ExButtons
     subItems: UniOption[]
     /** 弹窗表单中的行间排版属性 */
     rowProps?: RowProps & HTMLAttributes
@@ -106,7 +106,7 @@ declare global {
     compact?: boolean
     /** 不做校验 */
     ignoreRules?: boolean
-    buttons?: ExButtonGroup<'submit' | 'reset'> | ExButtonGroup<'submit' | 'reset'>['actions']
+    buttons?: ExButtons<'submit' | 'reset'>
   }
 
   interface ButtonItem {
@@ -138,10 +138,10 @@ declare global {
     disabled?: boolean | Fn<boolean>
     /** 将按钮放置到组件的指定slot中 */
     forSlot?: string
-    actions?: (T | (ButtonItem & ({ name: T } | { name?: string })))[]
+    actions?: (T | (ButtonItem | { name: T }))[]
     // subItems?: ButtonItem[]
   }
-  type ExButtons<T extends string = string> = ExButtonGroup<T> | ExButtonGroup<T>['actions']
+  type ExButtons<T extends string = string> = ExButtonGroup<T> | NonNullable<ExButtonGroup<T>['actions']>
 
   type ExColumnsItem = {
     /** 应用于表格或编辑表单 */
@@ -159,7 +159,7 @@ declare global {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     columns: ColumnsOption[]
-    buttons?: ExButtonGroup | ExButtonGroup['actions']
+    buttons?: ExButtons
     /** 列表元素右边按钮 */
     rowButtons?: ExButtonGroup<'del' | 'edit'> & { columnProps?: TableColumnProps }
     /** 弹窗属性 */
@@ -177,7 +177,7 @@ declare global {
   }
   interface ExListOption extends ExBaseOption {
     field: string
-    buttons?: ExButtonGroup<'add' | 'refresh'>
+    buttons?: ExButtons<'add' | 'refresh'>
     columns: UniWidgetOption[]
     /** 列表元素右边按钮 */
     rowButtons?: ExButtonGroup<'del' | 'edit'>
@@ -194,7 +194,7 @@ declare global {
   interface ExTabsOption extends ExBaseOption {
     activeKey?: Ref<string>
     forceRender?: boolean
-    buttons?: ExButtonGroup<'add' | 'refresh'>
+    buttons?: ExButtons<'add' | 'refresh'>
     subItems: TabItem[]
   }
   interface TabItem extends Omit<ExGroupOption, 'type'> {
@@ -212,7 +212,7 @@ declare global {
     key?: string
     icon?: string | Component
     subItems: UniOption[]
-    buttons?: ExButtonGroup
+    buttons?: ExButtons
   }
   /** 表单元素属性 */
   interface ExFormItemOption extends ExBaseOption {
@@ -273,7 +273,7 @@ declare global {
     Collapse: ExCollapseOption
   }
   type WidgetTypes = {
-    Buttons: ExBaseOption & ExButtonGroup & { align?: 'left' | 'right' | 'center' }
+    Buttons: ExBaseOption & ExButtonGroup
     Hidden: { field: string }
     InputSlot: ExSlotOption
     InfoSlot: ExSlotOption

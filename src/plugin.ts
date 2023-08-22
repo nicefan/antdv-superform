@@ -1,7 +1,7 @@
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import { merge } from 'lodash-es'
 import type { App, Component } from 'vue'
-import { override, addComponent } from './controls'
+import { override, addComponent } from './components'
 import type { Locale } from 'ant-design-vue/es/locale-provider'
 type BaseComps =
   | 'Divider'

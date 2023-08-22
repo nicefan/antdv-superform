@@ -1,7 +1,7 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, watch, toRefs, provide, h, mergeProps } from 'vue'
+import { defineComponent, PropType, ref, reactive, watch, toRefs, h, mergeProps } from 'vue'
 import { merge } from 'lodash-es'
-import Controls from '../controls/components'
+import Controls from '../components'
 import { globalProps } from '../plugin'
 
 export default defineComponent({
