@@ -23,7 +23,7 @@ export default defineComponent({
     const option: Obj = reactive(props.option || {})
     merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
 
-    const { dataSource, pagination, onLoaded, apis, goPage, request, onSearch } = useQuery(option)
+    const { dataSource, pagination, onLoaded, apis, goPage, reload, onSearch } = useQuery(option)
 
     const exposed = {
       setOption: (_option: RootTableOption) => {
@@ -34,7 +34,7 @@ export default defineComponent({
         dataRef.value = data
       },
       goPage,
-      request,
+      reload,
       onSearch,
       onLoaded,
       dataRef,
