@@ -14,7 +14,7 @@
 import { inject, reactive, ref } from 'vue'
 import { Row, Button } from 'ant-design-vue'
 import useOption from './useExForm'
-import { useForm } from '../src'
+import { useDetail, useForm, useModal } from '../src'
 import { useButtons } from '../src/exaButtons'
 
 const props = defineProps<{
@@ -23,8 +23,10 @@ const props = defineProps<{
 }>()
 // const myModel = useExampleModal()
 const { options, changeSelect } = useOption()
-const [formRegister, form] = useForm({ isContainer: true, ...options })
+const dataSource = reactive({})
+const [formRegister, form] = useForm({ isContainer: true, ...options }, dataSource)
 const MyForm = formRegister()
+// const sourceData = form.getSource()
 
 const onSubmit = () => {
   return form.submit().then((data) => {
@@ -51,12 +53,22 @@ const reset = () => {
   form.getForm('resetFields')
 }
 
+const [detailRegister] = useDetail(options, dataSource)
+const detailModal = useModal(detailRegister(), {
+  width: 1200,
+  title: '表单预览',
+  cancelText: null,
+})
+
+
 const [ExaButtons] = useButtons({
+  limit: 5,
   actions: [
     { label: '切换选项', onClick: changeSelect },
     { label: '校验', onClick: onSubmit },
     { label: '赋值', onClick: setValue },
     { label: '重置', onClick: reset },
+    { label: '预览', onClick: () => detailModal.openModal() },
   ],
 })
 </script>

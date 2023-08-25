@@ -3,7 +3,7 @@
     <Select
       option-filter-prop="label"
       :placeholder="'请选择' + option.label"
-      v-bind="{ ...valueProps, ...props.attrs, options }"
+      v-bind="{ ...valueProps, ...props.attrs, options, onChange }"
     />
   </FormItem>
 </template>
@@ -23,15 +23,15 @@ const props = defineProps<{
 }>()
 const valueProps = useVModel(props)
 
+const { options: orgOptions, labelField } = props.option
 const options = ref<Obj[]>(props.attrs?.options || [])
-const _options = props.option.options
-if (typeof _options === 'function') {
+if (typeof orgOptions === 'function') {
   watchPostEffect(() => {
-    Promise.resolve(_options(props.effectData)).then((data) => {
+    Promise.resolve(orgOptions(props.effectData)).then((data) => {
       options.value = data
     })
   })
-} else if (_options) {
+} else if (orgOptions) {
   watch(
     () => props.option.options,
     (data) => (options.value = unref(data as any)),
@@ -40,5 +40,15 @@ if (typeof _options === 'function') {
   // options.value = unref(_options)
 } else if (props.option.dictName && globalConfig.dictApi) {
   globalConfig.dictApi(props.option.dictName).then((data) => (options.value = data))
+}
+
+let onChange = props.attrs.onChange
+if (labelField) {
+  const current = props.effectData.current
+  onChange = (...args) => {
+    const [_, item] = args
+    current[labelField] = Array.isArray(item) ? item.map(({ lable }) => lable) : item.label
+    props.attrs.onChange?.(...args)
+  }
 }
 </script>

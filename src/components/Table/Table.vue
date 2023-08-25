@@ -3,6 +3,7 @@ import { h, ref, reactive, PropType, defineComponent, toRef, mergeProps, inject 
 import { ButtonGroup } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
+import { Row } from 'ant-design-vue'
 
 export default defineComponent({
   name: 'ExaTable',
@@ -16,11 +17,12 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ModelDataGroup>,
     },
+    isView: Boolean,
     effectData: Object,
     apis: Object as PropType<TableApis>,
   },
   emits: ['register'],
-  setup({ option, model, apis = {} as TableApis, effectData }, ctx) {
+  setup({ option, model, apis = {} as TableApis, effectData, isView }, ctx) {
     const editInline = option.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
@@ -29,7 +31,7 @@ export default defineComponent({
     const selectedRowKeys = ref<string[]>([])
     const selectedRows = ref<Obj[]>([])
     const rowSelection =
-      !attrs.rowSelection && attrs.rowSelection !== undefined
+      isView || (!attrs.rowSelection && attrs.rowSelection !== undefined)
         ? undefined
         : reactive(
             mergeProps(attrs.rowSelection, {
@@ -85,26 +87,18 @@ export default defineComponent({
       },
     }
 
-    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener })
-
-    const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys })
-    const buttons =
-      option.buttons &&
-      (() =>
-        option.buttons &&
-        h(ButtonGroup, {
-          config: option.buttons,
-          param: editParam,
-          methods,
-        }))
+    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener, isView })
 
     const exposed = reactive({
       selectedRowKeys,
       selectedRows,
-      add: () => methods?.add(),
-      edit: () => methods?.edit(editParam),
-      delete: () => methods?.delete(editParam),
+      reload: (param) => apis.query?.(param),
+      add: () => methods.add?.(),
+      edit: () => methods.edit?.(editParam),
+      delete: () => methods.delete?.(editParam),
+      view: () => methods.view?.(),
     })
+
     const tableRef = ref()
     const getTable = (el) => {
       if (!el) return
@@ -115,14 +109,37 @@ export default defineComponent({
       }
     }
 
+    const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys, tableRef })
     const rootSlots = inject('rootSlot', {})
-    const slots: Obj = { ...ctx.slots }
+    const slots: Obj = {  ...ctx.slots }
     if (option.slots) {
       Object.entries(option.slots).forEach(([key, value]) => {
         slots[key] = typeof value === 'string' ? rootSlots[value] : value
       })
     }
-    slots[(option.buttons as ExButtonGroup)?.forSlot || 'title'] = buttons
+    slots.title ||= () => (isView && option.descriptionsProps?.title) || option.label
+    const buttonsConfig = option.buttons as any
+    if (!isView && buttonsConfig) {
+      const slotName = buttonsConfig.forSlot || 'extra'
+      const orgSlot = slots[slotName]
+      slots[slotName] = () => [
+        orgSlot?.(),
+        h(ButtonGroup, {
+          config: buttonsConfig,
+          param: editParam,
+          methods,
+        }),
+      ]
+    }
+
+    const { title: titleSlot, extra: extraSlot, ...__slots } = slots
+    if (titleSlot || extraSlot) {
+      __slots.title = () =>
+        h(Row, { justify: 'space-between', align: 'middle' }, () => [
+          h('div', { class: 'exa-title' }, titleSlot?.()),
+          extraSlot?.(),
+        ])
+    }
 
     return () => [
       modalSlot?.(),
@@ -133,11 +150,12 @@ export default defineComponent({
           dataSource: list.value,
           columns,
           tableLayout: 'fixed',
+          pagination: isView ? false : undefined,
           ...attrs,
           rowSelection,
           rowKey,
         },
-        slots
+        __slots
       ),
     ]
   },

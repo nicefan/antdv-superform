@@ -3,16 +3,15 @@ import { ModalFuncProps } from 'ant-design-vue'
 import base from '../components/base'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
+import { ModalProps } from 'ant-design-vue/es'
 
 export function createModal(content: (() => VNode) | VNode, { buttons, ...__config }: Obj = {}) {
   const visible = ref(false)
   const config = reactive({ ...__config, ...globalProps.Modal })
   const modalRef = ref()
-  const slots: Obj = {
-    default: content,
-  }
+
   if (buttons) {
-    slots.footer = () => h(ButtonGroup, { config: buttons, param: { modalRef } })
+    __config.footer = () => h(ButtonGroup, { config: buttons, param: { modalRef } })
   }
   const onOk = () =>
     Promise.resolve(config.onOk?.()).then(() => {
@@ -23,7 +22,7 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...__conf
     h(
       base.Modal,
       { ref: modalRef, visible: visible.value, 'onUpdate:visible': updateVisible, ...config, ...props, onOk },
-      { ...ctx?.slots, ...slots }
+      { ...ctx?.slots, default: content }
     )
 
   const openModal = async (option?: ModalFuncProps | Obj) => {
@@ -47,7 +46,7 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...__conf
   }
 }
 
-export function useModal(content: () => VNode, config: (ModalFuncProps & { buttons?: ExButtons }) | Obj = {}) {
+export function useModal(content: () => VNode, config: (ModalProps & { buttons?: ExButtons }) | Obj = {}) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
 
@@ -57,7 +56,7 @@ export function useModal(content: () => VNode, config: (ModalFuncProps & { butto
     } else {
       const wrap = document.createElement('div')
       // currentInstance = currentInstance || ins
-      const vm = createVNode(modalSlot)
+      const vm = createVNode(modalSlot, { appContext: ins.appContext })
       vm.appContext = ins?.appContext // 这句很关键，关联起了数据
 
       render(vm, wrap)
@@ -66,6 +65,7 @@ export function useModal(content: () => VNode, config: (ModalFuncProps & { butto
   }
 
   return {
+    modalRef,
     openModal: open,
     modalSlot,
     closeModal,

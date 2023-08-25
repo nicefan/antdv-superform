@@ -1,11 +1,15 @@
 <template>
   <form-item>
-    <tree-select :placeholder="'请选择' + option.label" v-bind="{ ...valueProps, ...props.attrs }" :tree-data="treeData" />
+    <tree-select
+      :placeholder="'请选择' + option.label"
+      v-bind="{ ...valueProps, ...props.attrs, onChange }"
+      :tree-data="treeData"
+    />
   </form-item>
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref } from 'vue'
+import { ref, watchPostEffect, toValue } from 'vue'
 import { useVModel } from '../utils'
 import baseComps from './base'
 
@@ -20,16 +24,26 @@ const props = defineProps<{
 const valueProps = useVModel(props)
 
 const treeData = ref<Obj[]>([])
-const _data = props.option.data
-if (typeof _data === 'function') {
+const { data, labelField } = props.option
+if (typeof data === 'function') {
   watchPostEffect(() => {
-    Promise.resolve(_data(props.effectData)).then((data) => {
-      treeData.value = data
+    Promise.resolve(data(props.effectData)).then((res) => {
+      treeData.value = res
     })
   })
-} else if (_data) {
-  treeData.value = unref(_data)
+} else if (data) {
+  treeData.value = toValue(data)
 }
+let onChange = props.attrs.onChange
+if (labelField) {
+  const current = props.effectData.current
+  onChange = (...args) => {
+    const [val, labels] = args
+    current[labelField] = Array.isArray(val) ? labels : labels[0]
+    props.attrs.onChange?.(...args)
+  }
+}
+
 // 异步获取
 // 字典配置
 /**

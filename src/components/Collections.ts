@@ -36,8 +36,8 @@ export default defineComponent({
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
-      const { type, align, isBlock, columns } = option
-      if (type === 'Hidden') return
+      const { type, align, isBlock, columns, hideInForm } = option
+      if (type === 'Hidden' || hideInForm) return
       const effectData = getEffectData({ current: toRef(props.model, 'refData'), value: toRef(subData, 'refData') })
       // const isContainer = !!subData.children || !!columns || type === 'Buttons'
       const { attrs, hidden } = useControl({
@@ -48,8 +48,8 @@ export default defineComponent({
       const __node = useBuildNode(option, subData, effectData, attrs)
       const node = subData.children ? () => h(DataProvider, { name: 'disabled', data: attrs.disabled }, __node) : __node
       const alignStyle = align && 'text-align: ' + align
-
-      if (isBlock || (sectionList.includes(type) && isBlock !== false)) {
+      const __isBlock = isBlock ?? (sectionList.includes(type) && !option.span)
+      if (__isBlock) {
         currentGroup = undefined
         nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', style: alignStyle, key: idx }, node()))
       } else {

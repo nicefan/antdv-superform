@@ -11,38 +11,42 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
   const refName = nameArr.splice(-1)[0]
   let currentRules: Obj[] | undefined
 
-  const parent = ref(parentData.value)
-  if (refName) {
-    watch(
-      parentData,
-      (data) => {
-        parent.value = data
-        nameArr.forEach((name) => {
-          parent.value = parent.value[name] ??= {}
-        })
-        if (columns || subItems) {
-          parent.value[refName] ??= columns ? [] : {}
-        } else {
-          parent.value[refName] ??= initialValue
-        }
-      },
-      { immediate: true, flush: 'sync' }
-    )
-  }
-
-  return reactive({
+  const model = reactive({
     refName,
     initialValue,
     fieldName: field,
-    parent,
-    refData: refName ? toRef(parent.value, refName) : parent,
+    parent: ref(),
+    refData: ref(),
     rules: currentRules,
     propChain,
   })
+  watch(
+    parentData,
+    (data) => {
+      model.parent = data
+      if (refName) {
+        nameArr.forEach((name) => {
+          model.parent = model.parent[name] ??= {}
+        })
+        if (columns || subItems) {
+          model.parent[refName] ??= columns ? [] : {}
+        } else {
+          model.parent[refName] ??= initialValue
+        }
+        model.refData = toRef(model.parent, refName)
+      } else {
+        model.refData = ref(data)
+      }
+    },
+    { immediate: true, flush: 'sync' }
+  )
+
+  return model
 }
 
 export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: string[] = []) {
-  const currentData = toRef(reactive(data || {}))
+  const currentData: Ref = toRef(data)
+  currentData.value ??= {}
   const rules = {}
   const cols = items.sort(({ sort = 1 }, { sort: b_sort = 1 }) => sort - b_sort)
   const modelsMap: ModelsMap = new Map()

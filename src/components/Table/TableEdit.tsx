@@ -35,20 +35,25 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
   /** 初始model */
   const { modelsMap: fModels } = cloneModelsFlat<ExBaseOption & ExColumnsItem>(childrenMap)
 
-  const setEditMap = (data, info) => {
-    let editInfo = editMap.get(data) // TODO： 如果非同一个引用，需使用[rowKey]从list里面取
+  const getEditMap = (data) => {
+    let editInfo = editMap.get(toRaw(data))
     if (!editInfo) {
+      editInfo = shallowReactive<Obj>({ isEdit: false })
+      editMap.set(toRaw(data), editInfo)
+    }
+    return editInfo
+  }
+  const setEditMap = (data, info) => {
+    const editInfo = getEditMap(data)
+    if (!editInfo.editData) {
       const editData = cloneDeep(data)
       const { modelsMap, rules } = cloneModelsFlat(childrenMap, editData)
       const form = useForm(reactive(editData), ref(rules))
-
-      editInfo = shallowReactive<Obj>({ ...info, form, modelsMap, editData })
-      editMap.set(data, editInfo)
+      Object.assign(editInfo, { ...info, form, modelsMap, editData })
     } else {
       resetFields(editInfo.editData, data)
       Object.assign(editInfo, info)
     }
-    return editInfo
   }
   const methods = {
     add() {
@@ -61,7 +66,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     },
     edit({ record, selectedRows }) {
       const data = record || selectedRows[0]
-      setEditMap(toRaw(data), { isEdit: true })
+      setEditMap(data, { isEdit: true })
     },
     del({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
@@ -73,7 +78,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     },
   }
   const save = ({ record }) => {
-    const editInfo = editMap.get(toRaw(record))
+    const editInfo = getEditMap(record)
     editInfo.form
       .validate()
       .then(() => {
@@ -95,7 +100,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
   }
   const cancel = ({ record }) => {
     // const key = record[rowKey]
-    const editInfo = editMap.get(toRaw(record))
+    const editInfo = getEditMap(record)
     if (editInfo.isNew) {
       newItems.value.splice(newItems.value.indexOf(record), 1)
       // delete editMap[key]
@@ -118,7 +123,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
   )
 
   const actionSlot = (param) => {
-    const editInfo = editMap.get(toRaw(param.record))
+    const editInfo = getEditMap(param.record)
     if (editInfo?.isEdit) {
       return editButtons(param)
     }
@@ -143,7 +148,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
 
     const ruleName = _model.propChain.join('.')
     const customRender = (props) => {
-      const { modelsMap, isEdit, form, editData } = editMap.get(toRaw(props.record)) || {}
+      const { modelsMap, isEdit, form, editData } = getEditMap(props.record)
       if (isEdit) {
         const model = modelsMap.get(option)
         const validateInfo = form.validateInfos[ruleName]

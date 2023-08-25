@@ -41,7 +41,7 @@ export function getListener(option: Obj<Fn> = {}, formData) {
   const listener: Obj<Fn> = {}
   Object.entries(option).forEach(([key, fn]) => {
     const name = 'on' + key.charAt(0).toUpperCase() + key.slice(1)
-    listener[name] = (...args) => fn(readonly(formData), ...args)
+    listener[name] = (...args) => fn(formData, ...args)
   })
   // 查找on开头的属性进行事件绑定
   // Object.keys(option).forEach((key) => {

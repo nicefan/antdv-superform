@@ -45,6 +45,9 @@ export default function exampleForm() {
     subItems: [
       {
         type: 'Group',
+        descriptionsProps: {
+          title: '基本信息',
+        },
         subItems: [
           {
             type: 'Input',
@@ -105,7 +108,7 @@ export default function exampleForm() {
             field: 'other',
             // labelField: 'foreverName',
             label: '其它',
-            options: list,
+            options: () => Promise.resolve(selectList),
             computed(val, data) {
               return data.formData.forever !== null && 'a'
             },
@@ -236,7 +239,13 @@ export default function exampleForm() {
             type: 'TreeSelect',
             field: 'tree',
             label: '树形',
+            labelField: 'treeName',
             data: treeData,
+            on: {
+              change(...args) {
+                console.log(args)
+              }
+            }
           },
         ],
       },

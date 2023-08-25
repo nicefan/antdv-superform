@@ -18,11 +18,13 @@ import { Tabs } from 'ant-design-vue'
 import Setups from './setups.vue'
 import FirstForm from './form.vue'
 import CreateForm from './createForm/index.vue'
+import Detail from './Detail.vue'
 
 const tabs = {
   Setups,
   FirstForm,
   CreateForm,
+  Detail,
 }
 
 const tabNames = Object.keys(tabs)

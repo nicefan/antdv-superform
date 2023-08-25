@@ -12,6 +12,8 @@ import {
   RowProps,
   FormItemProps,
   InputProps,
+  DescriptionsProps,
+  TreeProps,
 } from 'ant-design-vue'
 
 export interface RuleConfig {
@@ -72,6 +74,8 @@ declare global {
     dynamicAttrs?: Fn<Obj>
     /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
     hidden?: boolean | ((data: Readonly<Obj>) => boolean)
+    hideInForm?: boolean
+    hideInDescription?: boolean
     /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
     disabled?: boolean | Fn
     on?: Obj<Fn>
@@ -96,6 +100,7 @@ declare global {
     rowProps?: RowProps & HTMLAttributes
     /** 子元素的统一排列属性， */
     subSpan?: number
+    descriptionsProps?: DescriptionsProps
   }
 
   interface ExFormOption extends Omit<ExGroupOption, 'type'> {
@@ -117,10 +122,13 @@ declare global {
     attrs?: Obj & HTMLAttributes
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
+    /** 传递到内置方法时的所需参数 */
+    meta?: Obj
     onClick?: Fn
   }
   type TableApis = {
     query: Fn<Promise<any>>
+    info?: Fn<Promise<Obj>>
     save?: Fn<Promise<any>>
     update?: Fn<Promise<any>>
     delete?: Fn<Promise<any>>
@@ -146,8 +154,6 @@ declare global {
   type ExColumnsItem = {
     /** 应用于表格或编辑表单 */
     hideInTable?: boolean
-    hideInForm?: boolean
-    hideInDescription?: boolean
     /** 表格内容渲染 */
     viewRender?: string | Fn<VNodeChild>
     columnProps?: TableColumnProps
@@ -161,11 +167,12 @@ declare global {
     columns: ColumnsOption[]
     buttons?: ExButtons
     /** 列表元素右边按钮 */
-    rowButtons?: ExButtonGroup<'del' | 'edit'> & { columnProps?: TableColumnProps }
+    rowButtons?: ExButtons<'del' | 'edit' | 'view'> & { columnProps?: TableColumnProps }
     /** 弹窗属性 */
     modalProps?: ModalFuncProps
+    descriptionsProps?: DescriptionsProps
     /** 弹窗表单属性 */
-    formSechma?: Omit<ExFormOption, 'subItems'> & { 'subItems'?: UniOption[]}
+    formSechma?: Omit<ExFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
   }
 
   interface RootTableOption extends Omit<ExTableOption, 'type' | 'field'> {
@@ -244,6 +251,8 @@ declare global {
     attrs?: SelectProps & HTMLAttributes
   }
   interface ExTreeOption extends ExFormItemOption {
+    labelField?: string
+    attrs?: TreeProps & HTMLAttributes
     data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
   }
   interface ExSwitchOption extends ExFormItemOption {
@@ -299,7 +308,11 @@ declare global {
   type UniOption = UniWrapperOption | UniWidgetOption
 
   type GetUniOption<T extends keyof OptionType> = OptionType[T] & { type?: T }
-
+  type MixWrapper = {
+    [K in keyof WrapperTypes]: (k: Partial<WrapperTypes[K]>) => void
+  }[keyof WrapperTypes] extends (k: infer U) => void
+    ? U
+    : never
   type MixOption = {
     [K in keyof OptionType]: (k: Partial<OptionType[K]>) => void
   }[keyof OptionType] extends (k: infer U) => void

@@ -18,7 +18,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
     'onUpdate:value': (val = toValue(defaultValue)) => {
       tempData.value = val
       // 数据重置时还原为默认值
-      refValue.value = val
+      // refValue.value = val
     },
   })
 

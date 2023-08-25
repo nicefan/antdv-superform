@@ -44,6 +44,11 @@ export function useForm(option: ExFormOption, data?: Obj) {
         }
       },
       getForm,
+      getSource: () => {
+        const source = ref()
+        getForm('dataSource').then(data => (source.value = data))
+        return source
+      },
       submit: () => getForm('submit'),
       resetFields: (rest?: Obj) => getForm('resetFields', rest),
       setFieldsValue: (data: Obj) => getForm('setFieldsValue', data),

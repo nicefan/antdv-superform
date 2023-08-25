@@ -6,14 +6,8 @@ export const myTableOption = defineTable({
   buttons: {
     actions: ['add', 'edit', 'del'],
   },
-  rowButtons: {
-    buttonType: 'link',
-    actions: ['edit', 'del'],
-  },
   formSechma: {
-    attrs: {
-      layout: 'vertical',
-    },
+    attrs: { layout: 'vertical' },
     subSpan: 24,
   },
   searchSechma: {
@@ -24,6 +18,9 @@ export const myTableOption = defineTable({
     subSpan: 8,
     subItems: ['fieldName', 'title', 'tip', { type: 'Input', label: '其它', field: 'other' }],
   },
+  modalProps: { width: '500px' },
+  descriptionsProps: { column: 1 },
+  rowButtons: ['edit', 'del', 'view'],
   columns: [
     {
       type: 'Input',
@@ -48,10 +45,10 @@ export const myTableOption = defineTable({
       type: 'Select',
       label: '数据类型',
       field: 'dataType',
-      options: [
+      options: () => Promise.resolve([
         { label: '文本', value: 'text' },
         { label: '数字', value: 'number' },
-      ],
+      ]),
     },
     {
       type: 'Switch',

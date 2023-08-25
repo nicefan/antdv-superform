@@ -9,7 +9,6 @@
 </template>
 <script lang="ts">
 import { ref, defineComponent, inject, toRefs } from 'vue'
-import VIcon from '../src/icon/VIcon'
 import exampleForm from './useExForm'
 import { useTable, ExaTable, useForm } from '../src'
 import { ExaButtons } from '../src/exaButtons'

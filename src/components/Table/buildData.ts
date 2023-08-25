@@ -1,15 +1,17 @@
 import { ref, h, inject, unref, toRaw, computed, watch, reactive } from 'vue'
 import { nanoid } from 'nanoid'
 import { merge } from 'lodash-es'
-import { createModal } from '../../exaModal'
+import { createModal, useModal } from '../../exaModal'
 import { ButtonGroup } from '../buttons'
 import inlineRender from './TableEdit'
 import Controls from '../index'
 import { getEffectData } from '../../utils'
+import { globalProps } from '../../plugin'
+import View from '../Detail'
 
 function modalEdit({ listData, rowKey, option, listener }) {
   // 生成新增表单
-  const { initialData, rules } = listData as ModelChildren
+  const { initialData } = listData as ModelChildren
   const source = ref({})
   const formRef = ref()
 
@@ -24,13 +26,17 @@ function modalEdit({ listData, rowKey, option, listener }) {
       onRegister: (data) => (formRef.value = data),
     })
 
-  const { modalSlot, openModal } = createModal(editForm, { maskClosable: false, ...option.modalProps })
+  const { modalSlot, openModal } = createModal(editForm, {
+    ...globalProps.Modal,
+    maskClosable: false,
+    ...option.modalProps,
+  })
 
   const methods = {
-    add() {
+    add({ meta }) {
       source.value = merge({}, initialData, { [rowKey]: nanoid(12) })
       openModal({
-        title: '新增',
+        title: meta.title || meta.label || '新增',
         onOk() {
           return formRef.value.submit().then((data) => {
             return listener.onSave(data)
@@ -38,11 +44,15 @@ function modalEdit({ listData, rowKey, option, listener }) {
         },
       })
     },
-    edit({ record, selectedRows }) {
+    async edit({ record, selectedRows, meta }) {
       const data = record || selectedRows[0]
-      source.value = data
+      if (option.apis?.info) {
+        source.value = await option.apis.info(record[rowKey], record)
+      } else {
+        source.value = data
+      }
       openModal({
-        title: '修改',
+        title: meta.title || meta.label || '修改',
         onOk() {
           return formRef.value.submit().then((newData) => {
             return listener.onUpdate(newData, data)
@@ -56,6 +66,26 @@ function modalEdit({ listData, rowKey, option, listener }) {
     },
   }
   return { modalSlot, methods }
+}
+
+function buildDetail(option, modelsMap, rowKey) {
+  const source = ref({})
+  const detail = () => h(View, { option: option.formSechma, modelsMap, source })
+  const { openModal, closeModal } = useModal(detail, {
+    ...globalProps.Modal,
+    ...option.modalProps,
+    title: '查看详情',
+    footer: false,
+  })
+  return async ({ record, selectedRows, meta }) => {
+    const data = record || selectedRows[0]
+    if (option.apis?.info) {
+      source.value = await option.apis.info(record[rowKey], record)
+    } else {
+      source.value = data
+    }
+    openModal({ ...meta })
+  }
 }
 interface BuildColumnsParam {
   childrenMap: ModelsMap
@@ -95,7 +125,7 @@ function buildColumns({ childrenMap, methods, actionSlot, colEditMap, effectData
           children: getConfig(model.children),
         })
       } else {
-        const { type: colType, viewRender, render, options: colOptions, labelField } = col as any
+        const { type: colType, viewRender, render, options: colOptions, labelField, keepField } = col as any
         const colEditRender = colEditMap?.get(col)
         let textRender: Fn | undefined
         if (viewRender || colType === 'InfoSlot') {
@@ -103,15 +133,17 @@ function buildColumns({ childrenMap, methods, actionSlot, colEditMap, effectData
           textRender = typeof _render === 'string' ? rootSlots[_render] : viewRender
         } else if (labelField) {
           textRender = ({ record }) => record[labelField as string]
+        } else if (keepField) {
+          textRender = ({ record, text }) => text + ' - ' + record[labelField as string]
         } else if (colOptions && typeof colOptions?.[0] !== 'string') {
-          let options: any[] | undefined
+          const options = ref<any[]>()
           if (typeof colOptions === 'function') {
-            Promise.resolve(colOptions(getEffectData())).then((data) => (options = data))
+            Promise.resolve(colOptions(getEffectData())).then((data) => (options.value = data))
           } else {
-            options = unref(colOptions)
+            options.value = unref(colOptions)
           }
           textRender = ({ text }) => {
-            return options?.find(({ value }) => value === text)?.label
+            return options.value?.find(({ value }) => value === text)?.label
           }
         } else if (colType === 'Switch') {
           textRender = ({ text }) => (col.valueLabels || '否是')[text]
@@ -145,19 +177,26 @@ type BuildDataParam = {
   orgList: Ref<Obj[]>
   rowKey: string
   listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
+  isView?: boolean
 }
 
-function buildData({ option, listData, orgList, rowKey, listener }: BuildDataParam) {
+function buildData({ option, listData, orgList, rowKey, listener, isView }: BuildDataParam) {
   const { modelsMap: childrenMap, initialData } = listData
-  const effectData = { ...getEffectData(), current: orgList }
-
-  const { editMode, addMode, rowButtons } = option
   const context: {
     list: Ref
     columns: Obj[]
-    methods?: Obj
+    methods: Obj
     modalSlot?: Fn
-  } = { list: orgList, columns: [] }
+  } = { list: orgList, columns: [], methods: {} }
+
+  if (isView) {
+    context.columns = buildColumns({ childrenMap })
+    return context
+  }
+
+  const effectData = { ...getEffectData(), current: orgList }
+  const { editMode, addMode, rowButtons } = option
+
   let editActionSlot: Fn
   let colEditMap
   if (editMode === 'inline') {
@@ -173,7 +212,7 @@ function buildData({ option, listData, orgList, rowKey, listener }: BuildDataPar
   }
   if (editMode === 'modal' || addMode === 'modal') {
     const { modalSlot, methods } = modalEdit({ listData, rowKey, option, listener })
-    if (context.methods) {
+    if (context.methods.edit) {
       // 编辑模式为行内编辑时，新增按钮使用弹窗模式
       context.methods.add = methods.add
     } else {
@@ -181,15 +220,25 @@ function buildData({ option, listData, orgList, rowKey, listener }: BuildDataPar
     }
     context.modalSlot = modalSlot
   }
+  context.methods.view = buildDetail(option, childrenMap, rowKey)
 
   let actionSlot
   let actionColumn
   if (rowButtons) {
-    const { columnProps, forSlot, ...buttons } = rowButtons
+    const buttonsConfig: Obj = {
+      buttonType: 'link',
+      size: 'small',
+      ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
+    }
+    const { columnProps, forSlot, ...config } = buttonsConfig
     const render = (param) => {
       return (
         editActionSlot?.(param) ||
-        h(ButtonGroup, { config: buttons, param: reactive({ ...effectData, ...param }), methods: context.methods })
+        h(ButtonGroup, {
+          config,
+          param: reactive({ ...effectData, ...param }),
+          methods: context.methods,
+        })
       )
     }
     if (forSlot) {

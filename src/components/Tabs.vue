@@ -1,5 +1,6 @@
 <script lang="tsx">
 import { onMounted, reactive, ref, toRef, watchEffect } from 'vue'
+import { DetailLayout } from './Detail'
 
 export default {
   name: 'ExTabs',
@@ -18,6 +19,7 @@ const props = defineProps<{
   option: ExTabsOption
   model: ModelDataGroup<TabItem>
   effectData: Obj
+  isView?: boolean
 }>()
 
 const activeKey = ref(toRef(props.option, 'activeKey') as any)
@@ -56,12 +58,13 @@ const panes = [...props.model.children].map(([option, model], idx) => {
 <template>
   <Tabs v-model:activeKey="activeKey">
     <template #rightExtra>
-      <ButtonGroup v-if="option.buttons" :config="option.buttons"></ButtonGroup>
+      <ButtonGroup v-if="!isView && option.buttons" :config="option.buttons"></ButtonGroup>
     </template>
 
     <template v-for="{ attrs, hidden, option, model } of panes" :key="attrs.key">
       <TabPane v-bind="attrs" v-if="!hidden.value">
-        <Collections :option="option" :model="model" />
+        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" />
+        <Collections v-else :option="option" :model="model" />
       </TabPane>
     </template>
   </Tabs>

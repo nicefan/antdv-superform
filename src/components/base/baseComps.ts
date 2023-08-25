@@ -6,6 +6,8 @@ export {
   Button,
   Space,
   Card,
+  Descriptions,
+  DescriptionsItem,
   ListItem,
   List,
   Modal,

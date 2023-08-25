@@ -9,7 +9,7 @@ export function useQuery(option: Partial<RootTableOption>) {
   const requestParams = computed(() => ({
     ...unref(option.params),
     ...searchParam.value,
-    ...pageParam.value,
+    ...pageParam,
   }))
   const loading = ref(false)
   const dataSource = ref()
@@ -76,7 +76,7 @@ export function useQuery(option: Partial<RootTableOption>) {
   return {
     apis,
     goPage,
-    request,
+    reload: request,
     onSearch,
     requestParams,
     pagination,

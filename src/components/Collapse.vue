@@ -4,6 +4,7 @@ import { useControl, getEffectData } from '../utils'
 import { ButtonGroup } from './buttons'
 import base from './base'
 import Collections from './Collections'
+import { DetailLayout } from './Detail'
 
 const { Collapse, CollapsePanel } = base
 
@@ -11,6 +12,7 @@ const props = defineProps<{
   option: ExCollapseOption
   model: ModelDataGroup<CollapseItem>
   effectData: Obj
+  isView?: boolean
 }>()
 
 const panels = [...props.model.children].map(([option, model], idx) => {
@@ -35,17 +37,18 @@ const acKey = ref(props.option.activeKey || panels[0].key)
 
 <template>
   <Collapse v-model:activeKey="acKey">
-    <template v-for="panel of panels" :key="panel.key">
+    <template v-for="{ attrs, hidden, option, disabled, model, key } of panels" :key="key">
       <CollapsePanel
-        v-if="!panel.hidden.value"
-        :header="panel.option.label"
-        :collapsible="panel.disabled.value ? 'disabled' : 'header'"
-        v-bind="panel.attrs"
+        v-if="!hidden.value"
+        :header="option.label"
+        :collapsible="disabled.value ? 'disabled' : undefined"
+        v-bind="attrs"
       >
-        <template #extra>
-          <ButtonGroup v-if="panel.option.buttons" :config="panel.option.buttons" :param="effectData" />
+        <template #extra v-if="!isView">
+          <ButtonGroup v-if="option.buttons" :config="option.buttons" :param="effectData" />
         </template>
-        <Collections :option="panel.option" :model="panel.model" />
+        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children"/>
+        <Collections v-else :option="option" :model="model" />
       </CollapsePanel>
     </template>
   </Collapse>

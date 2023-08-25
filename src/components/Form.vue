@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PropType, h, provide, reactive, readonly, ref, watch } from 'vue'
+import { PropType, h, provide, reactive, readonly, ref, toRef, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -23,7 +23,7 @@ export default {
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit, slots }) {
     const formRef = ref()
-    const modelData = ref({})
+    const modelData = reactive(props.source || {})
     const { buttons, ignoreRules } = props.option
     let subItems = props.option.subItems
     if (buttons) {
@@ -46,20 +46,21 @@ export default {
     const { attrs } = useControl({ option: props.option, effectData })
 
     const actions = {
+      dataSource: modelData,
       submit: () => {
         return formRef.value.validate().then((...args) => {
-          const data = cloneDeep(modelData.value)
+          const data = cloneDeep(modelData)
           emit('submit', data)
           return data
         })
       },
       setFieldsValue(data) {
-        return setFieldsValue(modelData.value, data)
+        return setFieldsValue(modelData, data)
       },
       resetFields(defData = initialData) {
-        resetFields(modelData.value, defData)
+        resetFields(modelData, defData)
         formRef.value?.clearValidate()
-        const data = cloneDeep(modelData.value)
+        const data = cloneDeep(modelData)
         emit('reset', data)
         return data
       },
@@ -67,8 +68,7 @@ export default {
 
     watch(
       () => props.source,
-      (data) => data && actions.resetFields(data),
-      { immediate: true }
+      (data) => data && actions.resetFields(data)
     )
 
     expose(actions)
@@ -90,7 +90,7 @@ export default {
         {
           ref: getForm,
           class: ['exa-form', props.option.compact && 'exa-form-compact'],
-          model: modelData.value,
+          model: modelData,
           ...attrs,
         },
         {

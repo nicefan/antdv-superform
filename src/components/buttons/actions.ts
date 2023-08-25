@@ -20,6 +20,10 @@ const getDefault = () => {
       label: '修改',
       disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
     },
+    view: {
+      label: '查看',
+      disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
+    },
     submit: {
       label: '确定',
       attrs: {
@@ -56,12 +60,16 @@ export function mergeActions(actions, methods = {}) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
       const config = { ...defaultActions[name] }
+      const innerMethod = config.onClick
+      const meta = { label: config.label }
       if (typeof item === 'object') {
         const innerMethod = config.onClick
         const _onClick = item.onClick
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
-        if (_onClick) {
-          config.onClick = (param) => {
+        Object.assign(meta, item.meta)
+        config.onClick = (param) => {
+          if (_onClick) {
+            // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
             const action = async (text = config.confirmText) => {
               if (text) {
                 return new Promise((resolve) =>
@@ -70,18 +78,22 @@ export function mergeActions(actions, methods = {}) {
                     okText: '确定',
                     cancelText: '取消',
                     onOk() {
-                      innerMethod?.(param)
+                      innerMethod?.({ ...param, meta })
                       resolve(undefined)
                     },
                   })
                 )
               } else {
-                item.method?.(param)
+                return innerMethod?.({ ...param, meta })
               }
             }
             _onClick(param, action)
+          } else {
+            innerMethod?.({ ...param, meta })
           }
         }
+      } else {
+        config.onClick = (param) => innerMethod({ ...param, meta })
       }
       actionBtns.push(config)
     })

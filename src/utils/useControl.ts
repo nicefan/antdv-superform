@@ -34,14 +34,6 @@ export default function render({ option, effectData, inheritDisabled }: Param) {
   const listener = getListener(option.on, effectData)
   const computedAttr = typeof __attrs === 'function' ? { ...toRefs(getComputedAttr(__attrs, effectData)) } : {}
 
-  if (type === 'Select' && labelField) {
-    const change = listener.onChange
-    listener.onChange = function (val, currentOption) {
-      effectData.current[labelField] = currentOption.label
-      change && change(val, currentOption)
-    }
-  }
-
   // 校验绑定
   // const ruleName = rules && computed(() => (unref(disabled) ? undefined : propChain))
 
