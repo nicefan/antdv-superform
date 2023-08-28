@@ -169,7 +169,7 @@ declare global {
     /** 列表元素右边按钮 */
     rowButtons?: ExButtons<'del' | 'edit' | 'view'> & { columnProps?: TableColumnProps }
     /** 弹窗属性 */
-    modalProps?: ModalFuncProps
+    modalProps?: ModalFuncProps | Obj
     descriptionsProps?: DescriptionsProps
     /** 弹窗表单属性 */
     formSechma?: Omit<ExFormOption, 'subItems'> & { 'subItems'?: UniOption[] }

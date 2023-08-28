@@ -33,7 +33,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
   })
 
   const methods = {
-    add({ meta }) {
+    add({ meta = {} }: Obj) {
       source.value = merge({}, initialData, { [rowKey]: nanoid(12) })
       openModal({
         title: meta.title || meta.label || '新增',

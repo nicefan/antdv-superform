@@ -89,15 +89,6 @@ export default defineComponent({
 
     const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener, isView })
 
-    const exposed = reactive({
-      selectedRowKeys,
-      selectedRows,
-      reload: (param) => apis.query?.(param),
-      add: () => methods.add?.(),
-      edit: () => methods.edit?.(editParam),
-      delete: () => methods.delete?.(editParam),
-      view: () => methods.view?.(),
-    })
 
     const tableRef = ref()
     const getTable = (el) => {
@@ -140,6 +131,16 @@ export default defineComponent({
           extraSlot?.(),
         ])
     }
+
+    const exposed = reactive({
+      selectedRowKeys,
+      selectedRows,
+      reload: (param) => apis.query?.(param),
+      add: (meta) => methods.add?.({ meta }),
+      edit: (meta) => methods.edit?.({ ...editParam, meta }),
+      delete: () => methods.delete?.(editParam),
+      view: (meta) => methods.view?.({ ...editParam, meta }),
+    })
 
     return () => [
       modalSlot?.(),
