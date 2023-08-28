@@ -50,7 +50,7 @@ export default defineComponent({
   },
 })
 
-function buildNodes(modelsMap: ModelsMap, preOption, __isBlock?: boolean) {
+function buildNodes(modelsMap: ModelsMap, preOption) {
   const nodes: any[] = []
   let currentGroup: any[] = []
 
@@ -74,7 +74,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, __isBlock?: boolean) {
           content: () => contents.map((node) => node()),
         })
       } else {
-        nodes.push(...buildNodes(modelsMap, option, isBlock))
+        nodes.push(...buildNodes(modelsMap, option))
       }
     } else {
       currentGroup.push({
@@ -87,7 +87,8 @@ function buildNodes(modelsMap: ModelsMap, preOption, __isBlock?: boolean) {
     if (isBlock || node || idx === modelsMap.size - 1) {
       if (currentGroup?.length) {
         const props = { option: preOption, items: currentGroup }
-        nodes.push({ option: preOption, isBlock: __isBlock ?? isBlock, node: () => h(Descriptions, props) })
+        const preBlock = preOption.isBlock ?? !preOption.span
+        nodes.push({ option: preOption, isBlock: preBlock, node: () => h(Descriptions, props) })
         currentGroup = []
       }
       node && nodes.push({ option, isBlock, node })

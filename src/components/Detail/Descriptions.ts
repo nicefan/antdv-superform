@@ -11,7 +11,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const {type, subSpan, title, label, descriptionsProps } = props.option || {}
+    const { type, subSpan, title, label, descriptionsProps } = props.option || {}
 
     const presetSpan = subSpan ?? inject('subSpan', 12)
     const cols = Math.floor(24 / presetSpan)

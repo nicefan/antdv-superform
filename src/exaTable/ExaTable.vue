@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick } from 'vue';
+import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick } from 'vue'
 import { merge } from 'lodash-es'
 import { useControl, getEffectData } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -74,9 +74,11 @@ export default defineComponent({
 
         const { attrs } = useControl({ option: opt, effectData })
 
-        searchForm.value = useSearchForm(columns, searchSechma, { ...effectData, table }, (data) => {
-          onSearch(data)
-        })
+        searchForm.value =
+          searchSechma &&
+          useSearchForm(columns, searchSechma, { ...effectData, table }, (data) => {
+            onSearch(data)
+          })
         Object.assign(tableAttrs, {
           model: {
             refData: dataRef,
@@ -101,7 +103,8 @@ export default defineComponent({
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
         h('div', { class: option.isContainer && 'exa-container' }, [
           searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value()),
-          option.columns && h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
+          option.columns &&
+            h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
         ])
       )
   },

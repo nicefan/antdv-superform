@@ -10,6 +10,7 @@ export const myTableOption = defineTable({
     attrs: { layout: 'vertical' },
     subSpan: 24,
   },
+  descriptionsProps: { column: 2 },
   searchSechma: {
     attrs: {
       labelCol: { span: 6 },
@@ -19,7 +20,6 @@ export const myTableOption = defineTable({
     subItems: ['fieldName', 'title', 'tip', { type: 'Input', label: '其它', field: 'other' }],
   },
   modalProps: { width: '500px' },
-  descriptionsProps: { column: 1 },
   rowButtons: ['edit', 'del', 'view'],
   columns: [
     {

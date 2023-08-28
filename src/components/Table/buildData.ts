@@ -70,7 +70,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
 
 function buildDetail(option, modelsMap, rowKey) {
   const source = ref({})
-  const detail = () => h(View, { option: option.formSechma, modelsMap, source })
+  const detail = () => h(View, { option, modelsMap, source })
   const { openModal, closeModal } = useModal(detail, {
     ...globalProps.Modal,
     ...option.modalProps,
