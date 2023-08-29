@@ -32,7 +32,9 @@ export function useSearchForm(columns, searchSechma, effectData, onChange) {
     },
   }
   const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
-  const actions = mergeActions(buttonsConfig.actions || ['submit', 'reset'], defaultAction)
+  const __actions = buttonsConfig.actions || ['submit', 'reset']
+  if (__actions.includes('submit')) __actions[__actions.indexOf('submit')] = { name: 'submit', label: '查询' }
+  const actions = mergeActions(__actions, defaultAction)
   if (actions?.length) {
     // Object.assign(formOption, {
     //   rowProps: { align: 'middle' },
