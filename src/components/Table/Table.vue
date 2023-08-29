@@ -126,7 +126,7 @@ export default defineComponent({
     const { title: titleSlot, extra: extraSlot, ...__slots } = slots
     if (titleSlot || extraSlot) {
       __slots.title = () =>
-        h(Row, { justify: 'space-between', align: 'middle' }, () => [
+        h(Row, { justify: 'space-between', align: 'middle', style: 'width:100%' }, () => [
           h('div', { class: 'exa-title' }, titleSlot?.()),
           extraSlot?.(),
         ])

@@ -13,8 +13,11 @@ export default defineComponent({
   setup(props) {
     const { type, subSpan, title, label, descriptionsProps } = props.option || {}
 
-    const presetSpan = subSpan ?? inject('subSpan', 12)
+    let presetSpan = subSpan ?? inject('subSpan', 12)
     const cols = Math.floor(24 / presetSpan)
+    if (typeof descriptionsProps?.column === 'number') {
+      presetSpan = Math.floor(24 / descriptionsProps.column)
+    }
     const __title = type && ['Table', 'List', 'Collapse', 'Tabs'].includes(type) ? '' : title || label
     return () =>
       h(

@@ -10,7 +10,7 @@ export const myTableOption = defineTable({
     attrs: { layout: 'vertical' },
     subSpan: 24,
   },
-  descriptionsProps: { column: 2 },
+  descriptionsProps: { column: 2, size: 'default' },
   searchSechma: {
     attrs: {
       labelCol: { span: 6 },
@@ -38,6 +38,7 @@ export const myTableOption = defineTable({
       type: 'Input',
       label: '说明',
       field: 'tip',
+      span: 24,
       hideInTable: true,
       rules: { required: true },
     },
