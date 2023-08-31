@@ -8,8 +8,8 @@
     <Dropdown v-if="moreBtns.length">
       <Button v-bind="defaultAttrs"> <ellipsis-outlined /> </Button>
       <template #overlay>
-        <Menu v-for="{ attrs, icon, label } of moreBtns" :key="label">
-          <menu-item :disabled="attrs.disabled">
+        <Menu>
+          <menu-item v-for="{ attrs, icon, label } of moreBtns" :key="label" :disabled="attrs.disabled">
             <Button block v-bind="attrs" shape="">
               <component v-if="icon" :is="useIcon(icon)" />
               {{ label }}
@@ -24,7 +24,7 @@
 import { ref, watchEffect, PropType, reactive } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem } from 'ant-design-vue'
 import { EllipsisOutlined } from '@ant-design/icons-vue'
-import { useDisabled, useShow, useIcon } from '../../utils'
+import { getComputedStatus, useDisabled, useIcon } from '../../utils'
 import { mergeActions } from './actions'
 
 const props = defineProps({
@@ -46,25 +46,25 @@ function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
   const { size, buttonShape, buttonType, limit = 3, hidden, disabled, actions } = config
   const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)
-  const show = useShow(hidden, param)
+  const isHide = getComputedStatus(hidden, param)
 
   const actionBtns = mergeActions(actions, methods)
 
   const allBtns = actionBtns.map((item) => {
-    const show = useShow(item.hidden, param)
+    const isHide = getComputedStatus(item.hidden, param)
     const disabled = item.disabled !== undefined ? useDisabled(item.disabled, param) : dis
     const onClick = (e) => {
       e.stopPropagation()
       item.onClick?.(param)
     }
-    return { show, ...item, attrs: { ...defaultAttrs, ...item.attrs, disabled, onClick } }
+    return { isHide, ...item, attrs: { ...defaultAttrs, ...item.attrs, disabled, onClick } }
   })
 
   const btns = ref<any[]>([])
   const moreBtns = ref<any[]>([])
 
   watchEffect(() => {
-    const items = !show.value ? [] : allBtns.filter(({ show }) => show.value)
+    const items = isHide.value ? [] : allBtns.filter(({ isHide }) => !isHide.value)
     const count = items.length === limit + 1 ? limit + 1 : limit
     btns.value = items.slice(0, count)
     moreBtns.value = items.slice(count)

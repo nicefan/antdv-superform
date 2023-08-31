@@ -1,6 +1,6 @@
 import { h, ref } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
-import { AppleOutlined, AndroidOutlined } from '@ant-design/icons-vue';
+import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue';
 
 export default function exampleForm() {
   const list = ref<any[]>([
@@ -419,7 +419,7 @@ export default function exampleForm() {
                 },
                 {
                   label: '删除',
-                  icon: 'user',
+                  icon: UserOutlined,
                   confirmText: '确定删除吗？',
                   disabled: ({ formData }) => formData.forever === 2,
                   attrs: { danger: true },

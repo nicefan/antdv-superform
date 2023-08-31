@@ -7,7 +7,6 @@ export * from './exaForm'
 export * from './exaTable'
 export * from './exaButtons'
 export * from './exaDetail'
-// export { default as VIcon } from './icon/VIcon'
-export { useModal } from './exaModal'
+export * from './exaModal'
 
 export default plugin

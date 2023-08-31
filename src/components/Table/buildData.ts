@@ -1,6 +1,6 @@
 import { ref, h, inject, unref, toRaw, computed, watch, reactive } from 'vue'
 import { nanoid } from 'nanoid'
-import { merge } from 'lodash-es'
+import { merge, cloneDeep } from 'lodash-es'
 import { createModal, useModal } from '../../exaModal'
 import { ButtonGroup } from '../buttons'
 import inlineRender from './TableEdit'
@@ -8,6 +8,7 @@ import Controls from '../index'
 import { getEffectData } from '../../utils'
 import { globalProps } from '../../plugin'
 import View from '../Detail'
+import { createProducer, useColumns } from './buildColumns'
 
 function modalEdit({ listData, rowKey, option, listener }) {
   // 生成新增表单
@@ -49,7 +50,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
       if (option.apis?.info) {
         source.value = await option.apis.info(record[rowKey], record)
       } else {
-        source.value = data
+        source.value = cloneDeep(data)
       }
       openModal({
         title: meta.title || meta.label || '修改',
@@ -75,7 +76,7 @@ function buildDetail(option, modelsMap, rowKey) {
     ...globalProps.Modal,
     ...option.modalProps,
     title: '查看详情',
-    footer: false,
+    footer: null,
   })
   return async ({ record, selectedRows, meta }) => {
     const data = record || selectedRows[0]
@@ -94,7 +95,7 @@ interface BuildColumnsParam {
   actionSlot?: Obj // 行操作按钮绑定到指定forSlot
   colEditMap?: Map<Obj, Fn> // 行内编辑render方法
 }
-function buildColumns({ childrenMap, methods, actionSlot, colEditMap, effectData }: BuildColumnsParam) {
+function buildColumns2({ childrenMap, methods, actionSlot, colEditMap, effectData }: BuildColumnsParam) {
   const rootSlots = { ...inject('rootSlots', {}), ...actionSlot }
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
 
@@ -190,25 +191,20 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
   } = { list: orgList, columns: [], methods: {} }
 
   if (isView) {
-    context.columns = buildColumns({ childrenMap })
+    context.columns = useColumns({ childrenMap })
     return context
   }
 
   const effectData = { ...getEffectData(), current: orgList }
   const { editMode, addMode, rowButtons } = option
+  context.columns = useColumns({ childrenMap, rowButtons, effectData, methods: context.methods })
 
-  let editActionSlot: Fn
   let colEditMap
   if (editMode === 'inline') {
-    const { list, actionSlot, colRenderMap, methods } = inlineRender({ childrenMap, orgList, rowKey, listener })
-    context.list = list
-    context.methods = methods
-    Object.assign(context, {
-      list,
-      methods,
-    })
-    editActionSlot = actionSlot
+    const { list, colRenderMap, methods: inlineMethods } = inlineRender({ childrenMap, orgList, rowKey, listener })
     colEditMap = colRenderMap
+    context.list = effectData.current = list
+    Object.assign(context.methods, inlineMethods)
   }
   if (editMode === 'modal' || addMode === 'modal') {
     const { modalSlot, methods } = modalEdit({ listData, rowKey, option, listener })
@@ -216,47 +212,23 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
       // 编辑模式为行内编辑时，新增按钮使用弹窗模式
       context.methods.add = methods.add
     } else {
-      context.methods = methods
+      Object.assign(context.methods, methods)
     }
     context.modalSlot = modalSlot
   }
+
+  const renderProduce = createProducer()
+  context.columns.forEach((item) => {
+    const colEditRender = colEditMap?.get(item.dataIndex)
+    const textRender = item.customRender
+    if (colEditRender || textRender) {
+      const __render = (param) => colEditRender?.(param) || textRender?.(param) || param.text
+      item.customRender = (param) => renderProduce(param, __render)
+    }
+  })
+
   context.methods.view = buildDetail(option, childrenMap, rowKey)
 
-  let actionSlot
-  let actionColumn
-  if (rowButtons) {
-    const buttonsConfig: Obj = {
-      buttonType: 'link',
-      size: 'small',
-      ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
-    }
-    const { columnProps, forSlot, ...config } = buttonsConfig
-    const render = (param) => {
-      return (
-        editActionSlot?.(param) ||
-        h(ButtonGroup, {
-          config,
-          param: reactive({ ...effectData, ...param }),
-          methods: context.methods,
-        })
-      )
-    }
-    if (forSlot) {
-      actionSlot = { [forSlot]: render }
-    } else {
-      actionColumn = {
-        title: '操作',
-        key: 'action',
-        fixed: 'right',
-        minWidth: '100',
-        align: 'center',
-        ...columnProps,
-        customRender: render,
-      }
-    }
-  }
-  context.columns = buildColumns({ childrenMap, methods: context.methods, actionSlot, colEditMap, effectData })
-  if (actionColumn) context.columns.push(actionColumn)
   return context
 }
 

@@ -16,12 +16,6 @@ export function getComputedStatus(org: undefined | boolean | Ref<boolean> | Fn<b
   return res
 }
 
-export function useShow(hide, data) {
-  const show = getComputedStatus(hide, data)
-  show.value = !show.value
-  return show
-}
-
 export function useDisabled(dis, data) {
   return getComputedStatus(dis, data)
 }

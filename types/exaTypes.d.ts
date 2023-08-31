@@ -14,6 +14,7 @@ import {
   InputProps,
   DescriptionsProps,
   TreeProps,
+  TableProps,
 } from 'ant-design-vue'
 
 export interface RuleConfig {
@@ -162,6 +163,7 @@ declare global {
   interface ExTableOption extends ExBaseOption {
     field: string
     title?: string | Fn<VNode>
+    attrs?: TableProps | Obj
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     columns: ColumnsOption[]

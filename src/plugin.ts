@@ -88,7 +88,7 @@ function registComponent(name: string, component: ((param: RegistPram) => VNode)
   addComponent(name, component)
 }
 function setDefaultProps(props: Obj) {
-  merge(globalConfig, props)
+  merge(globalProps, props)
 }
 export default {
   install,

@@ -99,11 +99,11 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
 
 function getContent(option, model: ModelData) {
   const rootSlots = inject<Obj>('rootSlots', {})
-  const effectData = getEffectData({ current: model.parent })
+  const effectData = getEffectData({ current: model.parent, text: model.refData })
   const { type: colType, viewRender, render, options: colOptions, labelField, keepField } = option
   if (viewRender || colType === 'InfoSlot') {
-    const _render = viewRender | render
-    return typeof _render === 'string' ? rootSlots[_render] : viewRender
+    const _render = viewRender || render
+    return () => (typeof _render === 'string' ? rootSlots[_render]?.(effectData) : _render?.(effectData))
   } else if (labelField) {
     return () => model.parent[labelField]
   } else if (keepField) {
