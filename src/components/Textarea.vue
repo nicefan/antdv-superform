@@ -1,20 +1,19 @@
 <template>
-  <form-item>
-    <input-number
+  <FormItem>
+    <Textarea
       style="width: 100%"
-      type="number"
       allow-clear
       :placeholder="'请输入' + option.label"
       v-bind="{ ...valueProps, ...props.attrs }"
     />
-  </form-item>
+  </FormItem>
 </template>
 
 <script setup lang="ts">
 import { useVModel } from '../utils'
 import baseComps from './base'
 
-const { FormItem, InputNumber } = baseComps
+const { FormItem, Textarea } = baseComps
 
 const props = defineProps<{
   option: ExInputOption

@@ -67,15 +67,17 @@ export default function exampleForm() {
             type: 'InfoSlot',
             field: 'array',
             label: 'render',
+            initialValue: ['a'],
             render: (props) => {
-              return h('h2', props.effectData.value?.[0])
+              return h('h2', props.value?.[0])
             },
           },
-          // {
-          //   type: 'InfoSlot',
-          //   label: '模板插槽',
-          //   slotName: 'test',
-          // },
+          {
+            type: 'InputSlot',
+            field: 'test',
+            label: '模板插槽',
+            render: 'test',
+          },
           {
             type: 'Text',
             label: '提示',

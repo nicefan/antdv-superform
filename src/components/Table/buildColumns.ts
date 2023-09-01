@@ -1,16 +1,19 @@
-import { computed, h, inject, reactive, ref, toRaw, unref } from 'vue'
+import { KeepAlive, computed, h, inject, reactive, ref, toRaw, unref } from 'vue'
 import { ButtonGroup } from '../buttons'
 import { TableColumnProps } from 'ant-design-vue'
 
-export function createProducer() {
+export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
+  const keyMap = new WeakMap()
   /** 阻止表格customRender无效的渲染 */
   const renderProduce = (param, render) => {
     const record = toRaw(param.record)
     const row = renderMap.get(record) || new Map()
     renderMap.set(record, row)
+    const key = keyMap.get(record) || Symbol()
+    keyMap.set(record, key)
     if (!row.has(param.column)) {
-      const activeParam = reactive(param)
+      const activeParam = reactive({ ...effectData, ...param, key })
       const node = computed(() => render(activeParam))
       row.set(param.column, { activeParam, node })
       return node.value
@@ -27,52 +30,70 @@ interface BuildColumnsParam {
   childrenMap: ModelsMap
   methods?: Obj // 按钮组件绑定方法
   effectData?: Obj // 按钮组件绑定传参
-  rowButtons?: Obj // 行操作按钮
+  actionColumn?: Obj // 行操作按钮
+  colEditMap?: Map<Obj, Fn> // 行内编辑render方法
 }
 
-export function useColumns({ childrenMap, methods, rowButtons, effectData }: BuildColumnsParam) {
-  const actionColumn = buildActionSlot(rowButtons, effectData, methods)
-  const columns = buildColumns(childrenMap, effectData)
+export function useColumns({ childrenMap, effectData, colEditMap, actionColumn }: BuildColumnsParam) {
+  const { columns, colsMap } = buildColumns(childrenMap)
   const rootSlots = { ...inject('rootSlots', {}) }
-  if (actionColumn.forSlot) {
-    rootSlots[actionColumn.forSlot] = actionColumn.render
-  } else {
-    columns.push(actionColumn.column)
+  if (actionColumn) {
+    const { forSlot, render, column } = actionColumn
+    if (forSlot) {
+      rootSlots[forSlot] = render
+    } else {
+      columns.push(column)
+      colsMap.set('action', column)
+    }
   }
-  columns.forEach((item) => {
-    if (typeof item.customRender === 'string') {
-      item.customRender = rootSlots[item.customRender]
+
+  const renderProduce = createProducer(effectData)
+
+  ;[...colsMap].forEach(([col, column]) => {
+    let textRender = column.customRender
+    if (typeof textRender === 'string') {
+      textRender = rootSlots[textRender]
+    }
+    const colEditRender = colEditMap?.get(col)
+    if (colEditRender || textRender) {
+      const __render = (param) => colEditRender?.(param) || textRender?.(param) || param.text
+      column.customRender = (param) => renderProduce(param, __render)
     }
   })
+
   return columns as TableColumnProps[]
 }
 
-function buildColumns(_models: ModelsMap<MixOption>, effectData) {
-  const _columns: any[] = []
+function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
+  const columns: any[] = []
   ;[..._models].forEach(([col, model]) => {
     if (col.type === 'Hidden' || col.hideInTable) return
     if (model.children) {
-      _columns.push({
+      const sub = buildColumns(model.children, colsMap)
+      columns.push({
         title: col.label,
-        children: buildColumns(model.children, effectData),
+        children: sub.columns,
       })
     } else {
-      const textRender: Fn | undefined = getColRender(col, effectData)
-      _columns.push({
+      const column = {
         title: col.label,
         dataIndex: model.propChain.join('.'),
         ...(col.columnProps as Obj),
-        customRender: textRender,
-      })
+        customRender: getColRender(col),
+      }
+      columns.push(column)
+      colsMap.set(col, column)
     }
   })
-  return _columns
+  return { columns, colsMap }
 }
 
-function getColRender(option, effectData) {
+function getColRender(option) {
   const { type: colType, viewRender, render, options: colOptions, labelField, keepField } = option as any
-  if (viewRender || colType === 'InfoSlot') {
-    return viewRender || render // slotname字符串另行处理
+  if (viewRender) {
+    return viewRender // slotname字符串另行处理
+  } else if (colType === 'InfoSlot') {
+    return typeof render === 'string' ? render : (param) => render?.(param)
   } else if (labelField) {
     return ({ record }) => record[labelField as string]
   } else if (keepField) {
@@ -80,7 +101,7 @@ function getColRender(option, effectData) {
   } else if (colOptions && typeof colOptions?.[0] !== 'string') {
     const options = ref<any[]>()
     if (typeof colOptions === 'function') {
-      Promise.resolve(colOptions(effectData)).then((data) => (options.value = data))
+      Promise.resolve(colOptions()).then((data) => (options.value = data))
     } else {
       options.value = unref(colOptions)
     }
@@ -90,26 +111,27 @@ function getColRender(option, effectData) {
   } else if (colType === 'Switch') {
     return ({ text }) => (option.valueLabels || '否是')[text]
   } else if (colType === 'Buttons') {
-    return (param) => h(ButtonGroup, { config: option, param: reactive({ ...effectData, ...param }) })
+    return (param) => h(ButtonGroup, { config: option, param })
   } else {
     // textRender为undefined将直接返回绑定的值
   }
 }
 
-function buildActionSlot(rowButtons, effectData, methods) {
+export function buildActionSlot(rowButtons, methods, getEditActions) {
   const buttonsConfig: Obj = {
     buttonType: 'link',
     size: 'small',
     ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
   }
   const { columnProps, forSlot, ...config } = buttonsConfig
-  const render = (param) =>
-    h(ButtonGroup, {
-      config,
-      param: reactive({ ...effectData, ...param }),
-      methods: methods,
-    })
-
+  const render = (param) => {
+    const actions = getEditActions?.(param)
+    return h(KeepAlive, () =>
+      actions
+        ? h(ButtonGroup, { config: { ...config, actions }, param })
+        : h(ButtonGroup, { key: param.key, config, param, methods })
+    )
+  }
   return {
     forSlot,
     render,

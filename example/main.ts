@@ -13,13 +13,11 @@ const app = createApp(App)
 //   }
 // })
 superForm.registComponent('InNumber', InputNumber)
-superForm.registComponent('Textarea', ({ attrs, option }) => {
-  return h(Textarea, Object.assign(attrs, { placeholder: '请输入' + option.label }))
-})
+
 const defaultProps = {
   Form: {
-    layout: 'vertical'
-  }
+    layout: 'vertical',
+  },
 }
 app
   .use(superForm, {

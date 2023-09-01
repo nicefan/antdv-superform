@@ -1,11 +1,11 @@
 import { defineTable } from '../../src'
 export const myTableOption = defineTable({
-  attrs: { bordered: true },
+  attrs: { bordered: true, rowKey: 'id' },
   // editMode: 'inline',
   addMode: 'modal',
-  buttons: {
-    actions: ['add', 'edit', 'del'],
-  },
+  // buttons: {
+  //   actions: ['add', 'edit', 'del'],
+  // },
   formSechma: {
     attrs: { layout: 'vertical' },
     subSpan: 24,
@@ -17,11 +17,21 @@ export const myTableOption = defineTable({
     },
     buttons: ['submit', 'reset', { label: '新增', onClick: ({ table }) => table.add() }],
     subSpan: 8,
-    subItems: ['fieldName', 'title', 'tip', { type: 'Input', label: '其它', field: 'other' }],
+    subItems: ['fieldName', 'title', { type: 'Input', label: '其它', field: 'other' }],
   },
   modalProps: { width: '500px' },
-  rowButtons: ['edit', 'del', 'view'],
+  rowButtons: ['edit', 'del', 'view', {
+    label: '检查',
+    onClick: ()=> {},
+    hidden:(data) => {
+      return data.record.dataType === 'number'
+    },
+    // disabled:(data) => {
+    //   return data.record.dataType === 'number'
+    // }
+  }],
   columns: [
+    {type: 'Hidden', field:'id'},
     {
       type: 'Input',
       label: '字段名',
@@ -35,12 +45,14 @@ export const myTableOption = defineTable({
       rules: { required: true },
     },
     {
-      type: 'Input',
+      type: 'Textarea',
       label: '说明',
       field: 'tip',
       span: 24,
-      hideInTable: true,
       rules: { required: true },
+      viewRender: (data) => {
+        return data.text
+      }
     },
     {
       type: 'Select',

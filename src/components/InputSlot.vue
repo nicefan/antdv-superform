@@ -1,6 +1,6 @@
 <template>
   <form-item>
-    <slot style="width: 100%" v-bind="{ ...valueProps, ...props.attrs }" />
+    <slot style="width: 100%" v-bind="{ attrs: { ...valueProps, ...props.attrs }, ...effectData }" />
   </form-item>
 </template>
 

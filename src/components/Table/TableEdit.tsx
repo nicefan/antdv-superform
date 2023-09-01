@@ -2,7 +2,7 @@
  * @deprecated: 行内编辑表格
  */
 
-import { ref, shallowReactive, toRaw, watch, reactive, h } from 'vue'
+import { ref, shallowReactive, toRaw, watch, reactive, h, computed } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep } from 'lodash-es'
 import message from 'ant-design-vue/es/message'
@@ -79,58 +79,53 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
       listener.onDelete(items)
     },
   }
-  const save = ({ record }) => {
-    const editInfo = getEditInfo(record)
-    editInfo.form
-      .validate()
-      .then(() => {
-        const raw = toRaw(editInfo.form.modelRef)
+
+  const editActions = [
+    {
+      label: '保存',
+      onClick: ({ record }) => {
+        const editInfo = getEditInfo(record)
+        editInfo.form
+          .validate()
+          .then(() => {
+            const raw = toRaw(editInfo.form.modelRef)
+            if (editInfo.isNew) {
+              newItems.value.splice(newItems.value.indexOf(record), 1)
+              Object.assign(record, raw)
+              listener.onSave(record)
+              editInfo.isNew = false
+            } else {
+              listener.onUpdate(raw, record)
+            }
+            editInfo.isEdit = false
+          })
+          .catch((err) => {
+            console.log('error', err)
+            message.error(err.errorFields[0].errors[0])
+          })
+      },
+    },
+    {
+      label: '取消',
+      onClick: ({ record }) => {
+        const editInfo = getEditInfo(record)
         if (editInfo.isNew) {
           newItems.value.splice(newItems.value.indexOf(record), 1)
-          Object.assign(record, raw)
-          listener.onSave(record)
-          editInfo.isNew = false
         } else {
-          listener.onUpdate(raw, record)
+          // editInfo.isEdit = false
+          // editInfo.form.resetFields(record)
         }
         editInfo.isEdit = false
-      })
-      .catch((err) => {
-        console.log('error', err)
-        message.error(err.errorFields[0].errors[0])
-      })
-  }
-  const cancel = ({ record }) => {
-    // const key = record[rowKey]
-    const editInfo = getEditInfo(record)
-    if (editInfo.isNew) {
-      newItems.value.splice(newItems.value.indexOf(record), 1)
-      // delete editMap[key]
-    } else {
-      // editInfo.isEdit = false
-      // editInfo.form.resetFields(record)
-    }
-    editInfo.isEdit = false
-  }
+      },
+    },
+  ]
 
-  const editButtonConfig: ExButtonGroup = {
-    buttonType: 'link',
-    size: 'small',
-    actions: [
-      { label: '保存', onClick: save },
-      { label: '取消', onClick: cancel },
-    ],
-  }
-  const actionSlot = (param) => {
+  const getEditActions = (param) => {
     const editInfo = getEditInfo(param.record)
-    if (editInfo.isEdit) {
-      return h(ButtonGroup, { config: editButtonConfig, param })
-    }
+    return editInfo.isEdit ? editActions : null
   }
 
   const colRenderMap = new Map()
-  colRenderMap.set('action', actionSlot)
-
   for (const [option, _model] of fModels) {
     const component = Controls[option.type]
     if (!component || !option.field || option.hideInTable) continue
@@ -156,12 +151,13 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
         return node({ model, validateInfo, editData })
       }
     }
-    colRenderMap.set(ruleName, customRender)
+    colRenderMap.set(option, customRender)
   }
 
   return {
     list,
     colRenderMap,
     methods,
+    getEditActions,
   }
 }

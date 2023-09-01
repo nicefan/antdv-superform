@@ -80,15 +80,15 @@ export default defineComponent({
 })
 
 export function useBuildNode(option, model: ModelData, effectData, attrs) {
-  const { type, label } = option
+  const { type, label, render } = option
   const slots = inject<Obj>('rootSlots', {})
   const getWrapperNode = (node, isBlock) =>
     isBlock ? node : () => h(base.FormItem, reactive({ label, ...globalProps.formItem, ...option.formItemProps }), node)
   const node = (() => {
+    const slot = typeof render === 'function' ? render : slots[render]
     switch (type) {
       case 'InfoSlot': {
-        const slot = slots[option.slotName] || option.render
-        const node = () => (typeof slot === 'string' ? slot : slot?.({ effectData, attrs }))
+        const node = () => slot?.({ attrs, ...effectData })
         return getWrapperNode(node, option.isBlock)
       }
       case 'Text':
@@ -112,7 +112,7 @@ export function useBuildNode(option, model: ModelData, effectData, attrs) {
             rules,
           })
         }
-        return () => h(Controls[type], slotAttrs)
+        return () => h(Controls[type], slotAttrs, slot)
       }
     }
   })()

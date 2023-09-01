@@ -19,6 +19,7 @@ export {
   Input,
   InputNumber,
   InputSearch,
+  Textarea,
   Select,
   Switch,
   RangePicker,

@@ -2,6 +2,7 @@
   <FormItem>
     <Select
       option-filter-prop="label"
+      allow-clear
       :placeholder="'请选择' + option.label"
       v-bind="{ ...valueProps, ...props.attrs, options, onChange }"
     />
@@ -47,7 +48,7 @@ if (labelField) {
   const current = props.effectData.current
   onChange = (...args) => {
     const [_, item] = args
-    current[labelField] = Array.isArray(item) ? item.map(({ lable }) => lable) : item.label
+    current[labelField] = Array.isArray(item) ? item.map(({ lable }) => lable) : item?.label
     props.attrs.onChange?.(...args)
   }
 }

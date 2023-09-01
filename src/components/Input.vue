@@ -3,6 +3,7 @@
     <Input
       :placeholder="'请输入' + (option.label || '')"
       max-length="100"
+      allow-clear
       :class="option.btnClick ? 'ant-input-search ant-input-search-enter-button' : ''"
       v-bind="{ ...attrs, ...valueProps }"
     >

@@ -268,12 +268,12 @@ declare global {
   interface ExRadioOption extends ExFormItemOption {
     options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
   }
-  type ExSlotOption = { slotName: string } | { render: string | Fn<VNodeChild> }
+  type ExSlotOption = { render: string | Fn<VNodeChild> }
   type ExInfoSlotOption = ExBaseOption & ExSlotOption
   type ExInputSlotOption = ExFormItemOption & ExSlotOption
 
   type WrapperTypes = {
-    InfoSlot: ExSlotOption
+    InfoSlot: ExInfoSlotOption
     Form: ExFormOption
     Group: ExGroupOption
     InputGroup: ExInputGroupOption
@@ -286,8 +286,8 @@ declare global {
   type WidgetTypes = {
     Buttons: ExBaseOption & ExButtonGroup
     Hidden: { field: string }
-    InputSlot: ExSlotOption
-    InfoSlot: ExSlotOption
+    InputSlot: ExInputSlotOption
+    InfoSlot: ExInfoSlotOption
     Text: ExBaseOption
     Input: ExInputOption
     InputNumber: ExFormItemOption

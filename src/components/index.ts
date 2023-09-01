@@ -6,6 +6,7 @@ import Card from './Card.vue'
 import List from './List.vue'
 import Tabs from './Tabs.vue'
 import Table from './Table'
+import Textarea from './Textarea.vue'
 import Collapse from './Collapse.vue'
 import Input from './Input.vue'
 import InputNumber from './InputNumber.vue'
@@ -33,6 +34,7 @@ const components = {
   List,
   Tabs,
   Table,
+  Textarea,
   Collapse,
   Input,
   InputNumber,

@@ -4,8 +4,8 @@
       <div style="text-align: center; margin-top: 16px; background: #fff">
         <exa-buttons style="margin: 16px" />
       </div>
-      <template #test="{ attrs }">
-        <div v-bind="attrs">这是个插槽！</div>
+      <template #test="{ attrs, current }">
+        <div v-bind="attrs">这是个插槽！{{ current.name }}</div>
       </template>
     </MyForm>
   </div>

@@ -2,6 +2,7 @@
   <form-item>
     <tree-select
       :placeholder="'请选择' + option.label"
+      allow-clear
       v-bind="{ ...valueProps, ...props.attrs, onChange }"
       :tree-data="treeData"
     />

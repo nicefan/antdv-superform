@@ -27,7 +27,8 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   let effect: Fn
   if (type === 'DateRange' && keepField) {
     tempData.value = []
-    effect = ([start, end]) => {
+    effect = (val) => {
+      const [start, end] = val || []
       refValue.value = start
       raw = start
       model.parent[keepField] = end
