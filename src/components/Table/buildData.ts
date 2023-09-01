@@ -133,7 +133,7 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
     context.modalSlot = modalSlot
   }
   const effectData = getEffectData({ current: context.list })
-  const actionColumn = buildActionSlot(rowButtons, context.methods, __getEditActions)
+  const actionColumn = rowButtons && buildActionSlot(rowButtons, context.methods, __getEditActions)
 
   context.columns = useColumns({ childrenMap, effectData, colEditMap, actionColumn })
   context.methods.view = buildDetail(option, childrenMap, rowKey)
