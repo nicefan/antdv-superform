@@ -1,6 +1,6 @@
 {
   "name": "antdv-superform",
-  "version": "0.3.1",
+  "version": "0.3.4",
   "author": {
     "name": "nicefan",
     "email": "covien@msn.com"
@@ -11,11 +11,12 @@
     "index.d.ts"
   ],
   "type": "module",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc --noEmit && vite build && rollup -c",
     "rollup": "rollup -c",
     "dts": "vue-tsc --declaration --emitDeclarationOnly",
     "serve": "vite preview"

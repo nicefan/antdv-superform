@@ -161,6 +161,15 @@ declare function useDetail(option: ExFormOption, data?: Obj): readonly [(actions
     readonly setData: (data: any) => void;
 }];
 
+declare function createModal(content: (() => VNode) | VNode, { buttons, ...__config }?: Obj): {
+    modalRef: vue.Ref<any>;
+    modalSlot: (props: any, ctx: any) => vue.VNode<vue.RendererNode, vue.RendererElement, {
+        [key: string]: any;
+    }>;
+    setModal: (option?: ModalFuncProps | Obj) => void;
+    closeModal: () => Promise<void>;
+    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
+};
 declare function useModal(content: () => VNode, config?: (ModalProps & {
     buttons?: ExButtons;
 }) | Obj): {
@@ -173,4 +182,4 @@ declare function useModal(content: () => VNode, config?: (ModalProps & {
     setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
 };
 
-export { _default$1 as ExaButtons, _default as ExaDetail, _default$3 as ExaForm, _default$2 as ExaTable, _default$4 as default, defineForm, defineTable, export_default as useButtons, useDetail, useForm, useModal, useTable };
+export { _default$1 as ExaButtons, _default as ExaDetail, _default$3 as ExaForm, _default$2 as ExaTable, createModal, _default$4 as default, defineForm, defineTable, export_default as useButtons, useDetail, useForm, useModal, useTable };

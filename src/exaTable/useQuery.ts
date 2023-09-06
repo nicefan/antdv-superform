@@ -44,6 +44,7 @@ export function useQuery(option: Partial<RootTableOption>) {
   }
   const onSearch = (param) => {
     searchParam.value = param
+    pageParam.current = 1
   }
 
   const pagination = ref<false | Obj>(false)
