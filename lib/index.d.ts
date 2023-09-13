@@ -1,5 +1,5 @@
-/// <reference types="../types/exatypes" />
 /// <reference types="../types" />
+/// <reference types="../types/exatypes" />
 import * as vue from 'vue';
 import { App, Component, PropType } from 'vue';
 import { Locale } from 'ant-design-vue/es/locale-provider';
@@ -17,9 +17,6 @@ interface InstallConfig extends GlobalConfig {
     components?: {
         [k in BaseComps]?: Component;
     };
-    dictApi?: (name: string) => Promise<Dict[]>;
-    /** 自定义图标处理组件 */
-    customIcon?: (name: string) => VNode;
     /** 组件默认参数 */
     defaultProps?: Obj;
 }
@@ -27,6 +24,8 @@ interface GlobalConfig {
     dictApi?: (name: string) => Promise<Dict[]>;
     /** 自定义图标处理组件 */
     customIcon?: (name: string) => VNode;
+    /** 动态传递按钮权限 */
+    buttonRoles?: () => string[];
 }
 interface RegistPram {
     option: Obj;
@@ -92,56 +91,32 @@ declare const useTable: (option: RootTableOption, data?: any[]) => readonly [Reg
 declare function defineTable(option: RootTableOption): RootTableOption;
 
 declare const _default$1: vue.DefineComponent<{
-    limit: {
-        type: vue.PropType<number>;
-    };
-    buttonType: {
-        type: vue.PropType<"default" | "link" | "dashed" | "text" | "primary" | "ghost">;
-    };
-    buttonShape: {
-        type: vue.PropType<"default" | "circle" | "round">;
-    };
-    size: {
-        type: vue.PropType<"middle" | "small" | "large">;
-    };
-    iconOnly: {
-        type: vue.PropType<boolean>;
-    };
-    hidden: {
-        type: vue.PropType<boolean | Fn<boolean>>;
-    };
-    disabled: {
-        type: vue.PropType<boolean | Fn<boolean>>;
-    };
-    actions: {
-        type: vue.PropType<ButtonItem[]>;
-    };
-}, {}, unknown, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, {}, string, vue.VNodeProps & vue.AllowedComponentProps & vue.ComponentCustomProps, Readonly<vue.ExtractPropTypes<{
-    limit: {
-        type: vue.PropType<number>;
-    };
-    buttonType: {
-        type: vue.PropType<"default" | "link" | "dashed" | "text" | "primary" | "ghost">;
-    };
-    buttonShape: {
-        type: vue.PropType<"default" | "circle" | "round">;
-    };
-    size: {
-        type: vue.PropType<"middle" | "small" | "large">;
-    };
-    iconOnly: {
-        type: vue.PropType<boolean>;
-    };
-    hidden: {
-        type: vue.PropType<boolean | Fn<boolean>>;
-    };
-    disabled: {
-        type: vue.PropType<boolean | Fn<boolean>>;
-    };
-    actions: {
-        type: vue.PropType<ButtonItem[]>;
-    };
-}>>, {}, {}>;
+    limit: NumberConstructor;
+    buttonType: PropType<"default" | "link" | "dashed" | "text" | "primary" | "ghost">;
+    buttonShape: PropType<"default" | "circle" | "round">;
+    size: PropType<"middle" | "small" | "large">;
+    /** 是否只显示图标 */
+    iconOnly: BooleanConstructor;
+    hidden: BooleanConstructor;
+    disabled: BooleanConstructor;
+    actions: PropType<ButtonItem[]>;
+}, () => vue.VNode<vue.RendererNode, vue.RendererElement, {
+    [key: string]: any;
+}>, unknown, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, {}, string, vue.VNodeProps & vue.AllowedComponentProps & vue.ComponentCustomProps, Readonly<vue.ExtractPropTypes<{
+    limit: NumberConstructor;
+    buttonType: PropType<"default" | "link" | "dashed" | "text" | "primary" | "ghost">;
+    buttonShape: PropType<"default" | "circle" | "round">;
+    size: PropType<"middle" | "small" | "large">;
+    /** 是否只显示图标 */
+    iconOnly: BooleanConstructor;
+    hidden: BooleanConstructor;
+    disabled: BooleanConstructor;
+    actions: PropType<ButtonItem[]>;
+}>>, {
+    hidden: boolean;
+    disabled: boolean;
+    iconOnly: boolean;
+}, {}>;
 
 declare function export_default(config: ExButtonGroup): (() => vue.VNode<vue.RendererNode, vue.RendererElement, {
     [key: string]: any;

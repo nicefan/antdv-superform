@@ -119,6 +119,9 @@ declare global {
     label?: string
     /** 确认提示文本 */
     confirmText?: string
+    /** 权限标识 */
+    roleName?: string
+    roleMode?: 'hidden' | 'disable'
     icon?: string | Component
     attrs?: Obj & HTMLAttributes
     hidden?: boolean | Fn<boolean>
@@ -143,6 +146,8 @@ declare global {
     isBlock?: boolean
     /** 是否只显示图标 */
     iconOnly?: boolean
+    /** 权限模式 */
+    roleMode?: 'hidden' | 'disable'
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     /** 将按钮放置到组件的指定slot中 */

@@ -2,7 +2,7 @@
   <Space @click.stop="">
     <Button v-for="{ attrs, icon, label } of btns" :key="label" v-bind="attrs">
       <Tooltip v-if="__config.iconOnly && icon" :title="label"><component :is="useIcon(icon)" /></Tooltip>
-      <span v-else><component v-if="icon" :is="useIcon(icon)" /> {{ label }}</span>
+      <span v-else><component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toValue(label)" /></span>
     </Button>
 
     <Dropdown v-if="moreBtns.length">
@@ -21,11 +21,12 @@
   </Space>
 </template>
 <script setup lang="ts">
-import { ref, watchEffect, PropType, reactive } from 'vue'
+import { ref, watchEffect, PropType, reactive, toValue } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem } from 'ant-design-vue'
 import { EllipsisOutlined } from '@ant-design/icons-vue'
 import { getComputedStatus, useDisabled, useIcon } from '../../utils'
 import { mergeActions } from './actions'
+import { globalConfig } from '../../plugin'
 
 const props = defineProps({
   config: {
@@ -43,13 +44,26 @@ const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(param || {
 
 <script lang="ts">
 function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
-  const { size, buttonShape, buttonType, limit = 3, hidden, disabled, actions } = config
+  const { size, buttonShape, buttonType, roleMode, limit = 3, hidden, disabled, actions } = config
   const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)
   const isHide = getComputedStatus(hidden, param)
 
-  const actionBtns = mergeActions(actions, methods)
-
+  let actionBtns = mergeActions(actions, methods)
+  if (globalConfig.buttonRoles) {
+    const roles = globalConfig.buttonRoles()
+    actionBtns = actionBtns.filter((item) => {
+      const isFree = !item.roleName || !roles.includes(item.roleName)
+      if (!isFree) {
+        if ((item.roleMode || roleMode) === 'disable') {
+          item.disabled = true
+        } else {
+          return false
+        }
+      }
+      return true
+    })
+  }
   const allBtns = actionBtns.map((item) => {
     const isHide = getComputedStatus(item.hidden, param)
     const disabled = item.disabled !== undefined ? useDisabled(item.disabled, param) : dis

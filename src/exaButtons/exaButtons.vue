@@ -1,21 +1,37 @@
-<template>
-  <ButtonGroup :config="$props"></ButtonGroup>
-</template>
-<script setup lang="ts">
-import { SpaceProps } from 'ant-design-vue'
+<script lang="ts">
 import { ButtonGroup } from '../components/buttons'
+import { h, PropType, defineComponent } from 'vue'
 
-interface ButtonsProps {
-  limit?: number
-  buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
-  buttonShape?: 'circle' | 'round' | 'default'
-  size?: 'large' | 'middle' | 'small'
-  /** 是否只显示图标 */
-  iconOnly?: boolean
-  hidden?: boolean | Fn<boolean>
-  disabled?: boolean | Fn<boolean>
-  actions?: ButtonItem[]
-}
-
-defineProps<ButtonsProps>()
+export default defineComponent({
+  props: {
+    limit: Number,
+    buttonType: String as PropType<'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'>,
+    buttonShape: String as PropType<'circle' | 'round' | 'default'>,
+    size: String as PropType<'large' | 'middle' | 'small'>,
+    /** 是否只显示图标 */
+    iconOnly: Boolean,
+    hidden: Boolean || Function,
+    disabled: Boolean || (Function as PropType<Fn<boolean>>),
+    actions: Array as PropType<ButtonItem[]>,
+  },
+  setup(props, { slots }) {
+    const slotsNode = slots.default?.()
+    const actions = !slotsNode
+      ? props.actions
+      : slotsNode.flatMap(({ children, props }: any) => {
+          const { roleName, roleMode, onClick, confirmText, icon, ...attrs } = props || {}
+          if (!onClick || !children) return []
+          return {
+            label: children.default || children,
+            icon,
+            roleMode,
+            roleName,
+            onClick,
+            confirmText,
+            attrs,
+          }
+        })
+    return () => h(ButtonGroup, { config: { ...props, actions } })
+  },
+})
 </script>

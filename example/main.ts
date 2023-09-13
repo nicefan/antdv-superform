@@ -2,7 +2,7 @@ import { createApp, defineComponent, h } from 'vue'
 import App from './App.vue'
 import superForm from '../src'
 import 'ant-design-vue/dist/antd.css'
-import { InputNumber, Table, Textarea } from 'ant-design-vue'
+import { Button, InputNumber, Table, Textarea } from 'ant-design-vue'
 const app = createApp(App)
 // const InNumber = defineComponent({
 //   setup(_, {attrs}) {
@@ -27,5 +27,9 @@ app
     },
     // 配置组件默认参数
     defaultProps,
+    buttonRoles() {
+      return ['add']
+    },
   })
+  .use(Button)
   .mount('#app')

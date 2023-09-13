@@ -59,7 +59,7 @@ export function mergeActions(actions, methods = {}) {
   if (Array.isArray(actions)) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
-      const config = { ...defaultActions[name] }
+      const config = { roleName: name, ...defaultActions[name] }
       const innerMethod = config.onClick
       const meta = { label: config.label }
       if (typeof item === 'object') {

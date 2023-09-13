@@ -41,9 +41,6 @@ type Dict = { label: string; value: string | number; [k: string]: string | numbe
 interface InstallConfig extends GlobalConfig {
   locale?: Locale
   components?: { [k in BaseComps]?: Component }
-  dictApi?: (name: string) => Promise<Dict[]>
-  /** 自定义图标处理组件 */
-  customIcon?: (name: string) => VNode
   /** 组件默认参数 */
   defaultProps?: Obj
 }
@@ -51,6 +48,10 @@ interface GlobalConfig {
   dictApi?: (name: string) => Promise<Dict[]>
   /** 自定义图标处理组件 */
   customIcon?: (name: string) => VNode
+  /** 动态传递按钮权限 */
+  buttonRoles?: () => string[]
+  /** 全局按钮权限过滤 */
+  // buttonsAuth?: (actions: ButtonItem[]) => ButtonItem[]
 }
 const globalConfig: GlobalConfig = {}
 
@@ -64,10 +65,9 @@ const globalProps: Obj = {
 }
 
 const install = async (app: App, config: InstallConfig = {}) => {
-  const { locale = zhCN, components, dictApi, customIcon, defaultProps } = config
+  const { locale = zhCN, components, defaultProps, ..._config } = config
   app.provide('localeData', { locale: locale, exist: true })
-  globalConfig.dictApi = dictApi
-  globalConfig.customIcon = customIcon
+  Object.assign(globalConfig, _config)
   components && override(components)
   defaultProps && setDefaultProps(defaultProps)
 }
