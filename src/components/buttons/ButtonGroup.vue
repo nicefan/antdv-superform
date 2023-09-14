@@ -1,9 +1,16 @@
 <template>
   <Space @click.stop="">
-    <Button v-for="{ attrs, icon, label } of btns" :key="label" v-bind="attrs">
-      <Tooltip v-if="__config.iconOnly && icon" :title="label"><component :is="useIcon(icon)" /></Tooltip>
-      <span v-else><component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toValue(label)" /></span>
-    </Button>
+    <template v-for="{ attrs, icon, label, tooltip } of btns" :key="label">
+      <Tooltip v-if="tooltip || (__config.iconOnly && icon)" :title="tooltip || label">
+        <Button v-bind="attrs"
+          ><component v-if="icon" :is="useIcon(icon)" />
+          <component v-if="!icon || !__config.iconOnly" :is="() => toValue(label)"
+        /></Button>
+      </Tooltip>
+      <Button v-else v-bind="attrs">
+        <component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toValue(label)" />
+      </Button>
+    </template>
 
     <Dropdown v-if="moreBtns.length">
       <Button v-bind="defaultAttrs"> <ellipsis-outlined /> </Button>
@@ -71,7 +78,8 @@ function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
       e.stopPropagation()
       item.onClick?.(param)
     }
-    return { isHide, ...item, attrs: { ...defaultAttrs, ...item.attrs, disabled, onClick } }
+    const _class = item.color && `ant-btn-${item.color}`
+    return { isHide, ...item, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled, onClick } }
   })
 
   const btns = ref<any[]>([])

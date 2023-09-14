@@ -122,6 +122,8 @@ declare global {
     /** 权限标识 */
     roleName?: string
     roleMode?: 'hidden' | 'disable'
+    color?: 'success' | 'error' | 'warning'
+    tooltip?: string
     icon?: string | Component
     attrs?: Obj & HTMLAttributes
     hidden?: boolean | Fn<boolean>

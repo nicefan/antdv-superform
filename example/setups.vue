@@ -130,6 +130,8 @@ export default defineComponent({
         onClick: openTable,
       },
       {
+        color: 'warning',
+        tooltip: '提示',
         label: '表格赋值',
         onClick: () => setTableData2(data),
       },

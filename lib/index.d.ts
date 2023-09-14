@@ -132,7 +132,7 @@ declare const _default: vue.DefineComponent<{
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
 
-declare function useDetail(option: ExFormOption, data?: Obj): readonly [(actions?: Obj) => any, {
+declare function useDetail(option: ExFormOption, data?: {}): readonly [(actions?: Obj) => any, {
     readonly setData: (data: any) => void;
 }];
 

@@ -33,12 +33,12 @@ const onSubmit = () => {
     console.log(data)
   })
 }
-const setValue = () => {
-  const data = {
+const getData = () => {
+  return {
     name: '白龙',
     street: '白龙',
     text: 'text',
-    array: ['a','b'],
+    array: ['a', 'b'],
     isReg: 1,
     'table': [{ id: 'dadf', col1: 'dadf', col2: 'col2' }],
     'group': {
@@ -47,19 +47,22 @@ const setValue = () => {
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
   }
+}
+const setValue = () => {
+  const data = getData()
   form.setData(data)
 }
 const reset = () => {
   form.getForm('resetFields')
 }
 
-const [detailRegister] = useDetail(options, dataSource)
+const detailData = ref(dataSource)
+const [detailRegister, detailForm] = useDetail(options, detailData)
 const detailModal = useModal(detailRegister(), {
   width: 1200,
   title: '表单预览',
   cancelText: null,
 })
-
 
 const [ExaButtons] = useButtons({
   limit: 5,
@@ -69,6 +72,14 @@ const [ExaButtons] = useButtons({
     { label: '赋值', onClick: setValue },
     { label: '重置', onClick: reset },
     { label: '预览', onClick: () => detailModal.openModal() },
+    {
+      label: '赋值预览',
+      onClick: () => {
+        // detailData.value = getData()
+        detailForm.setData(getData())
+        detailModal.openModal()
+      },
+    },
   ],
 })
 </script>

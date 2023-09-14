@@ -45,8 +45,7 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
 }
 
 export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: string[] = []) {
-  const currentData: Ref = toRef(data)
-  currentData.value ??= {}
+  const currentData: Ref = toRef(data || {})
   const rules = {}
   const cols = items.sort(({ sort = 1 }, { sort: b_sort = 1 }) => sort - b_sort)
   const modelsMap: ModelsMap = new Map()
@@ -59,7 +58,7 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
       rules[subModel.propChain.join('.')] = subModel.rules
     }
     if (subItems) {
-      const children = buildModelsMap(subItems, subModel.refData, subModel.propChain)
+      const children = buildModelsMap(subItems, toRef(subModel, 'refData'), subModel.propChain)
       Object.assign(rules, children.rules)
       subModel.children = children.modelsMap
     } else if (columns) {
@@ -70,7 +69,7 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
   return {
     rules,
     modelsMap,
-    initialData: cloneDeep(currentData),
+    initialData: cloneDeep(currentData.value),
   }
 }
 
@@ -83,7 +82,7 @@ export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain
     newModel.rules = rules
     newRules[propChain.join('.')] = rules
     if (children) {
-      const { modelsMap, rules: childrenRules } = cloneModels(children, newModel.refData, newModel.propChain)
+      const { modelsMap, rules: childrenRules } = cloneModels(children, toRef(newModel, 'refData'), newModel.propChain)
       Object.assign(newRules, childrenRules)
       newModel.children = modelsMap
     }
