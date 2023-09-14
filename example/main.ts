@@ -27,9 +27,9 @@ app
     },
     // 配置组件默认参数
     defaultProps,
-    buttonRoles() {
-      return ['add']
-    },
+    // buttonRoles() {
+    //   return ['add']
+    // },
   })
   .use(Button)
   .mount('#app')

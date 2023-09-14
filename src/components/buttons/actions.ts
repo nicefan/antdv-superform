@@ -59,42 +59,42 @@ export function mergeActions(actions, methods = {}) {
   if (Array.isArray(actions)) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
-      const config = { roleName: name, ...defaultActions[name] }
-      const innerMethod = config.onClick
-      const meta = { label: config.label }
+      const { onClick: innerMethod, ...defConfig } = defaultActions[name] || {}
+      const config = { roleName: name, ...defConfig }
       if (typeof item === 'object') {
-        const innerMethod = config.onClick
-        const _onClick = item.onClick
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
-        Object.assign(meta, item.meta)
-        config.onClick = (param) => {
-          if (_onClick) {
-            // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
-            const action = async (text = config.confirmText) => {
-              if (text) {
-                return new Promise((resolve) =>
-                  Modal.confirm({
-                    title: text,
-                    okText: '确定',
-                    cancelText: '取消',
-                    onOk() {
-                      innerMethod?.({ ...param, meta })
-                      resolve(undefined)
-                    },
-                  })
-                )
-              } else {
-                return innerMethod?.({ ...param, meta })
-              }
-            }
-            _onClick(param, action)
-          } else {
-            innerMethod?.({ ...param, meta })
-          }
-        }
-      } else {
-        config.onClick = (param) => innerMethod({ ...param, meta })
       }
+      const meta = { label: config.label, ...item.meta }
+      const _onClick = item.onClick
+
+      const _action = async (text, method) => {
+        if (text) {
+          return new Promise((resolve) =>
+            Modal.confirm({
+              title: text,
+              okText: '确定',
+              cancelText: '取消',
+              onOk() {
+                method()
+                resolve(undefined)
+              },
+            })
+          )
+        } else {
+          return method()
+        }
+      }
+      config.onClick = (param) => {
+        if (_onClick && innerMethod) {
+          // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
+          _onClick(param, (confirmText = config.confirmText) => {
+            _action(confirmText, () => innerMethod?.({ ...param, meta }))
+          })
+        } else {
+          _action(config.confirmText, () => (innerMethod || _onClick)?.({ ...param, meta }))
+        }
+      }
+
       actionBtns.push(config)
     })
   }

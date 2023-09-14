@@ -191,7 +191,9 @@ export default function exampleForm() {
               confirmText: '确定删除吗？',
               disabled: ({ formData }) => formData.forever === 2,
               attrs: { danger: true },
-              onClick() {},
+              onClick() {
+                console.log('删除了')
+              },
             },
           ],
         },
