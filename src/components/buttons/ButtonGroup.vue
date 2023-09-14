@@ -60,7 +60,7 @@ function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
   if (globalConfig.buttonRoles) {
     const roles = globalConfig.buttonRoles()
     actionBtns = actionBtns.filter((item) => {
-      const isFree = !item.roleName || !roles.includes(item.roleName)
+      const isFree = !item.roleName || roles.includes(item.roleName)
       if (!isFree) {
         if ((item.roleMode || roleMode) === 'disable') {
           item.disabled = true
