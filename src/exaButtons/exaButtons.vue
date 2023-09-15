@@ -19,11 +19,12 @@ export default defineComponent({
     const actions = !slotsNode
       ? props.actions
       : slotsNode.flatMap(({ children, props }: any) => {
-          const { roleName, roleMode, onClick, confirmText, icon, ...attrs } = props || {}
+          const { roleName, roleMode, onClick, confirmText, tooltip, icon, ...attrs } = props || {}
           if (!onClick || !children) return []
           return {
             label: children.default || children,
             icon,
+            tooltip,
             roleMode,
             roleName,
             onClick,

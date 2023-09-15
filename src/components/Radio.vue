@@ -1,44 +1,51 @@
-<template>
-  <form-item>
-    <radio-group :name="option.field" v-bind="{ ...valueProps, ...props.attrs }">
-      <template v-if="attrs.buttonStyle">
-        <radio-button v-for="{ label, value, disabled } of options" :key="value" :value="value" :disabled="disabled">
-          {{ label }}
-        </radio-button>
-      </template>
-      <Radio v-for="{ label, value, disabled } of options" v-else :key="value" :value="value" :disabled="disabled">
-        {{ label }}
-      </Radio>
-    </radio-group>
-  </form-item>
-</template>
-
-<script setup lang="ts">
-import { ref, watchPostEffect, unref } from 'vue'
+<script lang="ts">
+import { PropType, ref, watchPostEffect, unref, defineComponent, h, reactive, toRefs } from 'vue'
 import { useVModel } from '../utils'
 import baseComps from './base'
 
-const { FormItem, RadioButton, RadioGroup, Radio } = baseComps
+const { FormItem, RadioGroup } = baseComps
 
-const props = defineProps<{
-  option: ExSelectOption
-  model: ModelData
-  attrs: Obj
-  effectData: Obj
-}>()
-const valueProps = useVModel(props)
+export default defineComponent({
+  props: {
+    option: {
+      required: true,
+      type: Object as PropType<ExSelectOption>,
+    },
+    model: {
+      required: true,
+      type: Object as PropType<ModelData>,
+    },
+    effectData: {
+      required: true,
+      type: Object,
+    },
+    attrs: {
+      required: true,
+      type: Object,
+    },
+  },
+  setup(props) {
+    const valueProps = useVModel(props)
 
-const options = ref<any[] | undefined>(props.attrs.options || [])
-const _options = props.option.options
-if (typeof _options === 'function') {
-  watchPostEffect(() => {
-    Promise.resolve(_options(props.effectData)).then((data) => {
-      options.value = data
-    })
-  })
-} else if (_options) {
-  options.value = unref(_options)
-}
+    const options = ref<any[] | undefined>(props.attrs.options || [])
+    const _options = props.option.options
+    if (typeof _options === 'function') {
+      watchPostEffect(() => {
+        Promise.resolve(_options(props.effectData)).then((data) => {
+          options.value = data
+        })
+      })
+    } else if (_options) {
+      options.value = unref(_options)
+    }
+    const allAttrs: Obj = reactive({ name: props.option.field, ...toRefs(valueProps), ...props.attrs, options })
+    if (allAttrs.buttonStyle) {
+      allAttrs.optionType = 'button'
+    }
+    return () => h(FormItem, {}, () => h(RadioGroup, allAttrs))
+  },
+})
+
 // 异步获取
 // 字典配置
 /**

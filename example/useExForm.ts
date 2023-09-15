@@ -224,11 +224,13 @@ export default function exampleForm() {
             type: 'Radio',
             field: 'radio',
             label: '天气',
-            attrs: { buttonStyle: 'outline' },
+            attrs: { 
+              buttonStyle: 'solid' ,
             options: [
               { label: '晴天', value: '1' },
               { label: '雨天', value: '2' },
             ],
+            },
           },
           {
             type: 'Checkbox',

@@ -9,7 +9,7 @@ export function useDetail(option: ExFormOption, data = {}) {
     if (actions) {
       if (!actionsRef.value) {
         actions.setOption(option)
-        // actions.setData(source.value)
+        actions.setData(source.value)
       }
       actionsRef.value = actions
     } else {
@@ -21,11 +21,11 @@ export function useDetail(option: ExFormOption, data = {}) {
     register,
     {
       setData(data) {
-        // if (actionsRef.value) {
-        //   actionsRef.value.setData(data)
-        // } else {
+        if (actionsRef.value) {
+          actionsRef.value.setData(data)
+        } else {
           source.value = data
-        // }
+        }
       },
     },
   ] as const

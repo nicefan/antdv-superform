@@ -12,7 +12,7 @@ export default defineComponent({
   },
   emits: ['register'],
   setup(props, ctx) {
-    const dataRef = ref(props.dataSource)
+    const dataRef = ref(props.dataSource || {})
     const option: Obj = shallowReactive(props.option || {})
 
     const exposed = {

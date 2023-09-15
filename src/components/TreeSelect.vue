@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, toValue } from 'vue'
+import { ref, watchPostEffect, watch } from 'vue'
 import { useVModel } from '../utils'
 import baseComps from './base'
 
@@ -33,7 +33,11 @@ if (typeof data === 'function') {
     })
   })
 } else if (data) {
-  treeData.value = toValue(data)
+  watch(
+    () => props.option.data,
+    (data) => (treeData.value = data as any),
+    { immediate: true }
+  )
 }
 let onChange = props.attrs.onChange
 if (labelField) {

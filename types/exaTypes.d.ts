@@ -15,6 +15,7 @@ import {
   DescriptionsProps,
   TreeProps,
   TableProps,
+  RadioGroupProps
 } from 'ant-design-vue'
 
 export interface RuleConfig {
@@ -273,6 +274,7 @@ declare global {
     keepField?: string
   }
   interface ExRadioOption extends ExFormItemOption {
+    attrs?: RadioGroupProps
     options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
   }
   type ExSlotOption = { render: string | Fn<VNodeChild> }
