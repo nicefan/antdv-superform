@@ -177,7 +177,7 @@ declare global {
     columns: ColumnsOption[]
     buttons?: ExButtons
     /** 列表元素右边按钮 */
-    rowButtons?: ExButtons<'del' | 'edit' | 'view'> & { columnProps?: TableColumnProps }
+    rowButtons?: ExButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
     /** 弹窗属性 */
     modalProps?: ModalFuncProps | Obj
     descriptionsProps?: DescriptionsProps
@@ -197,7 +197,7 @@ declare global {
     buttons?: ExButtons<'add' | 'refresh'>
     columns: UniWidgetOption[]
     /** 列表元素右边按钮 */
-    rowButtons?: ExButtonGroup<'del' | 'edit'>
+    rowButtons?: ExButtonGroup<'delete' | 'edit'>
   }
   interface ExInputGroupOption extends ExBaseOption {
     span: number

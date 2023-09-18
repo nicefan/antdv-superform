@@ -263,11 +263,11 @@ export default function exampleForm() {
         editMode: 'inline',
         // addMode: 'modal',
         buttons: {
-          actions: ['add', 'edit', 'del'],
+          actions: ['add', 'edit', 'delete'],
         },
         rowButtons: {
           buttonType: 'link',
-          actions: ['edit', 'del'],
+          actions: ['edit', 'delete'],
         },
         formSechma: {
           subSpan: 12,
@@ -332,7 +332,7 @@ export default function exampleForm() {
                   buttonType: 'link',
                   actions: [
                     {
-                      name: 'del',
+                      name: 'delete',
                       onClick(data, action) {
                         if (data.listData.length === 1) {
                           alert('必须保留一条记录')

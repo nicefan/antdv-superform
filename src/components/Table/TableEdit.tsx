@@ -74,7 +74,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
       const data = record || selectedRows[0]
       setEditInfo(data, { isEdit: true })
     },
-    del({ record, selectedRows }) {
+    delete({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
       listener.onDelete(items)
     },

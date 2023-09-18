@@ -40,7 +40,7 @@ export default defineComponent({
       add() {
         orgList.value.push(cloneDeep(initialData))
       },
-      del({ record }) {
+      delete({ record }) {
         const orgIdx = orgList.value.indexOf(record)
         orgList.value.splice(orgIdx, 1)
       },

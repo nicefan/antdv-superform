@@ -4,7 +4,7 @@ export const myTableOption = defineTable({
   // editMode: 'inline',
   addMode: 'modal',
   // buttons: {
-  //   actions: ['add', 'edit', 'del'],
+  //   actions: ['add', 'edit', 'delete'],
   // },
   formSechma: {
     attrs: { layout: 'vertical' },
@@ -20,18 +20,23 @@ export const myTableOption = defineTable({
     subItems: ['fieldName', 'title', { type: 'Input', label: '其它', field: 'other' }],
   },
   modalProps: { width: '500px' },
-  rowButtons: ['edit', 'del', 'view', {
-    label: '检查',
-    onClick: ()=> {},
-    hidden:(data) => {
-      return data.record.dataType === 'number'
+  rowButtons: [
+    'edit',
+    'delete',
+    'detail',
+    {
+      label: '检查',
+      onClick: () => {},
+      hidden: (data) => {
+        return data.record.dataType === 'number'
+      },
+      // disabled:(data) => {
+      //   return data.record.dataType === 'number'
+      // }
     },
-    // disabled:(data) => {
-    //   return data.record.dataType === 'number'
-    // }
-  }],
+  ],
   columns: [
-    {type: 'Hidden', field:'id'},
+    { type: 'Hidden', field: 'id' },
     {
       type: 'Input',
       label: '字段名',
@@ -52,16 +57,17 @@ export const myTableOption = defineTable({
       rules: { required: true },
       viewRender: (data) => {
         return data.text
-      }
+      },
     },
     {
       type: 'Select',
       label: '数据类型',
       field: 'dataType',
-      options: () => Promise.resolve([
-        { label: '文本', value: 'text' },
-        { label: '数字', value: 'number' },
-      ]),
+      options: () =>
+        Promise.resolve([
+          { label: '文本', value: 'text' },
+          { label: '数字', value: 'number' },
+        ]),
     },
     {
       type: 'Switch',

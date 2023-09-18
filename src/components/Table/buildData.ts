@@ -60,7 +60,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
         },
       })
     },
-    del({ record, selectedRows }) {
+    delete({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
       return listener.onDelete(items)
     },
@@ -136,7 +136,7 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
   const actionColumn = rowButtons && buildActionSlot(rowButtons, context.methods, __getEditActions)
 
   context.columns = useColumns({ childrenMap, effectData, colEditMap, actionColumn })
-  context.methods.view = buildDetail(option, childrenMap, rowKey)
+  context.methods.detail = buildDetail(option, childrenMap, rowKey)
 
   return context
 }

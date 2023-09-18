@@ -8,7 +8,7 @@ const getDefault = () => {
         type: 'primary',
       },
     },
-    del: {
+    delete: {
       label: '删除',
       attrs: {
         danger: true,
@@ -20,7 +20,7 @@ const getDefault = () => {
       label: '修改',
       disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
     },
-    view: {
+    detail: {
       label: '查看',
       disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
     },

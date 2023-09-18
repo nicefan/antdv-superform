@@ -138,7 +138,7 @@ export default defineComponent({
       add: (meta) => methods.add?.({ meta }),
       edit: (meta) => methods.edit?.({ ...editParam, meta }),
       delete: () => methods.delete?.(editParam),
-      view: (meta) => methods.view?.({ ...editParam, meta }),
+      detail: (meta) => methods.detail?.({ ...editParam, meta }),
     })
 
     return () => [
