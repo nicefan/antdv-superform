@@ -20,21 +20,26 @@ export const myTableOption = defineTable({
     subItems: ['fieldName', 'title', { type: 'Input', label: '其它', field: 'other' }],
   },
   modalProps: { width: '500px' },
-  rowButtons: [
-    'edit',
-    'delete',
-    'detail',
-    {
-      label: '检查',
-      onClick: () => {},
-      hidden: (data) => {
-        return data.record.dataType === 'number'
-      },
-      // disabled:(data) => {
-      //   return data.record.dataType === 'number'
-      // }
+  rowButtons: {
+    columnProps: {
+      width: 220,
     },
-  ],
+    actions: [
+      'edit',
+      'delete',
+      'detail',
+      {
+        label: '检查',
+        onClick: () => {},
+        hidden: (data) => {
+          return data.record.dataType === 'number'
+        },
+        // disabled:(data) => {
+        //   return data.record.dataType === 'number'
+        // }
+      },
+    ],
+  },
   columns: [
     { type: 'Hidden', field: 'id' },
     {

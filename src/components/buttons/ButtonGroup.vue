@@ -1,6 +1,6 @@
 <template>
-  <Space @click.stop="">
-    <template v-for="{ attrs, icon, label, tooltip } of btns" :key="label">
+  <Space class="exa-buttons" @click.stop="" :size="isDivider ? 0 : 'small'">
+    <template v-for="({ attrs, icon, label, tooltip }, index) of btns" :key="label">
       <Tooltip v-if="tooltip || (__config.iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
           ><component v-if="icon" :is="useIcon(icon)" />
@@ -10,6 +10,7 @@
       <Button v-else v-bind="attrs">
         <component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toValue(label)" />
       </Button>
+      <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
 
     <Dropdown v-if="moreBtns.length">
@@ -29,7 +30,7 @@
 </template>
 <script setup lang="ts">
 import { ref, watchEffect, PropType, reactive, toValue } from 'vue'
-import { Space, Button, Tooltip, Dropdown, Menu, MenuItem } from 'ant-design-vue'
+import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
 import { EllipsisOutlined } from '@ant-design/icons-vue'
 import { getComputedStatus, useDisabled, useIcon } from '../../utils'
 import { mergeActions } from './actions'
@@ -47,6 +48,7 @@ const props = defineProps({
 const { config, methods, param } = props
 const __config = Array.isArray(config) ? { actions: config } : config
 const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(param || {}), methods)
+const isDivider = __config.divider ?? ['link', 'text'].includes(__config.buttonType || '')
 </script>
 
 <script lang="ts">

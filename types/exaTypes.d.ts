@@ -145,6 +145,8 @@ declare global {
     buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
     buttonShape?: 'circle' | 'round' | 'default'
     size?: 'large' | 'middle' | 'small'
+    /** 分隔符， type为'link'/'text'时默认true */
+    divider?: boolean
     /** 是否独立行 */
     isBlock?: boolean
     /** 是否只显示图标 */
@@ -161,6 +163,7 @@ declare global {
   type ExButtons<T extends string = string> = ExButtonGroup<T> | NonNullable<ExButtonGroup<T>['actions']>
 
   type ExColumnsItem = {
+    dataIndex?: string
     /** 应用于表格或编辑表单 */
     hideInTable?: boolean
     /** 表格内容渲染 */

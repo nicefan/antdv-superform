@@ -140,7 +140,6 @@ export function buildActionSlot(rowButtons, methods, getEditActions) {
       key: 'action',
       fixed: 'right',
       minWidth: 100,
-      width: 100,
       align: 'center',
       ...columnProps,
       customRender: render,
