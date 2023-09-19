@@ -87,8 +87,9 @@ export function mergeActions(actions, methods = {}) {
       config.onClick = (param) => {
         if (_onClick && innerMethod) {
           // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
-          _onClick(param, (confirmText = config.confirmText) => {
-            _action(confirmText, () => innerMethod?.({ ...param, meta }))
+          _onClick(param, (exParam: Obj = {}) => {
+            const { confirmText = config.confirmText, __param } = exParam
+            _action(confirmText, () => innerMethod?.({ ...param, meta, ...__param }))
           })
         } else {
           _action(config.confirmText, () => (innerMethod || _onClick)?.({ ...param, meta }))

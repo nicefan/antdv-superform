@@ -1,6 +1,7 @@
 <script lang="ts">
-import { ButtonGroup } from '../components/buttons'
 import { h, PropType, defineComponent } from 'vue'
+import { mapKeys, camelCase } from 'lodash-es'
+import { ButtonGroup } from '../components/buttons'
 
 export default defineComponent({
   props: {
@@ -18,8 +19,10 @@ export default defineComponent({
     const slotsNode = slots.default?.()
     const actions = !slotsNode
       ? props.actions
-      : slotsNode.flatMap(({ children, props }: any) => {
-          const { roleName, roleMode, onClick, confirmText, tooltip, icon, ...attrs } = props || {}
+      : slotsNode.flatMap(({ children, props = {} }: any) => {
+          const { roleName, roleMode, onClick, confirmText, tooltip, icon, ...attrs } = mapKeys(props, (_, key) =>
+            camelCase(key)
+          )
           if (!onClick || !children) return []
           return {
             label: children.default || children,

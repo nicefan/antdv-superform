@@ -2,7 +2,7 @@
   <div style="background: #eee; padding: 16px">
     <exa-buttons :actions="btnActions" />
     <exa-buttons>
-      <a-button @click="console.log('kk')" roleName="add">新增</a-button>
+      <a-button @click="console.log('kk')" roleName="add" tooltip="提示" confirm-text="新增提示">新增</a-button>
 
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>

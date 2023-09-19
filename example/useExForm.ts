@@ -1,6 +1,6 @@
 import { h, ref } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
-import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue';
+import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue'
 
 export default function exampleForm() {
   const list = ref<any[]>([
@@ -224,12 +224,12 @@ export default function exampleForm() {
             type: 'Radio',
             field: 'radio',
             label: '天气',
-            attrs: { 
-              buttonStyle: 'solid' ,
-            options: [
-              { label: '晴天', value: '1' },
-              { label: '雨天', value: '2' },
-            ],
+            attrs: {
+              buttonStyle: 'solid',
+              options: [
+                { label: '晴天', value: '1' },
+                { label: '雨天', value: '2' },
+              ],
             },
           },
           {
@@ -250,8 +250,8 @@ export default function exampleForm() {
             on: {
               change(...args) {
                 console.log(args)
-              }
-            }
+              },
+            },
           },
         ],
       },
@@ -320,6 +320,7 @@ export default function exampleForm() {
                 type: 'List',
                 field: 'list',
                 label: '列表',
+                initialValue: () => [{ field1: '' }],
                 rules: { min: 1 },
                 buttons: {
                   actions: [
@@ -348,8 +349,8 @@ export default function exampleForm() {
                 columns: [
                   {
                     type: 'Input',
-                    label: 'tab1',
-                    field: 'tab1',
+                    label: 'field1',
+                    field: 'field1',
                     initialValue: 'init',
                     rules: { required: true },
                   },

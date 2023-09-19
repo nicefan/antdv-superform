@@ -131,14 +131,15 @@ export default defineComponent({
         ])
     }
 
+    // TODO: 补充TS
     const exposed = reactive({
       selectedRowKeys,
       selectedRows,
       reload: (param) => apis.query?.(param),
-      add: (meta) => methods.add?.({ meta }),
-      edit: (meta) => methods.edit?.({ ...editParam, meta }),
+      add: (param = {}) => methods.add?.(param),
+      edit: (param) => methods.edit?.({ ...editParam, ...param }),
       delete: () => methods.delete?.(editParam),
-      detail: (meta) => methods.detail?.({ ...editParam, meta }),
+      detail: (param) => methods.detail?.({ ...editParam, ...param }),
     })
 
     return () => [

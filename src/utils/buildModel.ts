@@ -1,5 +1,5 @@
 import buildRule from './buildRule'
-import { reactive, ref, toRef, watch } from 'vue'
+import { reactive, ref, toRef, toValue, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */
@@ -29,9 +29,9 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
           model.parent = model.parent[name] ??= {}
         })
         if (columns || subItems) {
-          model.parent[refName] ??= columns ? [] : {}
+          model.parent[refName] ??= toValue(initialValue) ?? (columns ? [] : {})
         } else {
-          model.parent[refName] ??= initialValue
+          model.parent[refName] ??= toValue(initialValue)
         }
         model.refData = toRef(model.parent, refName)
       } else {
