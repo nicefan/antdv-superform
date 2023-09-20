@@ -163,21 +163,19 @@ declare global {
   type ExButtons<T extends string = string> = ExButtonGroup<T> | NonNullable<ExButtonGroup<T>['actions']>
 
   type ExColumnsItem = {
-    dataIndex?: string
     /** 应用于表格或编辑表单 */
     hideInTable?: boolean
     /** 表格内容渲染 */
     viewRender?: string | Fn<VNodeChild>
     columnProps?: TableColumnProps
   }
-  type ColumnsOption = (UniWidgetOption | ExInputGroupOption) & ExColumnsItem
   interface ExTableOption extends ExBaseOption {
     field: string
     title?: string | Fn<VNode>
     attrs?: TableProps | Obj
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
-    columns: ColumnsOption[]
+    columns: (UniOption & ExColumnsItem)[]
     buttons?: ExButtons
     /** 列表元素右边按钮 */
     rowButtons?: ExButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
@@ -200,7 +198,7 @@ declare global {
     buttons?: ExButtons<'add' | 'refresh'>
     columns: UniWidgetOption[]
     /** 列表元素右边按钮 */
-    rowButtons?: ExButtonGroup<'delete' | 'edit'>
+    rowButtons?: ExButtons<'delete' | 'edit'>
   }
   interface ExInputGroupOption extends ExBaseOption {
     span: number

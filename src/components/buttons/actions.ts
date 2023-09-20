@@ -59,8 +59,7 @@ export function mergeActions(actions, methods = {}) {
   if (Array.isArray(actions)) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
-      const { onClick: innerMethod, ...defConfig } = defaultActions[name] || {}
-      const config = { roleName: name, ...defConfig }
+      const { onClick: innerMethod, ...config } = defaultActions[name] || {}
       if (typeof item === 'object') {
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
       }
