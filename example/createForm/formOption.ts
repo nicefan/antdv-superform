@@ -19,6 +19,10 @@ export const myTableOption = defineTable({
     subSpan: 8,
     subItems: ['fieldName', 'title', { type: 'Input', label: '其它', field: 'other' }],
   },
+  beforeSearch(data) {
+    console.log(data)
+    return data
+  },
   modalProps: { width: '500px' },
   rowButtons: {
     columnProps: {

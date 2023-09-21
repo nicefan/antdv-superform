@@ -15,7 +15,7 @@ import {
   DescriptionsProps,
   TreeProps,
   TableProps,
-  RadioGroupProps
+  RadioGroupProps,
 } from 'ant-design-vue'
 
 export interface RuleConfig {
@@ -190,6 +190,7 @@ declare global {
     isContainer?: boolean
     apis?: TableApis | TableApis['query']
     params?: Obj
+    beforeSearch?: (data: { param?: Obj } | Obj) => Obj
     searchSechma?: ExFormOption | { subItems: (UniOption | string)[] }
     pagination?: PaginationProps
   }

@@ -71,10 +71,11 @@ declare function defineForm<T extends keyof OptionType = 'Form'>(option: GetUniO
 declare const _default$2: vue.DefineComponent<{
     dataSource: ObjectConstructor;
     option: PropType<RootTableOption>;
-}, () => any, unknown, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, "register"[], "register", vue.VNodeProps & vue.AllowedComponentProps & vue.ComponentCustomProps, Readonly<vue.ExtractPropTypes<{
+}, () => any, unknown, {}, {}, vue.ComponentOptionsMixin, vue.ComponentOptionsMixin, ("change" | "register")[], "change" | "register", vue.VNodeProps & vue.AllowedComponentProps & vue.ComponentCustomProps, Readonly<vue.ExtractPropTypes<{
     dataSource: ObjectConstructor;
     option: PropType<RootTableOption>;
 }>> & {
+    onChange?: ((...args: any[]) => any) | undefined;
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
 

@@ -101,7 +101,7 @@ export default defineComponent({
 
     const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys, tableRef })
     const rootSlots = inject('rootSlot', {})
-    const slots: Obj = {  ...ctx.slots }
+    const slots: Obj = { ...ctx.slots }
     if (option.slots) {
       Object.entries(option.slots).forEach(([key, value]) => {
         slots[key] = typeof value === 'string' ? rootSlots[value] : value
@@ -130,16 +130,23 @@ export default defineComponent({
           extraSlot?.(),
         ])
     }
+    /** 内置操作附加参数 */
+    interface ActionOuter {
+      meta: {
+        /** 弹窗标题 */
+        title?: string
+      }
+    }
 
     // TODO: 补充TS
     const exposed = reactive({
       selectedRowKeys,
       selectedRows,
       reload: (param) => apis.query?.(param),
-      add: (param = {}) => methods.add?.(param),
-      edit: (param) => methods.edit?.({ ...editParam, ...param }),
+      add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
+      edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
       delete: () => methods.delete?.(editParam),
-      detail: (param) => methods.detail?.({ ...editParam, ...param }),
+      detail: (param?: ActionOuter) => methods.detail?.({ ...editParam, ...param }),
     })
 
     return () => [

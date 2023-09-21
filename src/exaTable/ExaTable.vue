@@ -16,7 +16,7 @@ export default defineComponent({
     dataSource: Object,
     option: Object as PropType<RootTableOption>,
   },
-  emits: ['register'],
+  emits: ['register', 'change'],
   setup(props, ctx) {
     const dataRef = ref(props.dataSource || [])
 
@@ -25,14 +25,16 @@ export default defineComponent({
     const searchForm = ref()
 
     const { dataSource, pagination, onLoaded, apis, goPage, reload, query } = useQuery(option)
-
+    onLoaded((data) => {
+      ctx.emit('change', data)
+    })
     const exposed = {
       setOption: (_option: RootTableOption) => {
         const attrs = mergeProps(globalProps.Table, { ..._option.attrs }, option.attrs)
         merge(option, _option, { attrs })
       },
       setData: (data) => {
-        dataRef.value = data
+        data && (dataRef.value = data)
       },
       goPage,
       reload,
@@ -45,6 +47,7 @@ export default defineComponent({
           console.warn(e)
         }
       },
+      getData: () => dataRef.value,
       dataRef,
     }
     watch(() => dataSource.value || props.dataSource, exposed.setData)
@@ -74,17 +77,18 @@ export default defineComponent({
       () => option as any,
       (opt) => {
         if (!opt?.columns) return
-        const { columns, searchSechma } = opt
+        const { columns, searchSechma, beforeSearch } = opt
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
-        const effectData = getEffectData({ current: dataRef })
+        const effectData = reactive({ current: dataRef })
 
         const { attrs } = useControl({ option: opt, effectData })
 
         searchForm.value =
           searchSechma &&
           useSearchForm(columns, searchSechma, { ...effectData, table }, (data) => {
-            query(data)
+            const _data = beforeSearch?.({ ...effectData, param: data }) || data
+            query(_data)
           })
         Object.assign(tableAttrs, attrs, {
           model: {
