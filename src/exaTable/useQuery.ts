@@ -42,7 +42,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     pageParam.current = current
     pageParam.size = size
   }
-  const onSearch = (param) => {
+  const query = (param) => {
     searchParam.value = param
     pageParam.current = 1
   }
@@ -78,7 +78,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     apis,
     goPage,
     reload: request,
-    onSearch,
+    query,
     requestParams,
     pagination,
     dataSource,

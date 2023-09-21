@@ -22,8 +22,9 @@ export default defineComponent({
 
     const option: Obj = reactive(props.option || {})
     merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
+    const searchForm = ref()
 
-    const { dataSource, pagination, onLoaded, apis, goPage, reload, onSearch } = useQuery(option)
+    const { dataSource, pagination, onLoaded, apis, goPage, reload, query } = useQuery(option)
 
     const exposed = {
       setOption: (_option: RootTableOption) => {
@@ -35,8 +36,15 @@ export default defineComponent({
       },
       goPage,
       reload,
-      onSearch,
+      query,
       onLoaded,
+      resetSearchForm(data) {
+        try {
+          return searchForm.value.formRef.resetFields(data)
+        } catch (e) {
+          console.warn(e)
+        }
+      },
       dataRef,
     }
     watch(() => dataSource.value || props.dataSource, exposed.setData)
@@ -62,7 +70,6 @@ export default defineComponent({
       // onChange: handleTableChange,
     })
 
-    const searchForm = ref()
     const unWatch = watch(
       () => option as any,
       (opt) => {
@@ -77,19 +84,16 @@ export default defineComponent({
         searchForm.value =
           searchSechma &&
           useSearchForm(columns, searchSechma, { ...effectData, table }, (data) => {
-            onSearch(data)
+            query(data)
           })
-        Object.assign(tableAttrs, {
+        Object.assign(tableAttrs, attrs, {
           model: {
             refData: dataRef,
             listData,
           },
           effectData,
-          ...attrs,
         })
-        nextTick(() => {
-          unWatch()
-        })
+        nextTick(() => unWatch())
       },
       {
         immediate: true,
@@ -102,7 +106,7 @@ export default defineComponent({
       option.columns &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
         h('div', { class: option.isContainer && 'exa-container' }, [
-          searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value()),
+          searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value.formNode()),
           option.columns &&
             h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
         ])
