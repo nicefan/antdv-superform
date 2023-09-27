@@ -107,7 +107,7 @@ export default defineComponent({
         slots[key] = typeof value === 'string' ? rootSlots[value] : value
       })
     }
-    const titleString = (isView && option.descriptionsProps?.title) || option.label
+    const titleString = (isView && option.descriptionsProps?.title) || option.title || option.label
     const buttonsConfig = option.buttons as any
     if (!isView && buttonsConfig) {
       const slotName = buttonsConfig.forSlot || 'extra'
@@ -125,7 +125,7 @@ export default defineComponent({
     const { title: titleSlot, extra: extraSlot, ...__slots } = slots
     if (titleString || titleSlot || extraSlot) {
       __slots.title = () =>
-        h(Row, { justify: 'space-between', align: 'middle', style: 'width:100%' }, () => [
+        h(Row, { justify: 'space-between', align: 'middle' }, () => [
           h('div', { class: 'exa-title' }, titleSlot?.() || titleString),
           extraSlot?.(),
         ])

@@ -24,10 +24,10 @@
 .exa-detail .exa-title {
   font-weight: bold;
 }
-.exa-form .ant-table-title {
+.exa-form-section .ant-table-title {
   padding: 16px 0;
 }
-.exa-form .exa-title {
+.exa-form-section .exa-title {
   font-size: 16px;
 }
 .exa-buttons .buttons-divider {
