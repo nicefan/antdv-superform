@@ -193,7 +193,7 @@ export declare function useModal(content: () => VNode_2, config?: (ModalProps & 
     setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
 };
 
-export declare const useTable: (option: RootTableOption, data?: any[]) => readonly [RegisterMethod, {
+export declare const useTable: (option: RootTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
     /** 异步获取表格引用 */
     readonly getTable: () => Promise<any>;
     readonly dataSource: ComputedRef<any>;

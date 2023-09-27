@@ -6,14 +6,14 @@ type RegisterMethod = {
   (actions?: Obj, _tableRef?: Obj): void
 }
 
-export const useTable = (option: RootTableOption, data?: any[]) => {
+export const useTable = (option: RootTableOption, data?: any[] | Ref<any[]>) => {
   const tableRef = ref()
 
   const register: RegisterMethod = (actions?: Obj): any => {
     if (actions) {
       if (!tableRef.value) {
         actions.setOption(option)
-        actions.setData(data)
+        data && actions.setData(data)
       }
       tableRef.value = actions
     } else {

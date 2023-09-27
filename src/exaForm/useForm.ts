@@ -2,19 +2,17 @@ import { ref, h, watch } from 'vue'
 import { ExaForm } from './'
 
 export function useForm(option: ExFormOption, data?: Obj) {
-  const model = ref(data)
   const formRef = ref()
 
   const register = (actions?: Obj): any => {
     if (actions) {
       if (!formRef.value) {
         actions.setOption(option)
-        actions.setData(model.value)
+        data && actions.setData(data)
       }
       formRef.value = actions
     } else {
-      return (props, ctx) =>
-        h(ExaForm, { config: option, model: model.value, ...props, onRegister: register }, ctx?.slots)
+      return (props, ctx) => h(ExaForm, { config: option, model: data, ...props, onRegister: register }, ctx?.slots)
     }
   }
   const _promise = new Promise((resolve) => {
