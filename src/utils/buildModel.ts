@@ -1,5 +1,5 @@
 import buildRule from './buildRule'
-import { reactive, ref, toRef, toValue, watch } from 'vue'
+import { Ref, reactive, ref, toRef, toValue, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */

@@ -1,9 +1,9 @@
 /* eslint-disable no-use-before-define */
-import { SelectProps } from 'ant-design-vue/lib/vc-select'
 import { DefaultOptionType } from 'ant-design-vue/es/select'
 import Vue, { Component, HTMLAttributes, VNodeChild } from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
 import {
+  SelectProps,
   FormProps,
   PaginationProps,
   TableColumnProps,
@@ -39,7 +39,6 @@ export interface RuleConfig {
 }
 declare global {
   type VNode = VNodeChild
-  type Ref<T = any> = Vue.Ref<T>
   // type Readonly<T = any> = Vue.DeepReadonly<T>
 
   interface ModelData<T = ExBaseOption> {
@@ -162,7 +161,7 @@ declare global {
   }
   type ExButtons<T extends string = string> = ExButtonGroup<T> | NonNullable<ExButtonGroup<T>['actions']>
 
-  type ExColumnsItem = {
+  type ExColumnsItem = (UniOption | Omit<ExFormItemOption, 'type' | 'field'>) & {
     /** 应用于表格或编辑表单 */
     hideInTable?: boolean
     /** 表格内容渲染 */
@@ -175,7 +174,7 @@ declare global {
     attrs?: TableProps | Obj
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
-    columns: (UniOption & ExColumnsItem)[]
+    columns: ExColumnsItem[]
     buttons?: ExButtons
     /** 列表元素右边按钮 */
     rowButtons?: ExButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
@@ -192,7 +191,7 @@ declare global {
     params?: Obj
     beforeSearch?: (data: { param?: Obj } | Obj) => Obj
     searchSechma?: ExFormOption | { subItems: (UniOption | string)[] }
-    pagination?: PaginationProps
+    pagination?: PaginationProps | false
   }
   interface ExListOption extends ExBaseOption {
     field: string
@@ -253,11 +252,14 @@ declare global {
     onChange?: (FormData: Obj, e: InputEvent) => void
     attrs?: InputProps & HTMLAttributes
   }
-  type SelectOptions = DefaultOptionType[]
-
+  type SelectOptions =
+    | DefaultOptionType[]
+    | Readonly<DefaultOptionType[]>
+    | Ref<DefaultOptionType[]>
+    | Fn<DefaultOptionType[] | Promise<DefaultOptionType[]>>
   interface ExSelectOption extends ExFormItemOption {
     labelField?: string
-    options?: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
+    options?: SelectOptions
     /** 字典名称 */
     dictName?: string
     attrs?: SelectProps & HTMLAttributes
@@ -276,8 +278,10 @@ declare global {
     keepField?: string
   }
   interface ExRadioOption extends ExFormItemOption {
-    attrs?: RadioGroupProps
-    options: SelectOptions | Ref<SelectOptions> | Fn<SelectOptions | Promise<SelectOptions>>
+    /** 字典名称 */
+    dictName?: string
+    attrs?: RadioGroupProps & HTMLAttributes
+    options: SelectOptions
   }
   type ExSlotOption = { render: string | Fn<VNodeChild> }
   type ExInfoSlotOption = ExBaseOption & ExSlotOption

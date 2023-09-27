@@ -1,6 +1,6 @@
 // import { watchDebounced } from '@vueuse/core'
 import { ButtonGroup, mergeActions } from '../components/buttons'
-import { ref, reactive, h } from 'vue'
+import { ref, reactive, h, toRefs } from 'vue'
 import Controls from '../components'
 
 export function useSearchForm(columns, searchSechma, effectData, onChange) {
@@ -59,7 +59,11 @@ export function useSearchForm(columns, searchSechma, effectData, onChange) {
       type: 'InfoSlot',
       align: 'right',
       colProps: { flex: 'auto' },
-      render: () => h(ButtonGroup, { config: { ...buttonsConfig, actions }, param: effectData }),
+      render: () =>
+        h(ButtonGroup, {
+          config: { ...buttonsConfig, actions },
+          param: reactive({ ...toRefs(effectData), form: formRef }),
+        }),
     })
   } else {
     //  不带按钮实时搜索

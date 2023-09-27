@@ -53,7 +53,7 @@ const setValue = () => {
   form.setData(data)
 }
 const reset = () => {
-  form.getForm('resetFields')
+  form.resetFields()
 }
 
 const detailData = ref(dataSource)

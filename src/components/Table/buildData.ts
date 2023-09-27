@@ -1,4 +1,4 @@
-import { ref, h } from 'vue'
+import { ref, h, Ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { merge, cloneDeep } from 'lodash-es'
 import { createModal, useModal } from '../../exaModal'

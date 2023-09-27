@@ -4,7 +4,9 @@ import path from 'path'
 // import commonjs from '@rollup/plugin-commonjs'
 import ts from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
-import vuePlugin from 'rollup-plugin-vue'
+import viteDts from 'vite-plugin-dts'
+import addGlobalTs from 'rollup-plugin-add-global-ts'
+import vuePlugin from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/rollup'
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import vueJsx from 'rollup-plugin-vue-jsx-compat'
@@ -38,8 +40,7 @@ const componentsPlugin = Components({
 })
 
 const mainFile = 'src/index.ts'
-const mainConfig = [
-  {
+const mainConfig = {
     input: mainFile,
     output: {
       banner,
@@ -49,32 +50,27 @@ const mainConfig = [
     plugins: [
       // componentsPlugin,
       vuePlugin(),
-      vueJsx(),
-      esbuild({
-        jsxFactory: 'vueJsxCompat',
-      }),
-
       tsPlugin,
+      // vueJsx(),
+      // esbuild({
+      //   jsxFactory: 'vueJsxCompat',
+      // }),
+
       postcss(),
     ],
-  },
-  // {
-  //   input: 'src/VIcon.ts',
-  //   output: {
-  //     banner,
-  //     format: 'es',
-  //     file: `${dir}/VICon.js`,
-  //   },
-  //   plugins: [tsPlugin],
-  // },
-]
+  }
 const types = {
   input: [`dist/index.d.ts`],
   output: {
     format: 'es',
     dir: '.',
-    entryFileNames: 'lib/[name].ts',
+    entryFileNames: 'lib/index.d.ts',
   },
-  plugins: [dts()],
+  plugins: [
+    dts(),
+    // addGlobalTs({
+    //   path: ['types/index.d.ts', 'types/exaTypes.d.ts']
+    // }),
+  ]
 }
 export default types

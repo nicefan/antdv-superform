@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PropType, ref, watchPostEffect, unref, defineComponent, h, reactive, toRefs } from 'vue'
+import { PropType, ref, watchPostEffect, defineComponent, h, reactive, toRefs, toValue } from 'vue'
 import { useVModel } from '../utils'
 import baseComps from './base'
 
@@ -36,7 +36,7 @@ export default defineComponent({
         })
       })
     } else if (_options) {
-      options.value = unref(_options)
+      options.value = toValue(_options) as any[]
     }
     const allAttrs: Obj = reactive({ name: props.option.field, ...toRefs(valueProps), ...props.attrs, options })
     if (allAttrs.buttonStyle) {

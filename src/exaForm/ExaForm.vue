@@ -1,27 +1,39 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, watch, toRefs, h, mergeProps } from 'vue'
+import { defineComponent, PropType, ref, reactive, watch, toRefs, h, mergeProps, toRef } from 'vue'
 import { merge } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
 
 export default defineComponent({
+  inheritAttrs: false,
   name: 'ExaForm',
   props: {
     config: Object as PropType<ExFormOption>,
     model: Object,
+    isContainer: Boolean,
+    /** 减少行距 */
+    compact: Boolean,
+    /** 不做校验 */
+    ignoreRules: Boolean,
   },
   emits: ['register'],
-  setup(props, { slots, expose, attrs, emit }) {
-    const formData: Obj = ref(props.model)
+  setup(props, ctx) {
+    const { config, model, ...others } = props
+    const { class: __class, ...attrs } = ctx.attrs
+    const formData: Obj = ref(props.model || {})
     const formRef = ref()
     const formOption = reactive<any>({
-      ...props.config,
+      ...config,
+      ...others,
       attrs: mergeProps({ ...globalProps.Form }, { ...props.config?.attrs }, attrs),
     })
-
     const actions = {
       setOption: (_option: ExFormOption) => {
-        merge(formOption, _option, { attrs: { ...formOption.attrs, ..._option.attrs } })
+        merge(formOption, _option, formOption)
+        if (formOption.model) {
+          formData.value = formOption.model
+          delete formOption.model
+        }
       },
       setData: (data) => {
         //TODO formData重置，Form组件重新生成modalsMap
@@ -31,13 +43,14 @@ export default defineComponent({
 
     watch(() => props.model, actions.setData)
 
-    expose(actions)
+    ctx.expose(actions)
 
     const register = (compRef) => {
       formRef.value = compRef
-      emit('register', actions, reactive({ ...toRefs(compRef), ...actions }))
+
+      ctx.emit('register', reactive({ ...toRefs(compRef), ...actions }))
     }
-    emit('register', actions)
+    ctx.emit('register', actions)
 
     // const modelsMap = computed(() => buildModelMaps(formOption.subItems, { parent: formData }))
 
@@ -55,10 +68,10 @@ export default defineComponent({
         {
           option: formOption,
           source: formData.value,
-          class: formOption.isContainer && 'exa-container',
           onRegister: register,
+          ...mergeProps({ class: __class }, { class: formOption.isContainer && 'exa-container' }),
         },
-        slots
+        ctx.slots
       )
 
     return formNode

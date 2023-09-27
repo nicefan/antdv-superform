@@ -8,18 +8,16 @@ type RegisterMethod = {
 
 export const useTable = (option: RootTableOption, data?: any[]) => {
   const tableRef = ref()
-  const actionsRef = ref<Obj>()
 
-  const register: RegisterMethod = (actions?: Obj, _tableRef?: Obj): any => {
+  const register: RegisterMethod = (actions?: Obj): any => {
     if (actions) {
-      if (!actionsRef.value) {
+      if (!tableRef.value) {
         actions.setOption(option)
         actions.setData(data)
       }
-      tableRef.value = _tableRef
-      actionsRef.value = actions
+      tableRef.value = actions
     } else {
-      return (props, ctx) => h(ExaTable, { dataSource: data, ...props, onRegister: register }, ctx?.slots)
+      return (props, ctx) => h(ExaTable, { dataSource: data, option, ...props, onRegister: register }, ctx?.slots)
     }
   }
 
@@ -27,9 +25,15 @@ export const useTable = (option: RootTableOption, data?: any[]) => {
     return tableRef.value?.dataRef.value
   })
 
-  const _promise = new Promise((resolve) => watch(tableRef, resolve))
-
-  const getTable = () => _promise as Promise<Obj>
+  const _promise = new Promise((resolve) => {
+    const unwatch = watch(tableRef, (form) => {
+      if (form) {
+        resolve(tableRef)
+        unwatch()
+      }
+    })
+  })
+  const getTable = () => _promise.then(() => tableRef.value)
 
   const asyncCall = async (key?: string, param?: any) => {
     const form = await getTable()
@@ -41,15 +45,15 @@ export const useTable = (option: RootTableOption, data?: any[]) => {
       }
     }
   }
-  interface AddParam {
+  type ModalMeta = {
+    /** 弹窗标题 */
+    title?: string
+  }
+  type AddParam = {
     /** 初始化数据 */
     resetData?: Obj
     /** 弹窗标题 */
     meta?: ModalMeta
-  }
-  interface ModalMeta {
-    /** 弹窗标题 */
-    title?: string
   }
   return [
     register,

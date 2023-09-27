@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick } from 'vue'
 import { merge } from 'lodash-es'
-import { useControl, getEffectData } from '../utils'
+import { useControl } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
@@ -21,7 +21,8 @@ export default defineComponent({
     const dataRef = ref(props.dataSource || [])
 
     const option: Obj = reactive(props.option || {})
-    merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
+    const { class: _class, ...attrs } = ctx.attrs
+    merge(option, { attrs: mergeProps(option.attrs, attrs) })
     const searchForm = ref()
 
     const { dataSource, pagination, onLoaded, apis, goPage, reload, query } = useQuery(option)
@@ -53,11 +54,10 @@ export default defineComponent({
     watch(() => dataSource.value || props.dataSource, exposed.setData)
 
     ctx.expose(exposed)
-
-    const table = {}
+    const tableRef = ref()
     const register = (comp) => {
-      Object.assign(table, comp, exposed)
-      ctx.emit('register', exposed, reactive(table))
+      tableRef.value = Object.assign({}, comp, exposed)
+      ctx.emit('register', tableRef.value)
     }
     ctx.emit('register', exposed)
 
@@ -80,13 +80,13 @@ export default defineComponent({
         const { columns, searchSechma, beforeSearch } = opt
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
-        const effectData = reactive({ current: dataRef })
+        const effectData = reactive({ current: dataRef, table: tableRef })
 
         const { attrs } = useControl({ option: opt, effectData })
 
         searchForm.value =
           searchSechma &&
-          useSearchForm(columns, searchSechma, { ...effectData, table }, (data) => {
+          useSearchForm(columns, searchSechma, effectData, (data) => {
             const _data = beforeSearch?.({ ...effectData, param: data }) || data
             query(_data)
           })
@@ -109,7 +109,7 @@ export default defineComponent({
     return () =>
       option.columns &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
-        h('div', { class: option.isContainer && 'exa-container' }, [
+        h('div', mergeProps({ class: option.isContainer && 'exa-container' }, { class: _class }), [
           searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value.formNode()),
           option.columns &&
             h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),

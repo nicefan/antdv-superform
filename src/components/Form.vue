@@ -68,7 +68,7 @@ export default {
 
     watch(
       () => props.source,
-      (data) => data && actions.resetFields(data)
+      (data) => data && (modelData.value = data)
     )
 
     expose(actions)

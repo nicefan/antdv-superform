@@ -65,8 +65,14 @@ export default defineConfig({
     vue(),
     vueJsx(),
     viteDts({
-      outDir: 'dist',
-    }),
+      // outDir: 'dist',
+      staticImport: true,
+      // declarationOnly: true,
+      rollupTypes: true,
+      insertTypesEntry: true,
+      // cleanVueFileName: true,
+      copyDtsFiles: true,
+     }),
   ],
   css: {
     preprocessorOptions: {

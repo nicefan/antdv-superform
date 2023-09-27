@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchPostEffect, unref } from 'vue'
+import { ref, watchPostEffect, toValue } from 'vue'
 import { useVModel } from '../utils'
 import base from './base'
 
@@ -28,7 +28,7 @@ if (typeof _options === 'function') {
     })
   })
 } else if (_options) {
-  options.value = unref(_options)
+  options.value = toValue(_options) as any[]
 }
 // 异步获取
 // 字典配置

@@ -8,7 +8,7 @@
       <div @click="console.log('kk')" roleName="add3">新增3</div>
       </exa-buttons>
     <div style="margin-top: 16px">
-      <exa-table @register="registTable" :rowSelection="false" />
+      <exa-table @register="registTable" :rowSelection="false"  class="flex"/>
     </div>
     <component :is="FormModalSlot" />
   </div>
