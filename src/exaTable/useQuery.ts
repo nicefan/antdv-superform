@@ -9,7 +9,6 @@ export function useQuery(option: Partial<RootTableOption>) {
   const requestParams = computed(() => ({
     ...unref(option.params),
     ...searchParam.value,
-    ...pageParam,
   }))
   const loading = ref(false)
   const dataSource = ref()
@@ -17,8 +16,10 @@ export function useQuery(option: Partial<RootTableOption>) {
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
   const request = (params = {}) => {
+    if (loading.value) return Promise.reject().finally(() => console.warn('跳过重复执行！'))
     const _params = {
       ...requestParams.value,
+      ...pageParam,
       ...params,
     }
     loading.value = true
@@ -41,10 +42,12 @@ export function useQuery(option: Partial<RootTableOption>) {
   const goPage = (current, size = pageParam.size) => {
     pageParam.current = current
     pageParam.size = size
+    request()
   }
   const query = (param) => {
     searchParam.value = param
     pageParam.current = 1
+    return request()
   }
 
   const pagination = ref<false | Obj>(false)

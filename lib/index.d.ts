@@ -205,7 +205,9 @@ export declare const useTable: (option: RootTableOption, data?: any[] | Ref_2<an
     readonly goPage: (page: number) => void;
     /** 刷新数据，不改动查询条件与当前页 */
     readonly reload: () => void;
-    /** 手动执行条件查询 */
+    /** 增加条件刷新数据 */
+    readonly request: (param: Obj) => void;
+    /** 手动执行条件查询，覆盖搜索表单参数 */
     readonly query: (param?: Obj) => Promise<any>;
     /** 查询完成，返回结果回调 */
     readonly onLoaded: (callback: (data: any) => void) => void;
