@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, watch, toRefs, h, mergeProps, toRef } from 'vue'
+import { defineComponent, PropType, ref, reactive, watch, toRefs, h, mergeProps, toRef, toValue } from 'vue'
 import { merge } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
@@ -37,7 +37,7 @@ export default defineComponent({
       },
       setData: (data) => {
         //TODO formData重置，Form组件重新生成modalsMap
-        formData.value = data
+        formData.value = toValue(data)
       },
     }
 

@@ -6,9 +6,9 @@
 
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>
-      </exa-buttons>
+    </exa-buttons>
     <div style="margin-top: 16px">
-      <exa-table @register="registTable" :rowSelection="false"  class="flex"/>
+      <exa-table @register="registTable" :rowSelection="false" class="flex" />
     </div>
     <component :is="FormModalSlot" />
   </div>
@@ -90,8 +90,20 @@ export default defineComponent({
       },
     })
 
+    const getData = () => ({
+      name: '白龙',
+      street: '白龙',
+      array: ['a', 'b'],
+      isReg: 1,
+      'table': [{ id: 'dadf', col2: 'col2' }],
+      'group': {
+        'food': ['1'],
+      },
+      list: [{ tab1: 'tab1' }],
+    })
     /** 弹窗表单 */
-    const [exampleFormReg, form] = useForm(exampleForm().options)
+    const dataSource = ref({})
+    const [exampleFormReg, form] = useForm(exampleForm().options, dataSource)
     const formModal = useModal(exampleFormReg(), {
       title: '新增测试数据',
       width: 1600,
@@ -102,23 +114,14 @@ export default defineComponent({
       },
     })
     const openForm = () => {
-      setModalFormValue()
+      // setModalFormValue()
+      dataSource.value = getData()
       formModal.openModal().then((form) => {
         console.log(form)
       })
     }
     const setModalFormValue = () => {
-      form.setData({
-        name: '白龙',
-        street: '白龙',
-        array: ['a', 'b'],
-        isReg: 1,
-        'table': [{ id: 'dadf', col2: 'col2' }],
-        'group': {
-          'food': ['1'],
-        },
-        list: [{ tab1: 'tab1' }],
-      })
+      form.setData(getData())
     }
     const btnActions: ButtonItem[] = [
       {

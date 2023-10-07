@@ -284,7 +284,7 @@ export default function exampleForm() {
             rules: { required: true },
           },
           {
-            type: '',
+            type: 'Group',
             label: '分组',
             span: 24,
             subItems: [
