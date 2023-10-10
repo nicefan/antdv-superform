@@ -1,5 +1,6 @@
-import { computed, h, ref, watch } from 'vue'
+import { computed, h } from 'vue'
 import ExaTable from './ExaTable.vue'
+import { useGetRef } from '../utils'
 
 type RegisterMethod = {
   (): () => VNode
@@ -7,7 +8,7 @@ type RegisterMethod = {
 }
 
 export const useTable = (option: RootTableOption, data?: any[] | Ref<any[]>) => {
-  const tableRef = ref()
+  const [tableRef, getTable] = useGetRef()
 
   const register: RegisterMethod = (actions?: Obj): any => {
     if (actions) {
@@ -16,24 +17,16 @@ export const useTable = (option: RootTableOption, data?: any[] | Ref<any[]>) => 
         data && actions.setData(data)
       }
       tableRef.value = actions
+    } else if (actions === null) {
+      tableRef.value = undefined
     } else {
-      return (props, ctx) => h(ExaTable, { dataSource: data, option, ...props, onRegister: register }, ctx?.slots)
+      return (props, ctx) => h(ExaTable, { ...props, onRegister: register }, ctx?.slots)
     }
   }
 
   const dataSource = computed(() => {
     return tableRef.value?.dataRef.value
   })
-
-  const _promise = new Promise((resolve) => {
-    const unwatch = watch(tableRef, (form) => {
-      if (form) {
-        resolve(tableRef)
-        unwatch()
-      }
-    })
-  })
-  const getTable = () => _promise.then(() => tableRef.value)
 
   const asyncCall = async (key?: string, param?: any) => {
     const form = await getTable()

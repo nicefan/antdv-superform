@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, ref, reactive, PropType, defineComponent, toRef, mergeProps, inject } from 'vue'
+import { h, ref, reactive, PropType, defineComponent, toRef, mergeProps, inject, watch } from 'vue'
 import { ButtonGroup } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
@@ -88,18 +88,37 @@ export default defineComponent({
     }
 
     const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener, isView })
-
     const tableRef = ref()
-    const getTable = (el) => {
-      if (!el) return
-      Object.assign(exposed, el)
-      if (!tableRef.value) {
-        tableRef.value = el
-        ctx.emit('register', exposed)
-      }
+    // const getTable = (el) => {
+    //   if (!el) {
+    //     ctx.emit('register', null)
+    //   } else {
+    //     Object.assign(exposed, el, actions)
+    //     ctx.emit('register', exposed)
+    //   }
+    // }
+    // TODO: 补充TS
+    const actions = {
+      selectedRowKeys,
+      selectedRows,
+      reload: (param) => apis.query?.(param),
+      add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
+      edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
+      delete: () => methods.delete?.(editParam),
+      detail: (param?: ActionOuter) => methods.detail?.({ ...editParam, ...param }),
     }
+    const exposed = reactive({ ...actions })
 
-    const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys, tableRef })
+    watch(
+      tableRef,
+      (table) => {
+        Object.assign(exposed, table, actions)
+        ctx.emit('register', exposed)
+      },
+      { flush: 'sync' }
+    )
+
+    const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys, tableRef: exposed })
     const rootSlots = inject('rootSlot', {})
     const slots: Obj = { ...ctx.slots }
     if (option.slots) {
@@ -138,23 +157,12 @@ export default defineComponent({
       }
     }
 
-    // TODO: 补充TS
-    const exposed = reactive({
-      selectedRowKeys,
-      selectedRows,
-      reload: (param) => apis.query?.(param),
-      add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
-      edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
-      delete: () => methods.delete?.(editParam),
-      detail: (param?: ActionOuter) => methods.detail?.({ ...editParam, ...param }),
-    })
-
     return () => [
       modalSlot?.(),
       h(
         base.Table,
         {
-          ref: getTable,
+          ref: tableRef,
           dataSource: list.value,
           columns,
           tableLayout: 'fixed',

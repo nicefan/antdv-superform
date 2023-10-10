@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, watch, toRefs, h, mergeProps, toRef, toValue } from 'vue'
+import { defineComponent, PropType, ref, reactive, toRefs, h, mergeProps, watchEffect, onMounted } from 'vue'
 import { merge } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
@@ -20,7 +20,7 @@ export default defineComponent({
   setup(props, ctx) {
     const { config, model, ...others } = props
     const { class: __class, ...attrs } = ctx.attrs
-    const formData: Obj = ref(props.model || {})
+    const formData: Obj = ref({})
     const formRef = ref()
     const formOption = reactive<any>({
       ...config,
@@ -36,21 +36,21 @@ export default defineComponent({
         }
       },
       setData: (data) => {
-        //TODO formData重置，Form组件重新生成modalsMap
-        formData.value = toValue(data)
+        data && (formData.value = data)
       },
     }
 
-    watch(() => props.model, actions.setData)
+    watchEffect(() => actions.setData(props.model))
 
-    ctx.expose(actions)
-
-    const register = (compRef) => {
-      formRef.value = compRef
-
-      ctx.emit('register', reactive({ ...toRefs(compRef), ...actions }))
-    }
     ctx.emit('register', actions)
+    const register = (compRef) => {
+      // if (compRef === null) {
+      //   ctx.emit('register', null)
+      // }
+      formRef.value = compRef
+      ctx.emit('register', actions, compRef)
+    }
+    onMounted(() => ctx.expose(formRef.value))
 
     // const modelsMap = computed(() => buildModelMaps(formOption.subItems, { parent: formData }))
 

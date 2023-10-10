@@ -1,31 +1,30 @@
 <template>
   <div style="background: #eee; padding: 16px">
-    <MyForm>
+    <ExaForm @register="formRegister">
       <div style="text-align: center; margin-top: 16px; background: #fff">
         <exa-buttons style="margin: 16px" />
       </div>
       <template #test="{ attrs, current }">
         <div v-bind="attrs">这是个插槽！{{ current.name }}</div>
       </template>
-    </MyForm>
+    </ExaForm>
   </div>
 </template>
 <script setup lang="ts">
 import { inject, reactive, ref } from 'vue'
 import { Row, Button } from 'ant-design-vue'
 import useOption from './useExForm'
-import { useDetail, useForm, useModal } from '../src'
+import { useDetail, useForm, useModal, ExaForm } from '../src'
 import { useButtons } from '../src/exaButtons'
 
-const props = defineProps<{
-  msg: string
-  other?: string
-}>()
+// const props = defineProps<{
+//   msg: string
+//   other?: string
+// }>()
 // const myModel = useExampleModal()
 const { options, changeSelect } = useOption()
-const dataSource = reactive({})
+const dataSource = ref({})
 const [formRegister, form] = useForm({ isContainer: true, ...options }, dataSource)
-const MyForm = formRegister()
 // const sourceData = form.getSource()
 
 const onSubmit = () => {
@@ -50,7 +49,7 @@ const getData = () => {
 }
 const setValue = () => {
   const data = getData()
-  form.setData(data)
+  dataSource.value = data
 }
 const reset = () => {
   form.resetFields()

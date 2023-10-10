@@ -5,7 +5,7 @@ import { cloneDeep } from 'lodash-es'
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
 function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
-  const { field, initialValue, columns, subItems } = option
+  const { field, keepField = option.labelField, columns, subItems, initialValue } = option
   const nameArr = field ? field.split('.') : []
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]
@@ -20,6 +20,7 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
     rules: currentRules,
     propChain,
   })
+
   watch(
     parentData,
     (data) => {
@@ -34,6 +35,7 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
           model.parent[refName] ??= toValue(initialValue)
         }
         model.refData = toRef(model.parent, refName)
+        if (keepField) model.parent[keepField] ??= undefined
       } else {
         model.refData = ref(data)
       }

@@ -1,29 +1,22 @@
-import { ref, h, watch } from 'vue'
+import { h, watchEffect, computed, toValue } from 'vue'
 import { ExaForm } from './'
+import { useGetRef } from '../utils'
 
 export function useForm(option: ExFormOption, data?: Obj) {
-  const formRef = ref()
-
-  const register = (actions?: Obj): any => {
+  const [formRef, getForm] = useGetRef()
+  const register = (actions?: Obj, ref?: Obj): any => {
     if (actions) {
       if (!formRef.value) {
         actions.setOption(option)
-        data && actions.setData(data)
+        if (data) {
+          watchEffect(() => actions.setData(data))
+        }
       }
-      formRef.value = actions
+      formRef.value = ref
     } else {
-      return (props, ctx) => h(ExaForm, { config: option, model: data, ...props, onRegister: register }, ctx?.slots)
+      return (props, ctx) => h(ExaForm, { ...props, onRegister: register }, ctx?.slots)
     }
   }
-  const _promise = new Promise((resolve) => {
-    const unwatch = watch(formRef, (form) => {
-      if (form) {
-        resolve(formRef)
-        unwatch()
-      }
-    })
-  })
-  const getForm = () => _promise.then(() => formRef.value)
 
   const asyncCall = async (key?: string, param?: any) => {
     const form = (await getForm()) as Obj
@@ -41,22 +34,21 @@ export function useForm(option: ExFormOption, data?: Obj) {
   return [
     register,
     {
+      dataSource: computed(() => formRef.value?.dataSource),
+      getForm,
+      asyncCall,
+      getSource() {
+        return asyncCall('dataSource').then((data) => toValue(data))
+      },
+      submit: () => asyncCall('submit'),
+      resetFields: (rest?: Obj) => asyncCall('resetFields', rest),
+      setFieldsValue: (data: Obj) => asyncCall('setFieldsValue', data),
       /**
        * @deprecated 使用`resetFields`
        */
       setData(data) {
         asyncCall('resetFields', data)
       },
-      getForm,
-      asyncCall,
-      getSource: () => {
-        const source = ref()
-        asyncCall('dataSource').then((data) => (source.value = data))
-        return source
-      },
-      submit: () => asyncCall('submit'),
-      resetFields: (rest?: Obj) => asyncCall('resetFields', rest),
-      setFieldsValue: (data: Obj) => asyncCall('setFieldsValue', data),
     },
   ] as const
 }

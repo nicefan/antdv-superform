@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PropType, h, provide, reactive, readonly, ref, toRaw, toRef, watch } from 'vue'
+import { PropType, h, provide, reactive, readonly, ref, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -34,7 +34,7 @@ export default {
           isBlock: true,
           align: 'center',
           colProps: { flex: 'auto' },
-          render: () => h(ButtonGroup, { config: buttons, param: { ...effectData, formRef } }),
+          render: () => h(ButtonGroup, { config: buttons, param: { ...effectData, formRef: exposeData } }),
         },
       ]
     }
@@ -76,17 +76,18 @@ export default {
       }
     )
 
-    expose(actions)
+    const exposeData = reactive({ ...actions })
     const getForm = (form) => {
-      if (!form) return
-      const obj = { ...form, ...actions }
-      if (formRef.value) {
-        Object.assign(formRef.value, obj)
-      } else {
-        formRef.value = reactive(obj)
-        emit('register', formRef.value)
+      if (!form) {
+        // 销毁时返回null
+        emit('register', null)
+        return
       }
+      Object.assign(exposeData, form, actions)
+      formRef.value = form
+      emit('register', exposeData)
     }
+    expose(exposeData)
     provide('rootSlots', slots)
 
     return () =>

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick } from 'vue'
+import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick, onUnmounted } from 'vue'
 import { merge } from 'lodash-es'
 import { useControl } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -53,14 +53,14 @@ export default defineComponent({
     }
     watch(() => dataSource.value || props.dataSource, exposed.setData)
 
-    ctx.expose(exposed)
-    const tableRef = ref()
+    const tableRef = ref({ ...exposed })
     const register = (comp) => {
-      tableRef.value = Object.assign({}, comp, exposed)
+      Object.assign(tableRef.value, comp, exposed)
       ctx.emit('register', tableRef.value)
     }
-    ctx.emit('register', exposed)
-
+    ctx.emit('register', tableRef.value)
+    onUnmounted(() => ctx.emit('register', null))
+    ctx.expose(tableRef.value)
     // const handleTableChange = (pag: { pageSize: number; current: number }, filters: any, sorter: any) => {
     //   console.log(pag)
     // }

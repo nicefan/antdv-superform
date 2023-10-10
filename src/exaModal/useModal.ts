@@ -14,9 +14,11 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...__conf
     __config.footer = () => h(ButtonGroup, { config: buttons, param: { modalRef } })
   }
   const onOk = () =>
-    Promise.resolve(config.onOk?.()).then(() => {
-      visible.value = false
-    })
+    Promise.resolve(config.onOk?.())
+      .then(() => {
+        visible.value = false
+      })
+      .catch((err) => console.error(err))
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>
     h(

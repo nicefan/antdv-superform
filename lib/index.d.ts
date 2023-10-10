@@ -168,17 +168,18 @@ export declare function useDetail(option: ExFormOption, data?: {}): readonly [(a
     readonly setData: (data: any) => void;
 }];
 
-export declare function useForm(option: ExFormOption, data?: Obj): readonly [(actions?: Obj) => any, {
+export declare function useForm(option: ExFormOption, data?: Obj): readonly [(actions?: Obj, ref?: Obj) => any, {
+    readonly dataSource: ComputedRef<any>;
+    readonly getForm: () => Promise<any>;
+    readonly asyncCall: (key?: string, param?: any) => Promise<any>;
+    readonly getSource: () => Promise<any>;
+    readonly submit: () => Promise<any>;
+    readonly resetFields: (rest?: Obj) => Promise<any>;
+    readonly setFieldsValue: (data: Obj) => Promise<any>;
     /**
      * @deprecated 使用`resetFields`
      */
     readonly setData: (data: any) => void;
-    readonly getForm: () => Promise<any>;
-    readonly asyncCall: (key?: string, param?: any) => Promise<any>;
-    readonly getSource: () => Ref_2<any>;
-    readonly submit: () => Promise<any>;
-    readonly resetFields: (rest?: Obj) => Promise<any>;
-    readonly setFieldsValue: (data: Obj) => Promise<any>;
 }];
 
 export declare function useModal(content: () => VNode_2, config?: (ModalProps & {
