@@ -55,6 +55,7 @@ export default {
         })
       },
       setFieldsValue(data) {
+        formRef.value?.clearValidate()
         return setFieldsValue(modelData.value, data)
       },
       resetFields(defData = initialData) {

@@ -3,7 +3,7 @@
     <MyForm class="hi" />
     <Row :gutter="10">
       <!-- <a-button @click="changeSelect">切换选项</a-button> -->
-      <!-- <Button @click="onSubmit">校验</Button> -->
+      <Button @click="onSubmit">提交</Button>
       <Button @click="setValue">赋值</Button>
     </Row>
   </div>
@@ -24,9 +24,7 @@ const [register, table] = useTable(myTableOption)
 const MyForm = register()
 
 const onSubmit = () => {
-  // return form.onSubmit().then((data) => {
-  //   console.log(data)
-  // })
+  console.log(table.getData())
 }
 const setValue = () => {
   const data = [

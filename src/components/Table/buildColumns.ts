@@ -1,6 +1,7 @@
 import { KeepAlive, computed, h, inject, reactive, ref, toRaw, unref } from 'vue'
 import { ButtonGroup } from '../buttons'
 import { TableColumnProps } from 'ant-design-vue'
+import { globalConfig } from '../../plugin'
 
 export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
@@ -89,7 +90,7 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
 }
 
 function getColRender(option) {
-  const { type: colType, viewRender, render, options: colOptions, labelField, keepField } = option as any
+  const { type: colType, viewRender, render, options: colOptions, dictName, labelField, keepField } = option as any
   if (viewRender) {
     return viewRender // slotname字符串另行处理
   } else if (colType === 'InfoSlot') {
@@ -98,9 +99,11 @@ function getColRender(option) {
     return ({ record }) => record[labelField as string]
   } else if (keepField) {
     return ({ record, text }) => text + ' - ' + record[labelField as string]
-  } else if (colOptions && typeof colOptions?.[0] !== 'string') {
+  } else if (dictName || (colOptions && typeof colOptions[0] !== 'string')) {
     const options = ref<any[]>()
-    if (typeof colOptions === 'function') {
+    if (dictName && globalConfig.dictApi) {
+      globalConfig.dictApi(dictName).then((data) => (options.value = data))
+    } else if (typeof colOptions === 'function') {
       Promise.resolve(colOptions()).then((data) => (options.value = data))
     } else {
       options.value = unref(colOptions)

@@ -37,8 +37,8 @@ export function useForm(option: ExFormOption, data?: Obj) {
       dataSource: computed(() => formRef.value?.dataSource),
       getForm,
       asyncCall,
-      getSource() {
-        return asyncCall('dataSource').then((data) => toValue(data))
+      getData() {
+        return toValue(formRef.value?.dataSource)
       },
       submit: () => asyncCall('submit'),
       resetFields: (rest?: Obj) => asyncCall('resetFields', rest),

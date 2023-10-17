@@ -1,4 +1,4 @@
-import { computed, h } from 'vue'
+import { computed, h, toValue } from 'vue'
 import ExaTable from './ExaTable.vue'
 import { useGetRef } from '../utils'
 
@@ -23,10 +23,6 @@ export const useTable = (option: RootTableOption, data?: any[] | Ref<any[]>) => 
       return (props, ctx) => h(ExaTable, { ...props, onRegister: register }, ctx?.slots)
     }
   }
-
-  const dataSource = computed(() => {
-    return tableRef.value?.dataRef.value
-  })
 
   const asyncCall = async (key?: string, param?: any) => {
     const form = await getTable()
@@ -53,14 +49,13 @@ export const useTable = (option: RootTableOption, data?: any[] | Ref<any[]>) => 
     {
       /** 异步获取表格引用 */
       getTable,
-      dataSource,
       tableRef,
       setData(data: Obj[]) {
         asyncCall('setData', data)
       },
       /** 返回当前表格数据 */
       getData() {
-        return dataSource.value
+        return toValue(tableRef.value?.dataRef)
       },
       /** 跳转到指定页 */
       goPage(page: number) {

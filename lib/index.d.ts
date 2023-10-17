@@ -172,7 +172,7 @@ export declare function useForm(option: ExFormOption, data?: Obj): readonly [(ac
     readonly dataSource: ComputedRef<any>;
     readonly getForm: () => Promise<any>;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
-    readonly getSource: () => Promise<any>;
+    readonly getData: () => any;
     readonly submit: () => Promise<any>;
     readonly resetFields: (rest?: Obj) => Promise<any>;
     readonly setFieldsValue: (data: Obj) => Promise<any>;
@@ -197,7 +197,6 @@ export declare function useModal(content: () => VNode_2, config?: (ModalProps & 
 export declare const useTable: (option: RootTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
     /** 异步获取表格引用 */
     readonly getTable: () => Promise<any>;
-    readonly dataSource: ComputedRef<any>;
     readonly tableRef: Ref_2<any>;
     readonly setData: (data: Obj[]) => void;
     /** 返回当前表格数据 */

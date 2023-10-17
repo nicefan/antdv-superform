@@ -23,11 +23,12 @@ import { useButtons } from '../src/exaButtons'
 // }>()
 // const myModel = useExampleModal()
 const { options, changeSelect } = useOption()
-const dataSource = ref({})
-const [formRegister, form] = useForm({ isContainer: true, ...options }, dataSource)
+// const dataSource = ref({})
+const [formRegister, form] = useForm({ isContainer: true, ...options })
 // const sourceData = form.getSource()
 
 const onSubmit = () => {
+  console.log(form.getData())
   return form.submit().then((data) => {
     console.log(data)
   })
@@ -49,14 +50,14 @@ const getData = () => {
 }
 const setValue = () => {
   const data = getData()
-  dataSource.value = data
+  form.setFieldsValue(data)
 }
 const reset = () => {
   form.resetFields()
 }
 
-const detailData = ref(dataSource)
-const [detailRegister, detailForm] = useDetail(options, detailData)
+// const detailData = ref(dataSource)
+const [detailRegister, detailForm] = useDetail(options)
 const detailModal = useModal(detailRegister(), {
   width: 1200,
   title: '表单预览',
@@ -70,7 +71,10 @@ const [ExaButtons] = useButtons({
     { label: '校验', onClick: onSubmit },
     { label: '赋值', onClick: setValue },
     { label: '重置', onClick: reset },
-    { label: '预览', onClick: () => detailModal.openModal() },
+    { label: '预览', onClick: () =>{
+      detailForm.setData(form.getData())
+       detailModal.openModal()
+    } },
     {
       label: '赋值预览',
       onClick: () => {

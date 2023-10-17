@@ -3,7 +3,7 @@ import { Col, Row } from 'ant-design-vue'
 import { getEffectData } from '../../utils'
 import Controls, { ButtonGroup } from '../index'
 import Descriptions from './Descriptions'
-import { globalProps } from '../../plugin'
+import { globalConfig, globalProps } from '../../plugin'
 
 export default defineComponent({
   props: {
@@ -101,7 +101,7 @@ function getContent(option, model: ModelData) {
   const rootSlots = inject<Obj>('rootSlots', {})
   const value = toRef(model, 'refData')
   const effectData = getEffectData({ current: model.parent, value, text: value })
-  const { type: colType, viewRender, render, options: colOptions, labelField, keepField } = option
+  const { type: colType, viewRender, render, options: colOptions, dictName, labelField, keepField } = option
 
   if (viewRender || colType === 'InfoSlot') {
     const _render = viewRender || render
@@ -110,9 +110,11 @@ function getContent(option, model: ModelData) {
     return () => model.parent[labelField]
   } else if (keepField) {
     return () => `${model.refData ?? ''} - ${model.parent[keepField] ?? ''}`
-  } else if (colOptions && typeof colOptions?.[0] !== 'string') {
+  } else if (dictName || (colOptions && typeof colOptions[0] !== 'string')) {
     const options = ref<any[]>()
-    if (typeof colOptions === 'function') {
+    if (dictName && globalConfig.dictApi) {
+      globalConfig.dictApi(dictName).then((data) => (options.value = data))
+    } else if (typeof colOptions === 'function') {
       Promise.resolve(colOptions(effectData)).then((data) => (options.value = data))
     } else {
       options.value = unref(colOptions)
