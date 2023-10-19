@@ -31,7 +31,7 @@ export default function render({ option, effectData, inheritDisabled }: Param) {
   // const ignoreRules = inject<Obj>('exaProvider', {}).ignoreRules
   // const rules = computed(() => (ignoreRules || disabled.value ? undefined : model.rules))
 
-  const listener = getListener(option.on, effectData)
+  const listener = getListener(option, effectData)
   const computedAttr = typeof __attrs === 'function' ? { ...toRefs(getComputedAttr(__attrs, effectData)) } : {}
 
   // 校验绑定

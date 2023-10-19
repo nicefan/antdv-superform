@@ -33,7 +33,7 @@ function modalEdit({ listData, rowKey, option, listener }) {
   })
 
   const methods = {
-    add({ meta = {}, resetData }: Obj= {}) {
+    add({ meta = {}, resetData }: Obj = {}) {
       source.value = merge({}, initialData, { [rowKey]: nanoid(12), ...resetData })
       openModal({
         title: meta.title || meta.label || '新增',
@@ -104,7 +104,16 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
     columns: Obj[]
     methods: Obj
     modalSlot?: Fn
-  } = { list: orgList, columns: [], methods: {} }
+  } = {
+    list: orgList,
+    columns: [],
+    methods: {
+      delete({ record, selectedRows }) {
+        const items = record ? [record] : selectedRows
+        return listener.onDelete(items)
+      },
+    },
+  }
 
   if (isView) {
     context.columns = useColumns({ childrenMap })
@@ -119,7 +128,7 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
     const { list, colRenderMap, methods, getEditActions } = inlineRender({ childrenMap, orgList, rowKey, listener })
     colEditMap = colRenderMap
     context.list = list
-    context.methods = methods
+    Object.assign(context.methods, methods)
     __getEditActions = getEditActions
   }
   if (editMode === 'modal' || addMode === 'modal') {
@@ -128,7 +137,7 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
       // 编辑模式为行内编辑时，新增按钮使用弹窗模式
       context.methods.add = methods.add
     } else {
-      context.methods = methods
+      Object.assign(context.methods, methods)
     }
     context.modalSlot = modalSlot
   }

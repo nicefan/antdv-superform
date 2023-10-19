@@ -24,6 +24,7 @@ const [register, table] = useTable(myTableOption)
 const MyForm = register()
 
 const onSubmit = () => {
+  console.log(table.selectedRows)
   console.log(table.getData())
 }
 const setValue = () => {

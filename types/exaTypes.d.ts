@@ -90,6 +90,7 @@ declare global {
     isBreak?: boolean
     align?: 'left' | 'right' | 'center'
     slots?: Obj<Fn>
+    [key: `on${Capitalize<string>}${string}`]: Fn | undefined
   }
 
   interface ExGroupOption extends ExBaseOption {
@@ -243,25 +244,30 @@ declare global {
   }
 
   interface ExInputOption extends ExFormItemOption {
-    addonAfterIcon?: string | Component
-    addonBeforeIcon?: string | Component
-    prefixIcon?: string | Component
-    suffixIcon?: string | Component
+    addonAfter?: VNodeChild
+    addonBefore?: VNodeChild
+    prefix?: VNodeChild
+    suffix?: VNodeChild
     suffixTips?: string
-    btnClick?: (FormData: Obj, e: MouseEvent) => void
-    onChange?: (FormData: Obj, e: InputEvent) => void
+    enterButton?: (effectData: Obj) => Component
+    onSearch?: (effectData: Obj, value: string) => void
     attrs?: InputProps & HTMLAttributes
   }
+  type DefaultOptionsType = (string | number)[] | DefaultOptionType[]
   type SelectOptions =
-    | DefaultOptionType[]
-    | Readonly<DefaultOptionType[]>
-    | Ref<DefaultOptionType[]>
-    | Fn<DefaultOptionType[] | Promise<DefaultOptionType[]>>
+    | DefaultOptionsType
+    | Readonly<DefaultOptionsType>
+    | Ref<DefaultOptionsType>
+    | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
   interface ExSelectOption extends ExFormItemOption {
     labelField?: string
     options?: SelectOptions
     /** 字典名称 */
     dictName?: string
+    /** 选项中的value转成number类型 */
+    valueToNumber?: boolean
+    /** 选项中的value使用label */
+    valueToLabel?: boolean
     attrs?: SelectProps & HTMLAttributes
   }
   interface ExTreeOption extends ExFormItemOption {

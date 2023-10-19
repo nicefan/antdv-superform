@@ -1,14 +1,16 @@
 import { h, ref } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
 import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { Button } from 'ant-design-vue'
+import { uniq } from 'lodash-es'
 
 export default function exampleForm() {
   const list = ref<any[]>([
-    { value: 'a', label: '一' },
-    { value: 'b', label: '二' },
+    { value: '1', label: '一' },
+    { value: '2', label: '二' },
   ])
   const { openModal } = useModal(() => '这是内容')
-  const selectList = ['游戏', '唱歌', '跑步', '打牌'].map((label, value) => ({ label, value }))
+  const selectList = ['游戏', '唱歌', '跑步', '打牌']
   const treeData = [
     {
       title: 'Node1',
@@ -54,15 +56,28 @@ export default function exampleForm() {
             field: 'name',
             label: '姓名',
             rules: { required: true },
-            btnClick(...args) {
-              console.log('change:', args)
-              acKey.value = 'tab1'
+            // enterButton: () => h(Button, () => 'abc'),
+            attrs: {
+              prefix: () => UserOutlined,
+            },
+            on: {
+              search(...args) {
+                console.log('change:', args)
+                acKey.value = 'tab1'
+              },
             },
           },
-          // {
-          //   type: 'Hidden',
-          //   field: 'subName',
-          // },
+          {
+            type: 'Input',
+            field: 'dept',
+            label: '别名',
+            attrs: {
+              addonAfter: '查询',
+            },
+            onSearch(...args) {
+              console.log('change:', args)
+            },
+          },
           {
             type: 'InfoSlot',
             field: 'array',
@@ -95,6 +110,9 @@ export default function exampleForm() {
             field: 'forever',
             labelField: 'foreverName',
             label: '爱好',
+            attrs: {
+              placeholder: '使用普通数组生成下拉选项'
+            },
             /** 依赖数据变化切换 */
             // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
             /** 异步请求更新 */
@@ -107,21 +125,48 @@ export default function exampleForm() {
           },
           {
             type: 'Select',
+            field: 'forever2',
+            label: '爱好2',
+            attrs: {
+              placeholder: '可输入动态添加选项',
+              showSearch: true,
+            },
+            /** value将使用label保存 */
+            valueToLabel: true,
+            /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
+            options: (data, searchText) => {
+              if (searchText) {
+                return uniq([...selectList, searchText])
+              }
+              if (data.value && !selectList.includes(data.value)) {
+                selectList.push(data.value)
+              }
+              return selectList
+            },
+          },
+          {
+            type: 'Select',
             field: 'other',
             // labelField: 'foreverName',
             label: '其它',
-            options: () => Promise.resolve(selectList),
+            options: () => Promise.resolve(list.value),
+            valueToNumber: true,
+            attrs: {
+              placeholder: 'value转换成字符型',
+            },
             computed(val, data) {
-              return data.formData.forever !== null && 'a'
+              return data.formData.forever !== null && 1
             },
           },
           {
             type: 'Input',
             field: 'memo',
-            // labelField: 'foreverName',
             label: '备注',
             disabled(data) {
               return !!data.current.foreverName
+            },
+            attrs: {
+              addonAfter: 'abc',
             },
             computed(val, data) {
               return data.formData.foreverName
@@ -143,7 +188,7 @@ export default function exampleForm() {
                 type: 'Input',
                 field: 'addr',
                 // label: '地址',
-                span: 16,
+                span: 14,
               },
               {
                 type: 'Input',
@@ -151,6 +196,11 @@ export default function exampleForm() {
                 span: 8,
                 // label: '街道',
               },
+              // {
+              //   type: 'InfoSlot',
+              //   span:2,
+              //   render: () => h(Button, '选择')
+              // },
             ],
           },
           {

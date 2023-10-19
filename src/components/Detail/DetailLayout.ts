@@ -71,7 +71,7 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
         currentGroup.push({
           label,
           span,
-          content: () => contents.map((node) => node()),
+          content: () => contents.map((node) => node?.()),
         })
       } else {
         nodes.push(...buildNodes(modelsMap, option))
@@ -101,7 +101,17 @@ function getContent(option, model: ModelData) {
   const rootSlots = inject<Obj>('rootSlots', {})
   const value = toRef(model, 'refData')
   const effectData = getEffectData({ current: model.parent, value, text: value })
-  const { type: colType, viewRender, render, options: colOptions, dictName, labelField, keepField } = option
+  const {
+    type: colType,
+    viewRender,
+    render,
+    options: colOptions,
+    dictName,
+    labelField,
+    keepField,
+    valueToNumber,
+    valueToLabel,
+  } = option
 
   if (viewRender || colType === 'InfoSlot') {
     const _render = viewRender || render
@@ -111,6 +121,7 @@ function getContent(option, model: ModelData) {
   } else if (keepField) {
     return () => `${model.refData ?? ''} - ${model.parent[keepField] ?? ''}`
   } else if (dictName || (colOptions && typeof colOptions[0] !== 'string')) {
+    if (valueToLabel) return // 绑定值为Label时直接返回原值
     const options = ref<any[]>()
     if (dictName && globalConfig.dictApi) {
       globalConfig.dictApi(dictName).then((data) => (options.value = data))
@@ -119,7 +130,7 @@ function getContent(option, model: ModelData) {
     } else {
       options.value = unref(colOptions)
     }
-    return () => options.value?.find(({ value }) => value === model.refData)?.label
+    return () => options.value?.find(({ value }) => (valueToNumber ? Number(value) : value) === model.refData)?.label
   } else if (colType === 'Switch') {
     return () => (option.valueLabels || '否是')[model.refData]
   } else if (colType === 'Buttons') {

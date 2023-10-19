@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick, onUnmounted } from 'vue'
+import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick, onUnmounted, toRefs } from 'vue'
 import { merge } from 'lodash-es'
 import { useControl } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -55,7 +55,7 @@ export default defineComponent({
 
     const tableRef = ref({ ...exposed })
     const register = (comp) => {
-      Object.assign(tableRef.value, comp, exposed)
+      Object.assign(tableRef.value, toRefs(comp), exposed)
       ctx.emit('register', tableRef.value)
     }
     ctx.emit('register', tableRef.value)

@@ -90,7 +90,17 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
 }
 
 function getColRender(option) {
-  const { type: colType, viewRender, render, options: colOptions, dictName, labelField, keepField } = option as any
+  const {
+    type: colType,
+    viewRender,
+    render,
+    options: colOptions,
+    dictName,
+    labelField,
+    keepField,
+    valueToNumber,
+    valueToLabel,
+  } = option as any
   if (viewRender) {
     return viewRender // slotname字符串另行处理
   } else if (colType === 'InfoSlot') {
@@ -100,6 +110,7 @@ function getColRender(option) {
   } else if (keepField) {
     return ({ record, text }) => text + ' - ' + record[labelField as string]
   } else if (dictName || (colOptions && typeof colOptions[0] !== 'string')) {
+    if (valueToLabel) return // 绑定值为Label时直接返回原值
     const options = ref<any[]>()
     if (dictName && globalConfig.dictApi) {
       globalConfig.dictApi(dictName).then((data) => (options.value = data))
@@ -109,7 +120,7 @@ function getColRender(option) {
       options.value = unref(colOptions)
     }
     return ({ text }) => {
-      return options.value?.find(({ value }) => value === text)?.label
+      return options.value?.find(({ value }) => (valueToNumber ? Number(value) : value) === text)?.label
     }
   } else if (colType === 'Switch') {
     return ({ text }) => (option.valueLabels || '否是')[text]

@@ -31,17 +31,18 @@ export function getComputedAttr(handler: Fn<Obj>, dataRef: Obj) {
   return result
 }
 
-export function getListener(option: Obj<Fn> = {}, formData) {
+export function getListener(option: Obj<Fn> = {}, effectData) {
   const listener: Obj<Fn> = {}
-  Object.entries(option).forEach(([key, fn]) => {
-    const name = 'on' + key.charAt(0).toUpperCase() + key.slice(1)
-    listener[name] = (...args) => fn(formData, ...args)
-  })
   // 查找on开头的属性进行事件绑定
-  // Object.keys(option).forEach((key) => {
-  //   if (key.startsWith('on')) {
-  //     listener[key] = (...args) => option[key](formData, ...args)
-  //   }
-  // })
+  Object.keys(option).forEach((key) => {
+    if (key.match(/^on[A-Z]/)) {
+      listener[key] = (...args) => option[key](effectData, ...args)
+    } else if (key === 'on') {
+      Object.entries(option.on).forEach(([key, fn]) => {
+        const name = 'on' + key.charAt(0).toUpperCase() + key.slice(1)
+        listener[name] = (...args) => fn(effectData, ...args)
+      })
+    }
+  })
   return listener
 }

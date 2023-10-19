@@ -4,31 +4,34 @@
       :placeholder="'请输入' + (option.label || '')"
       max-length="100"
       allow-clear
-      :class="option.btnClick ? 'ant-input-search ant-input-search-enter-button' : ''"
+      :class="onSearch || option.enterButton ? 'ant-input-search ant-input-search-enter-button' : ''"
       v-bind="{ ...attrs, ...valueProps }"
     >
       <template #addonAfter>
-        <Button
-          v-if="option.btnClick"
+        <component
+          v-if="option.enterButton"
+          :is="toNode(option.enterButton, effectData)"
+          class="abc"
           :disabled="attrs.disabled"
-          class="ant-input-search-button"
-          @click="option.btnClick?.(effectData, $event)"
-        >
-          <component :is="option.addonAfterIcon ? useIcon(option.addonAfterIcon) : SearchOutlined" />
+          @click="() => onSearch(valueProps.value)"
+        />
+        <Button v-else-if="onSearch" :disabled="attrs.disabled" @click="() => onSearch(valueProps.value)">
+          <component v-if="addonAfter" :is="toNode(addonAfter)" />
+          <SearchOutlined v-else />
         </Button>
-        <component v-else-if="option.addonAfterIcon" :is="useIcon(option.addonAfterIcon)" />
+        <component v-else-if="addonAfter" :is="toNode(addonAfter)" />
       </template>
-      <template v-if="option.addonBeforeIcon" #addonBefore>
-        <component :is="useIcon(option.addonBeforeIcon)" />
-      </template>
-
-      <template v-if="option.prefixIcon" #prefix>
-        <component :is="useIcon(option.prefixIcon)" />
+      <template #addonBefore v-if="addonBefore">
+        <component :is="toNode(addonBefore)" />
       </template>
 
-      <template #suffix>
-        <component v-if="option.suffixIcon" :is="useIcon(option.suffixIcon)" />
-        <Tooltip v-if="option.suffixTips" title="{item.suffixTips}" />
+      <template #prefix v-if="prefix">
+        <component :is="toNode(prefix)" />
+      </template>
+
+      <template #suffix v-if="suffix">
+        <component v-if="suffix" :is="toNode(suffix)" />
+        <Tooltip v-if="suffixTips" :title="suffixTips" />
       </template>
     </Input>
   </FormItem>
@@ -37,7 +40,7 @@
 <script setup lang="ts">
 import { SearchOutlined } from '@ant-design/icons-vue'
 import baseComps from './base'
-import { useVModel, useIcon } from '../utils'
+import { useVModel, toNode } from '../utils'
 
 const { Input, Button, Tooltip, FormItem } = baseComps
 
@@ -48,4 +51,14 @@ const props = defineProps<{
   effectData: Obj
 }>()
 const valueProps = useVModel(props)
+const option = props.option
+const {
+  addonAfter = option.addonAfter,
+  addonBefore = option.addonBefore,
+  suffix = option.suffix,
+  prefix = option.prefix,
+  suffixTips = option.suffixTips,
+  onSearch,
+  ...attrs
+} = props.attrs
 </script>

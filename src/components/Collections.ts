@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, inject, PropType, provide, reactive, toRef } from 'vue'
+import { computed, defineComponent, h, inject, PropType, provide, reactive, toRef, toValue } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import Controls from './index'
 import { ButtonGroup } from './buttons'
@@ -96,7 +96,7 @@ export function useBuildNode(option, model: ModelData, effectData, attrs) {
       case 'Buttons':
         return getWrapperNode(() => h(ButtonGroup, { config: option, param: effectData }), option.isBlock)
       default: {
-        let slotAttrs: Obj = { option, model, effectData }
+        let slotAttrs: Obj = reactive({ option, model, effectData })
         if (sectionList.includes(type)) {
           Object.assign(slotAttrs, attrs)
         } else {
@@ -108,7 +108,7 @@ export function useBuildNode(option, model: ModelData, effectData, attrs) {
             ...globalProps.formItem,
             ...option.formItemProps,
             name: model.propChain,
-            label,
+            label: toValue(label),
             rules,
           })
         }

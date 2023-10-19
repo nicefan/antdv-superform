@@ -83,7 +83,7 @@ export default defineComponent({
             console.log(arg)
             return []
           }),
-        save: (data) =>
+        delete: (data) =>
           Promise.resolve().then(() => {
             console.log(data)
           }),
@@ -103,10 +103,11 @@ export default defineComponent({
     })
     /** 弹窗表单 */
     const dataSource = ref({})
-    const [exampleFormReg, form] = useForm(exampleForm().options, dataSource)
+    const [exampleFormReg, form] = useForm(exampleForm().options)
     const formModal = useModal(exampleFormReg(), {
       title: '新增测试数据',
       width: 1600,
+      destroyOnClose: true,
       onOk() {
         return form.submit().then((data) => {
           console.log(data)
@@ -114,8 +115,8 @@ export default defineComponent({
       },
     })
     const openForm = () => {
-      // setModalFormValue()
-      dataSource.value = getData()
+      setModalFormValue()
+      // dataSource.value = getData()
       formModal.openModal().then((form) => {
         console.log(form)
       })
