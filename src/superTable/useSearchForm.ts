@@ -1,13 +1,14 @@
 // import { watchDebounced } from '@vueuse/core'
 import { ButtonGroup, mergeActions } from '../components/buttons'
-import { ref, reactive, h, toRefs } from 'vue'
+import { ref, reactive, h, toRefs, toRaw } from 'vue'
 import Controls from '../components'
 
 export function useSearchForm(columns, searchSechma, effectData, onChange) {
-  const { buttons = {}, ...formOption }: GetUniOption<'Form'> = {
+  const { buttons = {}, ...formOption } = searchSechma
+  Object.assign(formOption, {
     ignoreRules: true,
-    ...searchSechma,
-  }
+  })
+
   formOption.subItems = searchSechma.subItems.map((item) => {
     if (typeof item === 'string') {
       return columns.find((col) => col.field === item)
@@ -18,13 +19,9 @@ export function useSearchForm(columns, searchSechma, effectData, onChange) {
   const formRef = ref()
   const formData: Obj = reactive({})
 
-  const onRegister = (form) => {
-    formRef.value = form
-  }
-
   const defaultAction = {
     submit() {
-      formRef.value.submit().then(onChange)
+      onChange(toRaw(formData))
     },
     reset() {
       const data = formRef.value.resetFields()
@@ -70,6 +67,6 @@ export function useSearchForm(columns, searchSechma, effectData, onChange) {
     // watchDebounced(formData, (data) => onChange(data), { debounce: 500, maxWait: 1000 })
   }
 
-  const formNode = () => h(Controls.Form, { option: formOption, source: formData, onRegister })
+  const formNode = () => h(Controls.Form, { option: formOption, source: formData, ref: formRef })
   return { formNode, formRef }
 }

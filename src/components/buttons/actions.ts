@@ -1,4 +1,5 @@
 import { Modal } from 'ant-design-vue'
+import type { ButtonItem } from '../../exaTypes'
 
 const getDefault = () => {
   return {
@@ -88,7 +89,7 @@ export function mergeActions(actions, methods = {}) {
           // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
           _onClick(param, (exParam: Obj = {}) => {
             const { confirmText = config.confirmText, __param } = exParam
-            _action(confirmText, () => innerMethod?.({ ...param, meta, ...__param }))
+            return _action(confirmText, () => innerMethod?.({ ...param, meta, ...__param }))
           })
         } else {
           _action(config.confirmText, () => (innerMethod || _onClick)?.({ ...param, meta }))

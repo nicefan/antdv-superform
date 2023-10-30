@@ -1,24 +1,20 @@
-<template>
-  <form-item>
-    <range-picker value-format="YYYY-MM-DD" v-bind="{ ...valueProps, ...props.attrs }" :disabled-date="disabledDate" />
-  </form-item>
-</template>
-
-<script setup lang="ts">
-import { useVModel } from '../utils'
+<script lang="ts">
+import { defineComponent, h } from 'vue'
 import base from './base'
 
-const { FormItem, RangePicker } = base
+export default defineComponent({
+  props: {
+    option: Object,
+    model: Object,
+    effectData: Object,
+    disabledDate: Function,
+  },
+  setup(props) {
+    const disabledDate = (currentDate) => {
+      return props.disabledDate?.(currentDate, props.effectData)
+    }
 
-const props = defineProps<{
-  option: ExInputOption
-  model: ModelData
-  attrs: Obj
-  effectData: Obj
-}>()
-const valueProps = useVModel(props)
-
-const disabledDate = (currentDate) => {
-  return props.attrs.disabledDate?.(currentDate, props.effectData)
-}
+    return () => h(base.RangePicker, { autofocus: true, valueFormat: 'YYYY-MM-DD', disabledDate })
+  },
+})
 </script>

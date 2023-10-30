@@ -1,15 +1,15 @@
 <script lang="ts">
-import { PropType, ref, watchPostEffect, defineComponent, h, reactive, toRefs, toValue } from 'vue'
-import { useVModel } from '../utils'
+import { type PropType, defineComponent, h, reactive } from 'vue'
 import baseComps from './base'
+import { useOptions } from '../utils/useOptions'
 
-const { FormItem, RadioGroup } = baseComps
+const { RadioGroup } = baseComps
 
 export default defineComponent({
   props: {
     option: {
       required: true,
-      type: Object as PropType<ExSelectOption>,
+      type: Object as PropType<GetOption<'Radio'>>,
     },
     model: {
       required: true,
@@ -19,38 +19,16 @@ export default defineComponent({
       required: true,
       type: Object,
     },
-    attrs: {
-      required: true,
-      type: Object,
-    },
+    options: Array,
   },
-  setup(props) {
-    const valueProps = useVModel(props)
+  setup(props, { attrs }) {
+    const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
-    const options = ref<any[] | undefined>(props.attrs.options || [])
-    const _options = props.option.options
-    if (typeof _options === 'function') {
-      watchPostEffect(() => {
-        Promise.resolve(_options(props.effectData)).then((data) => {
-          options.value = data
-        })
-      })
-    } else if (_options) {
-      options.value = toValue(_options) as any[]
-    }
-    const allAttrs: Obj = reactive({ name: props.option.field, ...toRefs(valueProps), ...props.attrs, options })
-    if (allAttrs.buttonStyle) {
+    const allAttrs: Obj = reactive({ name: props.option.field, options: optionsRef })
+    if (attrs.buttonStyle) {
       allAttrs.optionType = 'button'
     }
-    return () => h(FormItem, {}, () => h(RadioGroup, allAttrs))
+    return () => h(RadioGroup, allAttrs)
   },
 })
-
-// 异步获取
-// 字典配置
-/**
- *  动态切换
- *  依赖某值变化切换
- *
- */
 </script>

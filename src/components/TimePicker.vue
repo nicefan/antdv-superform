@@ -1,20 +1,16 @@
-<template>
-  <form-item>
-    <time-picker v-bind="{ ...valueProps, ...props.attrs }" />
-  </form-item>
-</template>
-
-<script setup lang="ts">
-import { useVModel } from '../utils'
+<script lang="ts">
+import { defineComponent, h } from 'vue'
 import base from './base'
 
-const { FormItem, TimePicker } = base
+export default defineComponent({
+  props: {
+    option: { type: Object, required: true },
+    model: Object,
+    effectData: Object,
+  },
 
-const props = defineProps<{
-  option: ExFormItemOption
-  model: ModelData
-  attrs: Obj
-  effectData: Obj
-}>()
-const valueProps = useVModel(props)
+  setup(props) {
+    return () => h(base.TimePicker)
+  },
+})
 </script>

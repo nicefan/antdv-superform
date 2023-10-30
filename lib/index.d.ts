@@ -1,34 +1,78 @@
 /// <reference types="../types" />
-/// <reference types="../types/exatypes" />
 
 import { AllowedComponentProps } from 'vue';
 import type { App } from 'vue';
+import type { ColProps } from 'ant-design-vue';
 import type { Component } from 'vue';
 import { ComponentCustomProps } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComputedRef } from 'vue';
+import { DefaultOptionType } from 'ant-design-vue/es/select';
 import { DefineComponent } from 'vue';
+import type { DescriptionsProps } from 'ant-design-vue';
 import { ExtractPropTypes } from 'vue';
+import type { FormItemProps } from 'ant-design-vue';
+import type { FormProps } from 'ant-design-vue';
+import type { HTMLAttributes } from 'vue';
+import type { InputProps } from 'ant-design-vue';
+import type { ListProps } from 'ant-design-vue';
 import type { Locale } from 'ant-design-vue/es/locale-provider';
-import { ModalFuncProps } from 'ant-design-vue';
-import { ModalProps } from 'ant-design-vue/es';
+import type { ModalFuncProps } from 'ant-design-vue';
+import type { ModalFuncProps as ModalFuncProps_2 } from 'ant-design-vue/es';
+import type { ModalProps } from 'ant-design-vue/es';
+import type { PaginationProps } from 'ant-design-vue';
 import { PropType } from 'vue';
+import type { RadioGroupProps } from 'ant-design-vue';
 import { Ref as Ref_2 } from 'vue';
 import { RendererElement } from 'vue';
 import { RendererNode } from 'vue';
-import { VNode as VNode_2 } from 'vue';
+import type { RowProps } from 'ant-design-vue';
+import type { SelectProps } from 'ant-design-vue';
+import type { TableColumnProps } from 'ant-design-vue';
+import type { TableProps } from 'ant-design-vue';
+import { TreeDataItem } from 'ant-design-vue/es/tree/Tree';
+import type { TreeProps } from 'ant-design-vue';
+import { VNode } from 'vue';
 import { VNodeProps } from 'vue';
+import { VNodeTypes } from 'vue';
+import Vue from 'vue';
 
 declare type BaseComps = 'Divider' | 'InputGroup' | 'FormItem' | 'Tooltip' | 'Button' | 'MenuItem' | 'Menu' | 'Dropdown' | 'Space' | 'Card' | 'ListItem' | 'List' | 'Modal' | 'Table' | 'Tabs' | 'TabPane' | 'CollapsePanel' | 'Collapse' | 'Input' | 'InputNumber' | 'InputSearch' | 'Select' | 'Switch' | 'RangePicker' | 'DatePicker' | 'TimePicker' | 'RadioButton' | 'Radio' | 'RadioGroup' | 'Checkbox' | 'CheckboxGroup' | 'TreeSelect';
 
-export declare function createModal(content: (() => VNode_2) | VNode_2, { buttons, ...__config }?: Obj): {
+export declare interface ButtonItem {
+    label?: string
+    /** 确认提示文本 */
+    confirmText?: string
+    /** 权限标识 */
+    roleName?: string
+    roleMode?: 'hidden' | 'disable'
+    color?: 'success' | 'error' | 'warning'
+    tooltip?: string
+    icon?: string | Component
+    attrs?: Obj & HTMLAttributes
+    hidden?: boolean | Fn<boolean>
+    disabled?: boolean | Fn<boolean>
+    /** 传递到内置方法时的所需参数 */
+    meta?: Obj
+    onClick?: Fn
+}
+
+declare interface CollapseItem extends Omit<ExtGroupOption, 'type'> {
+    label: string
+    key?: string
+    icon?: string | Component
+    subItems: UniOption[]
+    buttons?: ExtButtons
+}
+
+export declare function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
     modalRef: Ref_2<any>;
-    modalSlot: (props: any, ctx: any) => VNode_2<RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
-    setModal: (option?: ModalFuncProps | Obj) => void;
+    setModal: (option?: ModalFuncProps_2 | Obj) => void;
     closeModal: () => Promise<void>;
-    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
+    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
 };
 
 declare const _default: {
@@ -38,7 +82,9 @@ declare const _default: {
 };
 export default _default;
 
-export declare function defineForm<T extends keyof OptionType = 'Form'>(option: GetUniOption<T>): GetUniOption<T>;
+declare type DefaultOptionsType = (string | number)[] | DefaultOptionType[]
+
+export declare function defineForm<T extends keyof OptionType = 'Form'>(option: OptionType[T]): OptionType[T];
 
 export declare function defineTable(option: RootTableOption): RootTableOption;
 
@@ -48,78 +94,209 @@ declare type Dict = {
     [k: string]: string | number;
 };
 
-export declare const ExaButtons: DefineComponent<{
-    limit: NumberConstructor;
-    buttonType: PropType<"default" | "link" | "dashed" | "text" | "primary" | "ghost">;
-    buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"middle" | "small" | "large">;
+declare interface ExtBaseOption {
+    type: string
+    field?: string
+    initialValue?: any
+    label?: string
+    labelSlot?: Fn<VNodeTypes>
+    rules?: RuleConfig | RuleConfig[]
+    /** 配置复用合并时方便插入 */
+    sort?: number
+    attrs?: Obj
+    dynamicAttrs?: Fn<Obj>
+    /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
+    hidden?: boolean | ((data: Readonly<Obj>) => boolean)
+    hideInForm?: boolean
+    hideInDescription?: boolean
+    /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
+    disabled?: boolean | Fn
+    on?: Obj<Fn>
+    // row?: boolean
+    colProps?: ColProps & HTMLAttributes
+    /** 快捷实现col span */
+    span?: number
+    /** 是否为独立块，分组元素默认为true */
+    isBlock?: boolean
+    /** 是否换行 */
+    isBreak?: boolean
+    align?: 'left' | 'right' | 'center'
+    slots?: Obj<Fn>
+    [key: `on${Capitalize<string>}${string}`]: Fn | undefined
+}
+
+declare interface ExtButtonGroup<T extends string = string> {
+    limit?: number
+    buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
+    buttonShape?: 'circle' | 'round' | 'default'
+    size?: 'large' | 'middle' | 'small'
+    /** 分隔符， type为'link'/'text'时默认true */
+    divider?: boolean
+    /** 是否独立行 */
+    isBlock?: boolean
     /** 是否只显示图标 */
-    iconOnly: BooleanConstructor;
-    hidden: BooleanConstructor;
-    disabled: BooleanConstructor;
-    actions: PropType<ButtonItem[]>;
-}, () => VNode_2<RendererNode, RendererElement, {
-    [key: string]: any;
-}>, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
-    limit: NumberConstructor;
-    buttonType: PropType<"default" | "link" | "dashed" | "text" | "primary" | "ghost">;
-    buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"middle" | "small" | "large">;
-    /** 是否只显示图标 */
-    iconOnly: BooleanConstructor;
-    hidden: BooleanConstructor;
-    disabled: BooleanConstructor;
-    actions: PropType<ButtonItem[]>;
-}>>, {
-    hidden: boolean;
-    disabled: boolean;
-    iconOnly: boolean;
-}, {}>;
+    iconOnly?: boolean
+    /** 权限模式 */
+    roleMode?: 'hidden' | 'disable'
+    hidden?: boolean | Fn<boolean>
+    disabled?: boolean | Fn<boolean>
+    /** 将按钮放置到组件的指定slot中 */
+    forSlot?: string
+    actions?: (T | (ButtonItem | { name: T }))[]
+    // subItems?: ButtonItem[]
+}
 
-export declare const ExaDetail: DefineComponent<{
-    dataSource: ObjectConstructor;
-    option: PropType<ExFormOption>;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
-    dataSource: ObjectConstructor;
-    option: PropType<ExFormOption>;
-}>> & {
-    onRegister?: ((...args: any[]) => any) | undefined;
-}, {}, {}>;
+declare type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 
-export declare const ExaForm: DefineComponent<{
-    config: PropType<ExFormOption>;
-    model: ObjectConstructor;
-    isContainer: BooleanConstructor;
+declare interface ExtCollapseOption extends ExtBaseOption {
+    title?: VSlot
+    activeKey?: string | Ref<string>
+    subItems: CollapseItem[]
+}
+
+declare type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
+    /** 应用于表格或编辑表单 */
+    hideInTable?: boolean
+    /** 表格内容渲染 */
+    viewRender?: VSlot
+    columnProps?: TableColumnProps
+}
+
+declare interface ExtDateRange extends ExtFormItemOption {
+    /** 绑定结束日期字段 */
+    keepField?: string
+}
+
+/** 表单元素属性 */
+declare interface ExtFormItemOption extends ExtBaseOption {
+    field: string
+    /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
+    computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
+    formItemProps?: FormItemProps
+}
+
+declare interface ExtFormOption extends Omit<ExtGroupOption, 'type'> {
+    // type?: 'Form'
+    attrs?: FormProps & HTMLAttributes
+    isContainer?: boolean
     /** 减少行距 */
-    compact: BooleanConstructor;
+    compact?: boolean
     /** 不做校验 */
-    ignoreRules: BooleanConstructor;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
-    config: PropType<ExFormOption>;
-    model: ObjectConstructor;
-    isContainer: BooleanConstructor;
-    /** 减少行距 */
-    compact: BooleanConstructor;
-    /** 不做校验 */
-    ignoreRules: BooleanConstructor;
-}>> & {
-    onRegister?: ((...args: any[]) => any) | undefined;
-}, {
-    isContainer: boolean;
-    compact: boolean;
-    ignoreRules: boolean;
-}, {}>;
+    ignoreRules?: boolean
+    buttons?: ExtButtons<'submit' | 'reset'>
+}
 
-export declare const ExaTable: DefineComponent<{
-    dataSource: ObjectConstructor;
-    option: PropType<RootTableOption>;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("change" | "register")[], "change" | "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
-    dataSource: ObjectConstructor;
-    option: PropType<RootTableOption>;
-}>> & {
-    onChange?: ((...args: any[]) => any) | undefined;
-    onRegister?: ((...args: any[]) => any) | undefined;
-}, {}, {}>;
+declare interface ExtGroupOption extends ExtBaseOption {
+    title?: VSlot
+    gutter?: number
+    buttons?: ExtButtons
+    subItems: UniOption[]
+    /** 弹窗表单中的行间排版属性 */
+    rowProps?: RowProps & HTMLAttributes
+    /** 子元素的统一排列属性， */
+    subSpan?: number
+    descriptionsProps?: DescriptionsProps
+}
+
+declare type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption
+
+declare interface ExtInputGroupOption extends ExtBaseOption {
+    span: number
+    gutter?: number
+    subItems: UniOption[]
+}
+
+declare interface ExtInputOption extends ExtFormItemOption {
+    addonAfter?: VSlot
+    addonBefore?: VSlot
+    prefix?: VSlot
+    suffix?: VSlot
+    suffixTips?: string
+    enterButton?: (effectData: Obj) => Component
+    onSearch?: (effectData: Obj, value: string) => void
+    attrs?: InputProps & HTMLAttributes
+}
+
+declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
+
+declare interface ExtListOption extends ExtBaseOption {
+    field: string
+    title?: VSlot
+    attrs?: ListProps | Obj
+    buttons?: ExtButtons<'add' | 'refresh'>
+    columns: UniWidgetOption[]
+    /** 列表元素右边按钮 */
+    rowButtons?: ExtButtons<'delete' | 'edit'>
+    subSpan?: number
+    gutter?: number
+}
+
+declare interface ExtRadioOption extends ExtFormItemOption {
+    labelField?: string
+    options?: SelectOptions
+    /** 字典名称 */
+    dictName?: string
+    /** 选项中的value转成number类型 */
+    valueToNumber?: boolean
+    /** 选项中的value使用label */
+    valueToLabel?: boolean
+    attrs?: RadioGroupProps & HTMLAttributes
+}
+
+declare interface ExtSelectOption extends ExtFormItemOption {
+    labelField?: string
+    options?: SelectOptions
+    /** 字典名称 */
+    dictName?: string
+    /** 选项中的value转成number类型 */
+    valueToNumber?: boolean
+    /** 选项中的value使用label */
+    valueToLabel?: boolean
+    attrs?: SelectProps & HTMLAttributes
+}
+
+declare type ExtSlotOption = { render: VSlot }
+
+declare interface ExtSwitchOption extends ExtFormItemOption {
+    valueLabels?: [string, string]
+}
+
+declare interface ExtTabItem extends Omit<ExtGroupOption, 'type'> {
+    label: string
+    key?: string
+    icon?: string | Component
+    subItems: UniOption[]
+}
+
+declare interface ExtTableOption extends ExtBaseOption {
+    field: string
+    title?: VSlot
+    attrs?: TableProps | Obj
+    editMode?: 'inline' | 'modal'
+    addMode?: 'inline' | 'modal'
+    columns: ExtColumnsItem[]
+    buttons?: ExtButtons
+    /** 列表元素右边按钮 */
+    rowButtons?: ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
+    /** 弹窗属性 */
+    modalProps?: ModalFuncProps | Obj
+    descriptionsProps?: DescriptionsProps
+    /** 弹窗表单属性 */
+    formSechma?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
+}
+
+declare interface ExtTabsOption extends ExtBaseOption {
+    activeKey?: Ref<string>
+    forceRender?: boolean
+    buttons?: ExtButtons<'add' | 'refresh'>
+    subItems: ExtTabItem[]
+}
+
+declare interface ExtTreeOption extends ExtFormItemOption {
+    labelField?: string
+    attrs?: TreeProps & HTMLAttributes
+    data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
+}
 
 declare interface GlobalConfig {
     dictApi?: (name: string) => Promise<Dict[]>;
@@ -138,6 +315,8 @@ declare interface InstallConfig extends GlobalConfig {
     defaultProps?: Obj;
 }
 
+export declare type OptionType = WrapperTypes & WidgetTypes
+
 declare function registComponent(name: string, component: ((param: RegistPram) => VNode) | Component): void;
 
 declare type RegisterMethod = {
@@ -146,29 +325,137 @@ declare type RegisterMethod = {
 };
 
 declare interface RegistPram {
-    option: Obj;
-    model: ModelData;
-    /** 表单数据 */
-    effectData: {
-        formData: Obj;
-        /** 当前值 */
-        current?: any;
-    };
     /** 绑定到组件上的动态属性 */
     attrs: Obj;
+    formData: Obj;
+    /** 当前对象 */
+    current: any;
+    /** 当前值 */
+    value?: any;
 }
+
+declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'> {
+    isContainer?: boolean
+    apis?: TableApis | TableApis['query']
+    params?: Obj
+    beforeSearch?: (data: { param?: Obj } | Obj) => Obj
+    searchSechma?: ExtFormOption | { subItems: (UniOption | string)[] }
+    pagination?: PaginationProps | false
+}
+
+declare interface RuleConfig {
+    /** 验证类型 */
+    type?: 'email' | 'integer' | 'number' | 'idcard' | 'phone' | 'mobile' | 'word' | string
+    /** 触发方式 */
+    trigger?: 'blur' | 'change'
+    /** 是否必填 */
+    required?: boolean
+    pattern?: RegExp
+    /** 长度 */
+    len?: number
+    /** 最大长度/最大值 */
+    max?: number
+    /** 最小长度/最小值 */
+    min?: number
+    /** 自定义验证器 */
+    validator?: (any) => any
+    /** 提示消息 */
+    message?: string
+}
+
+declare type SelectOptions =
+| DefaultOptionsType
+| Readonly<DefaultOptionsType>
+| Ref<DefaultOptionsType>
+| Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
 
 declare function setDefaultProps(props: Obj): void;
 
-export declare function useButtons(config: ExButtonGroup): (() => VNode_2<RendererNode, RendererElement, {
+export declare const SuperButtons: DefineComponent<{
+    limit: NumberConstructor;
+    buttonType: PropType<"default" | "primary" | "link" | "text" | "dashed" | "ghost">;
+    buttonShape: PropType<"default" | "circle" | "round">;
+    size: PropType<"small" | "large" | "middle">;
+    /** 是否只显示图标 */
+    iconOnly: BooleanConstructor;
+    hidden: BooleanConstructor;
+    disabled: BooleanConstructor;
+    actions: PropType<ButtonItem[]>;
+}, () => VNode<RendererNode, RendererElement, {
+    [key: string]: any;
+}>, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
+    limit: NumberConstructor;
+    buttonType: PropType<"default" | "primary" | "link" | "text" | "dashed" | "ghost">;
+    buttonShape: PropType<"default" | "circle" | "round">;
+    size: PropType<"small" | "large" | "middle">;
+    /** 是否只显示图标 */
+    iconOnly: BooleanConstructor;
+    hidden: BooleanConstructor;
+    disabled: BooleanConstructor;
+    actions: PropType<ButtonItem[]>;
+}>>, {
+    hidden: boolean;
+    disabled: boolean;
+    iconOnly: boolean;
+}, {}>;
+
+export declare const SuperDetail: DefineComponent<{
+    dataSource: ObjectConstructor;
+    option: PropType<ExtFormOption>;
+}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
+    dataSource: ObjectConstructor;
+    option: PropType<ExtFormOption>;
+}>> & {
+    onRegister?: ((...args: any[]) => any) | undefined;
+}, {}, {}>;
+
+export declare const SuperForm: DefineComponent<{
+    config: PropType<ExtFormOption>;
+    model: ObjectConstructor;
+    isContainer: BooleanConstructor;
+    /** 减少行距 */
+    compact: BooleanConstructor;
+}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
+    config: PropType<ExtFormOption>;
+    model: ObjectConstructor;
+    isContainer: BooleanConstructor;
+    /** 减少行距 */
+    compact: BooleanConstructor;
+}>> & {
+    onRegister?: ((...args: any[]) => any) | undefined;
+}, {
+    isContainer: boolean;
+    compact: boolean;
+}, {}>;
+
+export declare const SuperTable: DefineComponent<{
+    dataSource: ObjectConstructor;
+    option: PropType<RootTableOption>;
+}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("change" | "register")[], "change" | "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
+    dataSource: ObjectConstructor;
+    option: PropType<RootTableOption>;
+}>> & {
+    onChange?: ((...args: any[]) => any) | undefined;
+    onRegister?: ((...args: any[]) => any) | undefined;
+}, {}, {}>;
+
+declare type TableApis = {
+    query: Fn<Promise<any>>
+    info?: Fn<Promise<Obj>>
+    save?: Fn<Promise<any>>
+    update?: Fn<Promise<any>>
+    delete?: Fn<Promise<any>>
+}
+
+export declare function useButtons(config: ExtButtonGroup): (() => VNode<RendererNode, RendererElement, {
     [key: string]: any;
 }>)[];
 
-export declare function useDetail(option: ExFormOption, data?: {}): readonly [(actions?: Obj) => any, {
+export declare function useDetail(option: GetOption<'Form'>, data?: {}): readonly [(actions?: Obj) => any, {
     readonly setData: (data: any) => void;
 }];
 
-export declare function useForm(option: ExFormOption, data?: Obj): readonly [(actions?: Obj, ref?: Obj) => any, {
+export declare function useForm(option: ExtFormOption, data?: Obj): readonly [(actions?: Obj, ref?: Obj) => any, {
     readonly dataSource: ComputedRef<any>;
     readonly getForm: () => Promise<any>;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
@@ -182,16 +469,16 @@ export declare function useForm(option: ExFormOption, data?: Obj): readonly [(ac
     readonly setData: (data: any) => void;
 }];
 
-export declare function useModal(content: () => VNode_2, config?: (ModalProps & {
-    buttons?: ExButtons;
+export declare function useModal(content: () => VNodeTypes, config?: (ModalProps & {
+    buttons?: ExtButtons;
 }) | Obj): {
     modalRef: Ref_2<any>;
-    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
-    modalSlot: (props: any, ctx: any) => VNode_2<RendererNode, RendererElement, {
+    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
+    setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
 };
 
 export declare const useTable: (option: RootTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
@@ -239,5 +526,38 @@ export declare const useTable: (option: RootTableOption, data?: any[] | Ref_2<an
     } | undefined) => any;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
 }];
+
+declare type VSlot = string | Fn<VNodeTypes>
+
+declare type WidgetTypes = {
+    Buttons: ExtBaseOption & ExtButtonGroup
+    Hidden: { field: string }
+    InputSlot: ExtInputSlotOption
+    InfoSlot: ExtInfoSlotOption
+    Text: ExtFormItemOption
+    Textarea: ExtFormItemOption
+    Input: ExtInputOption
+    InputNumber: ExtFormItemOption
+    DatePicker: ExtFormItemOption
+    TimePicker: ExtFormItemOption
+    DateRange: ExtDateRange
+    Select: ExtSelectOption
+    TreeSelect: ExtTreeOption
+    Radio: ExtRadioOption
+    Checkbox: ExtRadioOption
+    Switch: ExtSwitchOption
+}
+
+declare type WrapperTypes = {
+    InfoSlot: ExtInfoSlotOption
+    Form: ExtFormOption
+    Group: ExtGroupOption
+    InputGroup: ExtInputGroupOption
+    Card: ExtGroupOption
+    List: ExtListOption
+    Tabs: ExtTabsOption
+    Table: ExtTableOption
+    Collapse: ExtCollapseOption
+}
 
 export { }

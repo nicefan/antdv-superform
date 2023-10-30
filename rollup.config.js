@@ -5,10 +5,7 @@ import path from 'path'
 import ts from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import viteDts from 'vite-plugin-dts'
-import addGlobalTs from 'rollup-plugin-add-global-ts'
 import vuePlugin from '@vitejs/plugin-vue'
-import Components from 'unplugin-vue-components/rollup'
-import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 import vueJsx from 'rollup-plugin-vue-jsx-compat'
 import esbuild from 'rollup-plugin-esbuild'
 import postcss from 'rollup-plugin-postcss'
@@ -33,10 +30,6 @@ const tsPlugin = ts({
   declarationDir: dir + '/types',
   // check: true,
   tsconfig: './tsconfig.json',
-})
-const componentsPlugin = Components({
-  resolvers: [AntDesignVueResolver()],
-  include: [/\.vue$/, /\.tsx$/],
 })
 
 const mainFile = 'src/index.ts'
@@ -68,9 +61,6 @@ const types = {
   },
   plugins: [
     dts(),
-    // addGlobalTs({
-    //   path: ['types/index.d.ts', 'types/exaTypes.d.ts']
-    // }),
   ]
 }
 export default types

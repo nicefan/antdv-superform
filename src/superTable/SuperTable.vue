@@ -1,5 +1,18 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, mergeProps, watch, h, provide, nextTick, onUnmounted, toRefs } from 'vue'
+import type { RootTableOption } from '../exaTypes'
+import {
+  defineComponent,
+  type PropType,
+  ref,
+  reactive,
+  mergeProps,
+  watch,
+  h,
+  provide,
+  nextTick,
+  onUnmounted,
+  toRefs,
+} from 'vue'
 import { merge } from 'lodash-es'
 import { useControl } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -10,7 +23,7 @@ import Controls from '../components'
 import { globalProps } from '../plugin'
 
 export default defineComponent({
-  name: 'ExaTable',
+  name: 'SuperTable',
   inheritAttrs: false,
   props: {
     dataSource: Object,

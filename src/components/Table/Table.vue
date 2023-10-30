@@ -1,28 +1,30 @@
 <script lang="ts">
-import { h, ref, reactive, PropType, defineComponent, toRef, mergeProps, inject, watch } from 'vue'
+import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, inject, watch } from 'vue'
 import { ButtonGroup } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
 import { Row } from 'ant-design-vue'
+import type { TableApis } from '../../exaTypes'
+import { toNode } from '../../utils'
 
 export default defineComponent({
-  name: 'ExaTable',
+  name: 'SuperTable',
   inheritAttrs: false,
   props: {
     option: {
       required: true,
-      type: Object as PropType<ExTableOption>,
+      type: Object as PropType<GetOption<'Table'>>,
     },
     model: {
       required: true,
       type: Object as PropType<ModelDataGroup>,
     },
-    isView: Boolean,
+    disabled: Boolean,
     effectData: Object,
     apis: Object as PropType<TableApis>,
   },
   emits: ['register'],
-  setup({ option, model, apis = {} as TableApis, effectData, isView }, ctx) {
+  setup({ option, model, apis = {} as TableApis, effectData }, ctx) {
     const editInline = option.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
@@ -31,7 +33,7 @@ export default defineComponent({
     const selectedRowKeys = ref<string[]>([])
     const selectedRows = ref<Obj[]>([])
     const rowSelection =
-      isView || (!attrs.rowSelection && attrs.rowSelection !== undefined)
+      !attrs.rowSelection && attrs.rowSelection !== undefined
         ? undefined
         : reactive(
             mergeProps(attrs.rowSelection, {
@@ -87,16 +89,9 @@ export default defineComponent({
       },
     }
 
-    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener, isView })
+    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener })
     const tableRef = ref()
-    // const getTable = (el) => {
-    //   if (!el) {
-    //     ctx.emit('register', null)
-    //   } else {
-    //     Object.assign(exposed, el, actions)
-    //     ctx.emit('register', exposed)
-    //   }
-    // }
+
     // TODO: 补充TS
     const actions = {
       selectedRowKeys,
@@ -126,9 +121,8 @@ export default defineComponent({
         slots[key] = typeof value === 'string' ? rootSlots[value] : value
       })
     }
-    const titleString = (isView && option.descriptionsProps?.title) || option.title || option.label
     const buttonsConfig = option.buttons as any
-    if (!isView && buttonsConfig) {
+    if (buttonsConfig) {
       const slotName = buttonsConfig.forSlot || 'extra'
       const orgSlot = slots[slotName]
       slots[slotName] = () => [
@@ -141,11 +135,12 @@ export default defineComponent({
       ]
     }
 
+    const titleString = option.title || option.label
     const { title: titleSlot, extra: extraSlot, ...__slots } = slots
     if (titleString || titleSlot || extraSlot) {
       __slots.title = () =>
         h(Row, { justify: 'space-between', align: 'middle' }, () => [
-          h('div', { class: 'exa-title' }, titleSlot?.() || titleString),
+          h('div', { class: 'exa-title' }, toNode(titleSlot || titleString, effectData)),
           extraSlot?.(),
         ])
     }
@@ -166,7 +161,7 @@ export default defineComponent({
           dataSource: list.value,
           columns,
           tableLayout: 'fixed',
-          pagination: isView ? false : undefined,
+          pagination: undefined,
           ...attrs,
           rowSelection,
           rowKey,

@@ -1,21 +1,21 @@
 <template>
   <div style="background: #eee; padding: 16px">
-    <ExaForm @register="formRegister">
+    <SuperForm @register="formRegister">
       <div style="text-align: center; margin-top: 16px; background: #fff">
-        <exa-buttons style="margin: 16px" />
+        <super-buttons style="margin: 16px" />
       </div>
       <template #test="{ attrs, current }">
         <div v-bind="attrs">这是个插槽！{{ current.name }}</div>
       </template>
-    </ExaForm>
+    </SuperForm>
   </div>
 </template>
 <script setup lang="ts">
 import { inject, reactive, ref } from 'vue'
 import { Row, Button } from 'ant-design-vue'
 import useOption from './useExForm'
-import { useDetail, useForm, useModal, ExaForm } from '../src'
-import { useButtons } from '../src/exaButtons'
+import { useDetail, useForm, useModal, SuperForm } from '../src'
+import { useButtons } from '../src/superButtons'
 
 // const props = defineProps<{
 //   msg: string
@@ -64,7 +64,7 @@ const detailModal = useModal(detailRegister(), {
   cancelText: null,
 })
 
-const [ExaButtons] = useButtons({
+const [SuperButtons] = useButtons({
   limit: 5,
   actions: [
     { label: '切换选项', onClick: changeSelect },

@@ -1,24 +1,32 @@
-<script setup lang="ts">
+<script lang="tsx">
 import Collections from './Collections'
 import { ButtonGroup } from './buttons'
 import { DetailLayout } from './Detail'
+import { defineComponent, h } from 'vue'
 import base from './base'
+import { toNode } from '../utils'
 
-const props = defineProps<{
-  option: ExGroupOption
-  model: ModelDataGroup
-  effectData: Obj
-  isView?: boolean
-}>()
-const { label, title = label, buttons } = props.option
+export default defineComponent({
+  props: {
+    option: { type: Object, required: true },
+    model: { type: Object as any, required: true },
+    effectData: Object,
+    disabled: Boolean,
+    isView: Boolean,
+  },
+  setup({ option, model, effectData, isView }) {
+    const { label, title = label, buttons } = option
+    return () =>
+      h(
+        base.Card,
+        {},
+        {
+          title: () => toNode(title, effectData),
+          extra: buttons && (() => h(ButtonGroup, { config: buttons, param: effectData })),
+          default: () =>
+            isView ? h(DetailLayout, { option, modelsMap: model.children }) : h(Collections, { option, model }),
+        }
+      )
+  },
+})
 </script>
-
-<template>
-  <base.Card :title="title">
-    <template #extra>
-      <ButtonGroup v-if="buttons" :config="buttons" :param="props.effectData"></ButtonGroup>
-    </template>
-    <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" />
-    <Collections v-else v-bind="props" />
-  </base.Card>
-</template>

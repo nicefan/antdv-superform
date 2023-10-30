@@ -1,6 +1,7 @@
 <script lang="tsx">
 import { onMounted, reactive, ref, toRef, watchEffect } from 'vue'
 import { DetailLayout } from './Detail'
+import type { ExtTabItem } from '../exaTypes'
 
 export default {
   name: 'ExTabs',
@@ -16,8 +17,8 @@ import { ButtonGroup } from './buttons'
 const { Tabs, TabPane } = base
 
 const props = defineProps<{
-  option: ExTabsOption
-  model: ModelDataGroup<TabItem>
+  option: GetOption<'Tabs'>
+  model: ModelDataGroup<ExtTabItem>
   effectData: Obj
   isView?: boolean
 }>()

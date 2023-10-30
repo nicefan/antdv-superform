@@ -1,5 +1,8 @@
+/* eslint-disable */
+// @ts-nocheck
 import * as _base from './baseComps'
 
+// @ts-ignore
 const base = { ..._base }
 
 export function override(comps) {
@@ -15,4 +18,5 @@ export function getOverride<T extends Obj | Obj[]>(comp: T): T {
     return base[comp.name] || comp
   }
 }
+// @ts-ignore
 export default base

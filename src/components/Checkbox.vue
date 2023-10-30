@@ -1,40 +1,30 @@
-<template>
-  <form-item>
-    <checkbox-group :name="option.field" v-bind="{ ...valueProps, ...props.attrs }" :options="options" />
-  </form-item>
-</template>
-
-<script setup lang="ts">
-import { ref, watchPostEffect, toValue } from 'vue'
-import { useVModel } from '../utils'
+<script lang="ts">
+import { h, type PropType, defineComponent } from 'vue'
 import base from './base'
+import { useOptions } from '../utils/useOptions'
 
-const { FormItem, CheckboxGroup } = base
+const { CheckboxGroup } = base
 
-const props = defineProps<{
-  option: ExSelectOption
-  model: ModelData
-  attrs: Obj
-  effectData: Obj
-}>()
-const valueProps = useVModel(props)
+export default defineComponent({
+  props: {
+    option: {
+      required: true,
+      type: Object as PropType<GetOption<'Radio'>>,
+    },
+    model: {
+      required: true,
+      type: Object as PropType<ModelData>,
+    },
+    effectData: {
+      required: true,
+      type: Object,
+    },
+    options: Array
+  },
+  setup(props) {
+    const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
-const options = ref<any[] | undefined>(props.attrs.options || [])
-const _options = props.option.options
-if (typeof _options === 'function') {
-  watchPostEffect(() => {
-    Promise.resolve(_options(props.effectData)).then((data) => {
-      options.value = data
-    })
-  })
-} else if (_options) {
-  options.value = toValue(_options) as any[]
-}
-// 异步获取
-// 字典配置
-/**
- *  动态切换
- *  依赖某值变化切换
- *
- */
+    return () => h(CheckboxGroup, { options: optionsRef.value, name: props.option.field })
+  },
+})
 </script>

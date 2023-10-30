@@ -1,6 +1,8 @@
 import { toRef, reactive, watch, onMounted, ref, unref, toValue } from 'vue'
+import type { ExtFormItemOption } from '../exaTypes'
+
 type Param = {
-  option: ExFormItemOption
+  option: ExtFormItemOption
   model: ModelData
   effectData: Obj
 }

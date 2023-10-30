@@ -1,7 +1,8 @@
 <script lang="ts">
-import { h, PropType, defineComponent } from 'vue'
+import { h, type PropType, defineComponent } from 'vue'
 import { mapKeys, camelCase } from 'lodash-es'
 import { ButtonGroup } from '../components/buttons'
+import type { ButtonItem } from '../exaTypes'
 
 export default defineComponent({
   props: {

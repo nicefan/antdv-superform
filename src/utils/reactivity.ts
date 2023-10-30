@@ -1,4 +1,4 @@
-import { Ref, inject, reactive, readonly, ref, toRefs, unref, watchEffect } from 'vue'
+import { inject, reactive, ref, toRefs, unref, watchEffect } from 'vue'
 
 /** 统一生成动态属性参数 */
 export function getEffectData<T extends Obj>(param?: T) {

@@ -1,7 +1,6 @@
 <script lang="ts">
-import { PropType, defineComponent, h, inject, provide, reactive, toRef, unref } from 'vue'
-import { ButtonGroup } from 'ant-design-vue'
-import { cloneModels, getEffectData } from '../../utils'
+import { type PropType, defineComponent, h, toRef } from 'vue'
+import { cloneModels } from '../../utils'
 import Layout from './DetailLayout'
 
 export default defineComponent({

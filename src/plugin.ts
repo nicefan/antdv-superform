@@ -1,8 +1,9 @@
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import { merge } from 'lodash-es'
-import type { App, Component } from 'vue'
+import type { App, Component, VNode } from 'vue'
 import { override, addComponent } from './components'
 import type { Locale } from 'ant-design-vue/es/locale-provider'
+import type { ModelData } from './exaTypes'
 type BaseComps =
   | 'Divider'
   | 'InputGroup'
@@ -73,16 +74,13 @@ const install = async (app: App, config: InstallConfig = {}) => {
 }
 
 interface RegistPram {
-  option: Obj
-  model: ModelData
-  /** 表单数据 */
-  effectData: {
-    formData: Obj
-    /** 当前值 */
-    current?: any
-  }
   /** 绑定到组件上的动态属性 */
   attrs: Obj
+  formData: Obj
+  /** 当前对象 */
+  current: any
+  /** 当前值 */
+  value?: any
 }
 function registComponent(name: string, component: ((param: RegistPram) => VNode) | Component) {
   addComponent(name, component)

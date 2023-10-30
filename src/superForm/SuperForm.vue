@@ -1,20 +1,19 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, toRefs, h, mergeProps, watchEffect, onMounted } from 'vue'
+import { defineComponent, type PropType, ref, reactive, h, mergeProps, watchEffect, onMounted } from 'vue'
 import { merge } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
+import type { ExtFormOption } from '../exaTypes'
 
 export default defineComponent({
   inheritAttrs: false,
-  name: 'ExaForm',
+  name: 'SuperForm',
   props: {
-    config: Object as PropType<ExFormOption>,
+    config: Object as PropType<ExtFormOption>,
     model: Object,
     isContainer: Boolean,
     /** 减少行距 */
     compact: Boolean,
-    /** 不做校验 */
-    ignoreRules: Boolean,
   },
   emits: ['register'],
   setup(props, ctx) {
@@ -28,7 +27,7 @@ export default defineComponent({
       attrs: mergeProps({ ...globalProps.Form }, { ...props.config?.attrs }, attrs),
     })
     const actions = {
-      setOption: (_option: ExFormOption) => {
+      setOption: (_option: ExtFormOption) => {
         merge(formOption, _option, formOption)
         if (formOption.model) {
           formData.value = formOption.model

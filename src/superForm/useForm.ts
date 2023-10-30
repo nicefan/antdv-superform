@@ -1,8 +1,9 @@
 import { h, watchEffect, computed, toValue } from 'vue'
-import { ExaForm } from './'
+import { SuperForm } from './'
 import { useGetRef } from '../utils'
+import type { ExtFormOption } from '../exaTypes'
 
-export function useForm(option: ExFormOption, data?: Obj) {
+export function useForm(option: ExtFormOption, data?: Obj) {
   const [formRef, getForm] = useGetRef()
   const register = (actions?: Obj, ref?: Obj): any => {
     if (actions) {
@@ -14,7 +15,7 @@ export function useForm(option: ExFormOption, data?: Obj) {
       }
       formRef.value = ref
     } else {
-      return (props, ctx) => h(ExaForm, { ...props, onRegister: register }, ctx?.slots)
+      return (props, ctx) => h(SuperForm, { ...props, onRegister: register }, ctx?.slots)
     }
   }
 

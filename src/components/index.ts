@@ -18,9 +18,7 @@ import TimePicker from './TimePicker.vue'
 import Radio from './Radio.vue'
 import Checkbox from './Checkbox.vue'
 import TreeSelect from './TreeSelect.vue'
-import InputSlot from './InputSlot.vue'
-import base, { override } from './base'
-import { useVModel } from '../utils'
+import { override } from './base'
 
 export { ButtonGroup } from './buttons'
 export { default as Collections } from './Collections'
@@ -29,13 +27,15 @@ export { override }
 const components = {
   Form,
   Group,
-  InputGroup,
   Card,
   List,
   Tabs,
   Table,
-  Textarea,
   Collapse,
+  InputGroup,
+}
+const formItems = {
+  Textarea,
   Input,
   InputNumber,
   Select,
@@ -46,24 +46,16 @@ const components = {
   Radio,
   Checkbox,
   TreeSelect,
-  InputSlot,
 }
+
+export const containers = Object.keys(components)
+const allItems = { ...formItems, ...components }
 
 export function addComponent(name, component) {
-  components[name] = defineComponent({
-    name,
-    props: ['option', 'model', 'effectData', 'attrs'],
-
-    setup({ option, model, effectData, attrs }) {
-      const valueProps = useVModel({ option, model, effectData })
-      const allAttrs = reactive({ ...toRefs(valueProps), ...toRefs(attrs) })
-
-      return () =>
-        h(base.FormItem, {}, () =>
-          typeof component === 'function' ? component({ option, effectData, attrs: allAttrs }) : h(component, allAttrs)
-        )
-    },
-  })
+  const customName = `Ext${name}`
+  allItems[customName] = (props) => {
+    return typeof component === 'function' ? component(props) : h(component, props.attrs)
+  }
 }
 
-export default components
+export default allItems

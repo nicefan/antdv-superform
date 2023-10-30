@@ -2,32 +2,37 @@
  * @deprecated: 行内编辑表格
  */
 
-import { ref, shallowReactive, toRaw, watch, reactive, h, computed } from 'vue'
+import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, merge } from 'lodash-es'
 import message from 'ant-design-vue/es/message'
 import { useForm } from 'ant-design-vue/es/form'
-import Controls, { ButtonGroup } from '../'
 import style from '../style.module.scss'
+import Controls from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
 import base from '../base'
+import { buildInnerNode } from '../Collections'
 
 function createEditCache(childrenMap) {
   const editMap = new WeakMap()
-  const getEditInfo = (data) => {
-    let editInfo = editMap.get(toRaw(data))
+
+  const getEditInfo = (record) => {
+    const raw = toRaw(record)
+    let editInfo = editMap.get(raw)
     if (!editInfo) {
       editInfo = shallowReactive<Obj>({ isEdit: false })
-      editMap.set(toRaw(data), editInfo)
+      editMap.set(raw, editInfo)
     }
     return editInfo
   }
+
   const setEditInfo = (data, info) => {
     const editInfo = getEditInfo(data)
     if (!editInfo.editData) {
-      const editData = cloneDeep(data)
-      const { modelsMap, rules } = cloneModelsFlat(childrenMap, editData)
-      const form = useForm(reactive(editData), ref(rules))
+      const editData = reactive(cloneDeep(data))
+      const { modelsMap, rules } = cloneModelsFlat(toRaw(childrenMap), editData)
+      const form = useForm(editData, ref(rules))
+      form.clearValidate()
       Object.assign(editInfo, { ...info, form, modelsMap, editData })
     } else {
       resetFields(editInfo.editData, data)
@@ -55,9 +60,6 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
       list.value = orgList.value.concat(items)
     }
   )
-  const effectData = getEffectData({ current: list })
-  /** 初始model */
-  const { modelsMap: fModels } = cloneModelsFlat<ExBaseOption & ExColumnsItem>(childrenMap)
 
   const { getEditInfo, setEditInfo } = createEditCache(childrenMap)
 
@@ -72,7 +74,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     },
     edit({ record, selectedRows }) {
       const data = record || selectedRows[0]
-      setEditInfo(data, { isEdit: true })
+      setEditInfo(toRaw(data), { isEdit: true })
     },
     delete({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
@@ -125,39 +127,46 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     return editInfo.isEdit ? editActions : null
   }
 
-  const colRenderMap = new Map()
-  for (const [option, _model] of fModels) {
+  const InputNode = defineComponent({
+    props: {
+      option: { type: Object, required: true },
+      record: { type: Object as any, required: true },
+    },
+    setup({ option, record }) {
+      const { modelsMap, form } = getEditInfo(record)
+      const model = modelsMap.get(option)
+      const ruleName = model.propChain.join('.')
+      const effectData = getEffectData({ current: model.parent, value: toRef(model, 'refData') })
+      const { attrs } = useControl({ option, effectData: model })
+      const inputSlot = buildInnerNode(option, model, effectData, attrs)
+      return () =>
+        h(
+          base.FormItem,
+          {
+            ...form.validateInfos[ruleName],
+            class: style['table-form-item'],
+          },
+          inputSlot
+        )
+    },
+  })
+
+  const getEditRender = (option) => {
     const component = Controls[option.type]
-    if (!component || !option.field || option.hideInTable) continue
-
-    const node = ({ model, validateInfo, editData }) => {
-      const { attrs } = useControl({ option, effectData: reactive({ ...effectData, current: editData }) })
-      return h(component, {
-        option,
-        model,
-        attrs: reactive(attrs),
-        effectData,
-        ...validateInfo,
-        class: style['table-form-item'],
-      })
-    }
-
-    const ruleName = _model.propChain.join('.')
-    const customRender = (props) => {
-      const { modelsMap, isEdit, form, editData } = getEditInfo(props.record)
-      if (isEdit) {
-        const model = modelsMap.get(option)
-        const validateInfo = form.validateInfos[ruleName]
-        return node({ model, validateInfo, editData })
+    if (component || option.type === 'InputSlot') {
+      return ({ record }) => {
+        const { isEdit } = getEditInfo(record)
+        if (isEdit) {
+          return h(InputNode, { option, record })
+        }
       }
     }
-    colRenderMap.set(option, customRender)
   }
 
   return {
     list,
-    colRenderMap,
     methods,
+    getEditRender,
     getEditActions,
   }
 }

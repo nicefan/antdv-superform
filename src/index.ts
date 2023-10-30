@@ -1,12 +1,13 @@
 /// <reference types="../types" />
-/// <reference types="../types/exaTypes" />
 
 import plugin from './plugin'
 import './style.less'
-export * from './exaForm'
-export * from './exaTable'
-export * from './exaButtons'
-export * from './exaDetail'
-export * from './exaModal'
+export * from './superForm'
+export * from './superTable'
+export * from './superButtons'
+export * from './superDetail'
+export * from './superModal'
 
 export default plugin
+
+export type { OptionType, ButtonItem } from './exaTypes'

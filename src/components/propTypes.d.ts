@@ -1,4 +1,6 @@
-export interface CommonProps<T = ExFormItemOption> {
+import type { ExtFormItemOption } from '../exaTypes'
+
+export interface CommonProps<T = ExtFormItemOption> {
   option: T
   model: Required<ModelData>
   attrs?: Obj

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PropType, h, provide, reactive, readonly, ref, watch } from 'vue'
+import { type PropType, h, provide, reactive, readonly, ref, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -8,11 +8,11 @@ import base from './base'
 import { ButtonGroup } from './buttons'
 
 export default {
-  name: 'ExaForm',
+  name: 'SuperForm',
   props: {
     option: {
       required: true,
-      type: Object as PropType<ExFormOption>,
+      type: Object as PropType<GetOption<'Form'>>,
     },
     source: {
       type: Object,
@@ -40,11 +40,13 @@ export default {
     }
 
     const { modelsMap, initialData } = buildModelsMap(subItems, modelData)
-    provide('exaProvider', { data: readonly(modelData), ignoreRules })
+    provide('exaProvider', { data: readonly(modelData) })
     const effectData = reactive({ formData: modelData, current: modelData })
 
     const { attrs } = useControl({ option: props.option, effectData })
-
+    if (ignoreRules) {
+      Object.assign(attrs, { hideRequiredMark: true, validateTrigger: 'none' })
+    }
     const actions = {
       dataSource: modelData,
       submit: () => {

@@ -1,15 +1,15 @@
 <template>
   <div style="background: #eee; padding: 16px">
-    <ExaDetail @register="detailRegister">
+    <SuperDetail @register="detailRegister">
       <template #test="{ attrs }">
         <div v-bind="attrs">这是个插槽！</div>
       </template>
-    </ExaDetail>
+    </SuperDetail>
   </div>
 </template>
 <script setup lang="ts">
 import useOption from './useExForm'
-import { ExaDetail, useDetail } from '../src'
+import { SuperDetail, useDetail } from '../src'
 
 const { options, changeSelect } = useOption()
 const [detailRegister, { setData }] = useDetail({ isContainer: true, ...options })

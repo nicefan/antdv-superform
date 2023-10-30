@@ -29,17 +29,18 @@
   </Space>
 </template>
 <script setup lang="ts">
-import { ref, watchEffect, PropType, reactive, toValue } from 'vue'
+import { ref, watchEffect, type PropType, reactive, toValue } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
 import { EllipsisOutlined } from '@ant-design/icons-vue'
 import { getComputedStatus, useDisabled, useIcon } from '../../utils'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
+import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
 
 const props = defineProps({
   config: {
     required: true,
-    type: [Array, Object] as PropType<ExButtons>,
+    type: [Array, Object] as PropType<ExtButtons>,
   },
   methods: Object,
   param: Object,
@@ -52,7 +53,7 @@ const isDivider = __config.divider ?? ['link', 'text'].includes(__config.buttonT
 </script>
 
 <script lang="ts">
-function useButton(config: ExButtonGroup, param: Obj, methods?: Obj) {
+function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
   const { size, buttonShape, buttonType, roleMode, limit = 3, hidden, disabled, actions } = config
   const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)

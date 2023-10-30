@@ -1,24 +1,24 @@
-import { ref, h, Ref } from 'vue'
+import { ref, h } from 'vue'
 import { nanoid } from 'nanoid'
 import { merge, cloneDeep } from 'lodash-es'
-import { createModal, useModal } from '../../exaModal'
+import { createModal, useModal } from '../../superModal'
 import inlineRender from './TableEdit'
 import Controls from '../index'
 import { getEffectData } from '../../utils'
 import { globalProps } from '../../plugin'
 import View from '../Detail'
 import { buildActionSlot, createProducer, useColumns } from './buildColumns'
+import type { RootTableOption } from '../../exaTypes'
 
-function modalEdit({ listData, rowKey, option, listener }) {
-  // 生成新增表单
-  const { initialData } = listData as ModelChildren
+function modalEdit({ initialData, rowKey, option, listener }) {
   const source = ref({})
   const formRef = ref()
 
-  const formOption: ExFormOption = { ...option.formSechma }
+  const formOption: GetOption<'Form'> = { ...option.formSechma }
   // buttons: { actions: ['submit', 'reset'] },
   formOption.subItems = formOption.subItems || option.columns.filter((item) => !item.hideInForm)
 
+  // 生成新增表单
   const editForm = () =>
     h(Controls.Form, {
       option: formOption,
@@ -94,10 +94,9 @@ type BuildDataParam = {
   orgList: Ref<Obj[]>
   rowKey: string
   listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
-  isView?: boolean
 }
 
-function buildData({ option, listData, orgList, rowKey, listener, isView }: BuildDataParam) {
+function buildData({ option, listData, orgList, rowKey, listener }: BuildDataParam) {
   const { modelsMap: childrenMap, initialData } = listData
   const context: {
     list: Ref
@@ -115,24 +114,19 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
     },
   }
 
-  if (isView) {
-    context.columns = useColumns({ childrenMap })
-    return context
-  }
-
   const { editMode, addMode, rowButtons } = option
 
-  let colEditMap
+  let __getEditRender
   let __getEditActions
   if (editMode === 'inline') {
-    const { list, colRenderMap, methods, getEditActions } = inlineRender({ childrenMap, orgList, rowKey, listener })
-    colEditMap = colRenderMap
+    const { list, methods, getEditActions, getEditRender } = inlineRender({ childrenMap, orgList, rowKey, listener })
     context.list = list
     Object.assign(context.methods, methods)
     __getEditActions = getEditActions
+    __getEditRender = getEditRender
   }
   if (editMode === 'modal' || addMode === 'modal') {
-    const { modalSlot, methods } = modalEdit({ listData, rowKey, option, listener })
+    const { modalSlot, methods } = modalEdit({ initialData, rowKey, option, listener })
     if (context.methods.edit) {
       // 编辑模式为行内编辑时，新增按钮使用弹窗模式
       context.methods.add = methods.add
@@ -144,7 +138,7 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
   const effectData = getEffectData({ current: context.list })
   const actionColumn = rowButtons && buildActionSlot(rowButtons, context.methods, __getEditActions)
 
-  context.columns = useColumns({ childrenMap, effectData, colEditMap, actionColumn })
+  context.columns = useColumns({ childrenMap, effectData, getEditRender: __getEditRender, actionColumn })
   context.methods.detail = buildDetail(option, childrenMap, rowKey)
 
   return context

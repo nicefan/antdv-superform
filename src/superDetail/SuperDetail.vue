@@ -1,14 +1,15 @@
 <script lang="ts">
-import { defineComponent, PropType, ref, watch, h, provide, reactive, shallowReactive, readonly } from 'vue'
+import { defineComponent, type PropType, ref, watch, h, provide, shallowReactive, readonly } from 'vue'
 import { buildModelsMap } from '../utils/buildModel'
 import { DetailLayout } from '../components/Detail'
+import type { ExtFormOption } from '../exaTypes'
 
 export default defineComponent({
-  name: 'ExaTable',
+  name: 'SuperTable',
   inheritAttrs: false,
   props: {
     dataSource: Object,
-    option: Object as PropType<ExFormOption>,
+    option: Object as PropType<ExtFormOption>,
   },
   emits: ['register'],
   setup(props, ctx) {
@@ -16,7 +17,7 @@ export default defineComponent({
     const option: Obj = shallowReactive(props.option || {})
 
     const exposed = {
-      setOption: (_option: ExFormOption) => {
+      setOption: (_option: ExtFormOption) => {
         Object.assign(option, _option)
       },
       setData: (data) => {

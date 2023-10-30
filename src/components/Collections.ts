@@ -1,37 +1,31 @@
-import { computed, defineComponent, h, inject, PropType, provide, reactive, toRef, toValue } from 'vue'
+import { computed, defineComponent, h, inject, type PropType, provide, reactive, toRef, toRefs, mergeProps } from 'vue'
 import { Col, Row } from 'ant-design-vue'
-import Controls from './index'
+import Controls, { containers } from './index'
 import { ButtonGroup } from './buttons'
 import base from './base'
-import { getEffectData, useControl } from '../utils'
+import { getEffectData, toNode, useControl, useVModel } from '../utils'
 import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
-
-const sectionList = ['List', 'Group', 'Tabs', 'Table', 'Collapse', 'Card']
 
 export default defineComponent({
   inheritAttrs: false,
   name: 'Collections',
   props: {
     option: {
-      type: Object as PropType<{
-        gutter?: number
-        rowProps?: Obj
-        subSpan?: number
-        isContainer?: boolean
-        subItems: UniOption[]
-      }>,
+      type: Object,
       default: () => ({}),
     },
     model: {
       required: true,
       type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
+    disabled: [Boolean, Object],
   },
-  setup(props) {
-    const rowProps = { gutter: props.option.gutter ?? 16, ...props.option.rowProps }
-    const presetSpan = props.option.subSpan ?? inject('subSpan', undefined)
-    if ('subSpan' in props.option) provide('subSpan', props.option.subSpan)
+  setup(props, ctx) {
+    const { type: ParentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
+    const rowProps = { gutter, ...props.option.rowProps, ...ctx.attrs }
+    const presetSpan = subSpan ?? inject('subSpan', undefined)
+    if ('subSpan' in props.option) provide('subSpan', subSpan)
 
     const nodes: any[] = []
     let currentGroup: any[] | undefined
@@ -45,13 +39,23 @@ export default defineComponent({
         effectData,
         inheritDisabled: inject('disabled', undefined),
       })
+      if (ParentType === 'InputGroup' && parentAttrs?.compact !== false) {
+        const span = option.span ?? presetSpan ?? option.colProps.span ?? 8
+        const width = (100 / (24 / span)).toFixed(2) + '%'
+        const __attrs = mergeProps(attrs, { style: `width:${width};` })
+        nodes.push(buildInnerNode(option, subData, effectData, __attrs))
+        return
+      }
       const __node = useBuildNode(option, subData, effectData, attrs)
       const node = subData.children ? () => h(DataProvider, { name: 'disabled', data: attrs.disabled }, __node) : __node
       const alignStyle = align && 'text-align: ' + align
-      const __isBlock = isBlock ?? (sectionList.includes(type) && !option.span)
+      const __isBlock = isBlock ?? (containers.includes(type) && type !== 'InputGroup' && !option.span)
       if (__isBlock) {
         currentGroup = undefined
-        nodes.push(() => !hidden.value && h('div', { class: 'exa-form-section', style: alignStyle, key: idx }, node()))
+        nodes.push(
+          () =>
+            !hidden.value && h('div', { class: 'exa-form-section', style: alignStyle, key: idx, ...ctx.attrs }, node())
+        )
       } else {
         let colProps: Obj = option.colProps
         if (!colProps) {
@@ -79,43 +83,58 @@ export default defineComponent({
   },
 })
 
-export function useBuildNode(option, model: ModelData, effectData, attrs) {
-  const { type, label, render } = option
-  const slots = inject<Obj>('rootSlots', {})
-  const getWrapperNode = (node, isBlock) =>
-    isBlock ? node : () => h(base.FormItem, reactive({ label, ...globalProps.formItem, ...option.formItemProps }), node)
-  const node = (() => {
-    const slot = typeof render === 'function' ? render : slots[render]
-    switch (type) {
-      case 'InfoSlot': {
-        const node = () => slot?.({ attrs, ...effectData })
-        return getWrapperNode(node, option.isBlock)
-      }
-      case 'Text':
-        return getWrapperNode(() => h('span', attrs, model.refData), option.isBlock)
-      case 'Buttons':
-        return getWrapperNode(() => h(ButtonGroup, { config: option, param: effectData }), option.isBlock)
-      default: {
-        let slotAttrs: Obj = reactive({ option, model, effectData })
-        if (sectionList.includes(type)) {
-          Object.assign(slotAttrs, attrs)
-        } else {
-          const ignoreRules = inject<Obj>('exaProvider', {}).ignoreRules
-          const rules = computed(() => (ignoreRules || attrs.disabled.value ? undefined : model.rules))
-          slotAttrs = reactive({
-            ...slotAttrs,
-            attrs,
-            ...globalProps.formItem,
-            ...option.formItemProps,
-            name: model.propChain,
-            label: toValue(label),
-            rules,
-          })
-        }
-        return () => h(Controls[type], slotAttrs, slot)
-      }
-    }
-  })()
+export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
+  return useBuildNode(option, model, effectData, attrs, true)
+}
 
-  return node
+export function useBuildNode(option, model: ModelData, effectData: Obj, attrs: Obj, isInner?: boolean) {
+  const { type, label, render, labelSlot } = option
+  const slots = inject<Obj>('rootSlots', {})
+
+  const renderSlot = render ? (typeof render === 'function' ? render : slots[render]) : Controls[type]
+  let node
+  if (type === 'Text' || type === 'InfoSlot') {
+    node = renderSlot ? () => renderSlot({ attrs, ...effectData }) : () => h('span', attrs, model.refData)
+    if (option.isBlock) {
+      return node
+    }
+  } else if (type === 'Buttons') {
+    node = () => h(ButtonGroup, { config: option, param: effectData })
+    if (option.isBlock) {
+      return node
+    }
+  } else if (containers.includes(type)) {
+    // 容器组件不绑定value
+    node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs }), slots)
+  } else {
+    // 表单输入组件
+    const valueProps = useVModel({ option, model, effectData })
+    const allAttrs = { ...attrs, ...toRefs(valueProps) }
+    if (type === 'InputSlot' || type.startsWith('Ext')) {
+      if (!renderSlot) {
+        console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
+      }
+      node = () => renderSlot?.(reactive({ attrs: allAttrs, ...toRefs(effectData) }))
+    } else {
+      node = () => h(Controls[type], reactive({ option, model, effectData, ...allAttrs }), slots)
+    }
+  }
+
+  // 容器组件及指定参数，不套FormItem
+  if (isInner || containers.includes(type)) {
+    return node
+  }
+
+  // 生成FormItem
+  const rules = computed(() => (attrs.disabled.value ? undefined : model.rules))
+  const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
+  return () =>
+    h(
+      base.FormItem,
+      { ...formItemAttrs, name: model.propChain, rules: rules.value },
+      {
+        label: () => labelSlot?.(effectData) || label,
+        default: node,
+      }
+    )
 }

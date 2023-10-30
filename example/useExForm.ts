@@ -1,7 +1,7 @@
 import { h, ref } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
 import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue'
-import { Button } from 'ant-design-vue'
+import { Button, Modal } from 'ant-design-vue'
 import { uniq } from 'lodash-es'
 
 export default function exampleForm() {
@@ -47,6 +47,7 @@ export default function exampleForm() {
     subItems: [
       {
         type: 'Group',
+        title: '基本信息',
         descriptionsProps: {
           title: '基本信息',
         },
@@ -56,33 +57,34 @@ export default function exampleForm() {
             field: 'name',
             label: '姓名',
             rules: { required: true },
+            prefix: () => UserOutlined,
+            attrs: {
+              // 可改变查询按钮标签
+              // addonAfter: '查询',
+            },
+            // 可个性化查询按钮
             // enterButton: () => h(Button, () => 'abc'),
-            attrs: {
-              prefix: () => UserOutlined,
-            },
-            on: {
-              search(...args) {
-                console.log('change:', args)
-                acKey.value = 'tab1'
-              },
-            },
-          },
-          {
-            type: 'Input',
-            field: 'dept',
-            label: '别名',
-            attrs: {
-              addonAfter: '查询',
-            },
+            // 显示查询图标按钮
             onSearch(...args) {
               console.log('change:', args)
+              acKey.value = 'tab1'
+            },
+          },
+
+          {
+            type: 'ExtInNumber',
+            label: '自定义组件',
+            field: 'de',
+            attrs: {
+              style: 'width: 100%',
+              placeholder: '自定义组件加Ext前缀',
             },
           },
           {
             type: 'InfoSlot',
             field: 'array',
             label: 'render',
-            initialValue: ['a'],
+            initialValue: ['自定义消息'],
             render: (props) => {
               return h('h2', props.value?.[0])
             },
@@ -91,13 +93,14 @@ export default function exampleForm() {
             type: 'InputSlot',
             field: 'test',
             label: '模板插槽',
+            labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name}`),
             render: 'test',
           },
           {
             type: 'Text',
             label: '提示',
             field: 'text',
-            initialValue: '默认消息。',
+            initialValue: '文本显示，如需要格式化显示，请使用InfoSlot',
           },
           {
             type: 'DatePicker',
@@ -111,7 +114,7 @@ export default function exampleForm() {
             labelField: 'foreverName',
             label: '爱好',
             attrs: {
-              placeholder: '使用普通数组生成下拉选项'
+              placeholder: '使用普通数组生成下拉选项',
             },
             /** 依赖数据变化切换 */
             // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
@@ -125,29 +128,7 @@ export default function exampleForm() {
           },
           {
             type: 'Select',
-            field: 'forever2',
-            label: '爱好2',
-            attrs: {
-              placeholder: '可输入动态添加选项',
-              showSearch: true,
-            },
-            /** value将使用label保存 */
-            valueToLabel: true,
-            /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
-            options: (data, searchText) => {
-              if (searchText) {
-                return uniq([...selectList, searchText])
-              }
-              if (data.value && !selectList.includes(data.value)) {
-                selectList.push(data.value)
-              }
-              return selectList
-            },
-          },
-          {
-            type: 'Select',
             field: 'other',
-            // labelField: 'foreverName',
             label: '其它',
             options: () => Promise.resolve(list.value),
             valueToNumber: true,
@@ -159,15 +140,9 @@ export default function exampleForm() {
             },
           },
           {
-            type: 'Input',
+            type: 'Textarea',
             field: 'memo',
             label: '备注',
-            disabled(data) {
-              return !!data.current.foreverName
-            },
-            attrs: {
-              addonAfter: 'abc',
-            },
             computed(val, data) {
               return data.formData.foreverName
             },
@@ -181,25 +156,44 @@ export default function exampleForm() {
           {
             type: 'InputGroup',
             label: '详细地址',
+            // field: 'address',
             span: 16,
             gutter: 0,
             subItems: [
               {
                 type: 'Input',
                 field: 'addr',
-                // label: '地址',
+                label: '地址',
                 span: 14,
+                rules: { required: true },
               },
               {
-                type: 'Input',
+                type: 'Select',
                 field: 'street',
+                label: '街道',
                 span: 8,
-                // label: '街道',
+                attrs: {
+                  placeholder: '可输入动态添加选项',
+                  showSearch: true,
+                },
+                /** value将使用label保存 */
+                valueToLabel: true,
+                /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
+                options: (data, searchText) => {
+                  if (searchText) {
+                    return uniq([...selectList, searchText])
+                  }
+                  if (data.value && !selectList.includes(data.value)) {
+                    selectList.push(data.value)
+                  }
+                  return selectList
+                },
               },
+
               // {
               //   type: 'InfoSlot',
               //   span:2,
-              //   render: () => h(Button, '选择')
+              //   render: () => h(Button, ()=>'选择')
               // },
             ],
           },
@@ -214,7 +208,7 @@ export default function exampleForm() {
       {
         type: 'Card',
         field: 'group',
-        title: '分格线',
+        title: () => h('b', '分格线'),
         disabled: ({ formData }) => !!formData.isReg,
         buttons: {
           limit: 3,
@@ -249,11 +243,11 @@ export default function exampleForm() {
         },
         subItems: [
           {
-            type: 'InNumber',
+            type: 'InputNumber',
             field: 'width',
             label: '体重',
-            initialValue: 120,
-            disabled: (data) => data.formData.forever === 2,
+            // initialValue: 120,
+            disabled: (data) => !!data.formData.name,
             computed: (val, data) => {
               console.log(data.current)
               return data.formData.forever === 1 ? 110 : val
@@ -385,11 +379,11 @@ export default function exampleForm() {
                     {
                       name: 'delete',
                       onClick(data, action) {
-                        if (data.listData.length === 1) {
-                          alert('必须保留一条记录')
+                        if (data.current.length === 1) {
+                          Modal.error({ title: '必须保留一条记录' })
                         } else {
                           action().then(() => {
-                            alert('删除成功')
+                            Modal.success({ title: '删除成功' })
                           })
                         }
                       },
@@ -451,6 +445,7 @@ export default function exampleForm() {
       },
       {
         type: 'Collapse',
+        title: '百叶窗',
         subItems: [
           {
             field: 'collapse',

@@ -1,4 +1,4 @@
-import { PropType, defineComponent, h, inject } from 'vue'
+import { type PropType, defineComponent, h, inject } from 'vue'
 import base from '../base'
 import { globalProps } from '../../plugin'
 

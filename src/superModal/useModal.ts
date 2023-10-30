@@ -1,11 +1,12 @@
-import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render } from 'vue'
-import { ModalFuncProps } from 'ant-design-vue'
+import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, type VNode, type VNodeTypes } from 'vue'
 import base from '../components/base'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
-import { ModalProps } from 'ant-design-vue/es'
+import type { ModalProps, ModalFuncProps } from 'ant-design-vue/es'
+import type { ExtButtons } from '../exaTypes'
 
-export function createModal(content: (() => VNode) | VNode, { buttons, ...__config }: Obj = {}) {
+
+export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }: Obj = {}) {
   const visible = ref(false)
   const config = reactive({ ...__config, ...globalProps.Modal })
   const modalRef = ref()
@@ -48,7 +49,7 @@ export function createModal(content: (() => VNode) | VNode, { buttons, ...__conf
   }
 }
 
-export function useModal(content: () => VNode, config: (ModalProps & { buttons?: ExButtons }) | Obj = {}) {
+export function useModal(content: () => VNodeTypes, config: (ModalProps & { buttons?: ExtButtons }) | Obj = {}) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
 

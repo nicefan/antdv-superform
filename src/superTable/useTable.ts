@@ -1,6 +1,7 @@
-import { computed, h, toValue } from 'vue'
-import ExaTable from './ExaTable.vue'
+import { computed, h, toValue, type VNode } from 'vue'
+import SuperTable from './SuperTable.vue'
 import { useGetRef } from '../utils'
+import type { RootTableOption } from '../exaTypes'
 
 type RegisterMethod = {
   (): () => VNode
@@ -20,7 +21,7 @@ export const useTable = (option: RootTableOption, data?: any[] | Ref<any[]>) => 
     } else if (actions === null) {
       tableRef.value = undefined
     } else {
-      return (props, ctx) => h(ExaTable, { ...props, onRegister: register }, ctx?.slots)
+      return (props, ctx) => h(SuperTable, { ...props, onRegister: register }, ctx?.slots)
     }
   }
 

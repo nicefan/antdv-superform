@@ -1,7 +1,7 @@
 import { toRef, ref, h, useSlots } from 'vue'
-import ExaDetail from './ExaDetail.vue'
+import SuperDetail from './SuperDetail.vue'
 
-export function useDetail(option: ExFormOption, data = {}) {
+export function useDetail(option: GetOption<'Form'>, data = {}) {
   const source = toRef(data)
   const actionsRef = ref()
 
@@ -13,7 +13,8 @@ export function useDetail(option: ExFormOption, data = {}) {
       }
       actionsRef.value = actions
     } else {
-      return (props) => h(ExaDetail, { config: option, dataSource: source, ...props, onRegister: register }, useSlots())
+      return (props) =>
+        h(SuperDetail, { config: option, dataSource: source, ...props, onRegister: register }, useSlots())
     }
   }
 

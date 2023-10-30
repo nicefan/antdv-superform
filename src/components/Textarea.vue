@@ -1,25 +1,17 @@
-<template>
-  <FormItem>
-    <Textarea
-      style="width: 100%"
-      allow-clear
-      :placeholder="'请输入' + option.label"
-      v-bind="{ ...valueProps, ...props.attrs }"
-    />
-  </FormItem>
-</template>
+<script lang="ts">
+import { defineComponent, h } from 'vue'
+import base from './base'
 
-<script setup lang="ts">
-import { useVModel } from '../utils'
-import baseComps from './base'
+export default defineComponent({
+  props: {
+    option: { type: Object, required: true },
+    model: Object,
+    effectData: Object,
+  },
 
-const { FormItem, Textarea } = baseComps
-
-const props = defineProps<{
-  option: ExInputOption
-  model: ModelData
-  attrs: Obj
-  effectData: Obj
-}>()
-const valueProps = useVModel(props)
+  setup(props) {
+    return () =>
+      h(base.Textarea, { style: 'width: 100%', allowClear: true, placeholder: `请输入${props.option.label}` })
+  },
+})
 </script>

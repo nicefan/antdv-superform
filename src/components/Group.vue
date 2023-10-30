@@ -1,21 +1,20 @@
 <script setup lang="ts">
 import Collections from './Collections'
-import { Row, Divider } from 'ant-design-vue'
+import { toNode } from '../utils'
 
 const props = defineProps<{
-  option: ExGroupOption
+  option: GetOption<'Group'>
   model: ModelDataGroup
   effectData: Obj
+  disabled: any
 }>()
 const title = props.option.title || props.option.label
 </script>
 <template>
   <div>
-    <Row v-if="title" :span="24" class="title">
-      <slot name="title">
-        <Divider orientation="left">{{ title }}</Divider>
-      </slot>
-    </Row>
-    <Collections v-bind="props" />
+    <div v-if="title" class="exa-title ant-descriptions-header">
+      <component :is="toNode(title, effectData)" />
+    </div>
+    <Collections :option="option" :model="model" />
   </div>
 </template>

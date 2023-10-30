@@ -104,7 +104,7 @@ export interface RuleConfig {
   message?: string
 }
 function buildRule(item: RuleConfig, label = '') {
-  const { trigger = 'change', required, type = 'string', len, max, min, pattern, validator, message } = item || {}
+  const { trigger, required, type = 'string', len, max, min, pattern, validator, message } = item || {}
   const rules: any[] = []
   if (required) {
     rules.push({

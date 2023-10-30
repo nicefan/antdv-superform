@@ -1,3 +1,4 @@
+import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, unref, watch, mergeProps } from 'vue'
 
 export function useQuery(option: Partial<RootTableOption>) {

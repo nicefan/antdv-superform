@@ -1,14 +1,14 @@
 <template>
   <div style="background: #eee; padding: 16px">
-    <exa-buttons :actions="btnActions" />
-    <exa-buttons>
+    <super-buttons :actions="btnActions" />
+    <super-buttons>
       <a-button @click="console.log('kk')" roleName="add" tooltip="提示" confirm-text="新增提示">新增</a-button>
 
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>
-    </exa-buttons>
+    </super-buttons>
     <div style="margin-top: 16px">
-      <exa-table @register="registTable" :rowSelection="false" class="flex" />
+      <super-table @register="registTable" :rowSelection="false" class="flex" />
     </div>
     <component :is="FormModalSlot" />
   </div>
@@ -16,16 +16,16 @@
 <script lang="ts">
 import { ref, defineComponent, inject, toRefs } from 'vue'
 import exampleForm from './useExForm'
-import { useTable, ExaTable, useForm } from '../src'
-import { ExaButtons } from '../src/exaButtons'
+import { useTable, SuperTable, useForm, type ButtonItem } from '../src'
+import { SuperButtons } from '../src/superButtons'
 import { useModal } from '../src'
 import { myTableOption } from './createForm/formOption'
 
 export default defineComponent({
   components: {
     // VIcon,
-    ExaTable,
-    ExaButtons,
+    SuperTable,
+    SuperButtons,
   },
   props: {
     // msg: {

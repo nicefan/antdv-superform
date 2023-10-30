@@ -1,20 +1,20 @@
-import { KeepAlive, computed, h, inject, reactive, ref, toRaw, unref } from 'vue'
+import { KeepAlive, computed, h, inject, reactive, ref, toRaw, toRefs, unref } from 'vue'
 import { ButtonGroup } from '../buttons'
-import { TableColumnProps } from 'ant-design-vue'
+import type { TableColumnProps } from 'ant-design-vue'
 import { globalConfig } from '../../plugin'
 
 export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
-  const keyMap = new WeakMap()
+  // const keyMap = new WeakMap()
   /** 阻止表格customRender无效的渲染 */
   const renderProduce = (param, render) => {
     const record = toRaw(param.record)
     const row = renderMap.get(record) || new Map()
     renderMap.set(record, row)
-    const key = keyMap.get(record) || Symbol()
-    keyMap.set(record, key)
+    // const key = keyMap.get(record) || Symbol()
+    // keyMap.set(record, key)
     if (!row.has(param.column)) {
-      const activeParam = reactive({ ...effectData, ...param, key })
+      const activeParam = reactive({ ...effectData, ...param, current: param.record })
       const node = computed(() => render(activeParam))
       row.set(param.column, { activeParam, node })
       return node.value
@@ -32,10 +32,10 @@ interface BuildColumnsParam {
   methods?: Obj // 按钮组件绑定方法
   effectData?: Obj // 按钮组件绑定传参
   actionColumn?: Obj // 行操作按钮
-  colEditMap?: Map<Obj, Fn> // 行内编辑render方法
+  getEditRender?: Fn // 行内编辑render方法
 }
 
-export function useColumns({ childrenMap, effectData, colEditMap, actionColumn }: BuildColumnsParam) {
+export function useColumns({ childrenMap, effectData, getEditRender, actionColumn }: BuildColumnsParam) {
   const { columns, colsMap } = buildColumns(childrenMap)
   const rootSlots = { ...inject('rootSlots', {}) }
   if (actionColumn) {
@@ -54,11 +54,12 @@ export function useColumns({ childrenMap, effectData, colEditMap, actionColumn }
     let textRender = column.customRender
     if (typeof textRender === 'string') {
       textRender = rootSlots[textRender]
-    }
-    const colEditRender = colEditMap?.get(col)
+    } 
+    const colEditRender = getEditRender?.(col)
     if (colEditRender || textRender) {
-      const __render = (param) => colEditRender?.(param) || textRender?.(param) || param.text
+      const __render = (param) => h(KeepAlive, colEditRender?.(param) || textRender?.(param) || param.text)
       column.customRender = (param) => renderProduce(param, __render)
+      // column.customRender = (param) => __render({ ...effectData, ...param, current: param.record })
     }
   })
 
@@ -103,7 +104,7 @@ function getColRender(option) {
   } = option as any
   if (viewRender) {
     return viewRender // slotname字符串另行处理
-  } else if (colType === 'InfoSlot') {
+  } else if (colType === 'InfoSlot' || colType === 'Text') {
     return typeof render === 'string' ? render : (param) => render?.(param)
   } else if (labelField) {
     return ({ record }) => record[labelField as string]
@@ -140,11 +141,10 @@ export function buildActionSlot(rowButtons, methods, getEditActions) {
   const { columnProps, forSlot, ...config } = buttonsConfig
   const render = (param) => {
     const actions = getEditActions?.(param)
-    return h(KeepAlive, () =>
+    return () =>
       actions
-        ? h(ButtonGroup, { config: { ...config, actions }, param })
-        : h(ButtonGroup, { key: param.key, config, param, methods })
-    )
+        ? h(ButtonGroup, { key: 'edit', config: { ...config, actions }, param })
+        : h(ButtonGroup, { key: 'view', config, param, methods })
   }
   return {
     forSlot,

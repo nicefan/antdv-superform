@@ -1,9 +1,11 @@
-import { PropType, defineComponent, h, inject, provide, ref, toRef, unref } from 'vue'
+import { type PropType, defineComponent, h, inject, provide, ref, toRef, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { getEffectData } from '../../utils'
 import Controls, { ButtonGroup } from '../index'
 import Descriptions from './Descriptions'
 import { globalConfig, globalProps } from '../../plugin'
+import type { ModelData, ModelsMap } from '../../exaTypes'
+import TableView from '../Table/TableView.vue'
 
 export default defineComponent({
   props: {
@@ -55,7 +57,7 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
   let currentGroup: any[] = []
 
   ;[...modelsMap].forEach(([option, model], idx) => {
-    const { type, label, span = 0, hideInDescription } = option
+    const { type, label, attrs, span = 0, hideInDescription } = option
     if (type === 'Hidden' || hideInDescription) return
     let isBlock = option.isBlock
     let node
@@ -64,8 +66,9 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
       const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
       if (['Table', 'Tabs', 'Collapse', 'List'].includes(type)) {
         const effectData = getEffectData({ current: toRef(model, 'refData') })
-        const component = Controls[type === 'List' ? 'Table' : type]
-        node = () => h(component, { option, model, effectData, isView: true })
+        const viewType = type === 'List' ? 'Table' : type
+        const component = viewType === 'Table' ? TableView : Controls[viewType]
+        node = () => h(component, { option, model, effectData, isView: true, ...globalProps[viewType], ...attrs })
       } else if (type === 'InputGroup') {
         const contents = [...modelsMap].map((ent) => getContent(...ent))
         currentGroup.push({
