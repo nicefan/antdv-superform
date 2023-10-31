@@ -133,7 +133,7 @@ export function useBuildNode(option, model: ModelData, effectData: Obj, attrs: O
       base.FormItem,
       { ...formItemAttrs, name: model.propChain, rules: rules.value },
       {
-        label: () => labelSlot?.(effectData) || label,
+        label: label && (() => labelSlot?.({ ...effectData, label }) || label),
         default: node,
       }
     )

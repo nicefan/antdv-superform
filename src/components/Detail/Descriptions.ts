@@ -1,6 +1,7 @@
 import { type PropType, defineComponent, h, inject } from 'vue'
 import base from '../base'
 import { globalProps } from '../../plugin'
+import { toNode } from '../../utils';
 
 export default defineComponent({
   props: {
@@ -9,6 +10,7 @@ export default defineComponent({
       type: Array as PropType<{ label: string; span: number; content: Fn }[]>,
       required: true,
     },
+    effectData: Object,
   },
   setup(props) {
     const { type, subSpan, title, label, descriptionsProps } = props.option || {}
@@ -18,15 +20,15 @@ export default defineComponent({
     if (typeof descriptionsProps?.column === 'number') {
       presetSpan = Math.floor(24 / descriptionsProps.column)
     }
-    const __title = type && ['Table', 'List', 'Collapse', 'Tabs'].includes(type) ? '' : title || label
+    const __title = type !== 'Group' ? '' : title || label
     return () =>
       h(
         base.Descriptions,
         {
-          bordered: true,
+          bordered: type !== 'Card',
           size: 'middle',
           ...globalProps.Descriptions,
-          title: __title,
+          title: toNode(__title, props.effectData),
           column: cols,
           ...descriptionsProps,
         },
@@ -36,7 +38,7 @@ export default defineComponent({
               base.DescriptionsItem,
               {
                 ...globalProps.DescriptionsItem,
-                label: item.label,
+                label: toNode(item.label, props.effectData),
                 span: Math.floor(item.span / presetSpan),
                 key: idx,
               },

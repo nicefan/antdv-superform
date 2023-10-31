@@ -1,9 +1,10 @@
 // import { watchDebounced } from '@vueuse/core'
 import { ButtonGroup, mergeActions } from '../components/buttons'
-import { ref, reactive, h, toRefs, toRaw } from 'vue'
+import { ref, reactive, h, toRaw } from 'vue'
 import Controls from '../components'
+import { getEffectData } from '../utils'
 
-export function useSearchForm(columns, searchSechma, effectData, onChange) {
+export function useSearchForm(columns, searchSechma, tableRef, onChange) {
   const { buttons = {}, ...formOption } = searchSechma
   Object.assign(formOption, {
     ignoreRules: true,
@@ -59,7 +60,7 @@ export function useSearchForm(columns, searchSechma, effectData, onChange) {
       render: () =>
         h(ButtonGroup, {
           config: { ...buttonsConfig, actions },
-          param: reactive({ ...toRefs(effectData), form: formRef }),
+          param: getEffectData({ table: tableRef, form: formRef }),
         }),
     })
   } else {

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, inject, reactive, ref, toRef, toRefs, useAttrs, watch } from 'vue'
+import { type PropType, defineComponent, h, inject, reactive, ref, toRef, useAttrs, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../utils/buildModel'
@@ -8,8 +8,7 @@ import base from './base'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { Row } from 'ant-design-vue'
-import props from 'ant-design-vue/lib/dropdown/props'
-import { getEffectData } from '../utils'
+import { toNode } from '../utils'
 
 export default defineComponent({
   props: {
@@ -28,7 +27,7 @@ export default defineComponent({
     isView: Boolean,
   },
   setup({ model, option, isView, effectData }) {
-    const { buttons: buttonsConfig, rowButtons, label, slots: optionSlots } = option
+    const { buttons: buttonsConfig, rowButtons,label, title = label, slots: optionSlots } = option
     // 先构建一个数据结构
     const { modelsMap: childrenMap, initialData, rules } = model.listData
 
@@ -80,7 +79,7 @@ export default defineComponent({
       })
     }
 
-    slots.title ||= () => label
+    slots.title ||= title && (() => toNode(title, effectData))
     if (!isView && buttonsConfig) {
       const slotName = buttonsConfig['forSlot'] || 'extra'
       const orgSlot = slots[slotName]

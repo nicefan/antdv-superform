@@ -143,6 +143,9 @@ export default function exampleForm() {
             type: 'Textarea',
             field: 'memo',
             label: '备注',
+            disabled(data) {
+              return !!data.formData.foreverName
+            },
             computed(val, data) {
               return data.formData.foreverName
             },
@@ -210,6 +213,9 @@ export default function exampleForm() {
         field: 'group',
         title: () => h('b', '分格线'),
         disabled: ({ formData }) => !!formData.isReg,
+        descriptionsProps: {
+          column: 3
+        },
         buttons: {
           limit: 3,
           size: 'small',

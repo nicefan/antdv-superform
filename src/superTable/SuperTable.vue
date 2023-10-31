@@ -93,22 +93,23 @@ export default defineComponent({
         const { columns, searchSechma, beforeSearch } = opt
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
-        const effectData = reactive({ current: dataRef, table: tableRef })
+        const effectData = reactive({ formData: dataRef, current: dataRef })
+        const model = reactive({
+          refData: dataRef,
+          listData,
+        })
 
         const { attrs } = useControl({ option: opt, effectData })
 
         searchForm.value =
           searchSechma &&
-          useSearchForm(columns, searchSechma, effectData, (data) => {
-            const _data = beforeSearch?.({ ...effectData, param: data }) || data
+          useSearchForm(columns, searchSechma, tableRef, (data) => {
+            const _data = beforeSearch?.({ ...effectData, table: tableRef, param: data }) || data
             query(_data)
           })
         Object.assign(tableAttrs, attrs, {
-          model: {
-            refData: dataRef,
-            listData,
-          },
           effectData,
+          model,
         })
         nextTick(() => unWatch())
       },

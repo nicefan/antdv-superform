@@ -13,7 +13,7 @@ export const DataProvider = defineComponent({
     }
   },
   setup(props, ctx) {
-    provide(props.name, readonly(props.data || {}))
+    provide(props.name, props.data || {})
     return ctx.slots.default
   },
 })

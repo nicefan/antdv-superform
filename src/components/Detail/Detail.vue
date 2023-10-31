@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, toRef } from 'vue'
+import { type PropType, defineComponent, h, toRef, provide } from 'vue'
 import { cloneModels } from '../../utils'
 import Layout from './DetailLayout'
 
@@ -20,6 +20,7 @@ export default defineComponent({
   setup(props, ctx) {
     // const { subSpan, title, label, descriptionsProps, formSechma } = props.option || {}
     const { modelsMap } = cloneModels(props.modelsMap, toRef(props, 'source'))
+    provide('exaProvider', { data: toRef(props, 'source') })
 
     return () =>
       h(

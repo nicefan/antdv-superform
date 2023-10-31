@@ -1,7 +1,7 @@
-import { KeepAlive, computed, h, inject, reactive, ref, toRaw, toRefs, unref } from 'vue'
+import { computed, h, inject, reactive, ref, toRaw, unref } from 'vue'
 import { ButtonGroup } from '../buttons'
 import type { TableColumnProps } from 'ant-design-vue'
-import { globalConfig } from '../../plugin'
+import { globalConfig, globalProps } from '../../plugin'
 
 export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
@@ -48,18 +48,18 @@ export function useColumns({ childrenMap, effectData, getEditRender, actionColum
     }
   }
 
-  const renderProduce = createProducer(effectData)
+  // const renderProduce = createProducer(effectData)
 
   ;[...colsMap].forEach(([col, column]) => {
     let textRender = column.customRender
     if (typeof textRender === 'string') {
       textRender = rootSlots[textRender]
-    } 
+    }
     const colEditRender = getEditRender?.(col)
     if (colEditRender || textRender) {
-      const __render = (param) => h(KeepAlive, colEditRender?.(param) || textRender?.(param) || param.text)
-      column.customRender = (param) => renderProduce(param, __render)
-      // column.customRender = (param) => __render({ ...effectData, ...param, current: param.record })
+      const __render = (param) => colEditRender?.(param) || textRender?.(param) || param.text
+      // column.customRender = (param) => renderProduce(param, __render)
+      column.customRender = (param) => h(__render, { ...effectData, ...param, current: param.record })
     }
   })
 
@@ -80,6 +80,7 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
       const column = {
         title: col.label,
         dataIndex: model.propChain.join('.'),
+        ...globalProps.Column,
         ...(col.columnProps as Obj),
         customRender: getColRender(col),
       }
@@ -141,10 +142,9 @@ export function buildActionSlot(rowButtons, methods, getEditActions) {
   const { columnProps, forSlot, ...config } = buttonsConfig
   const render = (param) => {
     const actions = getEditActions?.(param)
-    return () =>
-      actions
-        ? h(ButtonGroup, { key: 'edit', config: { ...config, actions }, param })
-        : h(ButtonGroup, { key: 'view', config, param, methods })
+    return actions
+      ? h(ButtonGroup, { key: 'edit', config: { ...config, actions }, param })
+      : h(ButtonGroup, { key: param.record, config, param, methods })
   }
   return {
     forSlot,

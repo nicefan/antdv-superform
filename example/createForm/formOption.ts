@@ -34,8 +34,11 @@ export const myTableOption = defineTable({
       'detail',
       {
         label: '检查',
-        onClick: () => {},
+        onClick: (data) => {
+          data
+        },
         hidden: (data) => {
+          console.log(data.current.dataType)
           return data.record.dataType === 'number'
         },
         // disabled:(data) => {
