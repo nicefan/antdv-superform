@@ -169,6 +169,9 @@ export default function exampleForm() {
                 label: '地址',
                 span: 14,
                 rules: { required: true },
+                attrs:{
+                  allowClear: true,
+                }
               },
               {
                 type: 'Select',

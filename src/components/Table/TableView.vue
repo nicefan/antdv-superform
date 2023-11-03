@@ -30,7 +30,7 @@ export default defineComponent({
     const columns = useColumns({ childrenMap: listData.modelsMap })
 
     const title = option.descriptionsProps?.title || option.title || option.label
-    const titleSlot = () => title && h('div', { class: 'exa-title ant-descriptions-header' }, toNode(title))
+    const titleSlot = () => title && h('div', { class: 'sup-title ant-descriptions-header' }, toNode(title))
 
     return () => [
       titleSlot(),

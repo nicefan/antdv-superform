@@ -54,7 +54,7 @@ export default defineComponent({
         currentGroup = undefined
         nodes.push(
           () =>
-            !hidden.value && h('div', { class: 'exa-form-section', style: alignStyle, key: idx, ...ctx.attrs }, node())
+            !hidden.value && h('div', { class: 'sup-form-section', style: alignStyle, key: idx, ...ctx.attrs }, node())
         )
       } else {
         let colProps: Obj = option.colProps

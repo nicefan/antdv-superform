@@ -21,7 +21,7 @@ export default defineComponent({
         base.Card,
         {},
         {
-          title: title && (() => h('div', { class: 'exa-title' }, toNode(title, effectData))),
+          title: title && (() => h('div', { class: 'sup-title' }, toNode(title, effectData))),
           extra: () => buttons && !isView && h(ButtonGroup, { config: buttons, param: effectData }),
           default: () =>
             isView ? h(DetailLayout, { option, modelsMap: model.children }) : h(Collections, { option, model }),

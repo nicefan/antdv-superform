@@ -4,7 +4,6 @@ import { getEffectData } from '../../utils'
 import Controls, { ButtonGroup } from '../index'
 import Descriptions from './Descriptions'
 import { globalConfig, globalProps } from '../../plugin'
-import type { ModelData, ModelsMap } from '../../exaTypes'
 import TableView from '../Table/TableView.vue'
 
 export default defineComponent({
@@ -31,7 +30,7 @@ export default defineComponent({
     } else {
       items.forEach((item, idx) => {
         if (item.isBlock) {
-          nodeGroup.push(() => h('div', { class: 'exa-form-section', key: idx }, item.node()))
+          nodeGroup.push(() => h('div', { class: 'sup-form-section', key: idx }, item.node()))
           current = undefined
         } else {
           let colProps: Obj = item.option.colProps

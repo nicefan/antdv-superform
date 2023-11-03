@@ -1,7 +1,8 @@
 import { toRef, ref, h, useSlots } from 'vue'
 import SuperDetail from './SuperDetail.vue'
+import type { ExtFormOption } from '../exaTypes'
 
-export function useDetail(option: GetOption<'Form'>, data = {}) {
+export function useDetail(option: ExtFormOption, data = {}) {
   const source = toRef(data)
   const actionsRef = ref()
 

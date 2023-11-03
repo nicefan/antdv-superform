@@ -98,7 +98,7 @@ export default {
         base.Form,
         {
           ref: getForm,
-          class: ['exa-form', props.option.compact && 'exa-form-compact'],
+          class: ['sup-form', props.option.compact && 'sup-form-compact'],
           model: modelData.value,
           ...attrs,
         },

@@ -178,6 +178,15 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'> {
   beforeSearch?: (data: { param?: Obj } | Obj) => Obj
   searchSechma?: ExtFormOption | { subItems: (UniOption | string)[] }
   pagination?: PaginationProps | false
+  maxHeight?: number
+  /** 自动计算高度至底部 */
+  isScanHeight?: boolean
+  /**计算高度时表格底部至边缘边距不等于36px时，进行补齐 */
+  resizeHeightOffset?: number
+  /** 固定高度，分页移至底部 */
+  isFixedHeight?: boolean
+  /** 按父元素填充高度 */
+  inheritHeight?: boolean
 }
 interface ExtListOption extends ExtBaseOption {
   field: string
@@ -316,15 +325,14 @@ type WidgetTypes = {
   Switch: ExtSwitchOption
 }
 export type OptionType = WrapperTypes & WidgetTypes
+export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
+export type UniWidgetOption =
+  | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
+  | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
+
+export type UniOption = UniWrapperOption | UniWidgetOption
 
 declare global {
-  export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
-  export type UniWidgetOption =
-    | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
-    | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
-
-  export type UniOption = UniWrapperOption | UniWidgetOption
-
   export type GetOption<T extends keyof OptionType> = OptionType[T] & { type?: T }
   export type MixWrapper = {
     [K in keyof WrapperTypes]: (k: Partial<WrapperTypes[K]>) => void
@@ -337,7 +345,7 @@ declare global {
     ? U & ExtColumnsItem & Partial<CollapseItem> & { type?: string }
     : never
 
-  interface ModelData<T = ExtBaseOption> {
+  export interface ModelData<T = ExtBaseOption> {
     refData: any
     refName?: string
     parent: Obj
@@ -349,13 +357,13 @@ declare global {
     /** 存储列表配置默认数据 */
     listData?: ModelChildren<T>
   }
-  interface ModelDataGroup<T = ExtGroupOption> extends ModelData<T> {
+  export interface ModelDataGroup<T = ExtGroupOption> extends ModelData<T> {
     children: Map<T, ModelDataGroup>
     /** 存储列表配置默认数据 */
     listData: ModelChildren<T>
   }
-  type ModelsMap<T = ExtBaseOption> = Map<T, ModelData>
-  interface ModelChildren<T = ExtBaseOption> {
+  export type ModelsMap<T = ExtBaseOption> = Map<T, ModelData>
+  export interface ModelChildren<T = ExtBaseOption> {
     modelsMap: ModelsMap<T>
     rules: Obj
     initialData: Ref<Obj>
@@ -363,9 +371,7 @@ declare global {
 }
 
 export {
-  ModelData,
   ExtBaseOption,
-  ModelsMap,
   ExtFormOption,
   ExtFormItemOption,
   ExtGroupOption,

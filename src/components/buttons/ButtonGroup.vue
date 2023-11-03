@@ -1,5 +1,5 @@
 <template>
-  <Space class="exa-buttons" @click.stop="" :size="isDivider ? 0 : 'small'">
+  <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'">
     <template v-for="({ attrs, icon, label, tooltip }, index) of btns" :key="label">
       <Tooltip v-if="tooltip || (__config.iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"

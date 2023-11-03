@@ -3,7 +3,6 @@ import { merge } from 'lodash-es'
 import type { App, Component, VNode } from 'vue'
 import { override, addComponent } from './components'
 import type { Locale } from 'ant-design-vue/es/locale-provider'
-import type { ModelData } from './exaTypes'
 type BaseComps =
   | 'Divider'
   | 'InputGroup'

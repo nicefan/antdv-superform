@@ -47,7 +47,7 @@ export default defineComponent({
       modelsMap.value &&
       h(
         'div',
-        { class: ['exa-form exa-detail', option.isContainer && 'exa-container'] },
+        { class: ['sup-form sup-detail', option.isContainer && 'sup-container'] },
         h(DetailLayout, { option: option as any, modelsMap: modelsMap.value })
       )
   },

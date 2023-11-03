@@ -90,7 +90,7 @@ export default defineComponent({
     if (titleSlot || extraSlot) {
       __slots.header = () =>
         h(Row, { justify: 'space-between', align: 'middle' }, () => [
-          h('div', { class: 'exa-title' }, titleSlot?.()),
+          h('div', { class: 'sup-title' }, titleSlot?.()),
           extraSlot?.(),
         ])
     }

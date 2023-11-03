@@ -10,4 +10,4 @@ export * from './superModal'
 
 export default plugin
 
-export type { OptionType, ButtonItem } from './exaTypes'
+export type * from './exaTypes'

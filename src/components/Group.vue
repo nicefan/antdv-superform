@@ -12,7 +12,7 @@ const title = props.option.title || props.option.label
 </script>
 <template>
   <div>
-    <div v-if="title" class="exa-title ant-descriptions-header">
+    <div v-if="title" class="sup-title ant-descriptions-header">
       <component :is="toNode(title, effectData)" />
     </div>
     <Collections :option="option" :model="model" />

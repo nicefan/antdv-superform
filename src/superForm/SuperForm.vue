@@ -68,7 +68,7 @@ export default defineComponent({
           option: formOption,
           source: formData.value,
           onRegister: register,
-          ...mergeProps({ class: __class }, { class: formOption.isContainer && 'exa-container' }),
+          ...mergeProps({ class: __class }, { class: formOption.isContainer && 'sup-container' }),
         },
         ctx.slots
       )

@@ -21,31 +21,37 @@ import { useSearchForm } from './useSearchForm'
 import { DataProvider } from '../dataProvider'
 import Controls from '../components'
 import { globalProps } from '../plugin'
+import { useTableScroll } from './useTableScroll'
 
 export default defineComponent({
   name: 'SuperTable',
   inheritAttrs: false,
   props: {
-    dataSource: Object,
+    dataSource: Array,
     option: Object as PropType<RootTableOption>,
+    class: Object,
   },
   emits: ['register', 'change'],
   setup(props, ctx) {
-    const dataRef = ref(props.dataSource || [])
+    const dataRef = ref((props.dataSource || []) as Obj[])
+    const wrapRef = ref()
 
     const option: Obj = reactive(props.option || {})
-    const { class: _class, ...attrs } = ctx.attrs
-    merge(option, { attrs: mergeProps(option.attrs, attrs) })
+    merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
     const searchForm = ref()
 
-    const { dataSource, pagination, onLoaded, apis, goPage, reload, query } = useQuery(option)
+    const { dataSource, loading, pagination, onLoaded, apis, goPage, reload, query } = useQuery(option)
     onLoaded((data) => {
       ctx.emit('change', data)
     })
     const exposed = {
       setOption: (_option: RootTableOption) => {
-        const attrs = mergeProps(globalProps.Table, { ..._option.attrs }, option.attrs)
-        merge(option, _option, { attrs })
+        const { isScanHeight, inheritHeight, isFixedHeight, ...attrs } = mergeProps(
+          globalProps.Table,
+          { ..._option.attrs },
+          option.attrs
+        )
+        merge(option, { isScanHeight, inheritHeight, isFixedHeight }, _option, { attrs })
       },
       setData: (data) => {
         data && (dataRef.value = data)
@@ -83,6 +89,7 @@ export default defineComponent({
       apis,
       pagination,
       onRegister: register,
+      loading,
       // onChange: handleTableChange,
     })
 
@@ -90,7 +97,8 @@ export default defineComponent({
       () => option as any,
       (opt) => {
         if (!opt?.columns) return
-        const { columns, searchSechma, beforeSearch } = opt
+        const { columns, searchSechma, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
+
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
         const effectData = reactive({ formData: dataRef, current: dataRef })
@@ -111,6 +119,12 @@ export default defineComponent({
           effectData,
           model,
         })
+
+        if (isScanHeight || inheritHeight || maxHeight) {
+          const { getScrollRef } = useTableScroll(option, dataRef, wrapRef)
+          tableAttrs.scroll = getScrollRef
+        }
+
         nextTick(() => unWatch())
       },
       {
@@ -123,11 +137,19 @@ export default defineComponent({
     return () =>
       option.columns &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
-        h('div', mergeProps({ class: option.isContainer && 'exa-container' }, { class: _class }), [
-          searchForm.value && h('div', { class: 'exa-form-section exa-table-search' }, searchForm.value.formNode()),
-          option.columns &&
-            h('div', { class: 'exa-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
-        ])
+        searchForm.value
+          ? h('div', { ref: wrapRef, class: [option.isContainer && 'sup-container', 'sup-table', props.class] }, [
+              h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode()),
+              h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
+            ])
+          : h(
+              'div',
+              {
+                ref: wrapRef,
+                class: [option.isContainer && 'sup-container', 'sup-table', 'sup-form-section', props.class],
+              },
+              h(Controls.Table, tableAttrs as any, ctx.slots)
+            )
       )
   },
 })

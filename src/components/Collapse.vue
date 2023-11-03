@@ -41,7 +41,7 @@ const acKey = ref(props.option.activeKey || panels[0].key)
 </script>
 
 <template>
-  <div v-if="title" class="exa-title ant-descriptions-header">
+  <div v-if="title" class="sup-title ant-descriptions-header">
     <component :is="toNode(title, effectData)" />
   </div>
 

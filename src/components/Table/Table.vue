@@ -140,7 +140,7 @@ export default defineComponent({
     if (titleString || titleSlot || extraSlot) {
       __slots.title = () =>
         h(Row, { justify: 'space-between', align: 'middle' }, () => [
-          h('div', { class: 'exa-title' }, toNode(titleSlot || titleString, effectData)),
+          h('div', { class: 'sup-title' }, toNode(titleSlot || titleString, effectData)),
           extraSlot?.(),
         ])
     }
@@ -161,7 +161,7 @@ export default defineComponent({
           dataSource: list.value,
           columns,
           tableLayout: 'fixed',
-          pagination: undefined,
+          pagination: false,
           ...attrs,
           rowSelection,
           rowKey,

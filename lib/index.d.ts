@@ -94,7 +94,7 @@ declare type Dict = {
     [k: string]: string | number;
 };
 
-declare interface ExtBaseOption {
+export declare interface ExtBaseOption {
     type: string
     field?: string
     initialValue?: any
@@ -125,7 +125,7 @@ declare interface ExtBaseOption {
     [key: `on${Capitalize<string>}${string}`]: Fn | undefined
 }
 
-declare interface ExtButtonGroup<T extends string = string> {
+export declare interface ExtButtonGroup<T extends string = string> {
     limit?: number
     buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
     buttonShape?: 'circle' | 'round' | 'default'
@@ -146,15 +146,15 @@ declare interface ExtButtonGroup<T extends string = string> {
     // subItems?: ButtonItem[]
 }
 
-declare type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
+export declare type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 
-declare interface ExtCollapseOption extends ExtBaseOption {
+export declare interface ExtCollapseOption extends ExtBaseOption {
     title?: VSlot
     activeKey?: string | Ref<string>
     subItems: CollapseItem[]
 }
 
-declare type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
+export declare type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
     /** 应用于表格或编辑表单 */
     hideInTable?: boolean
     /** 表格内容渲染 */
@@ -168,14 +168,14 @@ declare interface ExtDateRange extends ExtFormItemOption {
 }
 
 /** 表单元素属性 */
-declare interface ExtFormItemOption extends ExtBaseOption {
+export declare interface ExtFormItemOption extends ExtBaseOption {
     field: string
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     formItemProps?: FormItemProps
 }
 
-declare interface ExtFormOption extends Omit<ExtGroupOption, 'type'> {
+export declare interface ExtFormOption extends Omit<ExtGroupOption, 'type'> {
     // type?: 'Form'
     attrs?: FormProps & HTMLAttributes
     isContainer?: boolean
@@ -186,7 +186,7 @@ declare interface ExtFormOption extends Omit<ExtGroupOption, 'type'> {
     buttons?: ExtButtons<'submit' | 'reset'>
 }
 
-declare interface ExtGroupOption extends ExtBaseOption {
+export declare interface ExtGroupOption extends ExtBaseOption {
     title?: VSlot
     gutter?: number
     buttons?: ExtButtons
@@ -200,13 +200,13 @@ declare interface ExtGroupOption extends ExtBaseOption {
 
 declare type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption
 
-declare interface ExtInputGroupOption extends ExtBaseOption {
+export declare interface ExtInputGroupOption extends ExtBaseOption {
     span: number
     gutter?: number
     subItems: UniOption[]
 }
 
-declare interface ExtInputOption extends ExtFormItemOption {
+export declare interface ExtInputOption extends ExtFormItemOption {
     addonAfter?: VSlot
     addonBefore?: VSlot
     prefix?: VSlot
@@ -219,7 +219,7 @@ declare interface ExtInputOption extends ExtFormItemOption {
 
 declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
 
-declare interface ExtListOption extends ExtBaseOption {
+export declare interface ExtListOption extends ExtBaseOption {
     field: string
     title?: VSlot
     attrs?: ListProps | Obj
@@ -261,14 +261,14 @@ declare interface ExtSwitchOption extends ExtFormItemOption {
     valueLabels?: [string, string]
 }
 
-declare interface ExtTabItem extends Omit<ExtGroupOption, 'type'> {
+export declare interface ExtTabItem extends Omit<ExtGroupOption, 'type'> {
     label: string
     key?: string
     icon?: string | Component
     subItems: UniOption[]
 }
 
-declare interface ExtTableOption extends ExtBaseOption {
+export declare interface ExtTableOption extends ExtBaseOption {
     field: string
     title?: VSlot
     attrs?: TableProps | Obj
@@ -285,14 +285,14 @@ declare interface ExtTableOption extends ExtBaseOption {
     formSechma?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
 }
 
-declare interface ExtTabsOption extends ExtBaseOption {
+export declare interface ExtTabsOption extends ExtBaseOption {
     activeKey?: Ref<string>
     forceRender?: boolean
     buttons?: ExtButtons<'add' | 'refresh'>
     subItems: ExtTabItem[]
 }
 
-declare interface ExtTreeOption extends ExtFormItemOption {
+export declare interface ExtTreeOption extends ExtFormItemOption {
     labelField?: string
     attrs?: TreeProps & HTMLAttributes
     data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
@@ -334,13 +334,22 @@ declare interface RegistPram {
     value?: any;
 }
 
-declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'> {
+export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'> {
     isContainer?: boolean
     apis?: TableApis | TableApis['query']
     params?: Obj
     beforeSearch?: (data: { param?: Obj } | Obj) => Obj
     searchSechma?: ExtFormOption | { subItems: (UniOption | string)[] }
     pagination?: PaginationProps | false
+    maxHeight?: number
+    /** 自动计算高度至底部 */
+    isScanHeight?: boolean
+    /**计算高度时表格底部至边缘边距不等于36px时，进行补齐 */
+    resizeHeightOffset?: number
+    /** 固定高度，分页移至底部 */
+    isFixedHeight?: boolean
+    /** 按父元素填充高度 */
+    inheritHeight?: boolean
 }
 
 declare interface RuleConfig {
@@ -429,17 +438,19 @@ export declare const SuperForm: DefineComponent<{
 }, {}>;
 
 export declare const SuperTable: DefineComponent<{
-    dataSource: ObjectConstructor;
+    dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
+    class: ObjectConstructor;
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("change" | "register")[], "change" | "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
-    dataSource: ObjectConstructor;
+    dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
+    class: ObjectConstructor;
 }>> & {
     onChange?: ((...args: any[]) => any) | undefined;
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
 
-declare type TableApis = {
+export declare type TableApis = {
     query: Fn<Promise<any>>
     info?: Fn<Promise<Obj>>
     save?: Fn<Promise<any>>
@@ -447,11 +458,19 @@ declare type TableApis = {
     delete?: Fn<Promise<any>>
 }
 
+export declare type UniOption = UniWrapperOption | UniWidgetOption
+
+export declare type UniWidgetOption =
+| { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
+| (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
+
+export declare type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
+
 export declare function useButtons(config: ExtButtonGroup): (() => VNode<RendererNode, RendererElement, {
     [key: string]: any;
 }>)[];
 
-export declare function useDetail(option: GetOption<'Form'>, data?: {}): readonly [(actions?: Obj) => any, {
+export declare function useDetail(option: ExtFormOption, data?: {}): readonly [(actions?: Obj) => any, {
     readonly setData: (data: any) => void;
 }];
 

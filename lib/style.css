@@ -10,37 +10,45 @@
 ._table-form-item_1f50l_1 .ant-form-item-control > .ant-form-item-explain,
 ._table-form-item_1f50l_1 .ant-form-item-label {
   display: none;
-}.exa-form-compact .ant-form-item {
+}.sup-form-compact .ant-form-item {
   margin-bottom: 10px !important;
 }
-.exa-table-search > .ant-form {
+.sup-table {
+  height: 100%;
+}
+.sup-table .ant-table-pagination.ant-pagination {
+  margin: 16px 0 0 0;
+}
+.sup-table-search > .ant-form {
   margin-top: -6px;
   margin-bottom: -6px;
 }
-.exa-table-search > .ant-form .ant-form-item {
+.sup-table-search > .ant-form .ant-form-item {
   margin-bottom: 6px;
   margin-top: 6px;
 }
-.exa-detail .exa-title {
+.sup-detail .sup-title {
   font-weight: bold;
 }
-.exa-form-section .ant-table-title {
+.sup-form-section .ant-table-title {
   padding: 16px 0;
 }
-.exa-form-section .exa-title {
+.sup-form-section .sup-title {
   font-size: 16px;
   font-weight: 700;
 }
-.exa-buttons .buttons-divider {
+.sup-buttons .buttons-divider {
   margin: 0 2px;
 }
-.exa-container .exa-form-section {
+.sup-container.sup-form-section,
+.sup-container .sup-form-section {
   background-color: #fff;
   padding: 16px;
 }
-.exa-container .exa-form-section .ant-table:not(.ant-table-bordered) .ant-table-title {
+.sup-container.sup-form-section .ant-table:not(.ant-table-bordered) .ant-table-title,
+.sup-container .sup-form-section .ant-table:not(.ant-table-bordered) .ant-table-title {
   padding-top: 0;
 }
-.exa-form-section:not(:first-child) {
+.sup-form-section:not(:first-child) {
   margin-top: 16px;
 }

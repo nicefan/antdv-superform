@@ -25,7 +25,7 @@ export default defineComponent({
     return () =>
       h(
         'div',
-        { class: ['exa-form exa-detail', ctx.attrs?.isContainer && 'exa-container'] },
+        { class: ['sup-form sup-detail', ctx.attrs?.isContainer && 'sup-container'] },
         h(Layout, { option: props.option, modelsMap })
       )
   },

@@ -87,5 +87,6 @@ export function useQuery(option: Partial<RootTableOption>) {
     pagination,
     dataSource,
     onLoaded,
+    loading,
   }
 }

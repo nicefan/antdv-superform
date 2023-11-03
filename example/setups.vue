@@ -7,8 +7,8 @@
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>
     </super-buttons>
-    <div style="margin-top: 16px">
-      <super-table @register="registTable" :rowSelection="false" class="flex" />
+    <div style="margin-top: 16px; height: 800px;">
+      <super-table @register="registTable" :rowSelection="false" />
     </div>
     <component :is="FormModalSlot" />
   </div>
@@ -76,18 +76,30 @@ export default defineComponent({
     const [registTable, { setData: setTableData2 }] = useTable({
       isContainer: true,
       ...myTableOption,
-      attrs: { bordered: true },
-      apis: {
-        query: (arg) =>
-          Promise.resolve().then(() => {
-            console.log(arg)
-            return []
-          }),
-        delete: (data) =>
-          Promise.resolve().then(() => {
-            console.log(data)
-          }),
+      searchSechma: undefined,
+      // maxHeight: 500,
+      inheritHeight: true,
+      isFixedHeight: true,
+      pagination: {
+        pageSize: 30,
+        showSizeChanger: true,
+        pageSizeOptions:[ '10','30','50' ]
       },
+      attrs: { 
+        bordered: true,
+        height: 600
+       },
+      // apis: {
+      //   query: (arg) =>
+      //     Promise.resolve().then(() => {
+      //       console.log(arg)
+      //       return []
+      //     }),
+      //   delete: (data) =>
+      //     Promise.resolve().then(() => {
+      //       console.log(data)
+      //     }),
+      // },
     })
 
     const getData = () => ({
@@ -137,7 +149,10 @@ export default defineComponent({
         color: 'warning',
         tooltip: '提示',
         label: '表格赋值',
-        onClick: () => setTableData2(data),
+        onClick: () => {
+          const list = new Array(30).fill({...data[0], id: Symbol().toString()})
+          setTableData2(list)
+        },
       },
     ]
     return {

@@ -1,7 +1,7 @@
 import buildRule from './buildRule'
 import { reactive, ref, toRef, toValue, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
-import type { ExtBaseOption, ModelsMap } from '../exaTypes'
+import type { ExtBaseOption } from '../exaTypes'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
