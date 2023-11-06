@@ -17,6 +17,7 @@ export function useQuery(option: Partial<RootTableOption>) {
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
   const request = (params = {}) => {
+    if (!queryApi.value) return Promise.resolve(null)
     if (loading.value) return Promise.reject().finally(() => console.warn('跳过重复执行！'))
     const _params = {
       ...requestParams.value,

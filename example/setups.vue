@@ -7,7 +7,7 @@
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>
     </super-buttons>
-    <div style="margin-top: 16px; height: 800px;">
+    <div style="margin-top: 16px;">
       <super-table @register="registTable" :rowSelection="false" />
     </div>
     <component :is="FormModalSlot" />
@@ -20,6 +20,7 @@ import { useTable, SuperTable, useForm, type ButtonItem } from '../src'
 import { SuperButtons } from '../src/superButtons'
 import { useModal } from '../src'
 import { myTableOption } from './createForm/formOption'
+import { nanoid } from 'nanoid'
 
 export default defineComponent({
   components: {
@@ -76,14 +77,15 @@ export default defineComponent({
     const [registTable, { setData: setTableData2 }] = useTable({
       isContainer: true,
       ...myTableOption,
-      searchSechma: undefined,
+      // searchSechma: undefined,
       // maxHeight: 500,
-      inheritHeight: true,
+      // inheritHeight: true,
+      resizeHeightOffset: 16,
       isFixedHeight: true,
       pagination: {
-        pageSize: 30,
+        // pageSize: 30,
         showSizeChanger: true,
-        pageSizeOptions:[ '10','30','50' ]
+        pageSizeOptions:[ '10','20','50' ]
       },
       attrs: { 
         bordered: true,
@@ -150,7 +152,7 @@ export default defineComponent({
         tooltip: '提示',
         label: '表格赋值',
         onClick: () => {
-          const list = new Array(30).fill({...data[0], id: Symbol().toString()})
+          const list = new Array(50).fill({...data[0], id: nanoid()})
           setTableData2(list)
         },
       },

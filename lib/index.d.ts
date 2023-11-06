@@ -440,11 +440,11 @@ export declare const SuperForm: DefineComponent<{
 export declare const SuperTable: DefineComponent<{
     dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
-    class: ObjectConstructor;
+    class: (ObjectConstructor | StringConstructor)[];
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("change" | "register")[], "change" | "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
-    class: ObjectConstructor;
+    class: (ObjectConstructor | StringConstructor)[];
 }>> & {
     onChange?: ((...args: any[]) => any) | undefined;
     onRegister?: ((...args: any[]) => any) | undefined;

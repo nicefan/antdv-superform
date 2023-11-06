@@ -29,7 +29,7 @@ export default defineComponent({
   props: {
     dataSource: Array,
     option: Object as PropType<RootTableOption>,
-    class: Object,
+    class: [Object, String],
   },
   emits: ['register', 'change'],
   setup(props, ctx) {
@@ -80,9 +80,6 @@ export default defineComponent({
     ctx.emit('register', tableRef.value)
     onUnmounted(() => ctx.emit('register', null))
     ctx.expose(tableRef.value)
-    // const handleTableChange = (pag: { pageSize: number; current: number }, filters: any, sorter: any) => {
-    //   console.log(pag)
-    // }
 
     const tableAttrs: Obj = reactive({
       option,
@@ -90,7 +87,6 @@ export default defineComponent({
       pagination,
       onRegister: register,
       loading,
-      // onChange: handleTableChange,
     })
 
     const unWatch = watch(
@@ -121,8 +117,13 @@ export default defineComponent({
         })
 
         if (isScanHeight || inheritHeight || maxHeight) {
-          const { getScrollRef } = useTableScroll(option, dataRef, wrapRef)
+          const { getScrollRef, redoHeight } = useTableScroll(option, dataRef, wrapRef)
           tableAttrs.scroll = getScrollRef
+          const handleTableChange = tableAttrs.onChange
+          tableAttrs.onChange = (param) => {
+            !loading.value && redoHeight()
+            handleTableChange?.(param)
+          }
         }
 
         nextTick(() => unWatch())

@@ -38,8 +38,8 @@ export default function exampleForm() {
   const acKey = ref()
   const options = defineForm({
     attrs: {
-      layout: 'vertical',
-      // labelCol: { span: 5 },
+      layout: 'horizontal',
+      labelCol: { style: 'width:120px' },
       // wrapperCol: {span: 18}
     },
     buttons: ['submit'],

@@ -126,7 +126,7 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
     if (tableEl.scrollHeight > tableHeight) {
       setHeight(innerHeight)
     } else {
-      const bodyEl = tableEl.querySelector('.ant-table-body')
+      const bodyEl = tableEl.querySelector('.ant-table-body') as HTMLElement
       if (bodyEl) {
         setHeight(bodyEl.scrollHeight <= innerHeight ? null : innerHeight)
       }
@@ -141,10 +141,11 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
 
     return {
       y: tableHeight,
-      // scrollToFirstRowOnChange: false,
+      x: '100%',
+      scrollToFirstRowOnChange: true,
       ...scroll,
     }
   })
 
-  return { getScrollRef, redoHeight }
+  return { getScrollRef, redoHeight, debounceRedoHeight }
 }

@@ -38,7 +38,6 @@ export const myTableOption = defineTable({
           data
         },
         hidden: (data) => {
-          console.log(data.current.dataType)
           return data.record.dataType === 'number'
         },
         // disabled:(data) => {
