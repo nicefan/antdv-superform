@@ -1,5 +1,6 @@
 import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, unref, watch, mergeProps } from 'vue'
+import { throttle } from 'lodash-es'
 
 export function useQuery(option: Partial<RootTableOption>) {
   const queryApi = computed(() => {
@@ -17,8 +18,8 @@ export function useQuery(option: Partial<RootTableOption>) {
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
   const request = (params = {}) => {
-    if (!queryApi.value) return Promise.resolve(null)
-    if (loading.value) return Promise.reject().finally(() => console.warn('跳过重复执行！'))
+    if (!queryApi.value) return 
+    if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
       ...requestParams.value,
       ...pageParam,
@@ -41,15 +42,17 @@ export function useQuery(option: Partial<RootTableOption>) {
     })
   }
 
+  const throttleRequest = throttle(request, 200, { 'trailing': true })
+
   const goPage = (current, size = pageParam.size) => {
     pageParam.current = current
     pageParam.size = size
-    request()
+    throttleRequest()
   }
   const query = (param) => {
-    searchParam.value = param
+    searchParam.value = { ...param }
     pageParam.current = 1
-    return request()
+    return throttleRequest()
   }
 
   const pagination = ref<false | Obj>(false)
@@ -74,10 +77,10 @@ export function useQuery(option: Partial<RootTableOption>) {
     }
   )
   const apis = computed(() => {
-    return queryApi.value && { ...option.apis, query: request }
+    return queryApi.value && { ...option.apis, query: throttleRequest }
   })
 
-  watch([apis, requestParams], () => queryApi.value && request(), { immediate: true })
+  watch([apis, option.params], () => queryApi.value && throttleRequest(), { immediate: true })
 
   return {
     apis,

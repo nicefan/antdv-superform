@@ -1,6 +1,7 @@
 // import { watchDebounced } from '@vueuse/core'
 import { ButtonGroup, mergeActions } from '../components/buttons'
-import { ref, reactive, h, toRaw } from 'vue'
+import { ref, reactive, h, toRaw, watch } from 'vue'
+import { debounce } from 'lodash-es'
 import Controls from '../components'
 import { getEffectData } from '../utils'
 
@@ -65,7 +66,8 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
     })
   } else {
     //  不带按钮实时搜索
-    // watchDebounced(formData, (data) => onChange(data), { debounce: 500, maxWait: 1000 })
+    const debounceQuery = debounce(onChange, 500, {maxWait: 1000})
+    watch(formData, debounceQuery)
   }
 
   const formNode = () => h(Controls.Form, { option: formOption, source: formData, ref: formRef })
