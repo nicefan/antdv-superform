@@ -106,7 +106,7 @@ export interface RuleConfig {
 function buildRule(item: RuleConfig, label = '') {
   const { trigger, required, type = 'string', len, max, min, pattern, validator, message } = item || {}
   const rules: any[] = []
-  if (required) {
+  if (required && type === 'string') {
     rules.push({
       required,
       trigger,
@@ -122,6 +122,8 @@ function buildRule(item: RuleConfig, label = '') {
   if (typeRule) {
     const message = formatStr(typeRule.message, { label })
     rules.push({ ...typeRule, trigger, message })
+  } else if (type !== 'string') {
+    rules.push({ required, type, trigger, message: message || `请添加${label}` })
   }
 
   if (pattern) {

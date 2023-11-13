@@ -7,7 +7,7 @@
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>
     </super-buttons>
-    <div style="margin-top: 16px;">
+    <div style="margin-top: 16px; height: 800px;">
       <super-table @register="registTable" :rowSelection="false" />
     </div>
     <component :is="FormModalSlot" />
@@ -72,15 +72,15 @@ export default defineComponent({
       table.setData([...data])
       console.log(table)
     }
-
+    const abc = ref('')
     /** 页面组件注册表格 */
     const [registTable, { setData: setTableData2 }] = useTable({
       isContainer: true,
       ...myTableOption,
       // searchSechma: undefined,
       // maxHeight: 500,
-      // inheritHeight: true,
-      resizeHeightOffset: 16,
+      inheritHeight: true,
+      // resizeHeightOffset: 16,
       isFixedHeight: true,
       pagination: {
         // pageSize: 30,
@@ -91,11 +91,14 @@ export default defineComponent({
         bordered: true,
         height: 600
        },
+       params: {
+        abc,
+       },
       // apis: {
       //   query: (arg) =>
       //     Promise.resolve().then(() => {
       //       console.log(arg)
-      //       return []
+      //       return new Array(50).fill({...data[0], id: nanoid()})
       //     }),
       //   delete: (data) =>
       //     Promise.resolve().then(() => {
@@ -154,6 +157,13 @@ export default defineComponent({
         onClick: () => {
           const list = new Array(50).fill({...data[0], id: nanoid()})
           setTableData2(list)
+        },
+      },
+      {
+        color: 'success',
+        label: '更新查询',
+        onClick: () => {
+          abc.value = '2'
         },
       },
     ]

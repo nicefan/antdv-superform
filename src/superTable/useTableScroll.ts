@@ -45,10 +45,17 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
     })
   }
 
+  const getScrollRef = ref(scroll)
+
   function setHeight(height: number | null) {
     scrollHeightRef.value = height
-    //  Solve the problem of modal adaptive height calculation when the form is placed in the modal
     // modalFn?.redoModalHeight?.();
+    getScrollRef.value = {
+      y: height,
+      x: '100%',
+      scrollToFirstRowOnChange: true,
+      ...scroll,
+    }
   }
 
   async function calcTableHeight() {
@@ -118,7 +125,7 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
       if (!unref(tableData) || tableData.length === 0) {
         const emptyEl = tableEl.querySelector('.ant-empty')?.parentElement as HTMLElement
         if (emptyEl) {
-          emptyEl!.style.height = innerHeight + 'px'
+          emptyEl!.style.height = `${innerHeight}px`
         }
         return
       }
@@ -135,17 +142,6 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
   // useResizeObserver(tableEl, (entries) => {
   //   debounceRedoHeight();
   // });
-
-  const getScrollRef = computed(() => {
-    const tableHeight = unref(scrollHeightRef)
-
-    return {
-      y: tableHeight,
-      x: '100%',
-      scrollToFirstRowOnChange: true,
-      ...scroll,
-    }
-  })
 
   return { getScrollRef, redoHeight, debounceRedoHeight }
 }

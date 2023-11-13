@@ -8,20 +8,17 @@ export function useQuery(option: Partial<RootTableOption>) {
   })
   const pageParam = reactive<Obj>({})
   const searchParam = ref()
-  const requestParams = computed(() => ({
-    ...unref(option.params),
-    ...searchParam.value,
-  }))
   const loading = ref(false)
   const dataSource = ref()
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
   const request = (params = {}) => {
-    if (!queryApi.value) return 
+    if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
-      ...requestParams.value,
+      ...unref(option.params),
+      ...searchParam.value,
       ...pageParam,
       ...params,
     }
@@ -80,14 +77,17 @@ export function useQuery(option: Partial<RootTableOption>) {
     return queryApi.value && { ...option.apis, query: throttleRequest }
   })
 
-  watch([apis, option.params], () => queryApi.value && throttleRequest(), { immediate: true })
+  watch(
+    () => [apis.value, option.params],
+    () => queryApi.value && throttleRequest(),
+    { immediate: true, deep: true }
+  )
 
   return {
     apis,
     goPage,
     reload: request,
     query,
-    requestParams,
     pagination,
     dataSource,
     onLoaded,

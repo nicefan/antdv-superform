@@ -128,13 +128,9 @@ export function useBuildNode(option, model: ModelData, effectData: Obj, attrs: O
   // 生成FormItem
   const rules = computed(() => (attrs.disabled.value ? undefined : model.rules))
   const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
+  const _label = labelSlot || label
+  const _slots: Obj = { default: node }
+  _label !== undefined && (_slots.label = () => labelSlot?.({ ...effectData, label }) || label)
   return () =>
-    h(
-      base.FormItem,
-      { ...formItemAttrs, name: model.propChain, rules: rules.value },
-      {
-        label: label && (() => labelSlot?.({ ...effectData, label }) || label),
-        default: node,
-      }
-    )
+    h(base.FormItem, { ...formItemAttrs, name: model.propChain, rules: rules.value, colon: !!_label }, _slots)
 }
