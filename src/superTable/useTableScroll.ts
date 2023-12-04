@@ -71,17 +71,18 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
 
     await nextTick()
 
-    // Table height from bottom height-custom offset
-    const paddingHeight = option.isContainer ? 16 : 0
-
+    const outerStyle = getComputedStyle(wrapEl.parentElement as HTMLElement)
     const tableView = getViewportOffset(tableEl)
     const wrapView = getViewportOffset(wrapEl)
+    // Table height from bottom height-custom offset
+    const paddingHeight = tableView.left - wrapView.left
+    const outerPadding = (parseInt(outerStyle.marginBottom) || 0) + (parseInt(outerStyle.paddingBottom) || 0)
     let bottomIncludeBody = 0
     if (wrapEl && inheritHeight) {
       bottomIncludeBody = wrapView.bottomIncludeBody - wrapView.bottom - (tableView.top - wrapView.top)
     } else {
       // Table height from bottom
-      bottomIncludeBody = tableView.bottomIncludeBody - 20 // 去掉一个页面底部边距
+      bottomIncludeBody = tableView.bottomIncludeBody - outerPadding // 去掉一个页面底部边距
     }
 
     const headerHeight = (tableEl.querySelector('.ant-table-title') as HTMLElement)?.offsetHeight ?? 0
@@ -123,9 +124,10 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
         wrapEl.style.height = 'unset'
       }
       if (!unref(tableData) || tableData.length === 0) {
-        const emptyEl = tableEl.querySelector('.ant-empty')?.parentElement as HTMLElement
+        const emptyEl = tableEl.querySelector('.ant-empty')
         if (emptyEl) {
-          emptyEl!.style.height = `${innerHeight}px`
+          const emptyCell = tableEl.querySelector('.ant-table-tbody .ant-table-cell') as HTMLElement
+          emptyCell!.style.height = `${innerHeight}px`
         }
         return
       }

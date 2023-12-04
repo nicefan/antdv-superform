@@ -1,5 +1,6 @@
 import { computed, defineComponent, h, inject, type PropType, provide, reactive, toRef, toRefs, mergeProps } from 'vue'
 import { Col, Row } from 'ant-design-vue'
+import { defaults } from 'lodash-es'
 import Controls, { containers } from './index'
 import { ButtonGroup } from './buttons'
 import base from './base'
@@ -22,34 +23,56 @@ export default defineComponent({
     disabled: [Boolean, Object],
   },
   setup(props, ctx) {
-    const { type: ParentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
+    const { type: parentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
     const rowProps = { gutter, ...props.option.rowProps, ...ctx.attrs }
-    const presetSpan = subSpan ?? inject('subSpan', undefined)
-    if ('subSpan' in props.option) provide('subSpan', subSpan)
+    const inheritOptions = inject<Obj>('inheritOptions', {})
+    const presetSpan = subSpan ?? inheritOptions.subSpan
 
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
-      const { type, align, isBlock, columns, hideInForm } = option
+      const { type, label, align, isBlock, span, hideInForm, labelSlot } = option
       if (type === 'Hidden' || hideInForm) return
-      const effectData = getEffectData({ current: toRef(props.model, 'refData'), value: toRef(subData, 'refData') })
-      // const isContainer = !!subData.children || !!columns || type === 'Buttons'
+
+      const colProps: Obj = defaults({ span }, option.colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
+
+      const effectData = getEffectData({ current: toRef(subData, 'parent'), value: toRef(subData, 'refData') })
       const { attrs, hidden } = useControl({
         option,
         effectData,
-        inheritDisabled: inject('disabled', undefined),
+        inheritDisabled: inheritOptions.disabled,
       })
-      if (ParentType === 'InputGroup' && parentAttrs?.compact !== false) {
-        const span = option.span ?? presetSpan ?? option.colProps.span ?? 8
-        const width = (100 / (24 / span)).toFixed(2) + '%'
-        const __attrs = mergeProps(attrs, { style: `width:${width};` })
-        nodes.push(buildInnerNode(option, subData, effectData, __attrs))
+
+      const __node = buildInnerNode(option, subData, effectData, attrs)
+
+      if (parentType === 'InputGroup' && parentAttrs?.compact !== false) {
+        const width = (100 / (24 / colProps.span)).toFixed(2) + '%'
+        nodes.push(() => h(__node, { style: `width:${width};` }))
         return
       }
-      const __node = useBuildNode(option, subData, effectData, attrs)
-      const node = subData.children ? () => h(DataProvider, { name: 'disabled', data: attrs.disabled }, __node) : __node
-      const alignStyle = align && 'text-align: ' + align
-      const __isBlock = isBlock ?? (containers.includes(type) && type !== 'InputGroup' && !option.span)
+
+      let node = __node
+      // 容器组件转递继承属性
+      if (containers.includes(type) || type === 'InputGroup') {
+        const inheritOptions: Obj = {
+          disabled: attrs.disabled,
+          subSpan: option.subSpan ?? presetSpan,
+        }
+        node = () => h(DataProvider, { name: 'inheritOptions', data: inheritOptions }, __node)
+      } else if (!(isBlock && !option.field)) {
+        // 生成FormItem
+        const rules = computed(() => (attrs.disabled.value ? undefined : subData.rules))
+        const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
+        const _label = labelSlot || label
+        const _slots: Obj = { default: node }
+        _label !== undefined && (_slots.label = () => labelSlot?.({ ...effectData, label }) || label)
+        node = () =>
+          h(base.FormItem, { ...formItemAttrs, name: subData.propChain, rules: rules.value, colon: !!_label }, _slots)
+      }
+
+      // 容器组件独行显示
+      const __isBlock = isBlock ?? (containers.includes(type) && !option.span)
+      const alignStyle = align && `text-align: ${align}`
       if (__isBlock) {
         currentGroup = undefined
         nodes.push(
@@ -57,17 +80,11 @@ export default defineComponent({
             !hidden.value && h('div', { class: 'sup-form-section', style: alignStyle, key: idx, ...ctx.attrs }, node())
         )
       } else {
-        let colProps: Obj = option.colProps
-        if (!colProps) {
-          colProps = { ...globalProps.Col }
-          colProps.span = option.span ?? presetSpan ?? colProps.span ?? 8
-        }
-        if (align) colProps.style = alignStyle
-
         if (!currentGroup) {
           nodes.push((currentGroup = []))
         }
-        currentGroup.push(() => !hidden.value && h(Col, { ...colProps, key: idx }, node))
+        currentGroup.push(() => !hidden.value && h(Col, mergeProps({ style: alignStyle, key: idx }, colProps), node))
+
         if (option.isWrap) currentGroup = undefined
       }
     })
@@ -84,32 +101,23 @@ export default defineComponent({
 })
 
 export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
-  return useBuildNode(option, model, effectData, attrs, true)
-}
-
-export function useBuildNode(option, model: ModelData, effectData: Obj, attrs: Obj, isInner?: boolean) {
-  const { type, label, render, labelSlot } = option
+  const { type, render } = option
   const slots = inject<Obj>('rootSlots', {})
 
   const renderSlot = render ? (typeof render === 'function' ? render : slots[render]) : Controls[type]
   let node
   if (type === 'Text' || type === 'InfoSlot') {
     node = renderSlot ? () => renderSlot({ attrs, ...effectData }) : () => h('span', attrs, model.refData)
-    if (option.isBlock) {
-      return node
-    }
   } else if (type === 'Buttons') {
     node = () => h(ButtonGroup, { config: option, param: effectData })
-    if (option.isBlock) {
-      return node
-    }
   } else if (containers.includes(type)) {
     // 容器组件不绑定value
-    node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs }), slots)
+    const viewProps = type === 'Descriptions' && { isView: true, class: 'sup-detail' }
+    node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs, ...viewProps }), slots)
   } else {
     // 表单输入组件
     const valueProps = useVModel({ option, model, effectData })
-    const allAttrs = { ...attrs, ...toRefs(valueProps) }
+    const allAttrs = { ...attrs, ...valueProps }
     if (type === 'InputSlot' || type.startsWith('Ext')) {
       if (!renderSlot) {
         console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
@@ -119,18 +127,5 @@ export function useBuildNode(option, model: ModelData, effectData: Obj, attrs: O
       node = () => h(Controls[type], reactive({ option, model, effectData, ...allAttrs }), slots)
     }
   }
-
-  // 容器组件及指定参数，不套FormItem
-  if (isInner || containers.includes(type)) {
-    return node
-  }
-
-  // 生成FormItem
-  const rules = computed(() => (attrs.disabled.value ? undefined : model.rules))
-  const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
-  const _label = labelSlot || label
-  const _slots: Obj = { default: node }
-  _label !== undefined && (_slots.label = () => labelSlot?.({ ...effectData, label }) || label)
-  return () =>
-    h(base.FormItem, { ...formItemAttrs, name: model.propChain, rules: rules.value, colon: !!_label }, _slots)
+  return node
 }

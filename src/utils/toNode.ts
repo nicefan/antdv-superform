@@ -5,7 +5,7 @@ export function toNode(node, param: any = {}) {
   if (typeof node === 'function') {
     return (node as Fn)(param || {})
   } else if (typeof node !== 'object') {
-    return h('span', String(node))
+    return String(node)
   } else {
     return h(node)
   }

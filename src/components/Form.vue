@@ -40,10 +40,11 @@ export default {
     }
 
     const { modelsMap, initialData } = buildModelsMap(subItems, modelData)
-    provide('exaProvider', { data: readonly(modelData) })
     const effectData = reactive({ formData: modelData, current: modelData })
-
     const { attrs } = useControl({ option: props.option, effectData })
+
+    provide('exaProvider', { data: readonly(modelData), attrs })
+
     if (ignoreRules) {
       Object.assign(attrs, { hideRequiredMark: true, validateTrigger: 'none' })
     }

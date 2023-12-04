@@ -137,7 +137,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
       const model = modelsMap.get(option)
       const ruleName = model.propChain.join('.')
       const effectData = getEffectData({ current: model.parent, value: toRef(model, 'refData') })
-      const { attrs } = useControl({ option, effectData: model })
+      const { attrs } = useControl({ option, effectData })
       const inputSlot = buildInnerNode(option, model, effectData, attrs)
       return () =>
         h(

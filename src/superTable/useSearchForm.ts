@@ -57,7 +57,7 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
     formOption.subItems.push({
       type: 'InfoSlot',
       align: 'right',
-      colProps: { flex: 'auto' },
+      colProps: { flex: 'auto', style: 'max-width:none;' },
       render: () =>
         h(ButtonGroup, {
           config: { ...buttonsConfig, actions },
@@ -66,7 +66,7 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
     })
   } else {
     //  不带按钮实时搜索
-    const debounceQuery = debounce(onChange, 500, {maxWait: 1000})
+    const debounceQuery = debounce(onChange, 500, { maxWait: 1000 })
     watch(formData, debounceQuery)
   }
 

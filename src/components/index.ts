@@ -32,12 +32,13 @@ const components = {
   Tabs,
   Table,
   Collapse,
-  InputGroup,
+  Descriptions: Group,
 }
 const formItems = {
   Textarea,
   Input,
   InputNumber,
+  InputGroup,
   Select,
   Switch,
   DateRange,

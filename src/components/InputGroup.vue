@@ -1,10 +1,9 @@
 <script lang="ts">
-import { Form, FormItemRest } from 'ant-design-vue'
+import { FormItemRest } from 'ant-design-vue'
 import base from './base'
 import Collections from './Collections'
-import { computed, defineComponent, h, inject, mergeProps, reactive, ref, watch } from 'vue'
+import { computed, defineComponent, h, mergeProps, ref, watch } from 'vue'
 import { globalProps } from '../plugin'
-import { toNode } from '../utils'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -13,7 +12,7 @@ export default defineComponent({
     model: { type: Object as any, required: true },
     effectData: Object,
     compact: { type: Boolean, default: true },
-    disabled: Object,
+    disabled: undefined as any,
   },
   setup(props, { attrs }) {
     const { option, model, compact } = props
