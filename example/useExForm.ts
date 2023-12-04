@@ -3,6 +3,7 @@ import { useForm, defineForm, useModal } from '../src'
 import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { Button, Modal } from 'ant-design-vue'
 import { uniq } from 'lodash-es'
+import CustomGroup from './CustomGroup.vue'
 
 export default function exampleForm() {
   const list = ref<any[]>([
@@ -39,17 +40,44 @@ export default function exampleForm() {
   const options = defineForm({
     attrs: {
       layout: 'horizontal',
-      labelCol: { style: 'width:120px' },
-      // wrapperCol: {span: 18}
+      labelCol: { style: 'width:120px;' },
+      wrapperCol: { style: 'margin-right: 20px' }
     },
     buttons: ['submit'],
     subSpan: 12,
     subItems: [
       {
+        type: 'Descriptions',
+        title: '基本信息',
+        attrs: {
+          // 边框及标签底色
+          // borderColor: '#faf2f2',
+          // labelBgColor: '#faf2f2',
+          bordered: true,
+        },
+        component: CustomGroup,
+        subItems: [
+          {
+            type: 'Input',
+            field: 'company',
+            initialValue: '阿里巴巴',
+            label: '公司名称',
+          },
+          {
+            type: 'Text',
+            label: '编号',
+            field: 'ser',
+            initialValue: '123456',
+          },
+        ]
+      },
+      {
         type: 'Group',
         title: '基本信息',
         descriptionsProps: {
           title: '基本信息',
+          mode: 'form',
+          column: 3,
         },
         subItems: [
           {
@@ -57,7 +85,7 @@ export default function exampleForm() {
             field: 'name',
             label: '姓名',
             rules: { required: true },
-            prefix: () => UserOutlined,
+            prefix: UserOutlined,
             attrs: {
               // 可改变查询按钮标签
               // addonAfter: '查询',
@@ -76,6 +104,7 @@ export default function exampleForm() {
             label: '自定义组件',
             field: 'de',
             attrs: {
+              readonly:true,
               style: 'width: 100%',
               placeholder: '自定义组件加Ext前缀',
             },
@@ -217,7 +246,8 @@ export default function exampleForm() {
         title: () => h('b', '分格线'),
         disabled: ({ formData }) => !!formData.isReg,
         descriptionsProps: {
-          column: 3
+          column: 3,
+          labelCol: {}
         },
         buttons: {
           limit: 3,

@@ -9,6 +9,7 @@ import { ComponentOptionsMixin } from 'vue';
 import { ComputedRef } from 'vue';
 import { DefaultOptionType } from 'ant-design-vue/es/select';
 import { DefineComponent } from 'vue';
+import type { DescriptionsItemProp } from 'ant-design-vue/es/descriptions';
 import type { DescriptionsProps } from 'ant-design-vue';
 import { ExtractPropTypes } from 'vue';
 import type { FormItemProps } from 'ant-design-vue';
@@ -57,7 +58,7 @@ export declare interface ButtonItem {
     onClick?: Fn
 }
 
-declare interface CollapseItem extends Omit<ExtGroupOption, 'type'> {
+declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
     label: string
     key?: string
     icon?: string | Component
@@ -167,15 +168,35 @@ declare interface ExtDateRange extends ExtFormItemOption {
     keepField?: string
 }
 
+export declare interface ExtDescriptionsOption extends ExtGroupOption {
+    mode?: 'table' | 'form' | 'default'
+    attrs?: ExtDescriptionsProps
+}
+
+declare type ExtDescriptionsProps = {
+    mode?: 'table' | 'form' | 'default'
+    /** 行间排版属性 */
+    rowProps?: RowProps & HTMLAttributes
+    /** 输入框列属性，置为空对象将清空继承属性 */
+    wrapperCol?: ColProps & HTMLAttributes
+    /** 标题列属性，置为空对象将清空继承属性 */
+    labelCol?: ColProps & HTMLAttributes
+    labelAlign?: 'left' | 'center' | 'right'
+    subSpan?: number
+    labelBgColor?: string
+    borderColor?: string
+} & DescriptionsProps & HTMLAttributes
+
 /** 表单元素属性 */
 export declare interface ExtFormItemOption extends ExtBaseOption {
     field: string
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     formItemProps?: FormItemProps
+    descriptionsProps?: FormItemProps & DescriptionsItemProp
 }
 
-export declare interface ExtFormOption extends Omit<ExtGroupOption, 'type'> {
+export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
     // type?: 'Form'
     attrs?: FormProps & HTMLAttributes
     isContainer?: boolean
@@ -186,7 +207,7 @@ export declare interface ExtFormOption extends Omit<ExtGroupOption, 'type'> {
     buttons?: ExtButtons<'submit' | 'reset'>
 }
 
-export declare interface ExtGroupOption extends ExtBaseOption {
+export declare interface ExtGroupBaseOption extends ExtBaseOption {
     title?: VSlot
     gutter?: number
     buttons?: ExtButtons
@@ -195,7 +216,11 @@ export declare interface ExtGroupOption extends ExtBaseOption {
     rowProps?: RowProps & HTMLAttributes
     /** 子元素的统一排列属性， */
     subSpan?: number
-    descriptionsProps?: DescriptionsProps
+    descriptionsProps?: ExtDescriptionsProps
+}
+
+export declare interface ExtGroupOption extends ExtGroupBaseOption {
+    component?: Component
 }
 
 declare type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption
@@ -261,7 +286,7 @@ declare interface ExtSwitchOption extends ExtFormItemOption {
     valueLabels?: [string, string]
 }
 
-export declare interface ExtTabItem extends Omit<ExtGroupOption, 'type'> {
+export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
     label: string
     key?: string
     icon?: string | Component
@@ -572,11 +597,12 @@ declare type WrapperTypes = {
     Form: ExtFormOption
     Group: ExtGroupOption
     InputGroup: ExtInputGroupOption
-    Card: ExtGroupOption
+    Card: ExtGroupBaseOption
     List: ExtListOption
     Tabs: ExtTabsOption
     Table: ExtTableOption
     Collapse: ExtCollapseOption
+    Descriptions: ExtDescriptionsOption
 }
 
 export { }
