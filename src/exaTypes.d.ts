@@ -69,7 +69,7 @@ interface ExtBaseOption {
   // row?: boolean
   colProps?: ColProps & HTMLAttributes
   /** 快捷实现col span */
-  span?: number
+  span?: number | 'auto'
   /** 是否为独立块，分组元素默认为true */
   isBlock?: boolean
   /** 是否换行 */
@@ -90,6 +90,7 @@ type ExtDescriptionsProps = {
   subSpan?: number
   labelBgColor?: string
   borderColor?: string
+  noStyle?: boolean
 } & DescriptionsProps & HTMLAttributes
 interface ExtGroupBaseOption extends ExtBaseOption {
   title?: VSlot
@@ -220,7 +221,6 @@ interface ExtListOption extends ExtBaseOption {
   gutter?: number
 }
 interface ExtInputGroupOption extends ExtBaseOption {
-  span: number
   gutter?: number
   subItems: UniOption[]
 }

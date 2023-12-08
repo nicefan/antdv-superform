@@ -34,8 +34,14 @@ export default defineComponent({
       const { type, label, align, isBlock, span, hideInForm, labelSlot } = option
       if (type === 'Hidden' || hideInForm) return
 
-      const colProps: Obj = defaults({ span }, option.colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
+      const colProps: Obj = { ...option.colProps, span }
 
+      if (span === 'auto' || (presetSpan === 0 && span === undefined)) {
+        colProps.span = undefined
+        if (span === 'auto') colProps.flex = 'auto'
+      } else {
+        defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
+      }
       const effectData = getEffectData({ current: toRef(subData, 'parent'), value: toRef(subData, 'refData') })
       const { attrs, hidden } = useControl({
         option,
@@ -50,7 +56,6 @@ export default defineComponent({
         nodes.push(() => h(__node, { style: `width:${width};` }))
         return
       }
-
       let node = __node
       // 容器组件转递继承属性
       if (containers.includes(type) || type === 'InputGroup') {

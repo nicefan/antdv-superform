@@ -46,12 +46,12 @@ export default defineComponent({
     })
     const exposed = {
       setOption: (_option: RootTableOption) => {
-        const { isScanHeight, inheritHeight, isFixedHeight, ...attrs } = mergeProps(
+        const { isScanHeight, inheritHeight, isFixedHeight, isContainer, ...attrs } = mergeProps(
           globalProps.Table,
           { ..._option.attrs },
           option.attrs
         )
-        merge(option, { isScanHeight, inheritHeight, isFixedHeight }, _option, { attrs })
+        Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
       },
       setData: (data) => {
         data && (dataRef.value = data)

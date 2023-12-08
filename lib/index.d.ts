@@ -116,7 +116,7 @@ export declare interface ExtBaseOption {
     // row?: boolean
     colProps?: ColProps & HTMLAttributes
     /** 快捷实现col span */
-    span?: number
+    span?: number | 'auto'
     /** 是否为独立块，分组元素默认为true */
     isBlock?: boolean
     /** 是否换行 */
@@ -185,6 +185,7 @@ declare type ExtDescriptionsProps = {
     subSpan?: number
     labelBgColor?: string
     borderColor?: string
+    noStyle?: boolean
 } & DescriptionsProps & HTMLAttributes
 
 /** 表单元素属性 */
@@ -226,7 +227,6 @@ export declare interface ExtGroupOption extends ExtGroupBaseOption {
 declare type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption
 
 export declare interface ExtInputGroupOption extends ExtBaseOption {
-    span: number
     gutter?: number
     subItems: UniOption[]
 }
