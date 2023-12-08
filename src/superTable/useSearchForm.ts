@@ -57,7 +57,7 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
     formOption.subItems.push({
       type: 'InfoSlot',
       align: 'right',
-      colProps: { flex: 'auto', style: 'max-width:none;' },
+      span: 'auto',
       render: () =>
         h(ButtonGroup, {
           config: { ...buttonsConfig, actions },

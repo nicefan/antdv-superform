@@ -57,7 +57,7 @@ export default function exampleForm() {
             field: 'name',
             label: '姓名',
             rules: { required: true },
-            prefix: () => UserOutlined,
+            prefix: UserOutlined,
             attrs: {
               // 可改变查询按钮标签
               // addonAfter: '查询',
@@ -160,7 +160,7 @@ export default function exampleForm() {
             type: 'InputGroup',
             label: '详细地址',
             // field: 'address',
-            span: 16,
+            // span: 16,
             gutter: 0,
             subItems: [
               {
@@ -177,7 +177,7 @@ export default function exampleForm() {
                 type: 'Select',
                 field: 'street',
                 label: '街道',
-                span: 8,
+                span: 10,
                 attrs: {
                   placeholder: '可输入动态添加选项',
                   showSearch: true,

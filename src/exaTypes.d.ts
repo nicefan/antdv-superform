@@ -22,6 +22,7 @@ import type {
   RadioGroupProps,
   ListProps,
 } from 'ant-design-vue'
+import type { DescriptionsItemProp } from 'ant-design-vue/es/descriptions'
 
 interface RuleConfig {
   /** 验证类型 */
@@ -68,7 +69,7 @@ interface ExtBaseOption {
   // row?: boolean
   colProps?: ColProps & HTMLAttributes
   /** 快捷实现col span */
-  span?: number
+  span?: number | 'auto'
   /** 是否为独立块，分组元素默认为true */
   isBlock?: boolean
   /** 是否换行 */
@@ -77,8 +78,21 @@ interface ExtBaseOption {
   slots?: Obj<Fn>
   [key: `on${Capitalize<string>}${string}`]: Fn | undefined
 }
-
-interface ExtGroupOption extends ExtBaseOption {
+type ExtDescriptionsProps = {
+  mode?: 'table' | 'form' | 'default'
+  /** 行间排版属性 */
+  rowProps?: RowProps & HTMLAttributes
+  /** 输入框列属性，置为空对象将清空继承属性 */
+  wrapperCol?: ColProps & HTMLAttributes
+  /** 标题列属性，置为空对象将清空继承属性 */
+  labelCol?: ColProps & HTMLAttributes
+  labelAlign?: 'left' | 'center' | 'right'
+  subSpan?: number
+  labelBgColor?: string
+  borderColor?: string
+  noStyle?: boolean
+} & DescriptionsProps & HTMLAttributes
+interface ExtGroupBaseOption extends ExtBaseOption {
   title?: VSlot
   gutter?: number
   buttons?: ExtButtons
@@ -87,10 +101,17 @@ interface ExtGroupOption extends ExtBaseOption {
   rowProps?: RowProps & HTMLAttributes
   /** 子元素的统一排列属性， */
   subSpan?: number
-  descriptionsProps?: DescriptionsProps
+  descriptionsProps?: ExtDescriptionsProps
+}
+interface ExtGroupOption extends ExtGroupBaseOption {
+  component?: Component
+}
+interface ExtDescriptionsOption extends ExtGroupOption {
+  mode?: 'table' | 'form' | 'default'
+  attrs?: ExtDescriptionsProps
 }
 
-interface ExtFormOption extends Omit<ExtGroupOption, 'type'> {
+interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
   // type?: 'Form'
   attrs?: FormProps & HTMLAttributes
   isContainer?: boolean
@@ -200,7 +221,6 @@ interface ExtListOption extends ExtBaseOption {
   gutter?: number
 }
 interface ExtInputGroupOption extends ExtBaseOption {
-  span: number
   gutter?: number
   subItems: UniOption[]
 }
@@ -214,7 +234,7 @@ interface ExtTabsOption extends ExtBaseOption {
   buttons?: ExtButtons<'add' | 'refresh'>
   subItems: ExtTabItem[]
 }
-interface ExtTabItem extends Omit<ExtGroupOption, 'type'> {
+interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
   label: string
   key?: string
   icon?: string | Component
@@ -225,7 +245,7 @@ interface ExtCollapseOption extends ExtBaseOption {
   activeKey?: string | Ref<string>
   subItems: CollapseItem[]
 }
-interface CollapseItem extends Omit<ExtGroupOption, 'type'> {
+interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
   label: string
   key?: string
   icon?: string | Component
@@ -238,6 +258,7 @@ interface ExtFormItemOption extends ExtBaseOption {
   /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
   computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
   formItemProps?: FormItemProps
+  descriptionsProps?: FormItemProps & DescriptionsItemProp
 }
 
 interface ExtInputOption extends ExtFormItemOption {
@@ -300,11 +321,12 @@ type WrapperTypes = {
   Form: ExtFormOption
   Group: ExtGroupOption
   InputGroup: ExtInputGroupOption
-  Card: ExtGroupOption
+  Card: ExtGroupBaseOption
   List: ExtListOption
   Tabs: ExtTabsOption
   Table: ExtTableOption
   Collapse: ExtCollapseOption
+  Descriptions: ExtDescriptionsOption
 }
 type WidgetTypes = {
   Buttons: ExtBaseOption & ExtButtonGroup
@@ -357,7 +379,7 @@ declare global {
     /** 存储列表配置默认数据 */
     listData?: ModelChildren<T>
   }
-  export interface ModelDataGroup<T = ExtGroupOption> extends ModelData<T> {
+  export interface ModelDataGroup<T = ExtGroupBaseOption> extends ModelData<T> {
     children: Map<T, ModelDataGroup>
     /** 存储列表配置默认数据 */
     listData: ModelChildren<T>
@@ -375,6 +397,7 @@ export {
   ExtFormOption,
   ExtFormItemOption,
   ExtGroupOption,
+  ExtGroupBaseOption,
   ExtTableOption,
   RootTableOption,
   ExtButtons,
@@ -389,4 +412,5 @@ export {
   ExtTabsOption,
   ExtCollapseOption,
   ExtListOption,
+  ExtDescriptionsOption,
 }

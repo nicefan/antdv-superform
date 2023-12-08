@@ -13,7 +13,7 @@ export const myTableOption = defineTable({
   descriptionsProps: { column: 2, size: 'default' },
   searchSechma: {
     attrs: {
-      labelCol: { span: 6 },
+      wrapperCol: { style: 'width:100px' },
     },
     buttons: ['submit', 'reset', { label: '新增', onClick: ({ table }) => table.add() }],
     subSpan: 8,
