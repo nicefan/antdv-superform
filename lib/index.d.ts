@@ -168,9 +168,10 @@ declare interface ExtDateRange extends ExtFormItemOption {
     keepField?: string
 }
 
-export declare interface ExtDescriptionsOption extends ExtGroupOption {
+export declare interface ExtDescriptionsOption extends Omit<ExtGroupOption, 'type'> {
     mode?: 'table' | 'form' | 'default'
     attrs?: ExtDescriptionsProps
+    isContainer?: boolean
 }
 
 declare type ExtDescriptionsProps = {
@@ -495,7 +496,7 @@ export declare function useButtons(config: ExtButtonGroup): (() => VNode<Rendere
     [key: string]: any;
 }>)[];
 
-export declare function useDetail(option: ExtFormOption, data?: {}): readonly [(actions?: Obj) => any, {
+export declare function useDetail(option: ExtDescriptionsOption | ExtFormOption, data?: {}): readonly [(actions?: Obj) => any, {
     readonly setData: (data: any) => void;
 }];
 

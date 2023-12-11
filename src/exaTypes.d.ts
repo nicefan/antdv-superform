@@ -106,9 +106,10 @@ interface ExtGroupBaseOption extends ExtBaseOption {
 interface ExtGroupOption extends ExtGroupBaseOption {
   component?: Component
 }
-interface ExtDescriptionsOption extends ExtGroupOption {
+interface ExtDescriptionsOption extends Omit<ExtGroupOption, 'type'> {
   mode?: 'table' | 'form' | 'default'
   attrs?: ExtDescriptionsProps
+  isContainer?: boolean
 }
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {

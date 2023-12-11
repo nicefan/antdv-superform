@@ -13,6 +13,9 @@
 }.sup-form-compact .ant-form-item {
   margin-bottom: 10px !important;
 }
+.sup-form .ant-picker {
+  width: 100%;
+}
 .sup-table {
   height: 100%;
 }
@@ -27,7 +30,7 @@
   margin-bottom: 6px;
   margin-top: 6px;
 }
-:root {
+.sup-detail {
   --descriptions-border-color: #f0f0f0;
   --descriptions-bg-color: #fafafa;
 }

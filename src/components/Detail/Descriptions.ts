@@ -89,7 +89,7 @@ export default defineComponent({
     const prefixCls = inject<any>('configProvider', undefined)?.getPrefixCls() || 'ant'
     let content
     if (mode === 'table') {
-      const rows =
+      const rows = () =>
         layout === 'vertical'
           ? rowGroup.flatMap((group) => [
               h(
@@ -154,7 +154,7 @@ export default defineComponent({
                 ])
               )
             )
-      content = () => h('table', {}, rows)
+      content = () => h('table', {}, rows())
     } else {
       content = () =>
         rowGroup.map((group) =>

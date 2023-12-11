@@ -29,7 +29,7 @@ setTimeout(() => {
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
   })
-})
+}, 4000)
 
 </script>
 <style>
