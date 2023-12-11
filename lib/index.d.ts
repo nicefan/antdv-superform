@@ -89,6 +89,8 @@ export declare function defineForm<T extends keyof OptionType = 'Form'>(option: 
 
 export declare function defineTable(option: RootTableOption): RootTableOption;
 
+declare type DetailOption = ExtDescriptionsOption | ExtFormOption | (() => ExtDescriptionsOption | ExtFormOption) | (() => Promise<ExtDescriptionsOption | ExtFormOption>);
+
 declare type Dict = {
     label: string;
     value: string | number;
@@ -436,10 +438,10 @@ export declare const SuperButtons: DefineComponent<{
 
 export declare const SuperDetail: DefineComponent<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtFormOption>;
+    option: PropType<ExtFormOption | ExtDescriptionsOption>;
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtFormOption>;
+    option: PropType<ExtFormOption | ExtDescriptionsOption>;
 }>> & {
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
@@ -496,11 +498,11 @@ export declare function useButtons(config: ExtButtonGroup): (() => VNode<Rendere
     [key: string]: any;
 }>)[];
 
-export declare function useDetail(option: ExtDescriptionsOption | ExtFormOption, data?: {}): readonly [(actions?: Obj) => any, {
+export declare function useDetail(option: DetailOption, data?: {}): readonly [(actions?: Obj) => any, {
     readonly setData: (data: any) => void;
 }];
 
-export declare function useForm(option: ExtFormOption, data?: Obj): readonly [(actions?: Obj, ref?: Obj) => any, {
+export declare function useForm(option: UseFormOption, data?: Obj): readonly [(actions?: Obj, ref?: Obj) => any, {
     readonly dataSource: ComputedRef<any>;
     readonly getForm: () => Promise<any>;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
@@ -514,6 +516,8 @@ export declare function useForm(option: ExtFormOption, data?: Obj): readonly [(a
     readonly setData: (data: any) => void;
 }];
 
+declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>);
+
 export declare function useModal(content: () => VNodeTypes, config?: (ModalProps & {
     buttons?: ExtButtons;
 }) | Obj): {
@@ -526,7 +530,7 @@ export declare function useModal(content: () => VNodeTypes, config?: (ModalProps
     setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
 };
 
-export declare const useTable: (option: RootTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
+export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
     /** 异步获取表格引用 */
     readonly getTable: () => Promise<any>;
     readonly tableRef: Ref_2<any>;
@@ -571,6 +575,8 @@ export declare const useTable: (option: RootTableOption, data?: any[] | Ref_2<an
     } | undefined) => any;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
 }];
+
+declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);
 
 declare type VSlot = string | Fn<VNodeTypes>
 

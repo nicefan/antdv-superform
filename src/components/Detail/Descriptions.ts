@@ -49,7 +49,7 @@ export default defineComponent({
         let ceil = span ? Math.ceil(span / presetSpan) : 1
         ceil = ceil > colNum ? colNum : ceil
         const attrs = { ...descriptionsProps, ...option.formItemProps, ...option.descriptionsProps }
-        const labelStyle = (attrs.labelAlign ? `align: ${attrs.labelAlign};` : '') + attrs.labelStyle
+        const labelStyle = mergeProps(attrs.labelAlign ? { align: attrs.labelAlign } : {}, attrs.labelStyle)
         const item: Obj = {
           labelCol: mergeProps({ style: labelStyle, class: { 'sup-label-no-colon': attrs.noColon } }, attrs.labelCol),
           wrapperCol: mergeProps({ style: attrs.contentStyle }, attrs.wrapperCol),

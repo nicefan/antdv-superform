@@ -3,12 +3,19 @@ import { SuperForm } from './'
 import { useGetRef } from '../utils'
 import type { ExtFormOption } from '../exaTypes'
 
-export function useForm(option: ExtFormOption, data?: Obj) {
+type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>)
+export function useForm(option: UseFormOption, data?: Obj) {
   const [formRef, getForm] = useGetRef()
   const register = (actions?: Obj, ref?: Obj): any => {
     if (actions) {
       if (!formRef.value) {
-        actions.setOption(option)
+        if (typeof option === 'function') {
+          Promise.resolve(option()).then((_option) => {
+            actions.setOption(_option)
+          })
+        } else {
+          actions.setOption(option)
+        }
         if (data) {
           watchEffect(() => actions.setData(data))
         }

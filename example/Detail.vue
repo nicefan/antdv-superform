@@ -12,7 +12,9 @@ import useOption from './useExForm'
 import { SuperDetail, useDetail } from '../src'
 
 const { options, changeSelect } = useOption()
-const [detailRegister, { setData }] = useDetail({ isContainer: true, ...options })
+const [detailRegister, { setData }] = useDetail(async () => {
+  return { isContainer: true, ...options }
+})
 
 // const MyDetail = detailRegister()
 setTimeout(() => {

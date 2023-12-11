@@ -5,7 +5,7 @@ import Controls, { ButtonGroup, containers } from '../index'
 import Descriptions from './Descriptions'
 import { globalConfig, globalProps } from '../../plugin'
 import TableView from '../Table/TableView.vue'
-import { merge } from 'lodash-es'
+import { isArray, merge } from 'lodash-es'
 import { DataProvider } from '../../dataProvider'
 
 const DetailLayouts = defineComponent({
@@ -136,6 +136,9 @@ function getContent(option, model: ModelData) {
     return () => model.parent[labelField]
   } else if (keepField) {
     return () => `${model.refData ?? ''} - ${model.parent[keepField] ?? ''}`
+  } else if (isArray(colOptions) && typeof colOptions[0] === 'string') {
+    if (valueToLabel) return // 绑定值为Label时直接返回原值
+    return () => colOptions[model.refData]
   } else if (dictName || (colOptions && typeof colOptions[0] !== 'string')) {
     if (valueToLabel) return // 绑定值为Label时直接返回原值
     const options = ref<any[]>()

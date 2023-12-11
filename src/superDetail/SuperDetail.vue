@@ -2,14 +2,14 @@
 import { defineComponent, type PropType, ref, watch, h, provide, shallowReactive, readonly } from 'vue'
 import { buildModelsMap } from '../utils/buildModel'
 import { DetailLayout } from '../components/Detail'
-import type { ExtFormOption } from '../exaTypes'
+import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
 
 export default defineComponent({
   name: 'SuperTable',
   inheritAttrs: false,
   props: {
     dataSource: Object,
-    option: Object as PropType<ExtFormOption>,
+    option: Object as PropType<ExtDescriptionsOption | ExtFormOption>,
   },
   emits: ['register'],
   setup(props, ctx) {

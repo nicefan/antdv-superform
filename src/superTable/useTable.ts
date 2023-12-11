@@ -7,14 +7,21 @@ type RegisterMethod = {
   (): () => VNode
   (actions?: Obj, _tableRef?: Obj): void
 }
+type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>)
 
-export const useTable = (option: RootTableOption, data?: any[] | Ref<any[]>) => {
+export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
   const [tableRef, getTable] = useGetRef()
 
   const register: RegisterMethod = (actions?: Obj): any => {
     if (actions) {
       if (!tableRef.value) {
-        actions.setOption(option)
+        if (typeof option === 'function') {
+          Promise.resolve(option()).then((_option) => {
+            actions.setOption(_option)
+          })
+        } else {
+          actions.setOption(option)
+        }
         data && actions.setData(data)
       }
       tableRef.value = actions

@@ -2,6 +2,7 @@ import { computed, h, inject, reactive, ref, toRaw, unref } from 'vue'
 import { ButtonGroup } from '../buttons'
 import type { TableColumnProps } from 'ant-design-vue'
 import { globalConfig, globalProps } from '../../plugin'
+import { isArray } from 'lodash-es'
 
 export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
@@ -111,8 +112,10 @@ function getColRender(option) {
     return ({ record }) => record[labelField as string]
   } else if (keepField) {
     return ({ record, text }) => text + ' - ' + record[labelField as string]
-  } else if (dictName || (colOptions && typeof colOptions[0] !== 'string')) {
+  } else if (isArray(colOptions) && typeof colOptions[0] === 'string') {
     if (valueToLabel) return // 绑定值为Label时直接返回原值
+    return ({ text }) => colOptions[text]
+  } else if (dictName || colOptions) {
     const options = ref<any[]>()
     if (dictName && globalConfig.dictApi) {
       globalConfig.dictApi(dictName).then((data) => (options.value = data))
