@@ -4,11 +4,11 @@
       <Tooltip v-if="tooltip || (__config.iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
           ><component v-if="icon" :is="useIcon(icon)" />
-          <component v-if="!icon || !__config.iconOnly" :is="() => toValue(label)"
+          <component v-if="!icon || !__config.iconOnly" :is="() => toNode(label, param)"
         /></Button>
       </Tooltip>
       <Button v-else v-bind="attrs">
-        <component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toValue(label)" />
+        <component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toNode(label, param)" />
       </Button>
       <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
@@ -32,7 +32,7 @@
 import { ref, watchEffect, reactive, toValue } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
 import { EllipsisOutlined } from '@ant-design/icons-vue'
-import { getComputedStatus, useDisabled, useIcon } from '../../utils'
+import { getComputedStatus, useDisabled, useIcon, toNode } from '../../utils'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
@@ -41,8 +41,7 @@ const props = defineProps<{
   config: ExtButtons
   methods?: Obj
   param?: Obj
-}
->()
+}>()
 const { config, methods, param } = props
 
 const __config = Array.isArray(config) ? { actions: config } : config

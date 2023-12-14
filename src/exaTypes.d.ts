@@ -124,13 +124,14 @@ interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
 }
 
 interface ButtonItem {
-  label?: string
+  label?: VSlot
   /** 确认提示文本 */
   confirmText?: string
   /** 权限标识 */
   roleName?: string
   roleMode?: 'hidden' | 'disable'
   color?: 'success' | 'error' | 'warning'
+  vaildIn?: 'form' | 'detail' | 'both'
   tooltip?: string
   icon?: string | Component
   attrs?: Obj & HTMLAttributes
@@ -152,6 +153,9 @@ interface ExtButtonGroup<T extends string = string> {
   buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
   buttonShape?: 'circle' | 'round' | 'default'
   size?: 'large' | 'middle' | 'small'
+  align?: 'right' | 'left' | 'center'
+  vaildIn?: 'form' | 'detail' | 'both'
+  placement?: 'top' | 'bottom'
   /** 分隔符， type为'link'/'text'时默认true */
   divider?: boolean
   /** 是否独立行 */
@@ -164,7 +168,7 @@ interface ExtButtonGroup<T extends string = string> {
   disabled?: boolean | Fn<boolean>
   /** 将按钮放置到组件的指定slot中 */
   forSlot?: string
-  actions?: (T | (ButtonItem | { name: T }))[]
+  actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
   // subItems?: ButtonItem[]
 }
 type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
@@ -188,7 +192,7 @@ interface ExtTableOption extends ExtBaseOption {
   rowButtons?: ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
   /** 弹窗属性 */
   modalProps?: ModalFuncProps | Obj
-  descriptionsProps?: DescriptionsProps
+  descriptionsProps?: ExtDescriptionsProps
   /** 弹窗表单属性 */
   formSechma?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
 }

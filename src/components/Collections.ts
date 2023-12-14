@@ -20,6 +20,7 @@ export default defineComponent({
       required: true,
       type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
+    effectData: Object,
     disabled: [Boolean, Object],
   },
   setup(props, ctx) {
@@ -70,7 +71,7 @@ export default defineComponent({
         const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
         const _label = labelSlot || label
         const _slots: Obj = { default: node }
-        _label !== undefined && (_slots.label = () => labelSlot?.({ ...effectData, label }) || label)
+        _label !== undefined && (_slots.label = () => toNode(_label, effectData))
         node = () =>
           h(base.FormItem, { ...formItemAttrs, name: subData.propChain, rules: rules.value, colon: !!_label }, _slots)
       }
@@ -95,9 +96,17 @@ export default defineComponent({
     })
 
     return () =>
-      nodes.map((item) => {
+      nodes.map((item, idx) => {
         if (Array.isArray(item)) {
-          return h(Row, rowProps, () => item.map((node) => node()))
+          if (!parentType || parentType === 'Form') {
+            return h(
+              Controls.Group,
+              { class: 'sup-form-section', key: idx, ...ctx.attrs, ...props },
+              { innerContent: () => h(Row, rowProps, () => item.map((node) => node())) }
+            )
+          } else {
+            return h(Row, rowProps, () => item.map((node) => node()))
+          }
         } else {
           return item()
         }
@@ -107,7 +116,7 @@ export default defineComponent({
 
 export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
   const { type, render } = option
-  const slots = inject<Obj>('rootSlots', {})
+  const { default: _, ...slots } = inject<Obj>('rootSlots', {})
 
   const renderSlot = render ? (typeof render === 'function' ? render : slots[render]) : Controls[type]
   let node

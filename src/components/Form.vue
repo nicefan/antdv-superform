@@ -19,6 +19,7 @@ export default {
     },
     /** 按钮事件 */
     methods: Object,
+    disabled: null as any,
   },
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit, slots }) {
@@ -26,18 +27,18 @@ export default {
     const modelData = ref(props.source || {})
     const { buttons, ignoreRules } = props.option
     let subItems = props.option.subItems
-    if (buttons) {
-      subItems = [
-        ...subItems,
-        {
-          type: 'InfoSlot',
-          isBlock: true,
-          align: 'center',
-          colProps: { flex: 'auto' },
-          render: () => h(ButtonGroup, { config: buttons, param: { ...effectData, formRef: exposeData } }),
-        },
-      ]
-    }
+    // if (buttons) {
+    //   subItems = [
+    //     ...subItems,
+    //     {
+    //       type: 'InfoSlot',
+    //       isBlock: true,
+    //       align: 'center',
+    //       colProps: { flex: 'auto' },
+    //       render: () => h(ButtonGroup, { config: buttons, param: { ...effectData, formRef: exposeData } }),
+    //     },
+    //   ]
+    // }
 
     const { modelsMap, initialData } = buildModelsMap(subItems, modelData)
     const effectData = reactive({ formData: modelData, current: modelData })
@@ -106,7 +107,7 @@ export default {
         {
           ...slots,
           default: () => [
-            h(Collections, { option: props.option, model: { refData: modelData, children: modelsMap } }),
+            h(Collections, { option: props.option, model: { refData: modelData, children: modelsMap }, effectData }),
             // buttons &&
             //   h(baseComp.Row, { justify: 'end' }, () =>
             //     h(ButtonGroup, { config: buttons, param: { ...effectData, formRef } })

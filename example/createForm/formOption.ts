@@ -3,14 +3,14 @@ export const myTableOption = defineTable({
   attrs: { bordered: true, rowKey: 'id' },
   // editMode: 'inline',
   addMode: 'modal',
-  // buttons: {
-  //   actions: ['add', 'edit', 'delete'],
-  // },
+  buttons: {
+    actions: ['add', 'edit', 'delete'],
+  },
   formSechma: {
     attrs: { layout: 'vertical' },
     subSpan: 24,
   },
-  descriptionsProps: { column: 2, size: 'default' },
+  descriptionsProps: { column: 2, size: 'default', mode: 'table' },
   searchSechma: {
     attrs: {
       wrapperCol: { style: 'width:100px' },

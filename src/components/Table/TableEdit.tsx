@@ -8,7 +8,7 @@ import { cloneDeep, merge } from 'lodash-es'
 import message from 'ant-design-vue/es/message'
 import { useForm } from 'ant-design-vue/es/form'
 import style from '../style.module.scss'
-import Controls from '../index'
+import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
 import base from '../base'
 import { buildInnerNode } from '../Collections'
@@ -122,9 +122,9 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     },
   ]
 
-  const getEditActions = (param) => {
+  const editButtonsSlot = (param, config) => {
     const editInfo = getEditInfo(param.record)
-    return editInfo.isEdit ? editActions : null
+    return editInfo.isEdit ? h(ButtonGroup, { key: 'edit', config: { ...config, actions: editActions }, param }) : null
   }
 
   const InputNode = defineComponent({
@@ -167,6 +167,6 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     list,
     methods,
     getEditRender,
-    getEditActions,
+    editButtonsSlot,
   }
 }

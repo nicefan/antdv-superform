@@ -16,7 +16,7 @@ const DetailLayouts = defineComponent({
       required: true,
     },
   },
-  setup(props) {
+  setup(props, ctx) {
     const { subSpan, gutter, rowProps, type, attrs = {}, descriptionsProps = attrs } = props.option || {}
     const __rowProps = { ...globalProps.Row, gutter, ...rowProps }
     __rowProps.gutter ??= 16
@@ -30,28 +30,31 @@ const DetailLayouts = defineComponent({
 
     const nodeGroup: any[] = []
     let current: any[] | undefined
-    if (type === 'Card') {
-      nodeGroup.push(...items.map((item) => item.node))
-    } else {
-      items.forEach((item, idx) => {
-        if (item.isBlock) {
-          nodeGroup.push(() => h('div', { class: 'sup-form-section', key: idx }, item.node()))
-          current = undefined
-        } else {
-          let colProps: Obj = item.option.colProps
-          if (!colProps) {
-            colProps = { ...globalProps.Col }
-            colProps.span = item.option.span ?? presetSpan ?? colProps.span ?? 8
-          }
-          nodeGroup.push((current = []))
-          current.push(() => h(Col, { ...colProps, key: idx }, item.node))
-        }
-      })
-    }
+    let isRoot
 
-    return () =>
+    items.forEach((item, idx) => {
+      isRoot = isRoot || !item.option.type
+      if (item.isBlock) {
+        if (items.length === 1) {
+          nodeGroup.push(item.node)
+        } else {
+          nodeGroup.push(() => h('div', { class: 'sup-form-section', key: idx }, item.node()))
+        }
+        current = undefined
+      } else {
+        let colProps: Obj = item.option.colProps
+        if (!colProps) {
+          colProps = { ...globalProps.Col }
+          colProps.span = item.option.span ?? presetSpan ?? colProps.span ?? 8
+        }
+        nodeGroup.push((current = []))
+        current.push(() => h(Col, { ...colProps, key: idx }, item.node))
+      }
+    })
+
+    const content = () =>
       h(DataProvider, { name: 'gridConfig', data: gridConfig }, () =>
-        nodeGroup.map((item) => {
+        nodeGroup.map((item, idx) => {
           if (Array.isArray(item)) {
             return h(Row, __rowProps, () => item.map((node) => node()))
           } else {
@@ -59,6 +62,22 @@ const DetailLayouts = defineComponent({
           }
         })
       )
+    if (isRoot) {
+      return () =>
+        h(
+          Controls.Group,
+          {
+            class: 'sup-form-section',
+            option: { type: 'Discriptions', ...props.option },
+            model: {},
+            effectData: getEffectData({}),
+            isView: true
+          },
+          { innerContent: content }
+        )
+    } else {
+      return content
+    }
   },
 })
 
@@ -72,7 +91,6 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
     let isBlock = option.isBlock
     let wrapNode
     if (model.children || model.listData) {
-      isBlock ??= !option.span // 未定义时默认为true
       const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
       if (type === 'InputGroup') {
         const contents = [...modelsMap].map((ent) => getContent(...ent))
@@ -83,6 +101,7 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
           content: () => contents.map((node) => node?.()),
         })
       } else {
+        isBlock ??= !option.span // 未定义时默认为true
         const viewType = ['Tabs', 'Collapse', 'Card', 'Table', 'Group'].includes(type)
           ? type
           : type === 'List'
@@ -99,15 +118,22 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
         content: getContent(option, model),
       })
     }
-
-    if (isBlock || wrapNode || idx === modelsMap.size - 1) {
+    if (option.isBreak || isBlock || wrapNode || idx === modelsMap.size - 1) {
+      // 如果当前元素是独立元素或是最后一个，则将之前字段包装
+      let blockNode
+      if (isBlock && !wrapNode) {
+        const last = currentGroup.splice(-1)
+        blockNode = last[0].content
+      }
       if (currentGroup?.length) {
         const props = { option: preOption, items: currentGroup, effectData }
-        const preBlock = preOption.isBlock ?? !preOption.span
-        nodes.push({ option: preOption, isBlock: preBlock, node: () => h(Descriptions, props) })
+        nodes.push({ option: preOption, isBlock: true, node: () => h(Descriptions, props) })
         currentGroup = []
       }
-      wrapNode && nodes.push({ option, isBlock, node: wrapNode })
+      blockNode && nodes.push({ option: preOption, isBlock, node: blockNode })
+    }
+    if (wrapNode) {
+      nodes.push({ option, isBlock, node: wrapNode })
     }
   })
   return nodes

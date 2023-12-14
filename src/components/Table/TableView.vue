@@ -2,7 +2,7 @@
 import { h, type PropType, defineComponent, toRef } from 'vue'
 import base from '../base'
 import type { TableApis } from '../../exaTypes'
-import { useColumns } from './buildColumns'
+import { buildActionSlot, useColumns } from './buildColumns'
 import { toNode } from '../../utils'
 
 export default defineComponent({
@@ -22,12 +22,14 @@ export default defineComponent({
   },
   emits: ['register'],
   setup({ option, model, apis = {} as TableApis, effectData }, ctx) {
+    const { rowButtons } = option
     const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
     const orgList = toRef(model, 'refData')
     const listData = model.listData
+    const actionColumn = buildActionSlot({ buttons: rowButtons, methods: {}, isView: true })
 
-    const columns = useColumns({ childrenMap: listData.modelsMap })
+    const columns = useColumns({ childrenMap: listData.modelsMap, actionColumn })
 
     const title = option.descriptionsProps?.title || option.title || option.label
     const titleSlot = () => title && h('div', { class: 'sup-title ant-descriptions-header' }, toNode(title))

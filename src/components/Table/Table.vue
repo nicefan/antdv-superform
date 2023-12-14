@@ -3,7 +3,7 @@ import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, in
 import { ButtonGroup } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
-import { Row } from 'ant-design-vue'
+import { Col, Row } from 'ant-design-vue'
 import type { TableApis } from '../../exaTypes'
 import { toNode } from '../../utils'
 
@@ -139,9 +139,9 @@ export default defineComponent({
     const { title: titleSlot, extra: extraSlot, ...__slots } = slots
     if (titleString || titleSlot || extraSlot) {
       __slots.title = () =>
-        h(Row, { justify: 'space-between', align: 'middle' }, () => [
-          h('div', { class: 'sup-title' }, toNode(titleSlot || titleString, effectData)),
-          extraSlot?.(),
+        h(Row, { align: 'middle' }, () => [
+          h(Col, { class: 'sup-title' }, () => toNode(titleSlot || titleString, effectData)),
+          h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonsConfig.align } }, extraSlot),
         ])
     }
     /** 内置操作附加参数 */

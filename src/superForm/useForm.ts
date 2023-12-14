@@ -6,16 +6,11 @@ import type { ExtFormOption } from '../exaTypes'
 type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>)
 export function useForm(option: UseFormOption, data?: Obj) {
   const [formRef, getForm] = useGetRef()
+  const syncOption = Promise.resolve(typeof option === 'function' ? option() : option)
   const register = (actions?: Obj, ref?: Obj): any => {
     if (actions) {
       if (!formRef.value) {
-        if (typeof option === 'function') {
-          Promise.resolve(option()).then((_option) => {
-            actions.setOption(_option)
-          })
-        } else {
-          actions.setOption(option)
-        }
+        syncOption.then(actions.setOption)
         if (data) {
           watchEffect(() => actions.setData(data))
         }

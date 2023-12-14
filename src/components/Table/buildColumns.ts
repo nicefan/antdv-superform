@@ -3,6 +3,7 @@ import { ButtonGroup } from '../buttons'
 import type { TableColumnProps } from 'ant-design-vue'
 import { globalConfig, globalProps } from '../../plugin'
 import { isArray } from 'lodash-es'
+import { createButtons } from '../buttons'
 
 export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
@@ -70,7 +71,7 @@ export function useColumns({ childrenMap, effectData, getEditRender, actionColum
 function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
   const columns: any[] = []
   ;[..._models].forEach(([col, model]) => {
-    if (col.type === 'Hidden' || col.hideInTable) return
+    if (col.type === 'Hidden' || col.hideInTable || col.hidden === true) return
     if (model.children) {
       const sub = buildColumns(model.children, colsMap)
       columns.push({
@@ -135,19 +136,18 @@ function getColRender(option) {
     // textRender为undefined将直接返回绑定的值
   }
 }
-
-export function buildActionSlot(rowButtons, methods, getEditActions) {
+type BuildActionSlotParams = { buttons; methods; editSlot?: Fn; isView?: boolean }
+export function buildActionSlot({ buttons, methods, editSlot, isView }: BuildActionSlotParams) {
   const buttonsConfig: Obj = {
     buttonType: 'link',
     size: 'small',
-    ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
+    ...(Array.isArray(buttons) ? { actions: buttons } : buttons),
   }
   const { columnProps, forSlot, ...config } = buttonsConfig
+  const buttonsSlot = createButtons({ config, methods, isView })
+  if (!buttonsSlot) return
   const render = (param) => {
-    const actions = getEditActions?.(param)
-    return actions
-      ? h(ButtonGroup, { key: 'edit', config: { ...config, actions }, param })
-      : h(ButtonGroup, { key: param.record, config, param, methods })
+    return editSlot?.(param, config) || buttonsSlot({ key: param.record, param })
   }
   return {
     forSlot,

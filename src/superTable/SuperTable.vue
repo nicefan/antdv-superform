@@ -89,10 +89,20 @@ export default defineComponent({
       loading,
     })
 
+    const windowResize = new AbortController()
+    // 异步更新option,添加resize事件，需提前配置销毁
+    onUnmounted(() => {
+      windowResize.abort()
+    })
+
     const unWatch = watch(
-      () => option as any,
+      option,
       (opt) => {
         if (!opt?.columns) return
+        if (tableAttrs.model) {
+          unWatch()
+          return
+        }
         const { columns, searchSechma, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
 
         // 列表控件子表单模型
@@ -117,7 +127,7 @@ export default defineComponent({
         })
 
         if (isScanHeight || inheritHeight || maxHeight) {
-          const { getScrollRef, redoHeight } = useTableScroll(option, dataRef, wrapRef)
+          const { getScrollRef, redoHeight } = useTableScroll(option, dataRef, wrapRef, windowResize)
           tableAttrs.scroll = getScrollRef
           const handleTableChange = tableAttrs.onChange
           tableAttrs.onChange = (param) => {
@@ -125,8 +135,6 @@ export default defineComponent({
             handleTableChange?.(param)
           }
         }
-
-        nextTick(() => unWatch())
       },
       {
         immediate: true,

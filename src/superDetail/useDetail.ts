@@ -11,17 +11,11 @@ type DetailOption =
 export function useDetail(option: DetailOption, data = {}) {
   const source = toRef(data)
   const actionsRef = ref()
-
+  const syncOption = Promise.resolve(typeof option === 'function' ? option() : option)
   const register = (actions?: Obj): any => {
     if (actions) {
       if (!actionsRef.value) {
-        if (typeof option === 'function') {
-          Promise.resolve(option()).then((_option) => {
-            actions.setOption(_option)
-          })
-        } else {
-          actions.setOption(option)
-        }
+        syncOption.then(actions.setOption)
         actions.setData(source.value)
       }
       actionsRef.value = actions

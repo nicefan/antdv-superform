@@ -238,6 +238,18 @@ export default function exampleForm() {
             field: 'startDate',
             keepField: 'endDate',
           },
+          {
+            type: 'Buttons',
+            align: 'center',
+            isBlock: true,
+            actions: [
+              {
+                icon: AndroidOutlined,
+                label: '导入',
+                onClick() {},
+              },
+            ],
+          },
         ],
       },
       {
@@ -376,18 +388,6 @@ export default function exampleForm() {
             ],
           },
           { type: 'Input', field: 'col2', label: 'col2', hideInTable: true },
-        ],
-      },
-      {
-        type: 'Buttons',
-        align: 'center',
-        isBlock: true,
-        actions: [
-          {
-            icon: AndroidOutlined,
-            label: '导入',
-            onClick() {},
-          },
         ],
       },
       {

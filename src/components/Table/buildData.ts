@@ -117,12 +117,12 @@ function buildData({ option, listData, orgList, rowKey, listener }: BuildDataPar
   const { editMode, addMode, rowButtons } = option
 
   let __getEditRender
-  let __getEditActions
+  let __editButtonsSlot
   if (editMode === 'inline') {
-    const { list, methods, getEditActions, getEditRender } = inlineRender({ childrenMap, orgList, rowKey, listener })
+    const { list, methods, editButtonsSlot, getEditRender } = inlineRender({ childrenMap, orgList, rowKey, listener })
     context.list = list
     Object.assign(context.methods, methods)
-    __getEditActions = getEditActions
+    __editButtonsSlot = editButtonsSlot
     __getEditRender = getEditRender
   }
   if (editMode === 'modal' || addMode === 'modal') {
@@ -136,7 +136,7 @@ function buildData({ option, listData, orgList, rowKey, listener }: BuildDataPar
     context.modalSlot = modalSlot
   }
   const effectData = getEffectData({ current: context.list })
-  const actionColumn = rowButtons && buildActionSlot(rowButtons, context.methods, __getEditActions)
+  const actionColumn = buildActionSlot({ buttons: rowButtons, methods: context.methods, editSlot: __editButtonsSlot })
 
   context.columns = useColumns({ childrenMap, effectData, getEditRender: __getEditRender, actionColumn })
   context.methods.detail = buildDetail(option, childrenMap, rowKey)

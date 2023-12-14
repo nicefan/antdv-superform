@@ -11,17 +11,12 @@ type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise
 
 export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
   const [tableRef, getTable] = useGetRef()
+  const syncOption = Promise.resolve(typeof option === 'function' ? option() : option)
 
   const register: RegisterMethod = (actions?: Obj): any => {
     if (actions) {
       if (!tableRef.value) {
-        if (typeof option === 'function') {
-          Promise.resolve(option()).then((_option) => {
-            actions.setOption(_option)
-          })
-        } else {
-          actions.setOption(option)
-        }
+        syncOption.then(actions.setOption)
         data && actions.setData(data)
       }
       tableRef.value = actions

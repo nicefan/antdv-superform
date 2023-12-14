@@ -3,7 +3,7 @@ import { ref, computed, unref, nextTick, watch, onMounted, onUnmounted } from 'v
 import { getViewportOffset } from '../utils/dom'
 import { debounce } from 'lodash-es'
 
-export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HTMLElement | null>) {
+export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HTMLElement | null>,abortController?: AbortController) {
   const scrollHeightRef: Ref<number | null> = ref(null)
   // const modalFn = useModalContext();
 
@@ -32,11 +32,14 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
     // onMounted(() => {
     //   redoHeight()
     // })
-
-    window.addEventListener('resize', debounceRedoHeight)
-    onUnmounted(() => {
-      window.removeEventListener('resize', debounceRedoHeight)
-    })
+    if (abortController) {
+      window.addEventListener('resize', debounceRedoHeight, { signal: abortController.signal })
+    } else {
+      window.addEventListener('resize', debounceRedoHeight)
+      onUnmounted(() => {
+        window.removeEventListener('resize', debounceRedoHeight)
+      })
+    }
   }
 
   function redoHeight() {
