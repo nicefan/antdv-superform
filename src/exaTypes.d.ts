@@ -51,13 +51,18 @@ type VSlot = string | Fn<VNodeTypes>
 interface ExtBaseOption {
   type: string
   field?: string
+  ref?: Ref
   initialValue?: any
-  label?: string
+  label?: VSlot
   labelSlot?: Fn<VNodeTypes>
   rules?: RuleConfig | RuleConfig[]
   /** 配置复用合并时方便插入 */
   sort?: number
   attrs?: Obj
+  /** 输入框列属性，置为空对象将清空继承属性 */
+  wrapperCol?: ColProps & HTMLAttributes
+  /** 标题列属性，置为空对象将清空继承属性 */
+  labelCol?: ColProps & HTMLAttributes
   dynamicAttrs?: Fn<Obj>
   /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
   hidden?: boolean | ((data: Readonly<Obj>) => boolean)
@@ -240,7 +245,7 @@ interface ExtTabsOption extends ExtBaseOption {
   subItems: ExtTabItem[]
 }
 interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
-  label: string
+  label: VSlot
   key?: string
   icon?: string | Component
   subItems: UniOption[]
@@ -251,7 +256,7 @@ interface ExtCollapseOption extends ExtBaseOption {
   subItems: CollapseItem[]
 }
 interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
-  label: string
+  label: VSlot
   key?: string
   icon?: string | Component
   subItems: UniOption[]

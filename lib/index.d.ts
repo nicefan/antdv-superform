@@ -60,7 +60,7 @@ export declare interface ButtonItem {
 }
 
 declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
-    label: string
+    label: VSlot
     key?: string
     icon?: string | Component
     subItems: UniOption[]
@@ -86,6 +86,8 @@ export default _default;
 
 declare type DefaultOptionsType = (string | number)[] | DefaultOptionType[]
 
+export declare function defineDetail(option: ExtDescriptionsOption): ExtDescriptionsOption;
+
 export declare function defineForm<T extends keyof OptionType = 'Form'>(option: OptionType[T]): OptionType[T];
 
 export declare function defineTable(option: RootTableOption): RootTableOption;
@@ -101,13 +103,18 @@ declare type Dict = {
 export declare interface ExtBaseOption {
     type: string
     field?: string
+    ref?: Ref
     initialValue?: any
-    label?: string
+    label?: VSlot
     labelSlot?: Fn<VNodeTypes>
     rules?: RuleConfig | RuleConfig[]
     /** 配置复用合并时方便插入 */
     sort?: number
     attrs?: Obj
+    /** 输入框列属性，置为空对象将清空继承属性 */
+    wrapperCol?: ColProps & HTMLAttributes
+    /** 标题列属性，置为空对象将清空继承属性 */
+    labelCol?: ColProps & HTMLAttributes
     dynamicAttrs?: Fn<Obj>
     /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
     hidden?: boolean | ((data: Readonly<Obj>) => boolean)
@@ -294,7 +301,7 @@ declare interface ExtSwitchOption extends ExtFormItemOption {
 }
 
 export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
-    label: string
+    label: VSlot
     key?: string
     icon?: string | Component
     subItems: UniOption[]
@@ -450,33 +457,25 @@ export declare const SuperDetail: DefineComponent<{
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
 
-export declare const SuperForm: DefineComponent<{
-    config: PropType<ExtFormOption>;
-    model: ObjectConstructor;
-    isContainer: BooleanConstructor;
+export declare const SuperForm: DefineComponent<SuperFormProps, any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<SuperFormProps>, {}, {}>;
+
+declare type SuperFormProps = FormProps & {
+    /** 是否为容器包装 */
+    isContainer?: boolean;
+    config?: ExtFormOption;
     /** 减少行距 */
-    compact: BooleanConstructor;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
-    config: PropType<ExtFormOption>;
-    model: ObjectConstructor;
-    isContainer: BooleanConstructor;
-    /** 减少行距 */
-    compact: BooleanConstructor;
-}>> & {
-    onRegister?: ((...args: any[]) => any) | undefined;
-}, {
-    isContainer: boolean;
-    compact: boolean;
-}, {}>;
+    compact?: boolean;
+    /** 不做校验 */
+    ignoreRules?: boolean;
+    onRegister?: () => void;
+};
 
 export declare const SuperTable: DefineComponent<{
     dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
-    class: (ObjectConstructor | StringConstructor)[];
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("change" | "register")[], "change" | "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
-    class: (ObjectConstructor | StringConstructor)[];
 }>> & {
     onChange?: ((...args: any[]) => any) | undefined;
     onRegister?: ((...args: any[]) => any) | undefined;

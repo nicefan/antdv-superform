@@ -50,21 +50,22 @@ export default defineComponent({
         inheritDisabled: inheritOptions.disabled,
       })
 
-      const __node = buildInnerNode(option, subData, effectData, attrs)
+      const innerNode = buildInnerNode(option, subData, effectData, attrs)
+      if (!innerNode) return
 
       if (parentType === 'InputGroup' && parentAttrs?.compact !== false) {
         const width = (100 / (24 / colProps.span)).toFixed(2) + '%'
-        nodes.push(() => h(__node, { style: `width:${width};` }))
+        nodes.push(() => h(innerNode, { style: `width:${width};` }))
         return
       }
-      let node = __node
+      let node = innerNode
       // 容器组件转递继承属性
       if (containers.includes(type) || type === 'InputGroup') {
         const inheritOptions: Obj = {
           disabled: attrs.disabled,
           subSpan: option.subSpan ?? presetSpan,
         }
-        node = () => h(DataProvider, { name: 'inheritOptions', data: inheritOptions }, __node)
+        node = () => h(DataProvider, { name: 'inheritOptions', data: inheritOptions }, innerNode)
       } else if (!(isBlock && !option.field)) {
         // 生成FormItem
         const rules = computed(() => (attrs.disabled.value ? undefined : subData.rules))
@@ -132,13 +133,14 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     // 表单输入组件
     const valueProps = useVModel({ option, model, effectData })
     const allAttrs = { ...attrs, ...valueProps }
-    if (type === 'InputSlot' || type.startsWith('Ext')) {
-      if (!renderSlot) {
-        console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
-      }
+    if (!renderSlot) {
+      console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
+    } else if (type === 'InputSlot') {
       node = () => renderSlot?.(reactive({ attrs: allAttrs, ...toRefs(effectData) }))
+    } else if (type.startsWith('Ext')) {
+      node = () => h(renderSlot, reactive({ option, effectData, ...allAttrs }), slots)
     } else {
-      node = () => h(Controls[type], reactive({ option, model, effectData, ...allAttrs }), slots)
+      node = () => h(renderSlot, reactive({ option, model, effectData, ...allAttrs }), slots)
     }
   }
   return node

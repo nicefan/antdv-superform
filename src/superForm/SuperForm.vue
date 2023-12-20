@@ -1,34 +1,43 @@
 <script lang="ts">
-import { defineComponent, type PropType, ref, reactive, h, mergeProps, watchEffect, onMounted } from 'vue'
-import { merge } from 'lodash-es'
+import { defineComponent, type PropType, ref, reactive, h, mergeProps, watchEffect, onMounted, computed } from 'vue'
+import { merge, defaults } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
+import type { FormProps } from 'ant-design-vue'
 
-export default defineComponent({
-  inheritAttrs: false,
+type SuperFormProps = FormProps & {
+  /** 是否为容器包装 */
+  isContainer?: boolean
+  config?: ExtFormOption
+  /** 减少行距 */
+  compact?: boolean
+  /** 不做校验 */
+  ignoreRules?: boolean
+  onRegister?: () => void
+}
+export default defineComponent<SuperFormProps, any, unknown>({
   name: 'SuperForm',
   props: {
-    config: Object as PropType<ExtFormOption>,
+    config: Object,
     model: Object,
     isContainer: Boolean,
-    /** 减少行距 */
-    compact: Boolean,
-  },
+  } as any,
   emits: ['register'],
   setup(props, ctx) {
-    const { config, model, ...others } = props
-    const { class: __class, ...attrs } = ctx.attrs
+    // const { config, model, ...others } = props
+    // const { class: __class, ...attrs } = ctx.attrs
     const formData: Obj = ref({})
     const formRef = ref()
     const formOption = reactive<any>({
-      ...config,
-      ...others,
-      attrs: mergeProps({ ...globalProps.Form }, { ...props.config?.attrs }, attrs),
+      ...props.config,
+      // ...others,
+      attrs: mergeProps({ ...globalProps.Form }, { ...props.config?.attrs }),
     })
     const actions = {
       setOption: (_option: ExtFormOption) => {
-        merge(formOption, _option, formOption)
+        merge(formOption, props.config, _option)
+        formOption.attrs = mergeProps({ ...globalProps.Form }, { ...formOption.attrs })
         if (formOption.model) {
           formData.value = formOption.model
           delete formOption.model
@@ -60,6 +69,7 @@ export default defineComponent({
     //   </>
     // )
 
+    const isContainer = computed(() => props.isContainer || formOption.isContainer)
     const formNode = () =>
       formOption.subItems &&
       h(
@@ -68,7 +78,7 @@ export default defineComponent({
           option: formOption,
           source: formData.value,
           onRegister: register,
-          ...mergeProps({ class: __class }, { class: formOption.isContainer && 'sup-container' }),
+          class: { 'sup-container': isContainer.value },
         },
         ctx.slots
       )

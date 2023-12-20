@@ -1,5 +1,6 @@
 import { Modal } from 'ant-design-vue'
 import type { ButtonItem } from '../../exaTypes'
+import { globalProps } from '../../plugin'
 
 const getDefault = () => {
   return {
@@ -74,6 +75,7 @@ export function mergeActions(actions, methods = {}) {
               title: text,
               okText: '确定',
               cancelText: '取消',
+              ...globalProps.Modal,
               onOk() {
                 method()
                 resolve(undefined)

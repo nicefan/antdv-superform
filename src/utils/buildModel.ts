@@ -53,6 +53,7 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
   const cols = items.sort(({ sort = 1 }, { sort: b_sort = 1 }) => sort - b_sort)
   const modelsMap: ModelsMap = new Map()
   cols.forEach((child) => {
+    if (typeof child !== 'object') return
     const subModel: ModelData = buildModelData(child, currentData, propChain)
     const { rules: _rules, label, subItems, columns } = child
     if (_rules) {

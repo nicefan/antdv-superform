@@ -29,7 +29,6 @@ export default defineComponent({
   props: {
     dataSource: Array,
     option: Object as PropType<RootTableOption>,
-    class: [Object, String],
   },
   emits: ['register', 'change'],
   setup(props, ctx) {
@@ -37,7 +36,8 @@ export default defineComponent({
     const wrapRef = ref()
 
     const option: Obj = reactive(props.option || {})
-    merge(option, { attrs: mergeProps(option.attrs, ctx.attrs) })
+    const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
+    merge(option, { attrs: mergeProps(option.attrs, ctxAttrs) })
     const searchForm = ref()
 
     const { dataSource, loading, pagination, onLoaded, apis, goPage, reload, query } = useQuery(option)
@@ -147,16 +147,29 @@ export default defineComponent({
       option.columns &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
         searchForm.value
-          ? h('div', { ref: wrapRef, class: [option.isContainer && 'sup-container', 'sup-table', props.class] }, [
-              h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode()),
-              h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
-            ])
+          ? h(
+              'div',
+              mergeProps(
+                { ref: wrapRef, class: [option.isContainer && 'sup-container', 'sup-table'] },
+                { class: ctxClass, style }
+              ),
+              [
+                h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode()),
+                h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
+              ]
+            )
           : h(
               'div',
-              {
-                ref: wrapRef,
-                class: [option.isContainer && 'sup-container', 'sup-table', 'sup-form-section', props.class],
-              },
+              mergeProps(
+                {
+                  ref: wrapRef,
+                  class: [option.isContainer && 'sup-container', 'sup-table', 'sup-form-section'],
+                },
+                {
+                  class: ctxClass,
+                  style,
+                }
+              ),
               h(Controls.Table, tableAttrs as any, ctx.slots)
             )
       )

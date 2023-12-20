@@ -50,12 +50,12 @@ const formItems = {
 }
 
 export const containers = Object.keys(components)
-const allItems = { ...formItems, ...components }
+const allItems: Obj = { ...formItems, ...components }
 
 export function addComponent(name, component) {
   const customName = `Ext${name}`
   allItems[customName] = (props) => {
-    return typeof component === 'function' ? component(props) : h(component, props.attrs)
+    return h(component, props)
   }
 }
 

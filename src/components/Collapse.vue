@@ -8,7 +8,7 @@ import { DetailLayout } from './Detail'
 
 const { Collapse, CollapsePanel } = base
 defineOptions({
-  inheritAttrs: false
+  inheritAttrs: false,
 })
 
 const props = defineProps<{
@@ -29,9 +29,10 @@ const panels = [...props.model.children].map(([option, model], idx) => {
   // console.log(__attrs, disabled)
   return {
     attrs: reactive(attrs),
-    option,
+    option: { ...option, type: 'CollapsePanel' },
     effectData,
     model,
+    header: () => toNode(option.label),
     key: key || field || String(idx),
     hidden,
     disabled,
@@ -46,18 +47,17 @@ const acKey = ref(props.option.activeKey || panels[0].key)
   </div>
 
   <Collapse v-model:activeKey="acKey" v-bind="$attrs">
-    <template v-for="{ attrs, hidden, option, disabled, model, key } of panels" :key="key">
-      <CollapsePanel
-        v-if="!hidden.value"
-        :header="option.label"
-        :collapsible="disabled.value ? 'disabled' : undefined"
-        v-bind="attrs"
-      >
+    <template v-for="{ attrs, hidden, option, disabled, model, header, effectData, key } of panels" :key="key">
+      <CollapsePanel v-if="!hidden.value" :collapsible="disabled.value ? 'disabled' : undefined" v-bind="attrs">
+        <template #header>
+          <component :is="header" />
+        </template>
         <template #extra v-if="!isView">
           <ButtonGroup v-if="option.buttons" :config="option.buttons" :param="effectData" />
         </template>
-        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children"/>
-        <Collections v-else :option="option" :model="model" />
+
+        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" />
+        <Collections v-else :option="option" :model="model" :effectData="effectData" />
       </CollapsePanel>
     </template>
   </Collapse>

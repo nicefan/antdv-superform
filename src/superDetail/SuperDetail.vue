@@ -6,7 +6,6 @@ import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
 
 export default defineComponent({
   name: 'SuperTable',
-  inheritAttrs: false,
   props: {
     dataSource: Object,
     option: Object as PropType<ExtDescriptionsOption | ExtFormOption>,

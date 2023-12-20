@@ -5,7 +5,6 @@ import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
 import base from './base'
-import { ButtonGroup } from './buttons'
 
 export default {
   name: 'SuperForm',
@@ -20,29 +19,24 @@ export default {
     /** 按钮事件 */
     methods: Object,
     disabled: null as any,
+    ignoreRules: {
+      default: (raw) => raw.option.ignoreRules,
+      type: Boolean,
+    },
+    compact: {
+      default: (raw) => raw.option.compact,
+      type: Boolean,
+    },
   },
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit, slots }) {
     const formRef = ref()
     const modelData = ref(props.source || {})
-    const { buttons, ignoreRules } = props.option
-    let subItems = props.option.subItems
-    // if (buttons) {
-    //   subItems = [
-    //     ...subItems,
-    //     {
-    //       type: 'InfoSlot',
-    //       isBlock: true,
-    //       align: 'center',
-    //       colProps: { flex: 'auto' },
-    //       render: () => h(ButtonGroup, { config: buttons, param: { ...effectData, formRef: exposeData } }),
-    //     },
-    //   ]
-    // }
+    const { option, ignoreRules, compact } = props
 
-    const { modelsMap, initialData } = buildModelsMap(subItems, modelData)
+    const { modelsMap, initialData } = buildModelsMap(option.subItems, modelData)
     const effectData = reactive({ formData: modelData, current: modelData })
-    const { attrs } = useControl({ option: props.option, effectData })
+    const { attrs } = useControl({ option, effectData })
 
     provide('exaProvider', { data: readonly(modelData), attrs })
 
@@ -100,18 +94,15 @@ export default {
         base.Form,
         {
           ref: getForm,
-          class: ['sup-form', props.option.compact && 'sup-form-compact'],
+          class: ['sup-form', compact && 'sup-form-compact'],
           model: modelData.value,
+          labelAlign: 'right',
           ...attrs,
         },
         {
           ...slots,
           default: () => [
-            h(Collections, { option: props.option, model: { refData: modelData, children: modelsMap }, effectData }),
-            // buttons &&
-            //   h(baseComp.Row, { justify: 'end' }, () =>
-            //     h(ButtonGroup, { config: buttons, param: { ...effectData, formRef } })
-            //   ),
+            h(Collections, { option, model: { refData: modelData, children: modelsMap }, effectData }),
             slots.default?.(),
           ],
         }

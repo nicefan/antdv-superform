@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script setup lang="tsx">
-import { useIcon, useControl, getEffectData } from '../utils'
+import { useIcon, useControl, getEffectData, toNode } from '../utils'
 import base from './base'
 import Collections from './Collections'
 import { ButtonGroup } from './buttons'
@@ -40,7 +40,7 @@ const panes = [...props.model.children].map(([option, model], idx) => {
 
   const { attrs, hidden } = useControl({ option, effectData })
   const tabKey = key || field || String(idx)
-  const tabLabel = () => [useIcon(icon), label]
+  const tabLabel = () => [useIcon(icon), toNode(label, effectData)]
   watchEffect(() => {
     planeHideEvent(idx, tabKey, hidden.value || attrs.disabled.value)
   })
@@ -51,7 +51,7 @@ const panes = [...props.model.children].map(([option, model], idx) => {
       tab: tabLabel,
     }),
     hidden,
-    option,
+    option: { ...option, type: 'TabPane' },
     model,
   }
 })
