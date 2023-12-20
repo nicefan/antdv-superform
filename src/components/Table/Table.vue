@@ -1,6 +1,6 @@
 <script lang="ts">
 import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, inject, watch } from 'vue'
-import { ButtonGroup } from '../buttons'
+import { ButtonGroup, createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
 import { Col, Row } from 'ant-design-vue'
@@ -19,12 +19,13 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ModelDataGroup>,
     },
+    isView: Boolean,
     disabled: Boolean,
     effectData: Object,
     apis: Object as PropType<TableApis>,
   },
   emits: ['register'],
-  setup({ option, model, apis = {} as TableApis, effectData }, ctx) {
+  setup({ option, model, apis = {} as TableApis, effectData, isView }, ctx) {
     const editInline = option.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
@@ -89,7 +90,7 @@ export default defineComponent({
       },
     }
 
-    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener })
+    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener, isView })
     const tableRef = ref()
 
     // TODO: 补充TS
@@ -125,14 +126,15 @@ export default defineComponent({
     if (buttonsConfig) {
       const slotName = buttonsConfig.forSlot || 'extra'
       const orgSlot = slots[slotName]
-      slots[slotName] = () => [
-        orgSlot?.(),
-        h(ButtonGroup, {
-          config: buttonsConfig,
-          param: editParam,
-          methods,
-        }),
-      ]
+      const buttonsSlot = createButtons({
+        config: buttonsConfig,
+        params: editParam,
+        methods,
+        isView,
+      })
+      if (orgSlot || buttonsSlot) {
+        slots[slotName] = () => [orgSlot?.(), buttonsSlot?.()]
+      }
     }
 
     const titleString = option.title || option.label
@@ -141,7 +143,8 @@ export default defineComponent({
       __slots.title = () =>
         h(Row, { align: 'middle' }, () => [
           h(Col, { class: 'sup-title' }, () => toNode(titleSlot || titleString, effectData)),
-          h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonsConfig.align } }, extraSlot),
+          extraSlot &&
+            h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonsConfig?.align } }, extraSlot),
         ])
     }
     /** 内置操作附加参数 */

@@ -199,7 +199,7 @@ declare type ExtDescriptionsProps = {
     subSpan?: number
     labelBgColor?: string
     borderColor?: string
-    noStyle?: boolean
+    noInput?: boolean
 } & DescriptionsProps & HTMLAttributes
 
 /** 表单元素属性 */
@@ -531,6 +531,25 @@ export declare function useModal(content: () => VNodeTypes, config?: (ModalProps
     }>;
     closeModal: () => Promise<void>;
     setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
+};
+
+export declare function useModalForm({ title, ...option }: ExtFormOption, config?: (ModalProps & {
+    buttons?: ExtButtons;
+}) | Obj): {
+    openModal: ({ data, onOk, ...__config }?: ModalFuncProps_2 & {
+        data?: Obj<any> | undefined;
+    }) => Promise<void>;
+    closeModal: () => Promise<void>;
+    formActions: {
+        readonly dataSource: ComputedRef<any>;
+        readonly getForm: () => Promise<any>;
+        readonly asyncCall: (key?: string | undefined, param?: any) => Promise<any>;
+        readonly getData: () => any;
+        readonly submit: () => Promise<any>;
+        readonly resetFields: (rest?: Obj<any> | undefined) => Promise<any>;
+        readonly setFieldsValue: (data: Obj<any>) => Promise<any>;
+        readonly setData: (data: any) => void;
+    };
 };
 
 export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {

@@ -72,7 +72,6 @@ function getRangeRule(type, len, max, min) {
     rule.message = rangeMsg.number[rule.message]
     rule.transform = (value) => Number(value)
   } else {
-    rule.type = 'string'
     rule.message = rangeMsg.string[rule.message]
   }
   return rule
@@ -106,24 +105,26 @@ export interface RuleConfig {
 function buildRule(item: RuleConfig, label = '') {
   const { trigger, required, type = 'string', len, max, min, pattern, validator, message } = item || {}
   const rules: any[] = []
-  if (required && type === 'string') {
-    rules.push({
-      required,
-      trigger,
-      // validator: noEmpty,
-      pattern: /^[\s\S]*.*[^\s][\s\S]*$/,
-      // transform: (value) => value + '',
-      // whitespace: true,
-      message: message || `请输入${label}！`,
-    })
+  if (required) {
+    if (type === 'string' || type in ruleTypeMap) {
+      rules.push({
+        required,
+        trigger,
+        // validator: noEmpty,
+        pattern: /^[\s\S]*.*[^\s][\s\S]*$/,
+        // transform: (value) => value + '',
+        // whitespace: true,
+        message: message || `请输入${label}！`,
+      })
+    } else {
+      rules.push({ required, trigger, message: message || `请添加${label}` })
+    }
   }
 
   const typeRule = ruleTypeMap[type]
   if (typeRule) {
     const message = formatStr(typeRule.message, { label })
     rules.push({ ...typeRule, trigger, message })
-  } else if (type !== 'string') {
-    rules.push({ required, type, trigger, message: message || `请添加${label}` })
   }
 
   if (pattern) {
@@ -133,7 +134,7 @@ function buildRule(item: RuleConfig, label = '') {
   if (len || !isNaN(Number(max)) || !isNaN(Number(min))) {
     const rule = getRangeRule(type, len, max, min)
     const message = formatStr(rule.message, { label, len, max, min })
-    rules.push({ ...rule, trigger, message })
+    rules.push({ ...rule, trigger, message, type })
   }
 
   if (validator) {

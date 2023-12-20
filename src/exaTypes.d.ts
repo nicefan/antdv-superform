@@ -95,7 +95,7 @@ type ExtDescriptionsProps = {
   subSpan?: number
   labelBgColor?: string
   borderColor?: string
-  noStyle?: boolean
+  noInput?: boolean
 } & DescriptionsProps & HTMLAttributes
 interface ExtGroupBaseOption extends ExtBaseOption {
   title?: VSlot

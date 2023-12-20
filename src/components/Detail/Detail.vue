@@ -6,6 +6,7 @@ import Layout from './DetailLayout'
 export default defineComponent({
   props: {
     option: {
+      required: true,
       type: Object as PropType<MixWrapper>,
     },
     modelsMap: {

@@ -3,11 +3,11 @@ import { type PropType, defineComponent, h, inject, reactive, ref, toRef, useAtt
 import { cloneDeep } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../utils/buildModel'
-import { ButtonGroup } from './buttons'
+import { ButtonGroup, createButtons } from './buttons'
 import base from './base'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { Row } from 'ant-design-vue'
+import { Row, Col } from 'ant-design-vue'
 import { toNode } from '../utils'
 
 export default defineComponent({
@@ -27,7 +27,7 @@ export default defineComponent({
     isView: Boolean,
   },
   setup({ model, option, isView, effectData }) {
-    const { buttons: buttonsConfig, rowButtons,label, title = label, slots: optionSlots } = option
+    const { buttons: buttonsConfig, rowButtons, label, title = label, slots: optionSlots } = option
     // 先构建一个数据结构
     const { modelsMap: childrenMap, initialData, rules } = model.listData
 
@@ -80,18 +80,26 @@ export default defineComponent({
     }
 
     slots.title ||= title && (() => toNode(title, effectData))
-    if (!isView && buttonsConfig) {
+    if (buttonsConfig) {
       const slotName = buttonsConfig['forSlot'] || 'extra'
       const orgSlot = slots[slotName]
-      slots[slotName] = () => [orgSlot?.(), h(ButtonGroup, { config: buttonsConfig, param: effectData, methods })]
+      const buttonsSlot = createButtons({
+        config: buttonsConfig,
+        params: effectData,
+        methods,
+        isView,
+      })
+      if (orgSlot || buttonsSlot) {
+        slots[slotName] = () => [orgSlot?.(), buttonsSlot?.()]
+      }
     }
 
     const { title: titleSlot, extra: extraSlot, ...__slots } = slots
     if (titleSlot || extraSlot) {
       __slots.header = () =>
-        h(Row, { justify: 'space-between', align: 'middle' }, () => [
-          h('div', { class: 'sup-title' }, titleSlot?.()),
-          extraSlot?.(),
+        h(Row, { align: 'middle' }, () => [
+          h(Col, { class: 'sup-title' }, slots.title),
+          h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: (buttonsConfig as any)?.align } }, extraSlot),
         ])
     }
     const rowButtonsConfig: Obj | undefined = rowButtons && {
@@ -105,19 +113,18 @@ export default defineComponent({
         base.ListItem,
         { key: item.hash },
         {
-          default: () =>
+          default: () => [
             isView
-              ? h(DetailLayout, { option, modelsMap: item.model.children })
-              : [
-                  h(Collections, { model: item.model, option, class: 'ant-list-item-meta' }),
-                  rowButtonsConfig &&
-                    h(ButtonGroup, {
-                      config: rowButtonsConfig,
-                      methods,
-                      param: item.effectData,
-                      class: 'ant-list-item-action',
-                    }),
-                ],
+              ? h(DetailLayout, { option, modelsMap: item.model.children, mode: 'default', labelAlign: 'right' })
+              : h(Collections, { model: item.model, option, class: 'ant-list-item-meta' }),
+            rowButtonsConfig &&
+              createButtons({
+                config: rowButtonsConfig,
+                methods,
+                params: item.effectData,
+                isView,
+              })?.({ class: 'ant-list-item-action' }),
+          ],
         }
       )
     return () => h(base.List, { dataSource: listItems.value }, __slots)

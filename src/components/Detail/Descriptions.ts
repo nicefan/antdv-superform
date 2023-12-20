@@ -1,7 +1,6 @@
 import { type PropType, defineComponent, h, inject, mergeProps } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import base from '../base'
-import { globalProps } from '../../plugin'
 import { toNode } from '../../utils'
 
 export default defineComponent({
@@ -30,12 +29,13 @@ export default defineComponent({
       colon,
       ...descriptionsProps
     } = {
-      ...globalProps.Descriptions,
-      ...gridConfig.descriptionsProps,
+      bordered: true,
+      size: 'middle',
+      ...gridConfig,
       __attrs,
       ...props.option.descriptionsProps,
     } as Obj
-    const presetSpan = subSpan ?? (column ? 24 / column : gridConfig.subSpan)
+    const presetSpan = subSpan ?? (column ? 24 / column : descriptionsProps.subSpan)
     const colNum = (column as number) || Math.floor(24 / presetSpan)
     // if (typeof descriptionsProps?.column === 'number') {
     //   presetSpan = Math.floor(24 / descriptionsProps.column)
@@ -49,7 +49,7 @@ export default defineComponent({
         let ceil = span ? Math.ceil(span / presetSpan) : 1
         ceil = ceil > colNum ? colNum : ceil
         const attrs = { ...descriptionsProps, ...option.formItemProps, ...option.descriptionsProps }
-        const labelStyle = mergeProps(attrs.labelAlign ? { align: attrs.labelAlign } : {}, attrs.labelStyle)
+        const labelStyle = mergeProps(attrs.labelAlign ? { textAlign: attrs.labelAlign } : {}, attrs.labelStyle)
         const item: Obj = {
           labelCol: mergeProps({ style: labelStyle, class: { 'sup-label-no-colon': attrs.noColon } }, attrs.labelCol),
           wrapperCol: mergeProps({ style: attrs.contentStyle }, attrs.wrapperCol),
@@ -169,7 +169,7 @@ export default defineComponent({
                     h(
                       'div',
                       {
-                        class: { 'sup-descriptions-item-input': !item.attrs.noStyle && mode === 'form' },
+                        class: { 'sup-descriptions-item-input': !item.attrs.noInput && mode === 'form' },
                       },
                       item.content()
                     )

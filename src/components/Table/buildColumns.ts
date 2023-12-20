@@ -1,9 +1,8 @@
-import { computed, h, inject, reactive, ref, toRaw, unref } from 'vue'
-import { ButtonGroup } from '../buttons'
+import { computed, h, inject, reactive, toRaw } from 'vue'
 import type { TableColumnProps } from 'ant-design-vue'
-import { globalConfig, globalProps } from '../../plugin'
-import { isArray } from 'lodash-es'
+import { globalProps } from '../../plugin'
 import { createButtons } from '../buttons'
+import { getViewNode } from '../../utils'
 
 export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
@@ -84,7 +83,7 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
         dataIndex: model.propChain.join('.'),
         ...globalProps.Column,
         ...(col.columnProps as Obj),
-        customRender: getColRender(col),
+        customRender: getViewNode(col),
       }
       columns.push(column)
       colsMap.set(col, column)
@@ -93,49 +92,6 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
   return { columns, colsMap }
 }
 
-function getColRender(option) {
-  const {
-    type: colType,
-    viewRender,
-    render,
-    options: colOptions,
-    dictName,
-    labelField,
-    keepField,
-    valueToNumber,
-    valueToLabel,
-  } = option as any
-  if (viewRender) {
-    return viewRender // slotname字符串另行处理
-  } else if (colType === 'InfoSlot' || colType === 'Text') {
-    return typeof render === 'string' ? render : (param) => render?.(param)
-  } else if (labelField) {
-    return ({ record }) => record[labelField as string]
-  } else if (keepField) {
-    return ({ record, text }) => text + ' - ' + record[labelField as string]
-  } else if (isArray(colOptions) && typeof colOptions[0] === 'string') {
-    if (valueToLabel) return // 绑定值为Label时直接返回原值
-    return ({ text }) => colOptions[text]
-  } else if (dictName || colOptions) {
-    const options = ref<any[]>()
-    if (dictName && globalConfig.dictApi) {
-      globalConfig.dictApi(dictName).then((data) => (options.value = data))
-    } else if (typeof colOptions === 'function') {
-      Promise.resolve(colOptions()).then((data) => (options.value = data))
-    } else {
-      options.value = unref(colOptions)
-    }
-    return ({ text }) => {
-      return options.value?.find(({ value }) => (valueToNumber ? Number(value) : value) === text)?.label
-    }
-  } else if (colType === 'Switch') {
-    return ({ text }) => (option.valueLabels || '否是')[text]
-  } else if (colType === 'Buttons') {
-    return (param) => h(ButtonGroup, { config: option, param })
-  } else {
-    // textRender为undefined将直接返回绑定的值
-  }
-}
 type BuildActionSlotParams = { buttons; methods; editSlot?: Fn; isView?: boolean }
 export function buildActionSlot({ buttons, methods, editSlot, isView }: BuildActionSlotParams) {
   const buttonsConfig: Obj = {

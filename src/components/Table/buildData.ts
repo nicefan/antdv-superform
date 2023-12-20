@@ -94,9 +94,10 @@ type BuildDataParam = {
   orgList: Ref<Obj[]>
   rowKey: string
   listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
+  isView?: boolean
 }
 
-function buildData({ option, listData, orgList, rowKey, listener }: BuildDataParam) {
+function buildData({ option, listData, orgList, rowKey, listener, isView }: BuildDataParam) {
   const { modelsMap: childrenMap, initialData } = listData
   const context: {
     list: Ref
@@ -136,7 +137,12 @@ function buildData({ option, listData, orgList, rowKey, listener }: BuildDataPar
     context.modalSlot = modalSlot
   }
   const effectData = getEffectData({ current: context.list })
-  const actionColumn = buildActionSlot({ buttons: rowButtons, methods: context.methods, editSlot: __editButtonsSlot })
+  const actionColumn = buildActionSlot({
+    buttons: rowButtons,
+    methods: context.methods,
+    editSlot: __editButtonsSlot,
+    isView,
+  })
 
   context.columns = useColumns({ childrenMap, effectData, getEditRender: __getEditRender, actionColumn })
   context.methods.detail = buildDetail(option, childrenMap, rowKey)

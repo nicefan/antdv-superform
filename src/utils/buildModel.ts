@@ -58,7 +58,12 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
     const { rules: _rules, label, subItems, columns } = child
     if (_rules) {
       const _r = Array.isArray(_rules) ? _rules : [_rules]
-      subModel.rules = _r.map((item) => buildRule(item, label)).flat()
+      let ruleType = 'string'
+      if (subModel.refData) {
+        const baseType = typeof subModel.refData
+        ruleType = baseType === 'object' && Array.isArray(subModel.refData) ? 'array' : baseType
+      }
+      subModel.rules = _r.map((item) => buildRule({ type: ruleType, ...item }, label)).flat()
       rules[subModel.propChain.join('.')] = subModel.rules
     }
     if (subItems) {

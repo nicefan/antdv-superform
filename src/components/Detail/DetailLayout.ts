@@ -1,39 +1,48 @@
-import { type PropType, defineComponent, h, inject, provide, ref, toRef, unref } from 'vue'
+import { type PropType, defineComponent, h, inject, toRef } from 'vue'
 import { Col, Row } from 'ant-design-vue'
-import { getEffectData } from '../../utils'
-import Controls, { ButtonGroup, containers } from '../index'
+import { getEffectData, getViewNode } from '../../utils'
+import Controls from '../index'
 import Descriptions from './Descriptions'
-import { globalConfig, globalProps } from '../../plugin'
+import { globalProps } from '../../plugin'
 import TableView from '../Table/TableView.vue'
-import { isArray, merge } from 'lodash-es'
 import { DataProvider } from '../../dataProvider'
 
 const DetailLayouts = defineComponent({
+  inheritAttrs: false,
   props: {
-    option: Object,
+    option: { type: Object, required: true },
     modelsMap: {
       type: Object as PropType<ModelsMap>,
       required: true,
     },
   },
-  setup(props, ctx) {
-    const { subSpan, gutter, rowProps, type, attrs = {}, descriptionsProps = attrs } = props.option || {}
-    const __rowProps = { ...globalProps.Row, gutter, ...rowProps }
-    __rowProps.gutter ??= 16
+  setup({ option, modelsMap }, ctx) {
     const formAttrs = inject<any>('exaProvider', {}).attrs
+    const gridConfig: Obj = inject('gridConfig', formAttrs)
 
-    let gridConfig: Obj = inject('gridConfig', { descriptionsProps: formAttrs })
-    const presetSpan = subSpan ?? descriptionsProps.subSpan ?? (gridConfig.subSpan || 12)
-    gridConfig = { subSpan: presetSpan, descriptionsProps: { ...gridConfig.descriptionsProps, ...descriptionsProps } }
+    const config = {
+      ...globalProps.Descriptions,
+      ...gridConfig,
+      subSpan: option.subSpan,
+      gutter: option.gutter,
+      rowProps: option.rowProps,
+      ...ctx.attrs,
+      ...option.attrs,
+      ...option.descriptionsProps,
+    }
+    const rowProps = { ...globalProps.Row, gutter: config.gutter, ...config.rowProps }
+    rowProps.gutter ??= 16
 
-    const items = buildNodes(props.modelsMap, props.option)
+    const presetSpan = (config.subSpan ??= 12)
+
+    const items = buildNodes(modelsMap, option)
 
     const nodeGroup: any[] = []
     let current: any[] | undefined
     let isRoot
 
     items.forEach((item, idx) => {
-      isRoot = isRoot || !item.option.type
+      isRoot = isRoot || !item.option.type || item.option.type === 'Discriptions'
       if (item.isBlock) {
         if (items.length === 1) {
           nodeGroup.push(item.node)
@@ -53,10 +62,10 @@ const DetailLayouts = defineComponent({
     })
 
     const content = () =>
-      h(DataProvider, { name: 'gridConfig', data: gridConfig }, () =>
+      h(DataProvider, { name: 'gridConfig', data: config }, () =>
         nodeGroup.map((item, idx) => {
           if (Array.isArray(item)) {
-            return h(Row, __rowProps, () => item.map((node) => node()))
+            return h(Row, rowProps, () => item.map((node) => node()))
           } else {
             return item()
           }
@@ -68,10 +77,10 @@ const DetailLayouts = defineComponent({
           Controls.Group,
           {
             class: 'sup-form-section',
-            option: { type: 'Discriptions', ...props.option },
+            option,
             model: {},
             effectData: getEffectData({}),
-            isView: true
+            isView: true,
           },
           { innerContent: content }
         )
@@ -84,10 +93,12 @@ const DetailLayouts = defineComponent({
 function buildNodes(modelsMap: ModelsMap, preOption) {
   const nodes: any[] = []
   let currentGroup: any[] = []
+  const rootSlots = inject<Obj>('rootSlots', {})
+
   ;[...modelsMap].forEach(([option, model], idx) => {
     const { type, label, labelSlot, attrs, span, hideInDescription } = option
     if (type === 'Hidden' || hideInDescription) return
-    const effectData = getEffectData({ current: toRef(model, model.refData ? 'refData' : 'parent') })
+    const effectData = getEffectData({ current: toRef(model, 'parent'), text: toRef(model, 'refData') })
     let isBlock = option.isBlock
     let wrapNode
     if (model.children || model.listData) {
@@ -102,12 +113,10 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
         })
       } else {
         isBlock ??= !option.span // 未定义时默认为true
-        const viewType = ['Tabs', 'Collapse', 'Card', 'Table', 'Group'].includes(type)
+        const viewType = ['Tabs', 'Collapse', 'Card', 'Table', 'Group', 'List'].includes(type)
           ? type
-          : type === 'List'
-          ? 'Table'
           : 'Group'
-        const Control = viewType === 'Table' ? TableView : Controls[viewType]
+        const Control = Controls[viewType]
         wrapNode = () => h(Control, { option, model, effectData, isView: true, ...globalProps[viewType], ...attrs })
       }
     } else {
@@ -122,8 +131,9 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
       // 如果当前元素是独立元素或是最后一个，则将之前字段包装
       let blockNode
       if (isBlock && !wrapNode) {
-        const last = currentGroup.splice(-1)
-        blockNode = last[0].content
+        const last = currentGroup.splice(-1)[0]
+        const style = option.align && { textAlign: option.align }
+        blockNode = () => h('div', { style }, last.content())
       }
       if (currentGroup?.length) {
         const props = { option: preOption, items: currentGroup, effectData }
@@ -142,47 +152,10 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
 function getContent(option, model: ModelData) {
   const rootSlots = inject<Obj>('rootSlots', {})
   const value = toRef(model, 'refData')
-  const effectData = getEffectData({ current: model.parent, value, text: value })
-  const {
-    type: colType,
-    viewRender,
-    render,
-    options: colOptions,
-    dictName,
-    labelField,
-    keepField,
-    valueToNumber,
-    valueToLabel,
-  } = option
-
-  if (viewRender || colType === 'InfoSlot') {
-    const _render = viewRender || render
-    return () => (typeof _render === 'function' ? _render?.(effectData) : rootSlots[_render]?.(effectData))
-  } else if (labelField) {
-    return () => model.parent[labelField]
-  } else if (keepField) {
-    return () => `${model.refData ?? ''} - ${model.parent[keepField] ?? ''}`
-  } else if (isArray(colOptions) && typeof colOptions[0] === 'string') {
-    if (valueToLabel) return // 绑定值为Label时直接返回原值
-    return () => colOptions[model.refData]
-  } else if (dictName || (colOptions && typeof colOptions[0] !== 'string')) {
-    if (valueToLabel) return // 绑定值为Label时直接返回原值
-    const options = ref<any[]>()
-    if (dictName && globalConfig.dictApi) {
-      globalConfig.dictApi(dictName).then((data) => (options.value = data))
-    } else if (typeof colOptions === 'function') {
-      Promise.resolve(colOptions(effectData)).then((data) => (options.value = data))
-    } else {
-      options.value = unref(colOptions)
-    }
-    return () => options.value?.find(({ value }) => (valueToNumber ? Number(value) : value) === model.refData)?.label
-  } else if (colType === 'Switch') {
-    return () => (option.valueLabels || '否是')[model.refData]
-  } else if (colType === 'Buttons') {
-    return () => h(ButtonGroup, { config: option, param: effectData })
-  } else {
-    return () => model.refData
-  }
+  const effectData = getEffectData({ current: toRef(model, 'parent'), value, text: value })
+  const content = getViewNode(option)
+  return () =>
+    !content ? effectData.text : typeof content === 'string' ? rootSlots[content]?.(effectData) : content(effectData)
 }
 
 export default DetailLayouts
