@@ -113,19 +113,22 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
         })
       } else {
         isBlock ??= !option.span // 未定义时默认为true
-        const viewType = ['Tabs', 'Collapse', 'Card', 'Table', 'Group', 'List'].includes(type)
+        const viewType = ['Tabs', 'Collapse', 'Card', 'Table', 'Group', 'List', 'InputList'].includes(type)
           ? type
           : 'Group'
         const Control = Controls[viewType]
         wrapNode = () => h(Control, { option, model, effectData, isView: true, ...globalProps[viewType], ...attrs })
       }
     } else {
-      currentGroup.push({
-        option,
-        label: labelSlot || label,
-        span,
-        content: getContent(option, model),
-      })
+      const content = getContent(option, model)
+      if (content) {
+        currentGroup.push({
+          option,
+          label: labelSlot || label,
+          span,
+          content,
+        })
+      }
     }
     if (option.isBreak || isBlock || wrapNode || idx === modelsMap.size - 1) {
       // 如果当前元素是独立元素或是最后一个，则将之前字段包装
@@ -154,8 +157,11 @@ function getContent(option, model: ModelData) {
   const value = toRef(model, 'refData')
   const effectData = getEffectData({ current: toRef(model, 'parent'), value, text: value })
   const content = getViewNode(option)
-  return () =>
-    !content ? effectData.text : typeof content === 'string' ? rootSlots[content]?.(effectData) : content(effectData)
+  return (
+    content !== false &&
+    (() =>
+      !content ? effectData.text : typeof content === 'string' ? rootSlots[content]?.(effectData) : content(effectData))
+  )
 }
 
 export default DetailLayouts

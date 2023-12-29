@@ -1,7 +1,7 @@
 import { computed, defineComponent, h, inject, type PropType, provide, reactive, toRef, toRefs, mergeProps } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults } from 'lodash-es'
-import Controls, { containers } from './index'
+import Controls, { containers, formItemTypes } from './index'
 import { ButtonGroup } from './buttons'
 import base from './base'
 import { getEffectData, toNode, useControl, useVModel } from '../utils'
@@ -43,7 +43,12 @@ export default defineComponent({
       } else {
         defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
       }
-      const effectData = getEffectData({ current: toRef(subData, 'parent'), value: toRef(subData, 'refData') })
+      const { parent, refData } = toRefs(subData)
+      const effectData = reactive({
+        ...(props.effectData || getEffectData()),
+        current: parent.value === refData.value ? toRef(props.model, 'parent') : parent,
+        value: refData,
+      })
       const { attrs, hidden } = useControl({
         option,
         effectData,
@@ -60,7 +65,7 @@ export default defineComponent({
       }
       let node = innerNode
       // 容器组件转递继承属性
-      if (containers.includes(type) || type === 'InputGroup') {
+      if ([...containers, 'InputList', 'InputGroup'].includes(type)) {
         const inheritOptions: Obj = {
           disabled: attrs.disabled,
           subSpan: option.subSpan ?? presetSpan,
@@ -117,7 +122,13 @@ export default defineComponent({
 
 export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
   const { type, render } = option
-  const { default: _, ...slots } = inject<Obj>('rootSlots', {})
+  const rootSlots = inject<Obj>('rootSlots', {})
+  const { default: _, ...slots } = rootSlots
+  if (option.slots) {
+    Object.entries(option.slots).forEach(([key, value]) => {
+      slots[key] = typeof value === 'string' ? rootSlots[value] : value
+    })
+  }
 
   const renderSlot = render ? (typeof render === 'function' ? render : slots[render]) : Controls[type]
   let node
@@ -125,7 +136,7 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     node = renderSlot ? () => renderSlot({ attrs, ...effectData }) : () => h('span', attrs, model.refData)
   } else if (type === 'Buttons') {
     node = () => h(ButtonGroup, { config: option, param: effectData })
-  } else if (containers.includes(type)) {
+  } else if (containers.includes(type) || type === 'InputList') {
     // 容器组件不绑定value
     const viewProps = type === 'Descriptions' && { isView: true, class: 'sup-detail' }
     node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs, ...viewProps }), slots)
@@ -136,7 +147,7 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     if (!renderSlot) {
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
     } else if (type === 'InputSlot') {
-      node = () => renderSlot?.(reactive({ attrs: allAttrs, ...toRefs(effectData) }))
+      node = () => renderSlot?.(reactive({ attrs: allAttrs, ...effectData }))
     } else if (type.startsWith('Ext')) {
       node = () => h(renderSlot, reactive({ option, effectData, ...allAttrs }), slots)
     } else {

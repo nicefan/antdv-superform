@@ -8,9 +8,8 @@ type Param = {
 }
 
 export default function useVModel({ option, model, effectData }: Param, defaultValue?: any) {
-  const { type, field, keepField, computed: __computed }: MixOption = option
+  const { type, field, keepField, computed: __computed, vModelFields }: MixOption = option
   if (!field) return
-
   if (defaultValue !== undefined) model.refData ??= toValue(defaultValue)
   // 实际存储变量
   const refValue = toRef(model, 'refData')
@@ -21,6 +20,20 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
     tempData.value = val
     // 数据重置时还原为默认值
     if (refValue.value !== val && defaultValue !== undefined) refValue.value = val
+  }
+  const vModels = {
+    value: tempData,
+    'onUpdate:value': updateValue,
+  }
+
+  if (vModelFields) {
+    Object.entries(vModelFields).forEach(([name, field]) => {
+      model.parent[field] ??= undefined
+      vModels[name] = toRef(model.parent, field)
+      vModels[`onUpdate:${name}`] = (val)  => {
+        model.parent[field] = val
+      }
+    })
   }
 
   let raw = toValue(tempData) // 阻止监听自身数据变化
@@ -54,8 +67,6 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
       )
     )
   }
-  return {
-    value: tempData,
-    'onUpdate:value': updateValue,
-  }
+
+  return vModels
 }

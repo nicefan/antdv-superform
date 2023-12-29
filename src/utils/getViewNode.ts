@@ -47,7 +47,7 @@ export function getViewNode(option) {
     return ({ text }) => (option.valueLabels || '否是')[text]
   } else if (colType === 'Buttons') {
     const buttonsSlot = createButtons({ config: option, isView: true })
-    return buttonsSlot && ((param) => buttonsSlot({ param }))
+    return !!buttonsSlot && ((param) => buttonsSlot({ param }))
   } else {
     // textRender为undefined将直接返回绑定的值
   }

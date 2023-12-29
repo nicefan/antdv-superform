@@ -33,4 +33,5 @@ export {
   TreeSelect,
   Row,
   Col,
+  Upload,
 } from 'ant-design-vue'

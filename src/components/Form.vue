@@ -28,11 +28,15 @@ export default {
       type: Boolean,
     },
   },
-  emits: ['register', 'submit', 'reset'],
-  setup(props, { expose, emit, slots }) {
+  // emits: ['register', 'submit', 'reset'],
+  setup(props, { expose, emit, slots: rootSlots }) {
     const formRef = ref()
     const modelData = ref(props.source || {})
-    const { option, ignoreRules, compact } = props
+    const {
+      option: { onSubmit, onReset, ...option },
+      ignoreRules,
+      compact,
+    } = props
 
     const { modelsMap, initialData } = buildModelsMap(option.subItems, modelData)
     const effectData = reactive({ formData: modelData, current: modelData })
@@ -49,7 +53,7 @@ export default {
         return formRef.value.validate().then((...args) => {
           const data = cloneDeep(modelData.value)
           emit('submit', data)
-          return data
+          return onSubmit ? onSubmit(data) : data
         })
       },
       setFieldsValue(data) {
@@ -61,7 +65,7 @@ export default {
         formRef.value?.clearValidate()
         const data = cloneDeep(modelData.value)
         emit('reset', data)
-        return data
+        return onReset ? onReset(data) : data
       },
     }
 
@@ -87,7 +91,14 @@ export default {
       emit('register', exposeData)
     }
     expose(exposeData)
-    provide('rootSlots', slots)
+    const { default: defaultSlot, ...__slots } = rootSlots
+    provide('rootSlots', __slots)
+    const slots = { ...__slots }
+    if (option.slots) {
+      Object.entries(option.slots).forEach(([key, value]) => {
+        slots[key] = typeof value === 'string' ? rootSlots[value] : value
+      })
+    }
 
     return () =>
       h(
@@ -103,7 +114,7 @@ export default {
           ...slots,
           default: () => [
             h(Collections, { option, model: { refData: modelData, children: modelsMap }, effectData }),
-            slots.default?.(),
+            defaultSlot?.(),
           ],
         }
       )

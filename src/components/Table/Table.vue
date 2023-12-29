@@ -115,13 +115,8 @@ export default defineComponent({
     )
 
     const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys, tableRef: exposed })
-    const rootSlots = inject('rootSlot', {})
     const slots: Obj = { ...ctx.slots }
-    if (option.slots) {
-      Object.entries(option.slots).forEach(([key, value]) => {
-        slots[key] = typeof value === 'string' ? rootSlots[value] : value
-      })
-    }
+
     const buttonsConfig = option.buttons as any
     if (buttonsConfig) {
       const slotName = buttonsConfig.forSlot || 'extra'

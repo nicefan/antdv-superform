@@ -1,1 +1,1 @@
-export { useModal, createModal } from './useModal'
+export * from './useModal'

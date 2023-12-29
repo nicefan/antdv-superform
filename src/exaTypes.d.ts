@@ -51,6 +51,7 @@ type VSlot = string | Fn<VNodeTypes>
 interface ExtBaseOption {
   type: string
   field?: string
+  vModelFields?: Obj<string>
   ref?: Ref
   initialValue?: any
   label?: VSlot
@@ -173,6 +174,7 @@ interface ExtButtonGroup<T extends string = string> {
   disabled?: boolean | Fn<boolean>
   /** 将按钮放置到组件的指定slot中 */
   forSlot?: string
+  methods?: Obj<Fn>
   actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
   // subItems?: ButtonItem[]
 }
@@ -268,7 +270,7 @@ interface ExtFormItemOption extends ExtBaseOption {
   /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
   computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
   formItemProps?: FormItemProps
-  descriptionsProps?: FormItemProps & DescriptionsItemProp
+  descriptionsProps?: ExtDescriptionsProps
 }
 
 interface ExtInputOption extends ExtFormItemOption {
@@ -398,7 +400,7 @@ declare global {
   export interface ModelChildren<T = ExtBaseOption> {
     modelsMap: ModelsMap<T>
     rules: Obj
-    initialData: Ref<Obj>
+    initialData: any
   }
 }
 

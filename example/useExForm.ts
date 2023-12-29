@@ -239,6 +239,53 @@ export default function exampleForm() {
             keepField: 'endDate',
           },
           {
+            type: 'DatePicker',
+            label: '季度',
+            field: 'quarter',
+            attrs: {
+              picker: 'quarter'
+            },
+            slots:{
+              dateRender(...args) {
+                console.log(args)
+              }
+            }
+          },
+          {
+            type: 'InputList',
+            field: 'datelist',
+            span: 24,
+            label: '数组输入',
+            rowButtons: ['add'],
+            columns: [
+              {
+                type: 'DatePicker',
+                label: '日期',
+                field: 'index',
+                span: 24,
+              },
+            ]
+          },
+          {
+            type: 'Upload',
+            label: '附件',
+            field: 'file',
+            initialValue: [],
+            // vModelFields: {
+            //   fileList: 'fileList',
+            // },
+            span: 24,
+            rules: {required: true, type:'array', min:3},
+            descriptionsProps: {
+              noInput: true
+            },
+            attrs: {
+              multiple: true,
+              maxCount: 3,
+              accept:'image/*'
+            }
+          },
+          {
             type: 'Buttons',
             align: 'center',
             isBlock: true,
@@ -441,6 +488,11 @@ export default function exampleForm() {
                     type: 'Input',
                     field: 'filed2',
                     label: 'filed2',
+                  },
+                  {
+                    type: 'Input',
+                    field: 'filed3',
+                    label: 'filed3',
                   },
                 ],
               },

@@ -40,7 +40,7 @@ export default defineComponent({
         // 监听子组件数据变化
         watch(model.refData, () => () => formItemContext.value.onFieldChange(), { deep: true })
       } else {
-        const { rules, propChain, refName } = [...model.children.values()].find((val) => !!val.rules) as ModelData
+        const { rules, propChain, refName } = [...model.children.values()].find((val) => !!val.rules) || {} as ModelData
         if (refName) {
           ruleObj = rules
           _propChain = propChain

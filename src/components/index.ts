@@ -2,6 +2,7 @@ import { defineComponent, h, reactive, toRefs } from 'vue'
 import Group from './Group.vue'
 import Form from './Form.vue'
 import InputGroup from './InputGroup.vue'
+import InputList from './InputList.vue'
 import Card from './Card.vue'
 import List from './List.vue'
 import Tabs from './Tabs.vue'
@@ -18,6 +19,7 @@ import TimePicker from './TimePicker.vue'
 import Radio from './Radio.vue'
 import Checkbox from './Checkbox.vue'
 import TreeSelect from './TreeSelect.vue'
+import Upload from './Upload.vue'
 import { override } from './base'
 
 export { ButtonGroup } from './buttons'
@@ -39,6 +41,7 @@ const formItems = {
   Input,
   InputNumber,
   InputGroup,
+  InputList,
   Select,
   Switch,
   DateRange,
@@ -47,9 +50,11 @@ const formItems = {
   Radio,
   Checkbox,
   TreeSelect,
+  Upload,
 }
 
 export const containers = Object.keys(components)
+export const formItemTypes = Object.keys(formItems)
 const allItems: Obj = { ...formItems, ...components }
 
 export function addComponent(name, component) {

@@ -45,7 +45,7 @@ const props = defineProps<{
 const { config, methods, param } = props
 
 const __config = Array.isArray(config) ? { actions: config } : config
-const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(param || {}), methods)
+const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(param || {}), methods || __config.methods)
 const isDivider = __config.divider ?? ['link', 'text'].includes(__config.buttonType || '')
 </script>
 
@@ -56,7 +56,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
   const dis = useDisabled(disabled, param)
   const isHide = getComputedStatus(hidden, param)
 
-  let actionBtns = mergeActions(actions, methods)
+  let actionBtns = mergeActions(actions, methods, defaultAttrs)
   if (globalConfig.buttonRoles) {
     const roles = globalConfig.buttonRoles()
     actionBtns = actionBtns.filter((item) => {
