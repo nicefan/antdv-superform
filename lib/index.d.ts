@@ -9,7 +9,6 @@ import { ComponentOptionsMixin } from 'vue';
 import { ComputedRef } from 'vue';
 import { DefaultOptionType } from 'ant-design-vue/es/select';
 import { DefineComponent } from 'vue';
-import type { DescriptionsItemProp } from 'ant-design-vue/es/descriptions';
 import type { DescriptionsProps } from 'ant-design-vue';
 import { ExtractPropTypes } from 'vue';
 import type { FormItemProps } from 'ant-design-vue';
@@ -103,7 +102,8 @@ declare type Dict = {
 export declare interface ExtBaseOption {
     type: string
     field?: string
-    ref?: Ref
+    vModelFields?: Obj<string>
+    value?: Ref
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
@@ -156,6 +156,7 @@ export declare interface ExtButtonGroup<T extends string = string> {
     disabled?: boolean | Fn<boolean>
     /** 将按钮放置到组件的指定slot中 */
     forSlot?: string
+    methods?: Obj<Fn>
     actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
     // subItems?: ButtonItem[]
 }
@@ -181,10 +182,18 @@ declare interface ExtDateRange extends ExtFormItemOption {
     keepField?: string
 }
 
-export declare interface ExtDescriptionsOption extends Omit<ExtGroupOption, 'type'> {
+export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'> {
+    title?: VSlot
+    gutter?: number
+    buttons?: ExtButtons
+    /** 弹窗表单中的行间排版属性 */
+    rowProps?: RowProps & HTMLAttributes
+    /** 子元素的统一排列属性， */
+    subSpan?: number
     mode?: 'table' | 'form' | 'default'
     attrs?: ExtDescriptionsProps
     isContainer?: boolean
+    subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
 }
 
 declare type ExtDescriptionsProps = {
@@ -200,7 +209,8 @@ declare type ExtDescriptionsProps = {
     labelBgColor?: string
     borderColor?: string
     noInput?: boolean
-} & DescriptionsProps & HTMLAttributes
+} & DescriptionsProps &
+HTMLAttributes
 
 /** 表单元素属性 */
 export declare interface ExtFormItemOption extends ExtBaseOption {
@@ -208,7 +218,8 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     formItemProps?: FormItemProps
-    descriptionsProps?: FormItemProps & DescriptionsItemProp
+    descriptionsProps?: ExtDescriptionsProps
+    viewRender?: VSlot
 }
 
 export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
@@ -449,10 +460,10 @@ export declare const SuperButtons: DefineComponent<{
 
 export declare const SuperDetail: DefineComponent<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtFormOption | ExtDescriptionsOption>;
+    option: PropType<ExtDescriptionsOption>;
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtFormOption | ExtDescriptionsOption>;
+    option: PropType<ExtDescriptionsOption>;
 }>> & {
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
@@ -604,7 +615,7 @@ declare type VSlot = string | Fn<VNodeTypes>
 
 declare type WidgetTypes = {
     Buttons: ExtBaseOption & ExtButtonGroup
-    Hidden: { field: string }
+    Hidden: ExtBaseOption
     InputSlot: ExtInputSlotOption
     InfoSlot: ExtInfoSlotOption
     Text: ExtFormItemOption
@@ -631,7 +642,7 @@ declare type WrapperTypes = {
     Tabs: ExtTabsOption
     Table: ExtTableOption
     Collapse: ExtCollapseOption
-    Descriptions: ExtDescriptionsOption
+    Descriptions: ExtDescriptionsOption | ExtGroupOption
 }
 
 export { }

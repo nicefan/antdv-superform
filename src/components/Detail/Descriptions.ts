@@ -1,4 +1,4 @@
-import { type PropType, defineComponent, h, inject, mergeProps } from 'vue'
+import { type PropType, defineComponent, h, inject, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import base from '../base'
 import { toNode } from '../../utils'
@@ -10,7 +10,7 @@ export default defineComponent({
       required: true,
     },
     items: {
-      type: Array as PropType<{ label: string; span: number; content: Fn; option: Obj }[]>,
+      type: Array as PropType<{ label: string; span: number; content: Fn; option: Obj; hidden: Ref }[]>,
       required: true,
     },
     effectData: Object,
@@ -27,6 +27,7 @@ export default defineComponent({
       borderColor,
       rowProps,
       colon,
+      size,
       ...descriptionsProps
     } = {
       bordered: true,
@@ -40,13 +41,13 @@ export default defineComponent({
     // if (typeof descriptionsProps?.column === 'number') {
     //   presetSpan = Math.floor(24 / descriptionsProps.column)
     // }
-    const __title = type !== 'Group' ? '' : title || label
+    // const __title = type !== 'Group' ? '' : title || label
     const rowGroup = (function () {
       const group: any[] = []
       let current: any[] = []
       let n = 0
-      props.items.forEach(({ option, span = presetSpan, label, content }, idx) => {
-        let ceil = span ? Math.ceil(span / presetSpan) : 1
+      props.items.forEach(({ option, span = presetSpan, label, content, hidden }, idx) => {
+        let ceil = Number(span) ? Math.ceil(span / presetSpan) : 1
         ceil = ceil > colNum ? colNum : ceil
         const attrs = { ...descriptionsProps, ...option.formItemProps, ...option.descriptionsProps }
         const labelStyle = mergeProps(attrs.labelAlign ? { textAlign: attrs.labelAlign } : {}, attrs.labelStyle)
@@ -58,6 +59,7 @@ export default defineComponent({
           span,
           label,
           content,
+          hidden,
           colspan: ceil,
         }
 
@@ -73,6 +75,11 @@ export default defineComponent({
           n = ceil
           current = [item]
         }
+        if (option.isBreak) {
+          group.push(current)
+          n = 0
+          current = []
+        }
         if (idx === props.items.length - 1) {
           // if (n < colNum) {
           //   const mod = colNum - n
@@ -86,42 +93,47 @@ export default defineComponent({
     let colorStyle = ''
     borderColor && (colorStyle += `--descriptions-border-color:${borderColor};`)
     labelBgColor && (colorStyle += `--descriptions-bg-color:${labelBgColor};`)
-    const prefixCls = inject<any>('configProvider', undefined)?.getPrefixCls() || 'ant'
+    // const prefixCls = inject<any>('configProvider', undefined)?.getPrefixCls() || 'ant'
     let content
     if (mode === 'table') {
       const rows = () =>
         layout === 'vertical'
           ? rowGroup.flatMap((group) => [
+              (group.length > 1 || group[0].label) &&
+                h(
+                  'tr',
+                  { class: 'ant-descriptions-row' },
+                  group.map(
+                    (item) =>
+                      !unref(item.hidden) &&
+                      h(
+                        'th',
+                        mergeProps(
+                          {
+                            class: 'ant-descriptions-item-label',
+                            colspan: item.colspan,
+                            style: `width: ${((item.span / 24) * 100).toFixed(2)}%`,
+                          },
+                          { class: item.labelCol.class, style: item.labelCol.style }
+                        ),
+                        toNode(item.label, props.effectData)
+                      )
+                  )
+                ),
               h(
                 'tr',
                 { class: 'ant-descriptions-row' },
-                group.map((item) =>
-                  h(
-                    'th',
-                    mergeProps(
-                      {
-                        class: 'ant-descriptions-item-label',
-                        colspan: item.colspan,
-                        style: `width: ${((item.span / 24) * 100).toFixed(2)}%`,
-                      },
-                      { class: item.labelCol.class, style: item.labelCol.style }
-                    ),
-                    toNode(item.label, props.effectData)
-                  )
-                )
-              ),
-              h(
-                'tr',
-                { class: 'ant-descriptions-row' },
-                group.map((item) =>
-                  h(
-                    'td',
-                    mergeProps(
-                      { class: 'ant-descriptions-item-content', colspan: item.colspan },
-                      { class: item.wrapperCol.class, style: item.wrapperCol.style }
-                    ),
-                    item.content()
-                  )
+                group.map(
+                  (item) =>
+                    !unref(item.hidden) &&
+                    h(
+                      'td',
+                      mergeProps(
+                        { class: 'ant-descriptions-item-content', colspan: item.colspan },
+                        { class: item.wrapperCol.class, style: item.wrapperCol.style }
+                      ),
+                      item.content()
+                    )
                 )
               ),
             ])
@@ -130,54 +142,64 @@ export default defineComponent({
               h(
                 'tr',
                 { class: 'ant-descriptions-row' },
-                group.flatMap((item) => [
-                  h(
-                    'th',
-                    mergeProps(
-                      { class: 'ant-descriptions-item-label' },
-                      { class: item.labelCol.class, style: item.labelCol.style }
-                    ),
-                    toNode(item.label, props.effectData)
-                  ),
-                  h(
-                    'td',
-                    mergeProps(
-                      {
-                        class: 'ant-descriptions-item-content',
-                        style: item.wrapperCol.style,
-                        colspan: item.colspan * 2 - 1,
-                      },
-                      { class: item.wrapperCol.class }
-                    ),
-                    item.content()
-                  ),
-                ])
+                group.flatMap(
+                  (item) =>
+                    !unref(item.hidden) &&
+                    (group.length === 1 && !item.label
+                      ? [h('td', { colspan: item.colspan * 2 }, item.content())]
+                      : [
+                          h(
+                            'th',
+                            mergeProps(
+                              { class: 'ant-descriptions-item-label' },
+                              { class: item.labelCol.class, style: item.labelCol.style }
+                            ),
+                            toNode(item.label, props.effectData)
+                          ),
+                          h(
+                            'td',
+                            mergeProps(
+                              {
+                                class: 'ant-descriptions-item-content',
+                                style: item.wrapperCol.style,
+                                colspan: item.colspan * 2 - 1,
+                              },
+                              { class: item.wrapperCol.class }
+                            ),
+                            item.content()
+                          ),
+                        ])
+                )
               )
             )
       content = () => h('table', {}, rows())
     } else {
       content = () =>
         rowGroup.map((group) =>
-          h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
-            group.map((item) =>
-              h(Col, { span: item.span, ...item.option.colProps }, () =>
-                h(Row, { class: ['ant-descriptions-item-container'] }, () => [
-                  h(Col, mergeProps({ class: 'ant-descriptions-item-label' }, item.labelCol), () =>
-                    h('label', {}, toNode(item.label, props.effectData))
-                  ),
-                  h(Col, { class: 'ant-descriptions-item-content', ...item.wrapperCol }, () =>
-                    h(
-                      'div',
-                      {
-                        class: { 'sup-descriptions-item-input': !item.attrs.noInput && mode === 'form' },
-                      },
-                      item.content()
+          group.length === 1 && !group[0].label
+            ? group[0].content()
+            : h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
+                group.map(
+                  (item) =>
+                    !unref(item.hidden) &&
+                    h(Col, { span: item.span, ...item.option.colProps }, () =>
+                      h(Row, { class: ['ant-descriptions-item-container'] }, () => [
+                        h(Col, mergeProps({ class: 'ant-descriptions-item-label' }, item.labelCol), () =>
+                          h('label', {}, toNode(item.label, props.effectData))
+                        ),
+                        h(Col, { class: 'ant-descriptions-item-content', ...item.wrapperCol }, () =>
+                          h(
+                            'div',
+                            {
+                              class: { 'sup-descriptions-item-input': !item.attrs.noInput && mode === 'form' },
+                            },
+                            item.content()
+                          )
+                        ),
+                      ])
                     )
-                  ),
-                ])
+                )
               )
-            )
-          )
         )
     }
     return () =>
@@ -191,6 +213,7 @@ export default defineComponent({
             mode === 'form' && 'sup-descriptions-mode-form',
             mode === 'table' && 'ant-descriptions-bordered',
             colon === false && 'ant-descriptions-item-no-colon',
+            size && size !== 'default' && 'ant-descriptions-' + size,
           ],
         },
         content()

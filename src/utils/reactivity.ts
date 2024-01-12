@@ -3,7 +3,7 @@ import { inject, reactive, ref, unref, watchEffect } from 'vue'
 /** 统一生成动态属性参数 */
 export function getEffectData<T extends Obj>(param?: T) {
   const formData = inject<any>('exaProvider', {}).data
-  return reactive({ formData, ...((param || {}) as T) })
+  return reactive({ ...((param || {}) as T), formData })
 }
 
 export function getComputedStatus(org: undefined | boolean | Ref<boolean> | Fn<boolean>, dataRef: Obj) {

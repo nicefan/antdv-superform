@@ -4,6 +4,7 @@ import base from './base'
 import Collections from './Collections'
 import { computed, defineComponent, h, mergeProps, ref, watch } from 'vue'
 import { globalProps } from '../plugin'
+import { toNode } from '../utils'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -40,7 +41,8 @@ export default defineComponent({
         // 监听子组件数据变化
         watch(model.refData, () => () => formItemContext.value.onFieldChange(), { deep: true })
       } else {
-        const { rules, propChain, refName } = [...model.children.values()].find((val) => !!val.rules) || {} as ModelData
+        const { rules, propChain, refName } =
+          [...model.children.values()].find((val) => !!val.rules) || ({} as ModelData)
         if (refName) {
           ruleObj = rules
           _propChain = propChain
@@ -63,7 +65,7 @@ export default defineComponent({
         base.FormItem,
         { ...formItemAttrs, rules: rules.value, ref: formItemContext, name: _propChain },
         {
-          label: () => labelSlot?.(props.effectData) || label,
+          label: () => toNode(labelSlot || label, props.effectData),
           default: () =>
             h(FormItemRest, () => h(base.InputGroup, { compact, ...attrs }, () => h(Collections, { option, model }))),
         }

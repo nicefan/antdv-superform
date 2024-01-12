@@ -1,8 +1,25 @@
 <script lang="ts">
-import { defineComponent, type PropType, computed, ref, h, reactive } from 'vue'
-import { UploadOutlined, PaperClipOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons-vue'
+import {
+  defineComponent,
+  type PropType,
+  computed,
+  ref,
+  h,
+  reactive,
+  inject,
+  shallowRef,
+  watch,
+  toRaw,
+  toRef,
+  nextTick,
+} from 'vue'
+import { UploadOutlined, PaperClipOutlined, LoadingOutlined, SyncOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import base from './base'
-import { message, Upload } from 'ant-design-vue'
+import { message, Modal, Upload } from 'ant-design-vue'
+import { globalProps } from '../plugin'
+import { useModal } from '../superModal'
+import { toNode } from '../utils'
+import usePreview from './usePreview'
 
 interface FileInfo {
   /** 文件id */
@@ -11,6 +28,8 @@ interface FileInfo {
   file?: File
   /** 文件名 */
   name: string
+  /** 文件类型 */
+  type: string
   /** 链接地址 */
   url: string
   /** 上传进度 */
@@ -19,10 +38,14 @@ interface FileInfo {
   status?: 'waiting' | 'error' | 'success' | 'done' | 'uploading' | 'removed'
 }
 
-function acceptValidtor(accept:string, file: FileInfo) {
-  return accept.split(',').some(str => {
-    return (file.name.endsWith(str)) || new RegExp(`^${str.replace('*', '\\S*')}$`).test(file.type)
+function acceptValidtor(accept: string, file: FileInfo) {
+  return accept.split(',').some((str) => {
+    return file.name.endsWith(str) || (file.type && new RegExp(`^${str.replace('*', '\\S*')}$`).test(file.type))
   })
+}
+
+function fileIsImage(file) {
+  return (file.url || file.thumbUrl) && acceptValidtor('.png,.jpg,.jpeg,.gif,.webp,.svg,.tif,.tiff', file)
 }
 
 export default defineComponent({
@@ -33,89 +56,212 @@ export default defineComponent({
     value: [String, Array] as PropType<string | string[]>,
     fileList: Array as PropType<any[]>,
     /** 指定文件信息字段 */
-    fieldNames: Object as PropType<Partial<Pick<FileInfo, 'uid' | 'name' | 'url'>>>,
+    infoNames: Object as PropType<Partial<Pick<FileInfo, 'uid' | 'name' | 'url'>>>,
     /** 是否立即上传 */
     immediate: { type: Boolean, default: () => true },
+    //TODO apis 可从全局配置， 当前配置为字符串时，作为url参数传到全局api方法
     customRequest: Function,
     minSize: Number,
     maxSize: Number,
     isSingle: Boolean,
     maxCount: Number,
+    mode: String as PropType<'auto' | 'submit' | 'custom'>,
+    tip: String,
+    title: String,
+    repeatable: Boolean,
+    onPreview: Function,
+    beforeUpload: Function,
+    isView: Boolean,
+    disabled: Boolean,
+    isImageUrl: Function,
   },
   emits: ['update:value', 'update:fileList'],
   setup(props, ctx) {
-    const { minSize, maxSize, isSingle, maxCount } = props
-    const { accept } = ctx.attrs as Obj<string>
-    const { fileField, apis = {}, immediate = props.immediate } = props.option
-    //TODO apis 可从全局配置， 当前配置为字符串时，作为url参数传到全局api方法
+    const {
+      mode = 'auto',
+      minSize,
+      maxSize,
+      maxCount,
+      infoNames,
+      repeatable,
+      onPreview,
+      isImageUrl = fileIsImage,
+    } = { ...(globalProps.Upload as Obj), ...props }
+    const { accept, listType } = ctx.attrs as Obj<string>
+    const { label, apis = {}, vModelFields = {} } = props.option
+
+    const preview = usePreview()
+
+    let valueField = 'uid'
+    let nameMap: [string, string][] = []
+    const __names: Obj = { uid: 'uid', status: 'status', url: 'url', name: 'name', ...infoNames }
+    if (mode === 'custom') __names.originFileObj = ''
+
+    Object.entries(__names as Obj<string | Obj>).map(([key, value]) => {
+      const { name = key, isValue } = typeof value === 'object' ? value : ({ name: value } as Obj)
+      if (isValue) {
+        valueField = key
+      }
+      nameMap.push([key, name])
+    })
+
+    const convertInfo = (info) => {
+      const __info = { status: 'done', ...info }
+      nameMap.forEach(([key, name]) => {
+        if (name && name !== key) {
+          __info[key] = __info[name as string]
+          delete __info[name as string]
+        }
+      })
+      return __info
+    }
+    const reconvert = (info) => {
+      const __info = {}
+      nameMap.forEach(([key, name]) => {
+        const value = info[key]
+        if (name && value !== undefined) __info[name] = value
+      })
+      return __info
+    }
+
+    // 绑定值为fileList时不再提交value变化
+    const valueIsFileList = props.option.field === vModelFields.fileList
 
     const uploadList = ref<FileInfo[]>([])
 
-    const fileList = ref<any[]>([
-      {
-        uid: 'abc',
-        name: 'abc.ppt',
-        url: './abc.ppt',
-        status: 'done',
-      },
-    ])
-    if (!props.fileList) {
-      ctx.emit('update:fileList', [...fileList.value])
+    const { onSubmit } = inject<any>('exaProvider', {})
+
+    const innerFileList = ref<any[]>([])
+
+    const outFileList = shallowRef<any[]>([])
+
+    const tasks = new Map<string, Awaited<any>>()
+    const waitingTasks = new Map<string, Fn<Awaited<any>>>()
+
+    const updateFileList = (list) => {
+      innerFileList.value = list
+      outFileList.value = list.map(reconvert)
+      ctx.emit('update:fileList', outFileList.value)
+      updateValue()
     }
 
+    const updateValue = () => {
+      if (valueIsFileList) {
+        ctx.emit('update:value', outFileList.value)
+      } else {
+        ctx.emit(
+          'update:value',
+          innerFileList.value.map((item) => item[valueField])
+        )
+      }
+    }
+
+    watch(
+      () => toRaw(props.fileList),
+      (list) => {
+        if (list && list !== outFileList.value) {
+          const fileList = list.map(convertInfo)
+          updateFileList(fileList)
+        }
+      },
+      { immediate: true }
+    )
+
+    // const loadingContent = () => {
+    //   return innerFileList.value.map(file => {
+    //     const status = computed(() => file.percent > 0 && file.status)
+    //     return h(Progress, { size: 'small', percent: file.percent, } status="active" />)
+    //   })
+    // }
+    const modal = useModal(() => h('div', [h(LoadingOutlined), ' 文件上传中...']), {
+      footer: null,
+      closable: false,
+      centered: true,
+    })
+    onSubmit?.(() => {
+      let isLoading = false
+      let stack: Promise<any> = Promise.resolve()
+      if (mode === 'auto') {
+        for (const item of innerFileList.value) {
+          if (item.status === 'error') {
+            const error = item.response || { message: '文件上传错误！' }
+            stack = Promise.reject(error)
+          } else if (item.status === 'uploading') {
+            isLoading = true
+          }
+          stack = Promise.all(tasks.values())
+        }
+      } else if (mode === 'submit') {
+        const __tasks: any = []
+        for (const item of innerFileList.value) {
+          if (item.status !== 'done') {
+            isLoading = true
+            item.status = 'uploading'
+            const task = waitingTasks.get(item.uid) as Fn
+            __tasks.push(task())
+          }
+          stack = Promise.all(__tasks)
+        }
+      }
+      if (isLoading) {
+        modal.openModal()
+        stack.finally(() => {
+          modal.closeModal()
+        })
+      }
+      return stack
+    })
+
     const beforeUpload = (file, resFileList) => {
-      let errMessage
-      if (maxCount && fileList.value.length > maxCount) {
-        errMessage = '文件数量最多' + maxCount
+      if (props.beforeUpload) {
+        const res = props.beforeUpload(file, resFileList)
+        if (res !== undefined) return res
       }
-      if (accept && !acceptValidtor(accept, file)) {
-        errMessage = '请选择正确的文件类型！'
-      } else if (minSize || maxSize) {
-        const fileSize = file.size / 1024 / 1024
-        if (minSize && minSize > fileSize) {
-          errMessage = '文件最小需要' + minSize + 'M'
+      const errMessage = (() => {
+        if (maxCount) {
+          const count = outFileList.value.length + resFileList.indexOf(file)
+          if (count >= maxCount) {
+            return '文件数量最多' + maxCount
+          }
         }
-        if (maxSize && maxSize < fileSize) {
-          errMessage = '文件最大不超过' + minSize + 'M'
+        if (accept && !acceptValidtor(accept, file)) {
+          return '请选择正确的文件类型！'
         }
-      }
+        if (minSize || maxSize) {
+          const fileSize = file.size / 1024 / 1024
+          if (minSize && minSize > fileSize) {
+            return '文件最小需要' + minSize + 'M'
+          }
+          if (maxSize && maxSize < fileSize) {
+            return '文件最大不超过' + minSize + 'M'
+          }
+        }
+        if (!repeatable) {
+          const item = innerFileList.value.find((item) => item.name === file.name)
+          if (item) {
+            return `文件重复: ${item.name}`
+          }
+        }
+      })()
+
       if (errMessage) {
         message.error(errMessage)
         return Upload.LIST_IGNORE
       }
-      if (!immediate) {
-        file.status = 'waiting'
+      if (mode === 'custom') {
+        return false
       }
-      return immediate
     }
 
-    const customRequest =
-      // apis.upload &&
-      ((args) => {
-        if (!apis.upload) return Promise.reject()
-        const { file, onProgress, onError, onSuccess } = args
-        const formData: any = new FormData()
-        formData.append('file', file)
-
-        apis.upload &&
-          apis
-            .upload(formData, {
-              onUploadProgress: onProgress,
-            })
-            .then(onSuccess, onError)
-      })
-
-    function handleChange(info: Record<string, any>) {
-      const file = info.file
-      const status = file?.status
-      const url = file?.response?.link
-      const name = file?.name
-
-        if (file.response) {
-          // Component will show file.url as link
-          file.url = file.response.url;
-        }
-        const resFileList = [...info.fileList]
+    function handleChange({ file, fileList, event }) {
+      if (file.status === 'removed') {
+        tasks.delete(file.uid)
+        waitingTasks.delete(file.uid)
+      } else if (mode !== 'auto' && !event && file.status === 'uploading') {
+        file.status = 'waiting'
+      } else if (file.status === 'done' && file.response) {
+        Object.assign(file, convertInfo(file.response))
+      }
       // const resFileList = info.fileList.map(file => {
       //   if (file.response) {
       //     // Component will show file.url as link
@@ -123,55 +269,121 @@ export default defineComponent({
       //   }
       //   return file;
       // });
-      ctx.emit(
-        'update:value',
-        resFileList.map((item) => item.uid)
-      )
-      ctx.emit('update:fileList', resFileList)
-      fileList.value = resFileList
-      // if (status === 'uploading') {
-      //   if (!uploading) {
-      //     emit('uploading', name)
-      //     uploading = true
-      //   }
-      // } else if (status === 'done') {
-      //   emit('done', name, url)
-      //   uploading = false
-      // } else if (status === 'error') {
-      //   emit('error')
-      //   uploading = false
-      // }
+
+      updateFileList([...fileList])
+    }
+
+    const customRequest = (args) => {
+      const { file } = args
+
+      if (mode === 'auto') {
+        tasks.set(file.uid, upload(args))
+      } else if (mode === 'submit') {
+        waitingTasks.set(file.uid, () => upload(args))
+      }
+    }
+
+    const upload = (args) => {
+      const { file, filename, onProgress, onError, onSuccess } = args
+      // return new Promise((resolve, reject) => {
+      //   onProgress({ percent: 30 })
+      //   setTimeout(() => {
+      //     reject()
+      //     onError(Error('error'))
+      //   }, 5000)
+      // })
+      const errorHandler = (error) => {
+        onError(error)
+        return Promise.reject(error)
+      }
+      if (!apis.upload) {
+        return Promise.resolve().then(() => errorHandler(Error('Api config error')))
+      }
+      const formData: any = new FormData()
+      formData.append(filename, file)
+      const onUploadProgress = (e) => {
+        if (e.total > 0) {
+          e.percent = (e.loaded / e.total) * 100
+        }
+        onProgress(e)
+      }
+
+      return apis
+        .upload(formData, {
+          onUploadProgress,
+        })
+        .then(onSuccess, errorHandler)
     }
 
     // 查看模式时，控制操作按钮
-    const listConfig = { showRemoveIcon: false }
+    const listConfig = computed(() => ({
+      showRemoveIcon: !props.isView && !props.disabled,
+      showDownloadIcon: props.isView,
+    }))
 
-    const iconRender = ({file, listType}) => {
+    const filePreview = (file) => {
+      if (onPreview) {
+        const src = onPreview(file)
+        src && preview.open(src)
+      } else if (isImageUrl(file)) {
+        let current
+        const images = innerFileList.value
+          .filter((item) => isImageUrl(item))
+          .map((item, idx) => {
+            if (item === file) current = idx
+            return item.url || item.thumbUrl
+          })
+        preview.open({ images, current })
+      }
+    }
+    const iconRender = ({ file, listType }) => {
       if (file.status === 'waiting') {
         return h(SyncOutlined)
-      } else if (file.status === 'uploading'){
+      } else if (file.status === 'uploading') {
         return h(LoadingOutlined)
       } else {
         return h(PaperClipOutlined)
       }
     }
     // const formItemContext = Form.useInjectFormItemContext();
-
+    const title = '上传' + (typeof label === 'string' ? label : '')
+    const tips: string[] = []
+    accept && tips.push('支持文件格式：' + accept)
+    maxSize && tips.push('单个文件不超过' + maxSize + 'MB')
+    const tip = props.tip || tips.join(', ')
+    const slots: Obj = {}
+    if (listType === 'picture-card') {
+      slots.default = () =>
+        props.title ? toNode(props.title) : h('div', [h(PlusOutlined), h('div', { style: 'margin-top:8px' }, title)])
+    } else {
+      slots.default = () => [
+        h(base.Button, {}, () => (props.title ? toNode(props.title) : [h(UploadOutlined), title])),
+        tip && h('div', { class: 'sup-upload-tip' }, tip),
+      ]
+    }
+    const isView = computed(() => props.disabled || props.isView)
     return () =>
-      h(
-        base.Upload,
-        {
-          customRequest,
-          beforeUpload,
-          fileList: fileList.value,
-          onChange: handleChange,
-          maxCount: 3
-        },
-        {
-        default:() => h(base.Button, {}, () => [h(UploadOutlined), '上传']),
-        iconRender
-        }
-      )
+      isView.value && outFileList.value.length === 0
+        ? h('div', { class: 'sup-upload-tip' }, '暂无附件')
+        : h(
+            base.Upload,
+            {
+              ...globalProps.Upload,
+              class: { 'upload-disabled': isView.value },
+              customRequest,
+              beforeUpload,
+              fileList: innerFileList.value,
+              onChange: handleChange,
+              onPreview: filePreview,
+              showUploadList: listConfig.value,
+              maxCount,
+              isImageUrl,
+              iconRender,
+            },
+            {
+              default: isView.value ? null : slots.default,
+            }
+          )
   },
 })
 </script>

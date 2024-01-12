@@ -52,7 +52,7 @@ interface ExtBaseOption {
   type: string
   field?: string
   vModelFields?: Obj<string>
-  ref?: Ref
+  value?: Ref
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
@@ -61,9 +61,9 @@ interface ExtBaseOption {
   sort?: number
   attrs?: Obj
   /** 输入框列属性，置为空对象将清空继承属性 */
-  wrapperCol?: ColProps & HTMLAttributes
+  // wrapperCol?: ColProps & HTMLAttributes
   /** 标题列属性，置为空对象将清空继承属性 */
-  labelCol?: ColProps & HTMLAttributes
+  // labelCol?: ColProps & HTMLAttributes
   dynamicAttrs?: Fn<Obj>
   /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
   hidden?: boolean | ((data: Readonly<Obj>) => boolean)
@@ -97,7 +97,8 @@ type ExtDescriptionsProps = {
   labelBgColor?: string
   borderColor?: string
   noInput?: boolean
-} & DescriptionsProps & HTMLAttributes
+} & DescriptionsProps &
+  HTMLAttributes
 interface ExtGroupBaseOption extends ExtBaseOption {
   title?: VSlot
   gutter?: number
@@ -112,10 +113,18 @@ interface ExtGroupBaseOption extends ExtBaseOption {
 interface ExtGroupOption extends ExtGroupBaseOption {
   component?: Component
 }
-interface ExtDescriptionsOption extends Omit<ExtGroupOption, 'type'> {
+interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'> {
+  title?: VSlot
+  gutter?: number
+  buttons?: ExtButtons
+  /** 弹窗表单中的行间排版属性 */
+  rowProps?: RowProps & HTMLAttributes
+  /** 子元素的统一排列属性， */
+  subSpan?: number
   mode?: 'table' | 'form' | 'default'
   attrs?: ExtDescriptionsProps
   isContainer?: boolean
+  subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
 }
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
@@ -271,6 +280,7 @@ interface ExtFormItemOption extends ExtBaseOption {
   computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
   formItemProps?: FormItemProps
   descriptionsProps?: ExtDescriptionsProps
+  viewRender?: VSlot
 }
 
 interface ExtInputOption extends ExtFormItemOption {
@@ -338,11 +348,11 @@ type WrapperTypes = {
   Tabs: ExtTabsOption
   Table: ExtTableOption
   Collapse: ExtCollapseOption
-  Descriptions: ExtDescriptionsOption
+  Descriptions: ExtDescriptionsOption | ExtGroupOption
 }
 type WidgetTypes = {
   Buttons: ExtBaseOption & ExtButtonGroup
-  Hidden: { field: string }
+  Hidden: ExtBaseOption
   InputSlot: ExtInputSlotOption
   InfoSlot: ExtInfoSlotOption
   Text: ExtFormItemOption

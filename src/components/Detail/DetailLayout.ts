@@ -1,6 +1,6 @@
-import { type PropType, defineComponent, h, inject, toRef } from 'vue'
+import { type PropType, defineComponent, h, inject, toRef, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
-import { getEffectData, getViewNode } from '../../utils'
+import { getComputedStatus, getEffectData, getViewNode, useVModel } from '../../utils'
 import Controls from '../index'
 import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
@@ -47,7 +47,7 @@ const DetailLayouts = defineComponent({
         if (items.length === 1) {
           nodeGroup.push(item.node)
         } else {
-          nodeGroup.push(() => h('div', { class: 'sup-form-section', key: idx }, item.node()))
+          nodeGroup.push(() => !unref(item.hidden) && h('div', { class: 'sup-form-section', key: idx }, item.node()))
         }
         current = undefined
       } else {
@@ -57,7 +57,7 @@ const DetailLayouts = defineComponent({
           colProps.span = item.option.span ?? presetSpan ?? colProps.span ?? 8
         }
         nodeGroup.push((current = []))
-        current.push(() => h(Col, { ...colProps, key: idx }, item.node))
+        current.push(() => !unref(item.hidden) && h(Col, { ...colProps, key: idx }, item.node))
       }
     })
 
@@ -99,54 +99,72 @@ function buildNodes(modelsMap: ModelsMap, preOption) {
     const { type, label, labelSlot, attrs, span, hideInDescription } = option
     if (type === 'Hidden' || hideInDescription) return
     const effectData = getEffectData({ current: toRef(model, 'parent'), text: toRef(model, 'refData') })
+    const hidden = getComputedStatus(option.hidden, effectData)
+
     let isBlock = option.isBlock
     let wrapNode
+    let node
     if (model.children || model.listData) {
       const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
       if (type === 'InputGroup') {
         const contents = [...modelsMap].map((ent) => getContent(...ent))
-        currentGroup.push({
+        node = {
           option,
           label: labelSlot || label,
           span,
+          hidden,
           content: () => contents.map((node) => node?.()),
-        })
+        }
       } else {
         isBlock ??= !option.span // 未定义时默认为true
         const viewType = ['Tabs', 'Collapse', 'Card', 'Table', 'Group', 'List', 'InputList'].includes(type)
           ? type
           : 'Group'
         const Control = Controls[viewType]
-        wrapNode = () => h(Control, { option, model, effectData, isView: true, ...globalProps[viewType], ...attrs })
+        wrapNode = () =>
+          h(Control, { option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }, rootSlots)
+        if (type === 'InputList') {
+          isBlock = false
+          node = {
+            option,
+            label: labelSlot || label,
+            span: 24,
+            hidden,
+            content: wrapNode
+          }
+        }
       }
     } else {
       const content = getContent(option, model)
-      if (content) {
-        currentGroup.push({
-          option,
-          label: labelSlot || label,
-          span,
-          content,
-        })
+
+      node = content && {
+        option,
+        label: labelSlot || label,
+        span,
+        hidden,
+        content,
       }
     }
-    if (option.isBreak || isBlock || wrapNode || idx === modelsMap.size - 1) {
-      // 如果当前元素是独立元素或是最后一个，则将之前字段包装
-      let blockNode
-      if (isBlock && !wrapNode) {
+    let blockNode
+    if (node) {
+      if (isBlock) {
         const last = currentGroup.splice(-1)[0]
         const style = option.align && { textAlign: option.align }
-        blockNode = () => h('div', { style }, last.content())
+        blockNode = { option: preOption, isBlock, node: () => h('div', { style }, last.content()) }
+      } else {
+        currentGroup.push(node)
       }
+    } else if (wrapNode) {
+      blockNode = { option, isBlock, node: wrapNode, hidden }
+    }
+    if (blockNode || idx === modelsMap.size - 1) {
+      // 如果当前元素是独立元素或是最后一个，则将之前字段包装
       if (currentGroup?.length) {
         const props = { option: preOption, items: currentGroup, effectData }
         nodes.push({ option: preOption, isBlock: true, node: () => h(Descriptions, props) })
         currentGroup = []
       }
-      blockNode && nodes.push({ option: preOption, isBlock, node: blockNode })
-    }
-    if (wrapNode) {
-      nodes.push({ option, isBlock, node: wrapNode })
+      blockNode && nodes.push(blockNode)
     }
   })
   return nodes
@@ -156,12 +174,9 @@ function getContent(option, model: ModelData) {
   const rootSlots = inject<Obj>('rootSlots', {})
   const value = toRef(model, 'refData')
   const effectData = getEffectData({ current: toRef(model, 'parent'), value, text: value })
-  const content = getViewNode(option)
-  return (
-    content !== false &&
-    (() =>
-      !content ? effectData.text : typeof content === 'string' ? rootSlots[content]?.(effectData) : content(effectData))
-  )
+
+  const content = getViewNode(option, model, rootSlots)
+  return content === false ? undefined : () => (!content ? effectData.text : content(effectData))
 }
 
 export default DetailLayouts

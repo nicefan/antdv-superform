@@ -18,6 +18,12 @@
     }
     .ant-list
   }
+  .sup-upload-tip {
+    color:#b7b7b7
+  }
+  .upload-disabled .ant-upload-list-item {
+    margin-top: 0;
+  }
 }
 .sup-table {
   height: 100%;
@@ -153,6 +159,9 @@
     }
   }
 }
-.sup-form-section:not(:first-child) {
-  margin-top: 16px;
+.sup-form-section {
+  margin-bottom: 16px;
+}
+.sup-form-section::last-child {
+  margin-bottom: 0;
 }

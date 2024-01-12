@@ -46,6 +46,13 @@ const getData = () => {
     },
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
+    fileList: [
+    {
+        id: 'abc',
+        name: 'logo.png',
+        url: 'http://192.168.0.234:5001/logo.png',
+      },
+    ]
   }
 }
 const setValue = () => {
@@ -62,6 +69,7 @@ const detailModal = useModal(detailRegister(), {
   width: 1200,
   title: '表单预览',
   cancelText: null,
+  destroyOnClose: true,
 })
 
 const [SuperButtons] = useButtons({

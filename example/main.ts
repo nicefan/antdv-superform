@@ -18,6 +18,13 @@ const defaultProps = {
   Form: {
     layout: 'vertical',
   },
+  Upload: {
+    infoNames: {
+      uid: 'id',
+      name: { isValue: true }
+    },
+    mode: 'submit'
+  }
 }
 app
   .use(superForm, {

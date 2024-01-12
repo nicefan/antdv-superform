@@ -26,7 +26,8 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
       model.parent = data
       if (refName) {
         nameArr.forEach((name) => {
-          model.parent = model.parent[name] ??= {}
+          model.parent[name] ??= {}
+          model.parent = toRef(model.parent, name)
         })
         if (columns || subItems) {
           model.parent[refName] ??= toValue(initialValue) ?? (columns ? [] : {})
@@ -84,10 +85,10 @@ export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain
   const currentData = toRef(data || {})
   const newRules = {}
   const models = [...orgModels].map(([option, model]) => {
-    const { children, propChain = [], rules = {} } = model
+    const { children, propChain = [], rules } = model
     const newModel: ModelData = buildModelData(option, currentData, parentChain)
     newModel.rules = rules as any
-    if (propChain.length) {
+    if (propChain.length && rules) {
       newRules[propChain.join('.')] = rules
     }
     if (children) {

@@ -30,7 +30,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
     Object.entries(vModelFields).forEach(([name, field]) => {
       model.parent[field] ??= undefined
       vModels[name] = toRef(model.parent, field)
-      vModels[`onUpdate:${name}`] = (val)  => {
+      vModels[`onUpdate:${name}`] = (val) => {
         model.parent[field] = val
       }
     })
@@ -62,6 +62,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   if (__computed) {
     onMounted(() =>
       watch(
+        // 使用ref让计算结果即使一样也会进行后面的赋值
         () => ref(__computed(raw, effectData)),
         (val) => effect(unref(val))
       )

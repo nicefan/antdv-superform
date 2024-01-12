@@ -14,11 +14,11 @@ export function resetFields(origin, initial = {}) {
 }
 
 export function setFieldsValue(origin, data) {
-  mergeWith(origin, data, (objValue, srcValue) => {
+  mergeWith(origin, data, (objValue, srcValue, key, current) => {
     if (Array.isArray(objValue)) {
-      objValue.splice(0, objValue.length, ...cloneDeep(srcValue))
-      // objValue.push(...srcValue)
-      return objValue
+      return cloneDeep(srcValue)
+      // objValue.splice(0, objValue.length, ...cloneDeep(srcValue))
+      // return objValue
     }
   })
 }

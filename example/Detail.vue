@@ -27,6 +27,7 @@ setTimeout(() => {
     'table': [{ id: 'dadf', col1: 'dadf', col2: 'col2' }],
     'group': {
       'food': ['1'],
+      datelist: [{index1: '2024-1-1', index2: '2024-1-9'},{index1: '2024-1-1', index2: '2024-1-9'}]
     },
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],

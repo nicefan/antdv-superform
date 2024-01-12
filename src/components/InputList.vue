@@ -1,15 +1,9 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, inject, reactive, ref, toRef, useAttrs, watch } from 'vue'
+import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw } from 'vue'
 import { cloneDeep } from 'lodash-es'
-import { nanoid } from 'nanoid'
 import { cloneModels } from '../utils/buildModel'
-import { ButtonGroup, createButtons } from './buttons'
-import base from './base'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { Row, Col } from 'ant-design-vue'
-import { toNode } from '../utils'
-import { autoCompleteProps } from 'ant-design-vue/lib/auto-complete'
 import { containers } from '.'
 
 export default defineComponent({
@@ -30,29 +24,31 @@ export default defineComponent({
   },
   setup(props, ctx) {
     const { model, option, isView, effectData } = props
-    const { buttons: buttonsConfig, rowButtons, label, title = label, slots: optionSlots } = option
-    // 先构建一个数据结构
+    const { columns, buttons: buttonsConfig, rowButtons, label, title = label, slots: optionSlots } = option
     const { modelsMap: childrenMap, initialData, rules } = model.listData
-    const isSingle = Reflect.has(initialData, 'index')
-    const __initialData = isSingle ? initialData.index : initialData
+
+    const isSingle = columns.length === 1 && columns[0].field === '$index'
+    const __initialData = isSingle ? initialData.$index : toRaw(initialData)
+
     const { propChain } = model
     const orgList = toRef(model, 'refData')
 
     const methods = {
       add() {
-        orgList.value.push(cloneDeep(__initialData))
+        orgList.value = orgList.value.concat(cloneDeep(__initialData))
       },
-      delete({ record }) {
-        const orgIdx = orgList.value.indexOf(record)
-        orgList.value.splice(orgIdx, 1)
+      delete: {
+        hidden: () => orgList.value.length === 1,
+        disabled: false,
+        confirmText: undefined,
+        onClick({index}) {
+          // const orgIdx = orgList.value.indexOf(data.record)
+          orgList.value = orgList.value.filter((_, idx) => idx === index)
+        },
       },
     }
-    const isContainer = [...childrenMap.keys()].find((item) => ['InputGroup', ...containers].includes(item.type))
+
     let innerModels = childrenMap
-    if (!isContainer) {
-      const innerOption = { ...option, type: 'InputGroup', field: '', span: undefined }
-      innerModels = new Map<any, any>([[innerOption, { rules: model.rules, children: childrenMap }]])
-    }
     if (rowButtons) {
       const rowButtonsConfig: any = {
         type: 'Buttons',
@@ -65,36 +61,28 @@ export default defineComponent({
 
       innerModels.set(rowButtonsConfig, {} as any)
     }
+
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
-      () => [...orgList.value],
-      (org) => {
-        if (org.length === 0) {
-          org.push(cloneDeep(__initialData))
+      orgList,
+      (list) => {
+        if (list.length === 0) {
+          list.push(cloneDeep(__initialData))
+          // methods.add()
         }
-        listItems.value = org.map((record, idx) => {
+        listItems.value = list.map((record, idx) => {
           const refData = toRef(orgList.value, idx)
           let children = new Map()
           if (isSingle) {
-            // const __model = 
-            ;(function getIndexOpt(models: any, copy: Map<any, any>) {
-              models.forEach((model, opt) => {
-                if (!opt.field) {
-                  const __model = {...model, parent: orgList, refData: orgList}
-                  copy.set(opt, __model)
-                  if (model.children) {
-                    __model.children = new Map()
-                    getIndexOpt(model.children, __model.children)
-                  }
-                } else if (opt.field === 'index') {
-                  copy.set(opt, { ...model, parent: orgList, refData, propChain: [...propChain, idx] })
-                }
-              })
-            })(innerModels, children)
+            innerModels.forEach((model, opt) => {
+              children.set(opt, { ...model, parent: orgList, refData, propChain: [...propChain, idx] })
+            })
           } else {
-            // 原数据已经存在, 此处建立表单绑定
-            children = cloneModels(innerModels, record, [...propChain, idx]).modelsMap
+            const __children = cloneModels(innerModels, record, [...propChain, idx]).modelsMap
+            __children.forEach((model, opt) => {
+              children.set({...opt, span: opt.span ?? 'auto'}, model)
+            })
           }
           return {
             model: { parent: orgList, refData, children },
@@ -111,10 +99,10 @@ export default defineComponent({
     const slots: Obj = { ...ctx.slots }
 
     const renderItem = () =>
-      listItems.value.map(({ model, effectData }) => {
+      listItems.value.map(({ model, effectData }, idx) => {
         return isView
           ? h(DetailLayout, { option, modelsMap: model.children })
-          : h(Collections, { model, option, effectData })
+          : h(Collections, { model, option, effectData, key: model })
       })
     return () => h('div', renderItem())
   },
