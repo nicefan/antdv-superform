@@ -204,7 +204,9 @@ interface ExtTableOption extends ExtBaseOption {
   editMode?: 'inline' | 'modal'
   addMode?: 'inline' | 'modal'
   columns: ExtColumnsItem[]
-  buttons?: ExtButtons
+  /** 公共列配置 */
+  columnProps?: TableColumnProps
+  buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'>
   /** 列表元素右边按钮 */
   rowButtons?: ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
   /** 弹窗属性 */
@@ -304,7 +306,7 @@ interface ExtInputOption extends ExtFormItemOption {
   onSearch?: (effectData: Obj, value: string) => void
   attrs?: InputProps & HTMLAttributes
 }
-type DefaultOptionsType = (string | number)[] | DefaultOptionType[]
+type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: string | number }
 type SelectOptions =
   | DefaultOptionsType
   | Readonly<DefaultOptionsType>

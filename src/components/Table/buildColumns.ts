@@ -79,7 +79,7 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
       const column = {
         title: col.label,
         dataIndex: model.propChain.join('.'),
-        ...globalProps.Column,
+        // ...globalProps.Column,
         ...(col.columnProps as Obj),
         customRender: getViewNode(col, model, rootSlots),
       }
@@ -108,7 +108,7 @@ export function buildActionSlot({ buttons, methods, editSlot, isView }: BuildAct
     render,
     column: {
       title: '操作',
-      key: 'action',
+      dataIndex: 'action',
       fixed: 'right',
       minWidth: 100,
       align: 'center',

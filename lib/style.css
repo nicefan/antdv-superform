@@ -160,6 +160,6 @@
 .sup-form-section {
   margin-bottom: 16px;
 }
-.sup-form-section::last-child {
+.sup-form-section:last-child {
   margin-bottom: 0;
 }

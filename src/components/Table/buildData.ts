@@ -1,6 +1,6 @@
 import { ref, h } from 'vue'
 import { nanoid } from 'nanoid'
-import { merge, cloneDeep } from 'lodash-es'
+import { merge, cloneDeep, defaults } from 'lodash-es'
 import { createModal, useModal } from '../../superModal'
 import inlineRender from './TableEdit'
 import Controls from '../index'
@@ -145,6 +145,9 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
   })
 
   context.columns = useColumns({ childrenMap, effectData, getEditRender: __getEditRender, actionColumn })
+  context.columns.forEach((item) => {
+    defaults(item, option.columnProps, globalProps.Column)
+  })
   context.methods.detail = buildDetail(option, childrenMap, rowKey)
 
   return context
