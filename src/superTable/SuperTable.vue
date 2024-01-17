@@ -94,6 +94,8 @@ export default defineComponent({
     onUnmounted(() => {
       windowResize.abort()
     })
+    provide('rootSlots', ctx.slots)
+    const slots = { ...ctx.slots }
 
     const unWatch = watch(
       option,
@@ -112,6 +114,12 @@ export default defineComponent({
           refData: dataRef,
           listData,
         })
+
+        if (option.slots) {
+          Object.entries(option.slots).forEach(([key, value]) => {
+            slots[key] = typeof value === 'string' ? ctx.slots[value] : (value as any)
+          })
+        }
 
         const { attrs } = useControl({ option: opt, effectData })
 
@@ -141,8 +149,6 @@ export default defineComponent({
       }
     )
 
-    provide('rootSlots', ctx.slots)
-
     return () =>
       option.columns &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
@@ -170,7 +176,7 @@ export default defineComponent({
                   style,
                 }
               ),
-              h(Controls.Table, tableAttrs as any, ctx.slots)
+              h(Controls.Table, tableAttrs as any, slots)
             )
       )
   },

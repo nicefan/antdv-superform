@@ -8,7 +8,7 @@ export default defineComponent({
   name: 'SuperTable',
   props: {
     dataSource: Object,
-    option: Object as PropType<ExtDescriptionsOption | ExtFormOption>,
+    option: Object as PropType<ExtDescriptionsOption>,
   },
   emits: ['register'],
   setup(props, ctx) {

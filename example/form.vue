@@ -46,6 +46,13 @@ const getData = () => {
     },
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
+    fileList: [
+    {
+        id: 'abc',
+        name: 'logo.png',
+        url: 'http://192.168.0.234:5001/logo.png',
+      },
+    ]
   }
 }
 const setValue = () => {

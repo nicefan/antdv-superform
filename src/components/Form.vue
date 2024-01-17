@@ -1,10 +1,11 @@
 <script lang="ts">
-import { type PropType, h, provide, reactive, readonly, ref, watch } from 'vue'
+import { type PropType, h, provide, inject, reactive, readonly, ref, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
 import base from './base'
+import { message } from 'ant-design-vue'
 
 export default {
   name: 'SuperForm',
@@ -28,17 +29,45 @@ export default {
       type: Boolean,
     },
   },
-  emits: ['register', 'submit', 'reset'],
-  setup(props, { expose, emit, slots }) {
+  // emits: ['register', 'submit', 'reset'],
+  setup(props, { expose, emit, slots: ctxSlots }) {
     const formRef = ref()
     const modelData = ref(props.source || {})
-    const { option, ignoreRules, compact } = props
+    const {
+      option: { onSubmit, onReset, ...option },
+      ignoreRules,
+      compact,
+    } = props
 
     const { modelsMap, initialData } = buildModelsMap(option.subItems, modelData)
     const effectData = reactive({ formData: modelData, current: modelData })
     const { attrs } = useControl({ option, effectData })
 
-    provide('exaProvider', { data: readonly(modelData), attrs })
+    const submitHandlers = new Set<Fn>()
+
+    // 子组件表单提交时校验拦截
+    const submitRegister = (fn?: Fn<undefined | false | ({ errMessage: string } & Obj) | Awaited<any>>) => {
+      fn && submitHandlers.add(fn)
+    }
+    submitRegister(onSubmit)
+
+    provide('exaProvider', {
+      data: readonly(modelData),
+      attrs,
+      onSubmit: submitRegister,
+    })
+
+    const submitValidate = (data) =>
+      Promise.all(
+        [...submitHandlers].map(async (fn) => {
+          const validate = await fn(data)
+          if (validate === false || (validate && validate.errMessage)) {
+            return Promise.reject({ message: validate && validate.errMessage })
+          } else {
+            return validate
+          }
+        })
+      )
 
     if (ignoreRules) {
       Object.assign(attrs, { hideRequiredMark: true, validateTrigger: 'none' })
@@ -47,9 +76,17 @@ export default {
       dataSource: modelData,
       submit: () => {
         return formRef.value.validate().then((...args) => {
-          const data = cloneDeep(modelData.value)
-          emit('submit', data)
-          return data
+          return submitValidate(modelData.value).then(
+            () => {
+              const data = cloneDeep(modelData.value)
+              emit('submit', data)
+              return data
+            },
+            (err) => {
+              typeof err === 'object' && err.message && message.error(err.message)
+              return Promise.reject(err)
+            }
+          )
         })
       },
       setFieldsValue(data) {
@@ -61,7 +98,7 @@ export default {
         formRef.value?.clearValidate()
         const data = cloneDeep(modelData.value)
         emit('reset', data)
-        return data
+        return onReset ? onReset(data) : data
       },
     }
 
@@ -87,7 +124,17 @@ export default {
       emit('register', exposeData)
     }
     expose(exposeData)
-    provide('rootSlots', slots)
+    const rootSlots = inject('rootSlots', {})
+    const { default: defaultSlot, ...__slots } = ctxSlots
+    Object.assign(rootSlots, __slots)
+    provide('rootSlots', rootSlots)
+
+    const slots = { ...__slots }
+    if (option.slots) {
+      Object.entries(option.slots).forEach(([key, value]) => {
+        slots[key] = typeof value === 'string' ? rootSlots[value] : value
+      })
+    }
 
     return () =>
       h(
@@ -102,8 +149,13 @@ export default {
         {
           ...slots,
           default: () => [
-            h(Collections, { option, model: { refData: modelData, children: modelsMap }, effectData }),
-            slots.default?.(),
+            h(Collections, {
+              option,
+              model: { refData: modelData, children: modelsMap },
+              effectData,
+              disabled: attrs.disabled,
+            }),
+            defaultSlot?.(),
           ],
         }
       )

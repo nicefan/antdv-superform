@@ -3,19 +3,20 @@
     :placeholder="'请输入' + (option.label || '')"
     max-length="100"
     allow-clear
+    :disabled="disabled"
     :class="onSearch || option.enterButton ? 'ant-input-search ant-input-search-enter-button' : ''"
   >
     <template #addonAfter>
+      <component v-if="addonAfter && !option.enterButton && !onSearch" :is="toNode(addonAfter)" />
       <component
-        v-if="option.enterButton"
+        v-if="!disabled && option.enterButton"
         :is="toNode(option.enterButton, effectData)"
         @click="() => onSearch?.(effectData.value)"
       />
-      <Button v-else-if="onSearch" :disabled="($attrs.disabled as any)" @click="() => onSearch?.(effectData.value)">
+      <Button v-else-if="!disabled && onSearch" @click="() => onSearch?.(effectData.value)">
         <component v-if="addonAfter" :is="toNode(addonAfter)" />
         <SearchOutlined v-else />
       </Button>
-      <component v-else-if="addonAfter" :is="toNode(addonAfter)" />
     </template>
     <template #addonBefore v-if="addonBefore">
       <component :is="toNode(addonBefore)" />
@@ -49,6 +50,7 @@ const props = defineProps<{
   prefix?: string | Fn
   suffixTips?: string
   onSearch?: Fn
+  disabled?: boolean
 }>()
 
 const option = props.option

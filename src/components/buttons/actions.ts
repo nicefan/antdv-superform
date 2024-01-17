@@ -1,6 +1,7 @@
 import { Modal } from 'ant-design-vue'
 import type { ButtonItem } from '../../exaTypes'
 import { globalProps } from '../../plugin'
+import { defaults } from 'lodash-es'
 
 const getDefault = () => {
   return {
@@ -53,7 +54,7 @@ function buildDefaultActions(methods) {
   return actions
 }
 
-export function mergeActions(actions, methods = {}) {
+export function mergeActions(actions, methods = {}, commonAttrs = {}) {
   const defaultActions = buildDefaultActions(methods)
 
   const actionBtns: ButtonItem[] = []
@@ -62,9 +63,11 @@ export function mergeActions(actions, methods = {}) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
       const { onClick: innerMethod, ...config } = defaultActions[name] || {}
+      config.attrs = defaults({ ...commonAttrs }, config.attrs)
       if (typeof item === 'object') {
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
       }
+
       const meta = { label: config.label, ...item.meta }
       const _onClick = item.onClick
 
@@ -76,9 +79,8 @@ export function mergeActions(actions, methods = {}) {
               okText: '确定',
               cancelText: '取消',
               ...globalProps.Modal,
-              onOk() {
-                method()
-                resolve(undefined)
+              onOk: () => {
+                resolve(method())
               },
             })
           )

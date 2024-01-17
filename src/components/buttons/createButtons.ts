@@ -26,5 +26,5 @@ export default function createButtons({ config, methods, params, isView }: UseBu
   }
   if (actions.length === 0) return
 
-  return (props) => h(ButtonGroup, { config: buttons, methods, param: params, ...props })
+  return (props = {}) => h(ButtonGroup, { config: buttons, methods, param: params, ...props })
 }

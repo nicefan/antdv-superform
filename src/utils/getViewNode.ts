@@ -1,11 +1,19 @@
-import { ButtonGroup } from 'ant-design-vue'
 import { globalConfig } from '../plugin'
-import { ref, unref, h } from 'vue'
+import { ref, unref, h, effect, reactive } from 'vue'
 import { createButtons } from '../components/buttons'
+import Controls from '../components'
+import useControl from './useControl'
+import useVModel from './useVModel'
 
-export function getViewNode(option) {
+const buildProps = (option, effectData, model) => {
+  const valueProps = useVModel({ option, model, effectData })
+
+  return { ...option.attrs, ...valueProps }
+}
+
+export function getViewNode(option, model, slots) {
   const {
-    type: colType,
+    type: colType = '',
     viewRender,
     render,
     options: colOptions,
@@ -15,10 +23,14 @@ export function getViewNode(option) {
     valueToNumber,
     valueToLabel,
   } = option as any
-  if (viewRender) {
-    return viewRender // slotname字符串另行处理
-  } else if (colType === 'InfoSlot') {
-    return render
+  const __render = viewRender || (colType === 'InfoSlot' && render)
+
+  if (__render) {
+    const slot = typeof __render === 'string' ? slots[__render] : __render
+    return (effectData) => {
+      const attrs = buildProps(option, effectData, model)
+      return slot(reactive({ props: attrs, ...effectData }))
+    }
   } else if (labelField) {
     return ({ current }) => current[labelField as string]
   } else if (keepField) {
@@ -47,7 +59,12 @@ export function getViewNode(option) {
     return ({ text }) => (option.valueLabels || '否是')[text]
   } else if (colType === 'Buttons') {
     const buttonsSlot = createButtons({ config: option, isView: true })
-    return buttonsSlot && ((param) => buttonsSlot({ param }))
+    return !!buttonsSlot && ((param) => buttonsSlot({ param }))
+  } else if (colType === 'Upload' || colType.startsWith('Ext')) {
+    return (effectData) => {
+      const attrs = buildProps(option, effectData, model)
+      return h(Controls[colType], reactive({ option, effectData, ...attrs, isView: true }), slots)
+    }
   } else {
     // textRender为undefined将直接返回绑定的值
   }

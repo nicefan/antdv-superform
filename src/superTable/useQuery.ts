@@ -60,9 +60,8 @@ export function useQuery(option: Partial<RootTableOption>) {
         (def || def !== false) &&
         mergeProps(
           {
-            // TODO 默认分页参数
             onChange: goPage,
-            onShowSizeChange: goPage,
+            // onShowSizeChange: goPage,
           },
           def
         )

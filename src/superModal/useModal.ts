@@ -1,10 +1,11 @@
-import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, type VNode, type VNodeTypes } from 'vue'
+import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, onUnmounted } from 'vue'
+import type { VNode, VNodeTypes } from 'vue'
 import base from '../components/base'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
 import type { ModalProps, ModalFuncProps } from 'ant-design-vue/es'
-import type { ExtButtons } from '../exaTypes'
-
+import type { ExtButtons, ExtFormOption } from '../exaTypes'
+import { useForm } from '../superForm'
 
 export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }: Obj = {}) {
   const visible = ref(false)
@@ -20,8 +21,15 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
         visible.value = false
       })
       .catch((err) => console.error(err))
+
+  const isUnmounted = ref(false)
+  onUnmounted(() => {
+    isUnmounted.value = true
+  })
+
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>
+    !isUnmounted.value &&
     h(
       base.Modal,
       { ref: modalRef, visible: visible.value, 'onUpdate:visible': updateVisible, ...config, ...props, onOk },
@@ -59,7 +67,7 @@ export function useModal(content: () => VNodeTypes, config: (ModalProps & { butt
     } else {
       const wrap = document.createElement('div')
       // currentInstance = currentInstance || ins
-      const vm = createVNode(modalSlot, { appContext: ins.appContext })
+      const vm = createVNode(modalSlot, { appContext: ins?.appContext })
       vm.appContext = ins?.appContext // 这句很关键，关联起了数据
 
       render(vm, wrap)
@@ -74,4 +82,20 @@ export function useModal(content: () => VNodeTypes, config: (ModalProps & { butt
     closeModal,
     setModal,
   }
+}
+
+export function useModalForm(
+  { title, ...option }: ExtFormOption,
+  config: (ModalProps & { buttons?: ExtButtons }) | Obj = {}
+) {
+  const [register, form] = useForm(option)
+  const modal = useModal(register(), { maskClosable: false, title, ...config })
+  const openModal = ({ data, onOk = config.onOk, ...__config }: ModalFuncProps & { data?: Obj } = {}) => {
+    const __onOk = () => {
+      return form.submit().then((data) => (onOk ? onOk(data) : data))
+    }
+    form.resetFields(data)
+    return modal.openModal({ ...__config, onOk: __onOk })
+  }
+  return { openModal, closeModal: modal.closeModal, formActions: form }
 }

@@ -74,6 +74,9 @@ export const myTableOption = defineTable({
       type: 'Select',
       label: '数据类型',
       field: 'dataType',
+      attrs: {
+        mode: 'multiple',
+      },
       options: () =>
         Promise.resolve([
           { label: '文本', value: 'text' },

@@ -9,7 +9,6 @@ import { ComponentOptionsMixin } from 'vue';
 import { ComputedRef } from 'vue';
 import { DefaultOptionType } from 'ant-design-vue/es/select';
 import { DefineComponent } from 'vue';
-import type { DescriptionsItemProp } from 'ant-design-vue/es/descriptions';
 import type { DescriptionsProps } from 'ant-design-vue';
 import { ExtractPropTypes } from 'vue';
 import type { FormItemProps } from 'ant-design-vue';
@@ -33,6 +32,7 @@ import type { TableColumnProps } from 'ant-design-vue';
 import type { TableProps } from 'ant-design-vue';
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree';
 import type { TreeProps } from 'ant-design-vue';
+import type { UploadProps } from 'ant-design-vue';
 import { VNode } from 'vue';
 import { VNodeProps } from 'vue';
 import { VNodeTypes } from 'vue';
@@ -69,7 +69,7 @@ declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
 
 export declare function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
     modalRef: Ref_2<any>;
-    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => false | VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     setModal: (option?: ModalFuncProps_2 | Obj) => void;
@@ -103,7 +103,8 @@ declare type Dict = {
 export declare interface ExtBaseOption {
     type: string
     field?: string
-    ref?: Ref
+    vModelFields?: Obj<string>
+    value?: Ref
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
@@ -112,9 +113,9 @@ export declare interface ExtBaseOption {
     sort?: number
     attrs?: Obj
     /** 输入框列属性，置为空对象将清空继承属性 */
-    wrapperCol?: ColProps & HTMLAttributes
+    // wrapperCol?: ColProps & HTMLAttributes
     /** 标题列属性，置为空对象将清空继承属性 */
-    labelCol?: ColProps & HTMLAttributes
+    // labelCol?: ColProps & HTMLAttributes
     dynamicAttrs?: Fn<Obj>
     /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
     hidden?: boolean | ((data: Readonly<Obj>) => boolean)
@@ -156,6 +157,7 @@ export declare interface ExtButtonGroup<T extends string = string> {
     disabled?: boolean | Fn<boolean>
     /** 将按钮放置到组件的指定slot中 */
     forSlot?: string
+    methods?: Obj<Fn>
     actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
     // subItems?: ButtonItem[]
 }
@@ -181,10 +183,18 @@ declare interface ExtDateRange extends ExtFormItemOption {
     keepField?: string
 }
 
-export declare interface ExtDescriptionsOption extends Omit<ExtGroupOption, 'type'> {
+export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'> {
+    title?: VSlot
+    gutter?: number
+    buttons?: ExtButtons
+    /** 弹窗表单中的行间排版属性 */
+    rowProps?: RowProps & HTMLAttributes
+    /** 子元素的统一排列属性， */
+    subSpan?: number
     mode?: 'table' | 'form' | 'default'
     attrs?: ExtDescriptionsProps
     isContainer?: boolean
+    subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
 }
 
 declare type ExtDescriptionsProps = {
@@ -200,7 +210,8 @@ declare type ExtDescriptionsProps = {
     labelBgColor?: string
     borderColor?: string
     noInput?: boolean
-} & DescriptionsProps & HTMLAttributes
+} & DescriptionsProps &
+HTMLAttributes
 
 /** 表单元素属性 */
 export declare interface ExtFormItemOption extends ExtBaseOption {
@@ -208,7 +219,8 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     formItemProps?: FormItemProps
-    descriptionsProps?: FormItemProps & DescriptionsItemProp
+    descriptionsProps?: ExtDescriptionsProps
+    viewRender?: VSlot
 }
 
 export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
@@ -243,6 +255,17 @@ declare type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOp
 export declare interface ExtInputGroupOption extends ExtBaseOption {
     gutter?: number
     subItems: UniOption[]
+}
+
+declare interface ExtInputList extends ExtFormItemOption {
+    title?: VSlot
+    attrs?: {
+        /** 标签后加序号 */
+        labelIndex?: boolean
+    }
+    rowButtons?: ExtButtons<'delete' | 'add'>
+    subSpan?: number
+    columns: UniWidgetOption[]
 }
 
 export declare interface ExtInputOption extends ExtFormItemOption {
@@ -337,6 +360,30 @@ export declare interface ExtTreeOption extends ExtFormItemOption {
     data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
 }
 
+declare interface ExtUpload extends ExtFormItemOption {
+    vModelFields?: {
+        fileList?: string
+    }
+    attrs: UploadProps & {
+        apis?: {
+            upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
+            delete?: (file: Obj) => Promise<any>
+        }
+        /** 指定文件信息字段 */
+        infoNames?: { [k in 'uid' | 'name' | 'url']?: string | { name: string; isValue?: boolean } } | Obj<string>
+        minSize?: number
+        maxSize?: number
+        isSingle?: boolean
+        uploadMode?: 'auto' | 'submit' | 'custom'
+        tip?: string
+        title?: string
+        /** 是否允许重名文件 */
+        repeatable?: boolean
+        /** 查看模式 */
+        isView?: boolean
+    }
+}
+
 declare interface GlobalConfig {
     dictApi?: (name: string) => Promise<Dict[]>;
     /** 自定义图标处理组件 */
@@ -421,7 +468,7 @@ declare function setDefaultProps(props: Obj): void;
 
 export declare const SuperButtons: DefineComponent<{
     limit: NumberConstructor;
-    buttonType: PropType<"default" | "primary" | "link" | "text" | "dashed" | "ghost">;
+    buttonType: PropType<"default" | "text" | "primary" | "link" | "dashed" | "ghost">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "large" | "middle">;
     /** 是否只显示图标 */
@@ -433,7 +480,7 @@ export declare const SuperButtons: DefineComponent<{
     [key: string]: any;
 }>, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"default" | "primary" | "link" | "text" | "dashed" | "ghost">;
+    buttonType: PropType<"default" | "text" | "primary" | "link" | "dashed" | "ghost">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "large" | "middle">;
     /** 是否只显示图标 */
@@ -449,10 +496,10 @@ export declare const SuperButtons: DefineComponent<{
 
 export declare const SuperDetail: DefineComponent<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtFormOption | ExtDescriptionsOption>;
+    option: PropType<ExtDescriptionsOption>;
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtFormOption | ExtDescriptionsOption>;
+    option: PropType<ExtDescriptionsOption>;
 }>> & {
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
@@ -526,7 +573,7 @@ export declare function useModal(content: () => VNodeTypes, config?: (ModalProps
 }) | Obj): {
     modalRef: Ref_2<any>;
     openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
-    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => false | VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
@@ -604,7 +651,7 @@ declare type VSlot = string | Fn<VNodeTypes>
 
 declare type WidgetTypes = {
     Buttons: ExtBaseOption & ExtButtonGroup
-    Hidden: { field: string }
+    Hidden: ExtBaseOption
     InputSlot: ExtInputSlotOption
     InfoSlot: ExtInfoSlotOption
     Text: ExtFormItemOption
@@ -619,6 +666,8 @@ declare type WidgetTypes = {
     Radio: ExtRadioOption
     Checkbox: ExtRadioOption
     Switch: ExtSwitchOption
+    Upload: ExtUpload
+    InputList: ExtInputList
 }
 
 declare type WrapperTypes = {
@@ -631,7 +680,7 @@ declare type WrapperTypes = {
     Tabs: ExtTabsOption
     Table: ExtTableOption
     Collapse: ExtCollapseOption
-    Descriptions: ExtDescriptionsOption
+    Descriptions: ExtDescriptionsOption | ExtGroupOption
 }
 
 export { }

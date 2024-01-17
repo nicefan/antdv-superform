@@ -31,9 +31,7 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
     },
   }
   const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
-  const __actions = buttonsConfig.actions || ['submit', 'reset']
-  if (__actions.includes('submit')) __actions[__actions.indexOf('submit')] = { name: 'submit', label: '查询' }
-  const actions = mergeActions(__actions, defaultAction)
+  const actions = buttonsConfig.actions || ['submit', 'reset']
   if (actions?.length) {
     // Object.assign(formOption, {
     //   rowProps: { align: 'middle' },
@@ -60,7 +58,7 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
       span: 'auto',
       render: () =>
         h(ButtonGroup, {
-          config: { ...buttonsConfig, actions },
+          config: { ...buttonsConfig, actions, methods: defaultAction },
           param: getEffectData({ table: tableRef, form: formRef }),
         }),
     })

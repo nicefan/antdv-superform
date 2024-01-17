@@ -41,7 +41,7 @@ export default function exampleForm() {
     attrs: {
       layout: 'horizontal',
       labelCol: { style: 'width:120px;' },
-      wrapperCol: { style: 'margin-right: 20px' }
+      wrapperCol: { style: 'margin-right: 20px' },
     },
     buttons: ['submit'],
     subSpan: 12,
@@ -69,7 +69,7 @@ export default function exampleForm() {
             field: 'ser',
             initialValue: '123456',
           },
-        ]
+        ],
       },
       {
         type: 'Group',
@@ -104,10 +104,11 @@ export default function exampleForm() {
             label: '自定义组件',
             field: 'de',
             attrs: {
-              readonly:true,
+              readonly: true,
               style: 'width: 100%',
               placeholder: '自定义组件加Ext前缀',
             },
+            viewRender: ({ text }) => text,
           },
           {
             type: 'InfoSlot',
@@ -198,9 +199,9 @@ export default function exampleForm() {
                 label: '地址',
                 span: 14,
                 rules: { required: true },
-                attrs:{
+                attrs: {
                   allowClear: true,
-                }
+                },
               },
               {
                 type: 'Select',
@@ -239,6 +240,58 @@ export default function exampleForm() {
             keepField: 'endDate',
           },
           {
+            type: 'DatePicker',
+            label: '季度',
+            field: 'quarter',
+            attrs: {
+              picker: 'quarter',
+            },
+            slots: {
+              dateRender(...args) {
+                console.log(args)
+              },
+            },
+          },
+          {
+            type: 'InputList',
+            field: 'tips',
+            rowButtons: ['add', 'delete'],
+            label: '时间段',
+            // span: 12,
+            attrs: {
+              labelIndex: true,
+            },
+            columns: [
+              {
+                type: 'DatePicker',
+                label: '日期',
+                field: '$index',
+              },
+            ],
+          },
+          {
+            type: 'Upload',
+            label: '附件',
+            field: 'file',
+            vModelFields: {
+              fileList: 'fileList',
+            },
+            span: 24,
+            rules: { required: true, type: 'array', min: 3 },
+            descriptionsProps: {
+              noInput: true,
+            },
+            disabled: ({ formData }) => !!formData.isReg,
+            attrs: {
+              uploadMode: 'auto',
+              multiple: true,
+              maxCount: 3,
+              accept: 'image/*',
+              maxSize: 5,
+              listType: 'picture'
+            },
+          },
+          {
             type: 'Buttons',
             align: 'center',
             isBlock: true,
@@ -259,7 +312,8 @@ export default function exampleForm() {
         disabled: ({ formData }) => !!formData.isReg,
         descriptionsProps: {
           column: 3,
-          labelCol: {}
+          mode: 'table',
+          labelCol: {},
         },
         buttons: {
           limit: 3,
@@ -331,6 +385,7 @@ export default function exampleForm() {
             type: 'Checkbox',
             field: 'food',
             label: '食物',
+            initialValue: [],
             options: [
               { label: '中餐', value: '1' },
               { label: '西餐', value: '2' },
@@ -347,6 +402,37 @@ export default function exampleForm() {
                 console.log(args)
               },
             },
+          },
+          {
+            type: 'InputList',
+            field: 'datelist',
+            // subSpan: 6,
+            label: '付款日期',
+            rules: { min: 2 },
+            rowButtons: ['add', 'delete'],
+            columns: [
+              {
+                type: 'DatePicker',
+                label: '日期a',
+                field: 'index1',
+                // rules: {required: true}
+                // span: 12,
+              },
+              {
+                type: 'DatePicker',
+                label: '日期b',
+                field: 'index2',
+                // span: 8,
+              },
+
+              {
+                type: 'DatePicker',
+                label: '日期c',
+                field: 'index3',
+                // rules: {required: true}
+                // span: 12,
+              },
+            ],
           },
         ],
       },
@@ -441,6 +527,11 @@ export default function exampleForm() {
                     type: 'Input',
                     field: 'filed2',
                     label: 'filed2',
+                  },
+                  {
+                    type: 'Input',
+                    field: 'filed3',
+                    label: 'filed3',
                   },
                 ],
               },

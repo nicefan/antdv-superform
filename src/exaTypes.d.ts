@@ -21,6 +21,7 @@ import type {
   TableProps,
   RadioGroupProps,
   ListProps,
+  UploadProps,
 } from 'ant-design-vue'
 import type { DescriptionsItemProp } from 'ant-design-vue/es/descriptions'
 
@@ -51,7 +52,8 @@ type VSlot = string | Fn<VNodeTypes>
 interface ExtBaseOption {
   type: string
   field?: string
-  ref?: Ref
+  vModelFields?: Obj<string>
+  value?: Ref
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
@@ -60,9 +62,9 @@ interface ExtBaseOption {
   sort?: number
   attrs?: Obj
   /** 输入框列属性，置为空对象将清空继承属性 */
-  wrapperCol?: ColProps & HTMLAttributes
+  // wrapperCol?: ColProps & HTMLAttributes
   /** 标题列属性，置为空对象将清空继承属性 */
-  labelCol?: ColProps & HTMLAttributes
+  // labelCol?: ColProps & HTMLAttributes
   dynamicAttrs?: Fn<Obj>
   /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
   hidden?: boolean | ((data: Readonly<Obj>) => boolean)
@@ -96,7 +98,8 @@ type ExtDescriptionsProps = {
   labelBgColor?: string
   borderColor?: string
   noInput?: boolean
-} & DescriptionsProps & HTMLAttributes
+} & DescriptionsProps &
+  HTMLAttributes
 interface ExtGroupBaseOption extends ExtBaseOption {
   title?: VSlot
   gutter?: number
@@ -111,10 +114,18 @@ interface ExtGroupBaseOption extends ExtBaseOption {
 interface ExtGroupOption extends ExtGroupBaseOption {
   component?: Component
 }
-interface ExtDescriptionsOption extends Omit<ExtGroupOption, 'type'> {
+interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'> {
+  title?: VSlot
+  gutter?: number
+  buttons?: ExtButtons
+  /** 弹窗表单中的行间排版属性 */
+  rowProps?: RowProps & HTMLAttributes
+  /** 子元素的统一排列属性， */
+  subSpan?: number
   mode?: 'table' | 'form' | 'default'
   attrs?: ExtDescriptionsProps
   isContainer?: boolean
+  subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
 }
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
@@ -173,6 +184,7 @@ interface ExtButtonGroup<T extends string = string> {
   disabled?: boolean | Fn<boolean>
   /** 将按钮放置到组件的指定slot中 */
   forSlot?: string
+  methods?: Obj<Fn>
   actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
   // subItems?: ButtonItem[]
 }
@@ -230,6 +242,16 @@ interface ExtListOption extends ExtBaseOption {
   subSpan?: number
   gutter?: number
 }
+interface ExtInputList extends ExtFormItemOption {
+  title?: VSlot
+  attrs?: {
+    /** 标签后加序号 */
+    labelIndex?: boolean
+  }
+  rowButtons?: ExtButtons<'delete' | 'add'>
+  subSpan?: number
+  columns: UniWidgetOption[]
+}
 interface ExtInputGroupOption extends ExtBaseOption {
   gutter?: number
   subItems: UniOption[]
@@ -268,7 +290,8 @@ interface ExtFormItemOption extends ExtBaseOption {
   /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
   computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
   formItemProps?: FormItemProps
-  descriptionsProps?: FormItemProps & DescriptionsItemProp
+  descriptionsProps?: ExtDescriptionsProps
+  viewRender?: VSlot
 }
 
 interface ExtInputOption extends ExtFormItemOption {
@@ -322,6 +345,29 @@ interface ExtRadioOption extends ExtFormItemOption {
   valueToLabel?: boolean
   attrs?: RadioGroupProps & HTMLAttributes
 }
+interface ExtUpload extends ExtFormItemOption {
+  vModelFields?: {
+    fileList?: string
+  }
+  attrs: UploadProps & {
+    apis?: {
+      upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
+      delete?: (file: Obj) => Promise<any>
+    }
+    /** 指定文件信息字段 */
+    infoNames?: { [k in 'uid' | 'name' | 'url']?: string | { name: string; isValue?: boolean } } | Obj<string>
+    minSize?: number
+    maxSize?: number
+    isSingle?: boolean
+    uploadMode?: 'auto' | 'submit' | 'custom'
+    tip?: string
+    title?: string
+    /** 是否允许重名文件 */
+    repeatable?: boolean
+    /** 查看模式 */
+    isView?: boolean
+  }
+}
 type ExtSlotOption = { render: VSlot }
 type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption
 type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
@@ -336,11 +382,11 @@ type WrapperTypes = {
   Tabs: ExtTabsOption
   Table: ExtTableOption
   Collapse: ExtCollapseOption
-  Descriptions: ExtDescriptionsOption
+  Descriptions: ExtDescriptionsOption | ExtGroupOption
 }
 type WidgetTypes = {
   Buttons: ExtBaseOption & ExtButtonGroup
-  Hidden: { field: string }
+  Hidden: ExtBaseOption
   InputSlot: ExtInputSlotOption
   InfoSlot: ExtInfoSlotOption
   Text: ExtFormItemOption
@@ -355,6 +401,8 @@ type WidgetTypes = {
   Radio: ExtRadioOption
   Checkbox: ExtRadioOption
   Switch: ExtSwitchOption
+  Upload: ExtUpload
+  InputList: ExtInputList
 }
 export type OptionType = WrapperTypes & WidgetTypes
 export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
@@ -398,7 +446,7 @@ declare global {
   export interface ModelChildren<T = ExtBaseOption> {
     modelsMap: ModelsMap<T>
     rules: Obj
-    initialData: Ref<Obj>
+    initialData: any
   }
 }
 

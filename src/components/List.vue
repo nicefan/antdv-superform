@@ -26,7 +26,7 @@ export default defineComponent({
     },
     isView: Boolean,
   },
-  setup({ model, option, isView, effectData }) {
+  setup({ model, option, isView, effectData }, ctx) {
     const { buttons: buttonsConfig, rowButtons, label, title = label, slots: optionSlots } = option
     // 先构建一个数据结构
     const { modelsMap: childrenMap, initialData, rules } = model.listData
@@ -71,13 +71,7 @@ export default defineComponent({
       }
     )
 
-    const rootSlots = inject('rootSlot', {})
-    const slots: Obj = {}
-    if (optionSlots) {
-      Object.entries(optionSlots).forEach(([key, value]) => {
-        slots[key] = typeof value === 'string' ? rootSlots[value] : value
-      })
-    }
+    const slots: Obj = { ...ctx.slots }
 
     slots.title ||= title && (() => toNode(title, effectData))
     if (buttonsConfig) {

@@ -10,7 +10,6 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
   const nameArr = field ? field.split('.') : []
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]
-  let currentRules: Obj[] | undefined
 
   const model = reactive({
     refName,
@@ -18,7 +17,6 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
     fieldName: field,
     parent: ref(),
     refData: ref(),
-    rules: currentRules,
     propChain,
   })
 
@@ -28,7 +26,8 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
       model.parent = data
       if (refName) {
         nameArr.forEach((name) => {
-          model.parent = model.parent[name] ??= {}
+          model.parent[name] ??= {}
+          model.parent = toRef(model.parent, name)
         })
         if (columns || subItems) {
           model.parent[refName] ??= toValue(initialValue) ?? (columns ? [] : {})
@@ -38,7 +37,7 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
         model.refData = toRef(model.parent, refName)
         if (keepField) model.parent[keepField] ??= undefined
       } else {
-        model.refData = ref(data)
+        model.refData = data
       }
     },
     { immediate: true, flush: 'sync' }
@@ -86,10 +85,10 @@ export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain
   const currentData = toRef(data || {})
   const newRules = {}
   const models = [...orgModels].map(([option, model]) => {
-    const { children, propChain, rules } = model
+    const { children, propChain = [], rules } = model
     const newModel: ModelData = buildModelData(option, currentData, parentChain)
-    newModel.rules = rules
-    if (propChain.length) {
+    newModel.rules = rules as any
+    if (propChain.length && rules) {
       newRules[propChain.join('.')] = rules
     }
     if (children) {
