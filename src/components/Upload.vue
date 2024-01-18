@@ -134,8 +134,6 @@ export default defineComponent({
     // 绑定值为fileList时不再提交value变化
     const valueIsFileList = props.option.field === vModelFields.fileList
 
-    const uploadList = ref<FileInfo[]>([])
-
     const { onSubmit } = inject<any>('exaProvider', {})
 
     const innerFileList = ref<any[]>([])
@@ -180,8 +178,7 @@ export default defineComponent({
     const isLoading = ref(true)
     const openModal = (onOk?: Fn) => {
       return Modal.info({
-        title: () => ' 文件上传中，请稍候...',
-        okText: null,
+        title: () => ' 文件同步中，请稍候...',
         okButtonProps: reactive({
           loading: isLoading,
         }),
@@ -197,8 +194,8 @@ export default defineComponent({
       if (mode === 'auto') {
         for (const item of innerFileList.value) {
           if (item.status === 'error') {
-            const error = item.response || { message: '文件上传错误！' }
-            stack = Promise.reject(error)
+            const error = item.response || { message: '文件上传错误，请删除后重新上传！' }
+            return Promise.reject(error)
           } else if (item.status === 'uploading') {
             isLoading.value = true
           }
@@ -215,15 +212,19 @@ export default defineComponent({
           }
           stack = Promise.all(__tasks)
         }
+        if (removeFileMap.size) isLoading.value = true
       }
 
       if (isLoading.value) {
         const modal = openModal()
-        return stack
-          .then((data) => {
-            modal?.destroy()
-            return data
-          })
+        stack = stack
+          .then((data) =>
+            // 文件删除出错不中断提交
+            Promise.all([...removeFileMap.values()].map((handler) => handler())).finally(() => {
+              modal?.destroy()
+              return data
+            })
+          )
           .catch((err) => {
             isLoading.value = false
             modal.update({
@@ -288,14 +289,6 @@ export default defineComponent({
         // } else if (file.status === 'done' && file.response) {
         //   Object.assign(file, convertInfo(file.response))
       }
-      // const resFileList = info.fileList.map(file => {
-      //   if (file.response) {
-      //     // Component will show file.url as link
-      //     file.url = file.response.url;
-      //   }
-      //   return file;
-      // });
-
       updateFileList([...fileList])
     }
 
@@ -340,18 +333,45 @@ export default defineComponent({
         })
         .then(successHandler, errorHandler)
     }
-
+    const removeFileMap = new Map()
     const remove = async (file) => {
       let result = await props.onRemove?.(file)
-      if (apis.delete) {
+      if (result !== false && apis.delete && file.status === 'done') {
         return new Promise((resolve) => {
-          Modal.confirm({
+          const modal = Modal.confirm({
             title: '确定删除吗？',
             okText: '确定',
             cancelText: '取消',
+            closable: false,
+            maskClosable: false,
             ...globalProps.Modal,
             onOk() {
-              resolve(apis.delete(file))
+              const handler = () => apis.delete(reconvert(file))
+              if (mode === 'submit') {
+                const __file = { ...file }
+                removeFileMap.set(__file, () =>
+                  handler().then(
+                    () => removeFileMap.delete(__file),
+                    // () => updateFileList([...innerFileList.value, __file]) // 删除失败后还原文件
+                  )
+                )
+                resolve(true)
+              } else {
+                modal.update({
+                  okCancel: false,
+                  title: '文件删除中……',
+                })
+                return handler().then(resolve, () => {
+                  modal.update({
+                    okCancel: false,
+                    title: '文件删除失败',
+                    type: 'error',
+                    onOk: undefined,
+                  })
+                  resolve(false)
+                  return Promise.reject()
+                })
+              }
             },
             onCancel() {
               resolve(false)

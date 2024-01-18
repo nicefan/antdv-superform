@@ -256,7 +256,7 @@ export default function exampleForm() {
             type: 'InputList',
             field: 'tips',
             rowButtons: ['add', 'delete'],
-            label: '时间段',
+            // label: '时间段',
             // span: 12,
             attrs: {
               labelIndex: true,
@@ -277,18 +277,22 @@ export default function exampleForm() {
               fileList: 'fileList',
             },
             span: 24,
-            rules: { required: true, type: 'array', min: 3 },
+            // rules: { required: true, type: 'array', min: 3 },
             descriptionsProps: {
               noInput: true,
             },
             disabled: ({ formData }) => !!formData.isReg,
             attrs: {
-              uploadMode: 'auto',
+              apis: {
+                delete :(file) =>new Promise((resolve,reject) => setTimeout(reject, 5000)),
+                upload: (data) => new Promise((resolve,reject) => setTimeout(reject, 5000))
+              },
+              // uploadMode: 'submit',
               multiple: true,
               maxCount: 3,
               accept: 'image/*',
               maxSize: 5,
-              listType: 'picture'
+              // listType: 'picture'
             },
           },
           {
@@ -352,7 +356,7 @@ export default function exampleForm() {
             field: 'width',
             label: '体重',
             // initialValue: 120,
-            disabled: (data) => !!data.formData.name,
+            // disabled: (data) => !!data.formData.name,
             computed: (val, data) => {
               console.log(data.current)
               return data.formData.forever === 1 ? 110 : val
@@ -408,7 +412,7 @@ export default function exampleForm() {
             field: 'datelist',
             // subSpan: 6,
             label: '付款日期',
-            rules: { min: 2 },
+            // rules: { min: 2 },
             rowButtons: ['add', 'delete'],
             columns: [
               {
