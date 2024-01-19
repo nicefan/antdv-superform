@@ -133,7 +133,7 @@ export declare interface ExtBaseOption {
     /** 是否换行 */
     isBreak?: boolean
     align?: 'left' | 'right' | 'center'
-    slots?: Obj<Fn>
+    slots?: VSlot
     [key: `on${Capitalize<string>}${string}`]: Fn | undefined
 }
 
