@@ -26,6 +26,7 @@ import { message, Modal, Upload } from 'ant-design-vue'
 import { globalProps } from '../plugin'
 import { toNode } from '../utils'
 import usePreview from './usePreview'
+import { defaults } from 'lodash-es'
 
 interface FileInfo {
   /** 文件id */
@@ -79,6 +80,7 @@ export default defineComponent({
     beforeUpload: Function,
     onPreview: Function,
     onRemove: Function,
+    onDownload: Function,
     apis: Object,
   },
   emits: ['update:value', 'update:fileList'],
@@ -92,8 +94,9 @@ export default defineComponent({
       infoNames,
       repeatable,
       onPreview,
+      onDownload,
       isImageUrl = fileIsImage,
-    } = { ...(globalProps.Upload as Obj), ...props }
+    } = defaults({ ...props }, globalProps.Upload)
     const { accept, listType } = ctx.attrs as Obj<string>
     const { label, vModelFields = {} } = props.option
 
@@ -217,13 +220,16 @@ export default defineComponent({
 
       if (isLoading.value) {
         const modal = openModal()
-        stack = stack
+        return stack
           .then((data) =>
             // 文件删除出错不中断提交
-            Promise.all([...removeFileMap.values()].map((handler) => handler())).finally(() => {
-              modal?.destroy()
-              return data
-            })
+            Promise.all([...removeFileMap.values()].map((handler) => handler()))
+              .then(() => data)
+              .catch((err) => console.error(err))
+              .finally(() => {
+                modal?.destroy()
+                return data
+              })
           )
           .catch((err) => {
             isLoading.value = false
@@ -351,7 +357,7 @@ export default defineComponent({
                 const __file = { ...file }
                 removeFileMap.set(__file, () =>
                   handler().then(
-                    () => removeFileMap.delete(__file),
+                    () => removeFileMap.delete(__file)
                     // () => updateFileList([...innerFileList.value, __file]) // 删除失败后还原文件
                   )
                 )
@@ -381,7 +387,30 @@ export default defineComponent({
       }
       return result
     }
+    const fileDownload =
+      onDownload ||
+      ((file) => {
+        if (apis.download) {
+          apis.download(reconvert(file)).then((result) => downloadByData(result.data, file.name))
+        }
+      })
+    function downloadByData(data: BlobPart, filename: string, bom?: BlobPart) {
+      const blobData = typeof bom !== 'undefined' ? [bom, data] : [data]
+      const blob = new Blob(blobData, { type: 'application/octet-stream' })
 
+      const blobURL = window.URL.createObjectURL(blob)
+      const tempLink = document.createElement('a')
+      tempLink.style.display = 'none'
+      tempLink.href = blobURL
+      tempLink.setAttribute('download', filename)
+      if (typeof tempLink.download === 'undefined') {
+        tempLink.setAttribute('target', '_blank')
+      }
+      document.body.appendChild(tempLink)
+      tempLink.click()
+      document.body.removeChild(tempLink)
+      window.URL.revokeObjectURL(blobURL)
+    }
     // 查看模式时，控制操作按钮
     const listConfig = computed(() => ({
       showRemoveIcon: !props.isView && !props.disabled,
@@ -447,6 +476,7 @@ export default defineComponent({
               maxCount,
               isImageUrl,
               iconRender,
+              onDownload: fileDownload,
             },
             {
               default: isView.value ? null : slots.default,

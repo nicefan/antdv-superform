@@ -1,10 +1,10 @@
 <template>
   <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'">
     <template v-for="({ attrs, icon, label, tooltip }, index) of btns" :key="label">
-      <Tooltip v-if="tooltip || (__config.iconOnly && icon)" :title="tooltip || label">
+      <Tooltip v-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
           ><component v-if="icon" :is="useIcon(icon)" />
-          <component v-if="!icon || !__config.iconOnly" :is="() => toNode(label, param)"
+          <component v-if="!icon || !iconOnly" :is="() => toNode(label, param)"
         /></Button>
       </Tooltip>
       <Button v-else v-bind="attrs">
@@ -14,7 +14,9 @@
     </template>
 
     <Dropdown v-if="moreBtns.length">
-      <Button v-bind="defaultAttrs"> <ellipsis-outlined /> </Button>
+      <Button v-bind="defaultAttrs">
+        <component v-if="moreLabel" :is="() => toNode(moreLabel, param)" /><ellipsis-outlined v-else />
+      </Button>
       <template #overlay>
         <Menu>
           <menu-item v-for="{ attrs, icon, label } of moreBtns" :key="label" :disabled="attrs.disabled">
@@ -47,6 +49,7 @@ const { config, methods, param } = props
 const __config = Array.isArray(config) ? { actions: config } : config
 const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(param || {}), methods || __config.methods)
 const isDivider = __config.divider ?? ['link', 'text'].includes(__config.buttonType || '')
+const { moreLabel, iconOnly } = __config
 </script>
 
 <script lang="ts">

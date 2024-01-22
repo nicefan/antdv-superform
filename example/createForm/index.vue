@@ -36,6 +36,22 @@ const setValue = () => {
       dataType: 'text',
       isRequire: 1,
       col2: '12',
+      files: [{
+        uid: 'a',
+        name: 'a.a'
+      }]
+    },
+    {
+      id: '122',
+      fieldName: 'la2',
+      title: '大因2',
+      dataType: 'text',
+      isRequire: 1,
+      col2: '122',
+      files: [{
+        uid: 'a2',
+        name: 'a2.a2'
+      }]
     },
   ]
   table.setData(data)

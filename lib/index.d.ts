@@ -133,7 +133,7 @@ export declare interface ExtBaseOption {
     /** 是否换行 */
     isBreak?: boolean
     align?: 'left' | 'right' | 'center'
-    slots?: VSlot
+    slots?: Obj<VSlot>
     [key: `on${Capitalize<string>}${string}`]: Fn | undefined
 }
 
@@ -151,6 +151,8 @@ export declare interface ExtButtonGroup<T extends string = string> {
     isBlock?: boolean
     /** 是否只显示图标 */
     iconOnly?: boolean
+    /** 更多按钮slot */
+    moreLabel?: VSlot
     /** 权限模式 */
     roleMode?: 'hidden' | 'disable'
     hidden?: boolean | Fn<boolean>

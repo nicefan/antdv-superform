@@ -1,4 +1,4 @@
-import { toRef, watch, onMounted, ref, unref, toValue } from 'vue'
+import { toRef, watch, onMounted, ref, unref, toValue, computed } from 'vue'
 import type { ExtFormItemOption } from '../exaTypes'
 
 type Param = {
@@ -29,7 +29,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   if (vModelFields) {
     Object.entries(vModelFields).forEach(([name, field]) => {
       model.parent[field] ??= undefined
-      vModels[name] = toRef(model.parent, field)
+      vModels[name] = computed(() => model.parent[field])
       vModels[`onUpdate:${name}`] = (val) => {
         model.parent[field] = val
       }

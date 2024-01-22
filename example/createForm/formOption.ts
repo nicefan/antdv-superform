@@ -10,7 +10,7 @@ export const myTableOption = defineTable({
     attrs: { layout: 'vertical' },
     subSpan: 24,
   },
-  descriptionsProps: { column: 2, size: 'default', mode: 'table' },
+  descriptionsProps: { column: 1, size: 'default', mode: 'table' },
   searchSechma: {
     attrs: {
       wrapperCol: { style: 'width:100px' },
@@ -90,5 +90,6 @@ export const myTableOption = defineTable({
       valueLabels: ['否', '是'],
     },
     { type: 'Input', field: 'col2', label: 'col2' },
+    { type: 'Upload', field: 'files', label: '附件', vModelFields: {fileList: 'files'} },
   ],
 })

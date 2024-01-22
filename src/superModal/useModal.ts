@@ -12,9 +12,8 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
   const config = reactive({ ...__config, ...globalProps.Modal })
   const modalRef = ref()
 
-  if (buttons) {
-    __config.footer = () => h(ButtonGroup, { config: buttons, param: { modalRef } })
-  }
+  const footer = buttons && (() => h(ButtonGroup, { config: buttons, param: { modalRef } }))
+
   const onOk = () =>
     Promise.resolve(config.onOk?.())
       .then(() => {
@@ -33,7 +32,7 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
     h(
       base.Modal,
       { ref: modalRef, visible: visible.value, 'onUpdate:visible': updateVisible, ...config, ...props, onOk },
-      { ...ctx?.slots, default: content }
+      { footer, ...ctx?.slots, default: content }
     )
 
   const openModal = async (option?: ModalFuncProps | Obj) => {
