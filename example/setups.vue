@@ -14,13 +14,14 @@
   </div>
 </template>
 <script lang="ts">
-import { ref, defineComponent, inject, toRefs } from 'vue'
+import { ref, defineComponent, inject, toRefs, h } from 'vue'
 import exampleForm from './useExForm'
 import { useTable, SuperTable, useForm, type ButtonItem } from '../src'
 import { SuperButtons } from '../src/superButtons'
 import { useModal } from '../src'
 import { myTableOption } from './createForm/formOption'
 import { nanoid } from 'nanoid'
+import { SyncOutlined } from '@ant-design/icons-vue'
 
 export default defineComponent({
   components: {
@@ -49,6 +50,7 @@ export default defineComponent({
     const [tableRegister, myTable] = useTable(myTableOption)
     const myTableModal = useModal(tableRegister(), {
       title: '弹窗表格',
+      icon: () => h(SyncOutlined),
       width: 1400,
       height: 300,
       buttons: [

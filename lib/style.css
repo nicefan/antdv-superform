@@ -145,6 +145,11 @@
 .sup-bottom-buttons {
   margin-top: 16px;
 }
+.sup-modal .ant-modal-title > .anticon {
+  float: left;
+  margin-right: 8px;
+  font-size: 20px;
+}
 .sup-buttons .buttons-divider {
   margin: 0 2px;
 }

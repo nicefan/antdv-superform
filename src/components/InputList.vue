@@ -45,7 +45,7 @@ export default defineComponent({
         confirmText: undefined,
         onClick({ index }) {
           // const orgIdx = orgList.value.indexOf(data.record)
-          orgList.value = orgList.value.filter((_, idx) => idx === index)
+          orgList.value = orgList.value.filter((_, idx) => idx !== index)
         },
       },
     }

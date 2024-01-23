@@ -3,9 +3,10 @@ import type { VNode, VNodeTypes } from 'vue'
 import base from '../components/base'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
-import type { ModalProps, ModalFuncProps } from 'ant-design-vue/es'
+import type { ModalProps, ModalFuncProps } from 'ant-design-vue'
 import type { ExtButtons, ExtFormOption } from '../exaTypes'
 import { useForm } from '../superForm'
+import { toNode, useIcon } from '../utils'
 
 export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }: Obj = {}) {
   const visible = ref(false)
@@ -26,13 +27,24 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
     isUnmounted.value = true
   })
 
+  const titleSlot = () => (config.icon ? [useIcon(config.icon), toNode(config.title)] : toNode(config.title))
+
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>
     !isUnmounted.value &&
     h(
       base.Modal,
-      { ref: modalRef, visible: visible.value, 'onUpdate:visible': updateVisible, ...config, ...props, onOk },
-      { footer, ...ctx?.slots, default: content }
+      {
+        ref: modalRef,
+        visible: visible.value,
+        class: 'sup-modal',
+        'onUpdate:visible': updateVisible,
+        ...config,
+        title: undefined,
+        ...props,
+        onOk,
+      },
+      { footer, title: titleSlot, ...ctx?.slots, default: content }
     )
 
   const openModal = async (option?: ModalFuncProps | Obj) => {
@@ -55,8 +67,8 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
     openModal,
   }
 }
-
-export function useModal(content: () => VNodeTypes, config: (ModalProps & { buttons?: ExtButtons }) | Obj = {}) {
+type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & { buttons?: ExtButtons; [k: string]: any })
+export function useModal(content: () => VNodeTypes, config?: ExtModalProps) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
 
@@ -83,10 +95,8 @@ export function useModal(content: () => VNodeTypes, config: (ModalProps & { butt
   }
 }
 
-export function useModalForm(
-  { title, ...option }: ExtFormOption,
-  config: (ModalProps & { buttons?: ExtButtons }) | Obj = {}
-) {
+export function useModalForm(formOption: ExtFormOption, config: ExtModalProps = {}) {
+  const { title, ...option } = formOption as any
   const [register, form] = useForm(option)
   const modal = useModal(register(), { maskClosable: false, title, ...config })
   const openModal = ({ data, onOk = config.onOk, ...__config }: ModalFuncProps & { data?: Obj } = {}) => {

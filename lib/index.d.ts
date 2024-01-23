@@ -18,8 +18,7 @@ import type { InputProps } from 'ant-design-vue';
 import type { ListProps } from 'ant-design-vue';
 import type { Locale } from 'ant-design-vue/es/locale-provider';
 import type { ModalFuncProps } from 'ant-design-vue';
-import type { ModalFuncProps as ModalFuncProps_2 } from 'ant-design-vue/es';
-import type { ModalProps } from 'ant-design-vue/es';
+import type { ModalProps } from 'ant-design-vue';
 import type { PaginationProps } from 'ant-design-vue';
 import { PropType } from 'vue';
 import type { RadioGroupProps } from 'ant-design-vue';
@@ -72,9 +71,9 @@ export declare function createModal(content: (() => VNodeTypes) | VNode, { butto
     modalSlot: (props: any, ctx: any) => false | VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
-    setModal: (option?: ModalFuncProps_2 | Obj) => void;
+    setModal: (option?: ModalFuncProps | Obj) => void;
     closeModal: () => Promise<void>;
-    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
+    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
 };
 
 declare const _default: {
@@ -294,6 +293,11 @@ export declare interface ExtListOption extends ExtBaseOption {
     subSpan?: number
     gutter?: number
 }
+
+declare type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & {
+    buttons?: ExtButtons;
+    [k: string]: any;
+});
 
 declare interface ExtRadioOption extends ExtFormItemOption {
     labelField?: string
@@ -572,22 +576,18 @@ export declare function useForm(option: UseFormOption, data?: Obj): readonly [(a
 
 declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>);
 
-export declare function useModal(content: () => VNodeTypes, config?: (ModalProps & {
-    buttons?: ExtButtons;
-}) | Obj): {
+export declare function useModal(content: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any>;
-    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
+    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
     modalSlot: (props: any, ctx: any) => false | VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
+    setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
 };
 
-export declare function useModalForm({ title, ...option }: ExtFormOption, config?: (ModalProps & {
-    buttons?: ExtButtons;
-}) | Obj): {
-    openModal: ({ data, onOk, ...__config }?: ModalFuncProps_2 & {
+export declare function useModalForm(formOption: ExtFormOption, config?: ExtModalProps): {
+    openModal: ({ data, onOk, ...__config }?: ModalFuncProps & {
         data?: Obj<any> | undefined;
     }) => Promise<void>;
     closeModal: () => Promise<void>;

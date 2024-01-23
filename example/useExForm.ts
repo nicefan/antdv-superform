@@ -245,12 +245,7 @@ export default function exampleForm() {
             field: 'quarter',
             attrs: {
               picker: 'quarter',
-            },
-            slots: {
-              dateRender(...args) {
-                console.log(args)
-              },
-            },
+            }
           },
           {
             type: 'InputList',
