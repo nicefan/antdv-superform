@@ -7,7 +7,7 @@
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>
     </super-buttons>
-    <div style="margin-top: 16px; height: 800px;">
+    <div style="margin-top: 16px; height: 800px">
       <super-table @register="registTable" :rowSelection="false" />
     </div>
     <component :is="FormModalSlot" />
@@ -87,15 +87,24 @@ export default defineComponent({
       pagination: {
         // pageSize: 30,
         showSizeChanger: true,
-        pageSizeOptions:[ '10','20','50' ]
+        pageSizeOptions: ['10', '20', '50'],
       },
-      attrs: { 
+      columnProps: {
+        width: 100,
+        minWidth: 100,
+        resizable: true,
+      },
+
+      attrs: {
         bordered: true,
-        height: 600
-       },
-       params: {
+        height: 600,
+        onResizeColumn(w, col) {
+          col.width = w
+        },
+      },
+      params: {
         abc,
-       },
+      },
       // apis: {
       //   query: (arg) =>
       //     Promise.resolve().then(() => {
@@ -157,7 +166,7 @@ export default defineComponent({
         tooltip: '提示',
         label: '表格赋值',
         onClick: () => {
-          const list = new Array(50).fill({...data[0], id: nanoid()})
+          const list = new Array(50).fill({ ...data[0], id: nanoid() })
           setTableData2(list)
         },
       },

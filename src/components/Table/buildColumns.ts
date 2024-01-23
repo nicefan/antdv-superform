@@ -112,6 +112,7 @@ export function buildActionSlot({ buttons, methods, editSlot, isView }: BuildAct
       fixed: 'right',
       minWidth: 100,
       align: 'center',
+      resizable: false,
       ...columnProps,
       customRender: render,
     },

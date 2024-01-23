@@ -55,7 +55,7 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
     // modalFn?.redoModalHeight?.();
     getScrollRef.value = {
       y: height,
-      x: '100%',
+      // x: 'auto',
       scrollToFirstRowOnChange: true,
       ...scroll,
     }

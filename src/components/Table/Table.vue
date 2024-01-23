@@ -163,7 +163,7 @@ export default defineComponent({
         {
           ref: tableRef,
           dataSource: list.value,
-          columns,
+          columns: reactive(columns),
           tableLayout: 'fixed',
           pagination: false,
           ...attrs,
