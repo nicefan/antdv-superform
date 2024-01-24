@@ -15,7 +15,7 @@ export const myTableOption = defineTable({
     attrs: {
       wrapperCol: { style: 'width:100px' },
     },
-    buttons: ['submit', 'reset', { label: '新增', onClick: ({ table }) => table.add() }],
+    buttons: ['search', 'reset', { label: '新增', onClick: ({ table }) => table.add() }],
     subSpan: 8,
     subItems: ['fieldName', 'title', { type: 'Input', label: '其它', field: 'other' }],
   },
@@ -23,6 +23,7 @@ export const myTableOption = defineTable({
     console.log(data)
     return data
   },
+  params: {fieldName: 'abc'},
   modalProps: { width: '500px' },
   rowButtons: {
     columnProps: {

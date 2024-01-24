@@ -136,7 +136,7 @@ interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
   compact?: boolean
   /** 不做校验 */
   ignoreRules?: boolean
-  buttons?: ExtButtons<'submit' | 'reset'>
+  buttons?: ExtButtons<'submit' | 'reset' | 'search'>
 }
 
 interface ButtonItem {
@@ -146,7 +146,7 @@ interface ButtonItem {
   /** 权限标识 */
   roleName?: string
   roleMode?: 'hidden' | 'disable'
-  color?: 'success' | 'error' | 'warning'
+  color?: 'success' | 'error' | 'warning' | 'primary'
   vaildIn?: 'form' | 'detail' | 'both'
   tooltip?: string
   icon?: string | Component

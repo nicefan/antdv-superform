@@ -1,6 +1,6 @@
 import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, unref, watch, mergeProps } from 'vue'
-import { throttle } from 'lodash-es'
+import { throttle, defaults } from 'lodash-es'
 
 export function useQuery(option: Partial<RootTableOption>) {
   const queryApi = computed(() => {
@@ -17,8 +17,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
-      ...unref(option.params),
-      ...searchParam.value,
+      ...defaults({ ...searchParam.value }, unref(option.params)),
       ...pageParam,
       ...params,
     }
@@ -46,8 +45,8 @@ export function useQuery(option: Partial<RootTableOption>) {
     pageParam.size = size
     throttleRequest()
   }
-  const query = (param) => {
-    searchParam.value = { ...param }
+  const query = (param?: Obj) => {
+    param && (searchParam.value = { ...param })
     pageParam.current = 1
     return throttleRequest()
   }
@@ -78,14 +77,14 @@ export function useQuery(option: Partial<RootTableOption>) {
 
   watch(
     () => [apis.value, option.params],
-    () => queryApi.value && throttleRequest(),
+    () => queryApi.value && query(),
     { immediate: true, deep: true }
   )
 
   return {
     apis,
     goPage,
-    reload: request,
+    reload: throttleRequest,
     query,
     pagination,
     dataSource,

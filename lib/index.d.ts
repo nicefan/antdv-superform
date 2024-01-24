@@ -46,7 +46,7 @@ export declare interface ButtonItem {
     /** 权限标识 */
     roleName?: string
     roleMode?: 'hidden' | 'disable'
-    color?: 'success' | 'error' | 'warning'
+    color?: 'success' | 'error' | 'warning' | 'primary'
     vaildIn?: 'form' | 'detail' | 'both'
     tooltip?: string
     icon?: string | Component
@@ -232,7 +232,7 @@ export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> 
     compact?: boolean
     /** 不做校验 */
     ignoreRules?: boolean
-    buttons?: ExtButtons<'submit' | 'reset'>
+    buttons?: ExtButtons<'submit' | 'reset' | 'search'>
 }
 
 export declare interface ExtGroupBaseOption extends ExtBaseOption {
@@ -398,6 +398,8 @@ declare interface GlobalConfig {
     customIcon?: (name: string) => VNode;
     /** 动态传递按钮权限 */
     buttonRoles?: () => string[];
+    /** 内置默认按钮配置 */
+    defaultButtons?: Obj<ButtonItem>;
 }
 
 declare interface InstallConfig extends GlobalConfig {

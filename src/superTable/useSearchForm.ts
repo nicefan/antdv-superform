@@ -22,7 +22,7 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
   const formData: Obj = reactive({})
 
   const defaultAction = {
-    submit() {
+    search() {
       onChange(toRaw(formData))
     },
     reset() {
@@ -31,7 +31,7 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
     },
   }
   const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
-  const actions = buttonsConfig.actions || ['submit', 'reset']
+  const actions = buttonsConfig.actions || ['search', 'reset']
   if (actions?.length) {
     // Object.assign(formOption, {
     //   rowProps: { align: 'middle' },

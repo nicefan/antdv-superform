@@ -104,6 +104,7 @@ export default defineComponent({
       },
       params: {
         abc,
+        fieldName: 'abc'
       },
       // apis: {
       //   query: (arg) =>

@@ -3,6 +3,7 @@ import { merge } from 'lodash-es'
 import type { App, Component, VNode } from 'vue'
 import { override, addComponent } from './components'
 import type { Locale } from 'ant-design-vue/es/locale-provider'
+import type { ButtonItem } from './exaTypes'
 type BaseComps =
   | 'Divider'
   | 'InputGroup'
@@ -50,6 +51,8 @@ interface GlobalConfig {
   customIcon?: (name: string) => VNode
   /** 动态传递按钮权限 */
   buttonRoles?: () => string[]
+  /** 内置默认按钮配置 */
+  defaultButtons?: Obj<ButtonItem>
   /** 全局按钮权限过滤 */
   // buttonsAuth?: (actions: ButtonItem[]) => ButtonItem[]
 }

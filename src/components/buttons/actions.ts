@@ -1,45 +1,51 @@
 import { Modal } from 'ant-design-vue'
 import type { ButtonItem } from '../../exaTypes'
-import { globalProps } from '../../plugin'
-import { defaults } from 'lodash-es'
+import { globalProps, globalConfig } from '../../plugin'
+import { defaults, merge } from 'lodash-es'
 
 const getDefault = () => {
-  return {
-    add: {
-      label: '新增',
-      attrs: {
-        type: 'primary',
+  return merge(
+    {
+      add: {
+        label: '新增',
+        attrs: {
+          type: 'primary',
+        },
+      },
+      delete: {
+        label: '删除',
+        attrs: {
+          danger: true,
+        },
+        confirmText: '确定要删除吗？',
+        disabled: (param) => !param.record && !(param.selectedRowKeys?.length > 0),
+      },
+      edit: {
+        label: '修改',
+        disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
+      },
+      detail: {
+        label: '查看',
+        disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
+      },
+      submit: {
+        label: '确定',
+        attrs: {
+          type: 'primary',
+        },
+      },
+      search: {
+        label: '查询',
+        attrs: {
+          type: 'primary',
+        },
+      },
+      reset: {
+        label: '重置',
       },
     },
-    delete: {
-      label: '删除',
-      attrs: {
-        danger: true,
-      },
-      confirmText: '确定要删除吗？',
-      disabled: (param) => !param.record && !(param.selectedRowKeys?.length > 0),
-    },
-    edit: {
-      label: '修改',
-      disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
-    },
-    detail: {
-      label: '查看',
-      disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
-    },
-    submit: {
-      label: '确定',
-      attrs: {
-        type: 'primary',
-      },
-      // onClick(param) {
-      //   console.log(param)
-      // },
-    },
-    reset: {
-      label: '重置',
-    },
-  }
+    globalConfig.defaultButtons
+  )
 }
 
 function buildDefaultActions(methods) {
