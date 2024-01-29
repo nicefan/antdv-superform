@@ -1,18 +1,5 @@
 <script lang="ts">
-import {
-  defineComponent,
-  type PropType,
-  computed,
-  ref,
-  h,
-  reactive,
-  inject,
-  shallowRef,
-  watch,
-  toRaw,
-  toRef,
-  nextTick,
-} from 'vue'
+import { defineComponent, type PropType, computed, ref, h, reactive, inject, shallowRef, watch, toRaw } from 'vue'
 import {
   UploadOutlined,
   PaperClipOutlined,
@@ -142,6 +129,7 @@ export default defineComponent({
     const innerFileList = ref<any[]>([])
 
     const outFileList = shallowRef<any[]>([])
+    const outValues = shallowRef<any[]>()
 
     const tasks = new Map<string, Awaited<any>>()
     const waitingTasks = new Map<string, Fn<Awaited<any>>>()
@@ -156,12 +144,11 @@ export default defineComponent({
 
     const updateValue = () => {
       if (valueIsFileList) {
+        outValues.value = outFileList.value
         ctx.emit('update:value', outFileList.value)
       } else {
-        ctx.emit(
-          'update:value',
-          innerFileList.value.map((item) => item[valueField])
-        )
+        outValues.value = innerFileList.value.map((item) => item[valueField])
+        ctx.emit('update:value', outValues.value)
       }
     }
 
@@ -176,6 +163,15 @@ export default defineComponent({
         }
       },
       { immediate: true }
+    )
+    watch(
+      () => toRaw(props.value),
+      (value) => {
+        if (value !== outValues.value) {
+          innerFileList.value = []
+          outValues.value = undefined
+        }
+      }
     )
 
     const isLoading = ref(true)
