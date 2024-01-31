@@ -46,8 +46,8 @@ export default defineComponent({
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
         ...props.effectData,
-        current: parent.value === refData.value ? toRef(props.model, 'parent') : parent,
-        value: refData,
+        current: parent,
+        value: option.field ? refData : undefined
       })
       const { attrs, hidden } = useControl({
         option,
