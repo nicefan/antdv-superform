@@ -240,14 +240,6 @@ export default function exampleForm() {
             keepField: 'endDate',
           },
           {
-            type: 'DatePicker',
-            label: '季度',
-            field: 'quarter',
-            attrs: {
-              picker: 'quarter',
-            }
-          },
-          {
             type: 'InputList',
             field: 'tips',
             rowButtons: ['add', 'delete'],
@@ -303,6 +295,33 @@ export default function exampleForm() {
             ],
           },
         ],
+      },
+      {
+        type: 'ListGroup',
+        field: 'listGroup',
+        title: '列表表单',
+        descriptionsProps: {
+          column:3,
+          mode: 'table'
+        },
+        attrs: {
+          labelIndex: true,
+        },
+        columns:[
+          {
+            type: 'DatePicker',
+            label: '季度',
+            field: 'quarter',
+            attrs: {
+              picker: 'quarter',
+            }
+          },
+          {
+            type: 'InputNumber',
+            label: '金额',
+            field: 'money',
+          },
+        ]
       },
       {
         type: 'Card',

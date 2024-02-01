@@ -4,7 +4,7 @@
 import Vue from 'vue'
 
 import { DefaultOptionType } from 'ant-design-vue/es/select'
-import type { Component, HTMLAttributes, VNode, VNodeTypes } from 'vue'
+import type { Component, HTMLAttributes, VNode, VNodeChild, VNodeTypes } from 'vue'
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
 import type {
   SelectProps,
@@ -47,7 +47,7 @@ interface RuleConfig {
 
 // type VNode = VNodeChild
 // type Readonly<T = any> = Vue.DeepReadonly<T>
-type VSlot = string | Fn<VNodeTypes>
+type VSlot = string | Fn<VNodeChild>
 
 interface ExtBaseOption {
   type: string
@@ -246,6 +246,16 @@ interface ExtListOption extends ExtBaseOption {
   subSpan?: number
   gutter?: number
 }
+interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
+  field: string,
+  attrs?: {
+    /** 标签后加序号 */
+    labelIndex?: boolean
+    rowKey?: string
+  }
+  buttons?: ExtButtons<'delete' | 'add'>
+  columns: UniWidgetOption[]
+}
 interface ExtInputList extends ExtFormItemOption {
   title?: VSlot
   attrs?: {
@@ -383,6 +393,7 @@ type WrapperTypes = {
   InputGroup: ExtInputGroupOption
   Card: ExtGroupBaseOption
   List: ExtListOption
+  ListGroup: ExtListGroupOption
   Tabs: ExtTabsOption
   Table: ExtTableOption
   Collapse: ExtCollapseOption

@@ -91,6 +91,11 @@ export const myTableOption = defineTable({
       valueLabels: ['否', '是'],
     },
     { type: 'Input', field: 'col2', label: 'col2' },
-    { type: 'Upload', field: 'files', label: '附件', vModelFields: {fileList: 'files'} },
+    { 
+      type: 'Upload', 
+    field: 'files', 
+    label: '附件',
+    //  vModelFields: {fileList: 'files'}
+     },
   ],
 })

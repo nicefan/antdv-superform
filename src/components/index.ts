@@ -5,6 +5,7 @@ import InputGroup from './InputGroup.vue'
 import InputList from './InputList.vue'
 import Card from './Card.vue'
 import List from './List.vue'
+import ListGroup from './ListGroup.vue'
 import Tabs from './Tabs.vue'
 import Table from './Table'
 import Textarea from './Textarea.vue'
@@ -31,6 +32,7 @@ const components = {
   Group,
   Card,
   List,
+  ListGroup,
   Tabs,
   Table,
   Collapse,
@@ -55,7 +57,7 @@ const formItems = {
 
 export const containers = Object.keys(components)
 export const formItemTypes = Object.keys(formItems)
-const allItems: Obj = { ...formItems, ...components }
+const allItems: any = { ...formItems, ...components }
 
 export function addComponent(name, component) {
   const customName = `Ext${name}`

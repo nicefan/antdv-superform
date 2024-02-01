@@ -1,7 +1,7 @@
 import { type PropType, defineComponent, h, inject, toRef, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { getComputedStatus, getEffectData, getViewNode, useVModel } from '../../utils'
-import Controls from '../index'
+import Controls, { containers } from '../index'
 import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
 import TableView from '../Table/TableView.vue'
@@ -119,9 +119,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
         }
       } else {
         isBlock ??= !option.span // 未定义时默认为true
-        const viewType = ['Tabs', 'Collapse', 'Card', 'Table', 'Group', 'List', 'InputList'].includes(type)
-          ? type
-          : 'Group'
+        const viewType = [...containers, 'InputList'].includes(type) ? type : 'Group'
         const Control = Controls[viewType]
         wrapNode = () =>
           h(Control, { option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }, rootSlots)

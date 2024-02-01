@@ -33,6 +33,7 @@ import { TreeDataItem } from 'ant-design-vue/es/tree/Tree';
 import type { TreeProps } from 'ant-design-vue';
 import type { UploadProps } from 'ant-design-vue';
 import { VNode } from 'vue';
+import type { VNodeChild } from 'vue';
 import { VNodeProps } from 'vue';
 import { VNodeTypes } from 'vue';
 import Vue from 'vue';
@@ -281,6 +282,17 @@ export declare interface ExtInputOption extends ExtFormItemOption {
 }
 
 declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
+
+declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
+    field: string,
+    attrs?: {
+        /** 标签后加序号 */
+        labelIndex?: boolean
+        rowKey?: string
+    }
+    buttons?: ExtButtons<'delete' | 'add'>
+    columns: UniWidgetOption[]
+}
 
 export declare interface ExtListOption extends ExtBaseOption {
     field: string
@@ -653,7 +665,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
 
 declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);
 
-declare type VSlot = string | Fn<VNodeTypes>
+declare type VSlot = string | Fn<VNodeChild>
 
 declare type WidgetTypes = {
     Buttons: ExtBaseOption & ExtButtonGroup
@@ -683,6 +695,7 @@ declare type WrapperTypes = {
     InputGroup: ExtInputGroupOption
     Card: ExtGroupBaseOption
     List: ExtListOption
+    ListGroup: ExtListGroupOption
     Tabs: ExtTabsOption
     Table: ExtTableOption
     Collapse: ExtCollapseOption
