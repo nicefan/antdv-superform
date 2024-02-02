@@ -13,13 +13,13 @@ export function useQuery(option: Partial<RootTableOption>) {
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
-  const request = (params = {}) => {
+  const request = () => {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
-      ...defaults({ ...searchParam.value }, unref(option.params)),
+      ...unref(option.params),
+      ...searchParam.value,
       ...pageParam,
-      ...params,
     }
     loading.value = true
     return Promise.resolve(
@@ -38,7 +38,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     })
   }
 
-  const throttleRequest = throttle(request, 200, { 'trailing': true })
+  const throttleRequest = throttle(request, 300, { 'trailing': false })
 
   const goPage = (current, size = pageParam.size) => {
     pageParam.current = current
@@ -46,7 +46,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     throttleRequest()
   }
   const query = (param?: Obj) => {
-    param && (searchParam.value = { ...param })
+    param && (searchParam.value = param)
     pageParam.current = 1
     return throttleRequest()
   }

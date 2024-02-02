@@ -485,5 +485,6 @@ export {
   ExtTabsOption,
   ExtCollapseOption,
   ExtListOption,
+  ExtListGroupOption,
   ExtDescriptionsOption,
 }

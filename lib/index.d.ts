@@ -283,7 +283,7 @@ export declare interface ExtInputOption extends ExtFormItemOption {
 
 declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
 
-declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
+export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
     field: string,
     attrs?: {
         /** 标签后加序号 */

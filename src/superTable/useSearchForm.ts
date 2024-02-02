@@ -5,7 +5,8 @@ import { debounce } from 'lodash-es'
 import Controls from '../components'
 import { getEffectData } from '../utils'
 
-export function useSearchForm(columns, searchSechma, tableRef, onChange) {
+export function useSearchForm(tableOption, tableRef, onChange) {
+  const { columns, searchSechma } = tableOption
   const { buttons = {}, ...formOption } = searchSechma
   Object.assign(formOption, {
     ignoreRules: true,
@@ -20,6 +21,13 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
   })
   const formRef = ref()
   const formData: Obj = reactive({})
+  watch([tableOption.params, formRef], ([params, form]) => {
+    if (params && form) {
+      Object.keys(params).forEach((key) => {
+        if (key in formData) formData[key] = params[key]
+      })
+    }
+  })
 
   const defaultAction = {
     search() {
@@ -69,5 +77,5 @@ export function useSearchForm(columns, searchSechma, tableRef, onChange) {
   }
 
   const formNode = () => h(Controls.Form, { option: formOption, source: formData, ref: formRef })
-  return { formNode, formRef }
+  return { formNode, formRef, formData }
 }

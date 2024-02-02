@@ -117,21 +117,10 @@ export default defineComponent({
         const { attrs } = useControl({ option: opt, effectData })
 
         if (searchSechma) {
-          searchForm.value = useSearchForm(columns, searchSechma, tableRef, (data) => {
+          searchForm.value = useSearchForm(opt, tableRef, (data) => {
             const _data = beforeSearch?.({ ...effectData, table: tableRef, param: data }) || data
             query(_data)
           })
-          watch(
-            [() => option.params, () => searchForm.value.formRef],
-            ([params, form]) => {
-              if (params && form) {
-                form.setFieldsValue(params)
-              }
-            },
-            {
-              immediate: true,
-            }
-          )
         }
 
         Object.assign(tableAttrs, attrs, {

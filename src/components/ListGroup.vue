@@ -36,7 +36,7 @@ export default defineComponent({
     const methods = {
       add: {
         label: '添加',
-        onClick: () => (orgList.value = orgList.value.concat(cloneDeep(initialData)))
+        onClick: () => (orgList.value = orgList.value.concat(cloneDeep(initialData))),
       },
       delete: {
         hidden: () => orgList.value.length === 1,
@@ -63,17 +63,20 @@ export default defineComponent({
       orgList,
       (list) => {
         if (list.length === 0) {
-          list.push(cloneDeep(initialData))
+          // list.push(cloneDeep(initialData))
+          return methods.add.onClick()
         }
 
         listItems.value = list.map((record, idx) => {
-          if (!keyMap.has(record)) {
-            keyMap.set(record, record[rowKey] || nanoid(12))
+          const raw = toRaw(record)
+          if (!keyMap.has(raw)) {
+            keyMap.set(raw, record[rowKey] || nanoid(12))
           }
           // 原数据已经存在, 此处建立表单绑定
           const { modelsMap } = cloneModels(childrenMap, record, [...propChain, idx])
 
           return {
+            key: keyMap.get(raw),
             model: { refData: ref(record), children: modelsMap },
             effectData: reactive({ ...effectData, current: orgList, index: idx, record }),
           }
@@ -95,12 +98,8 @@ export default defineComponent({
     }
 
     return () =>
-      listItems.value.map(({ model, effectData }, idx) => {
-        return h(
-          Controls.Group,
-          { model, option: groupOption, effectData, key: keyMap.get(effectData.record), isView },
-          ctx.slots
-        )
+      listItems.value.map(({ model, effectData, key }, idx) => {
+        return h(Controls.Group, { model, option: groupOption, effectData, key: key + idx, isView }, ctx.slots)
       })
   },
 })

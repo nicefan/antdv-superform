@@ -320,6 +320,38 @@ export default function exampleForm() {
             type: 'InputNumber',
             label: '金额',
             field: 'money',
+            rules: {required: true}
+          },
+          {
+            type: 'InputList',
+            field: 'datelist',
+            // subSpan: 6,
+            label: '付款日期',
+            // rules: { min: 2 },
+            rowButtons: ['add', 'delete'],
+            columns: [
+              {
+                type: 'DatePicker',
+                label: '日期a',
+                field: 'index1',
+                rules: {required: true}
+                // span: 12,
+              },
+              {
+                type: 'DatePicker',
+                label: '日期b',
+                field: 'index2',
+                // span: 8,
+              },
+
+              {
+                type: 'DatePicker',
+                label: '日期c',
+                field: 'index3',
+                // rules: {required: true}
+                // span: 12,
+              },
+            ],
           },
         ]
       },
@@ -420,37 +452,6 @@ export default function exampleForm() {
                 console.log(args)
               },
             },
-          },
-          {
-            type: 'InputList',
-            field: 'datelist',
-            // subSpan: 6,
-            label: '付款日期',
-            // rules: { min: 2 },
-            rowButtons: ['add', 'delete'],
-            columns: [
-              {
-                type: 'DatePicker',
-                label: '日期a',
-                field: 'index1',
-                // rules: {required: true}
-                // span: 12,
-              },
-              {
-                type: 'DatePicker',
-                label: '日期b',
-                field: 'index2',
-                // span: 8,
-              },
-
-              {
-                type: 'DatePicker',
-                label: '日期c',
-                field: 'index3',
-                // rules: {required: true}
-                // span: 12,
-              },
-            ],
           },
         ],
       },

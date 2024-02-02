@@ -85,7 +85,7 @@ export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain
   const currentData = toRef(data || {})
   const newRules = {}
   const models = [...orgModels].map(([option, model]) => {
-    const { children, propChain = [], rules } = model
+    const { children, propChain = [], rules, listData } = model
     const newModel: ModelData = buildModelData(option, currentData, parentChain)
     newModel.rules = rules as any
     if (propChain.length && rules) {
@@ -95,6 +95,9 @@ export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain
       const { modelsMap, rules: childrenRules } = cloneModels(children, toRef(newModel, 'refData'), newModel.propChain)
       Object.assign(newRules, childrenRules)
       newModel.children = modelsMap
+    }
+    if (listData) {
+      newModel.listData = listData
     }
     return [option, newModel] as const
   })
