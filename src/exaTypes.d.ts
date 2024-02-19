@@ -23,7 +23,6 @@ import type {
   ListProps,
   UploadProps,
 } from 'ant-design-vue'
-import type { DescriptionsItemProp } from 'ant-design-vue/es/descriptions'
 
 interface RuleConfig {
   /** 验证类型 */
@@ -47,7 +46,7 @@ interface RuleConfig {
 
 // type VNode = VNodeChild
 // type Readonly<T = any> = Vue.DeepReadonly<T>
-type VSlot = string | Fn<VNodeChild>
+type VSlot = string | Fn
 
 interface ExtBaseOption {
   type: string

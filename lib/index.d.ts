@@ -33,7 +33,6 @@ import { TreeDataItem } from 'ant-design-vue/es/tree/Tree';
 import type { TreeProps } from 'ant-design-vue';
 import type { UploadProps } from 'ant-design-vue';
 import { VNode } from 'vue';
-import type { VNodeChild } from 'vue';
 import { VNodeProps } from 'vue';
 import { VNodeTypes } from 'vue';
 import Vue from 'vue';
@@ -667,7 +666,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
 
 declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);
 
-declare type VSlot = string | Fn<VNodeChild>
+declare type VSlot = string | Fn
 
 declare type WidgetTypes = {
     Buttons: ExtBaseOption & ExtButtonGroup
