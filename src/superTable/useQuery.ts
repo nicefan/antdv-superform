@@ -1,6 +1,6 @@
 import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, unref, watch, mergeProps } from 'vue'
-import { throttle, defaults } from 'lodash-es'
+import { throttle } from 'lodash-es'
 
 export function useQuery(option: Partial<RootTableOption>) {
   const queryApi = computed(() => {
@@ -8,6 +8,7 @@ export function useQuery(option: Partial<RootTableOption>) {
   })
   const pageParam = reactive<Obj>({})
   const searchParam = ref()
+  const manualParam = ref()
   const loading = ref(false)
   const dataSource = ref()
   const callbacks: Fn[] = []
@@ -19,6 +20,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     const _params = {
       ...unref(option.params),
       ...searchParam.value,
+      ...manualParam.value,
       ...pageParam,
     }
     loading.value = true
@@ -46,9 +48,12 @@ export function useQuery(option: Partial<RootTableOption>) {
     throttleRequest()
   }
   const query = (param?: Obj) => {
-    param && (searchParam.value = param)
+    manualParam.value = param
     pageParam.current = 1
     return throttleRequest()
+  }
+  const setSearchParam = (param?: Obj) => {
+    searchParam.value = param
   }
 
   const pagination = ref<false | Obj>(false)
@@ -75,16 +80,11 @@ export function useQuery(option: Partial<RootTableOption>) {
     return queryApi.value && { ...option.apis, query: throttleRequest }
   })
 
-  watch(
-    () => [apis.value, option.params],
-    () => queryApi.value && query(),
-    { immediate: true, deep: true }
-  )
-
   return {
     apis,
     goPage,
     reload: throttleRequest,
+    setSearchParam,
     query,
     pagination,
     dataSource,

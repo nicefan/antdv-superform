@@ -1,7 +1,6 @@
 // import { watchDebounced } from '@vueuse/core'
-import { ButtonGroup, mergeActions } from '../components/buttons'
-import { ref, reactive, h, toRaw, watch } from 'vue'
-import { debounce } from 'lodash-es'
+import { ButtonGroup } from '../components/buttons'
+import { ref, reactive, h, toRaw, watch, nextTick } from 'vue'
 import Controls from '../components'
 import { getEffectData } from '../utils'
 
@@ -21,45 +20,29 @@ export function useSearchForm(tableOption, tableRef, onChange) {
   })
   const formRef = ref()
   const formData: Obj = reactive({})
-  watch([tableOption.params, formRef], ([params, form]) => {
-    if (params && form) {
-      Object.keys(params).forEach((key) => {
-        if (key in formData) formData[key] = params[key]
-      })
-    }
-  })
 
   const defaultAction = {
     search() {
-      onChange(toRaw(formData))
+      onChange(toRaw(formData), true)
     },
     reset() {
       const data = formRef.value.resetFields()
-      onChange(data)
+      onChange(data, true)
     },
   }
+
+  /** 手动设置查询条件 */
+  const setParams = (params?: Obj) => {
+    params &&
+      Object.keys(params).forEach((key) => {
+        if (key in formData) formData[key] = params[key]
+      })
+  }
+
   const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
   const actions = buttonsConfig.actions || ['search', 'reset']
-  if (actions?.length) {
-    // Object.assign(formOption, {
-    //   rowProps: { align: 'middle' },
-    //   subItems: [
-    //     {
-    //       type: 'Group',
-    //       isBlock: false,
-    //       colProps: { flex: 'auto' },
-    //       subItems: formOption.subItems,
-    //     },
-    //     {
-    //       type: 'Buttons',
-    //       align: 'right',
-    //       colProps: { flex: 0, offset: 1 },
-    //       ...buttons,
-    //       actions,
-    //     },
-    //   ],
-    // })
-
+  const isDebounce = !actions?.length
+  if (!isDebounce) {
     formOption.subItems.push({
       type: 'InfoSlot',
       align: 'right',
@@ -70,11 +53,34 @@ export function useSearchForm(tableOption, tableRef, onChange) {
           param: getEffectData({ table: tableRef, form: formRef }),
         }),
     })
-  } else {
-    //  不带按钮实时搜索
-    const debounceQuery = debounce(onChange, 500, { maxWait: 1000 })
-    watch(formData, debounceQuery)
   }
+
+  nextTick(() => {
+    if (tableOption.params) {
+      watch(
+        tableOption.params,
+        (params) => {
+          setParams(params)
+          onChange(toRaw(formData), !isDebounce)
+        },
+        { immediate: true }
+      )
+    } else {
+      /** 同步查询初始参数 */
+      onChange(formData, false)
+    }
+
+    if (isDebounce) {
+      //  不带按钮实时搜索
+      // const debounceQuery = debounce(onChange, 500, { maxWait: 1000 })
+      watch(
+        () => ({ ...tableOption.params, ...formData }),
+        (data) => {
+          onChange(data, true)
+        }
+      )
+    }
+  })
 
   const formNode = () => h(Controls.Form, { option: formOption, source: formData, ref: formRef })
   return { formNode, formRef, formData }

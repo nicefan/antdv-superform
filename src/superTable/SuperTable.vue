@@ -40,10 +40,12 @@ export default defineComponent({
     merge(option, { attrs: mergeProps(option.attrs, ctxAttrs) })
     const searchForm = ref()
 
-    const { dataSource, loading, pagination, onLoaded, apis, goPage, reload, query } = useQuery(option)
+    const { dataSource, loading, pagination, onLoaded, apis, goPage, reload, query, setSearchParam } = useQuery(option)
     onLoaded((data) => {
       ctx.emit('change', data)
+      option.onChange?.(data)
     })
+
     const exposed = {
       setOption: (_option: RootTableOption) => {
         const { isScanHeight, inheritHeight, isFixedHeight, isContainer, ...attrs } = mergeProps(
@@ -70,6 +72,7 @@ export default defineComponent({
       getData: () => dataRef.value,
       dataRef,
     }
+
     watch(() => dataSource.value || props.dataSource, exposed.setData)
 
     const tableRef = ref({ ...exposed })
@@ -77,8 +80,8 @@ export default defineComponent({
       Object.assign(tableRef.value, toRefs(comp), exposed)
       ctx.emit('register', tableRef.value)
     }
+
     ctx.emit('register', tableRef.value)
-    onUnmounted(() => ctx.emit('register', null))
     ctx.expose(tableRef.value)
 
     const tableAttrs: Obj = reactive({
@@ -90,9 +93,10 @@ export default defineComponent({
     })
 
     const windowResize = new AbortController()
-    // 异步更新option,添加resize事件，需提前配置销毁
     onUnmounted(() => {
+      // 异步更新option,添加resize事件，需提前配置销毁
       windowResize.abort()
+      ctx.emit('register', null)
     })
     provide('rootSlots', ctx.slots)
 
@@ -117,9 +121,18 @@ export default defineComponent({
         const { attrs } = useControl({ option: opt, effectData })
 
         if (searchSechma) {
-          searchForm.value = useSearchForm(opt, tableRef, (data) => {
+          searchForm.value = useSearchForm(opt, tableRef, (data, isSearch) => {
             const _data = beforeSearch?.({ ...effectData, table: tableRef, param: data }) || data
-            query(_data)
+            setSearchParam(_data)
+            isSearch && query(_data)
+          })
+        } else if (opt.params) {
+          watch(opt.params, () => query())
+        }
+
+        if (option.immediate !== false) {
+          nextTick(() => {
+            query()
           })
         }
 
