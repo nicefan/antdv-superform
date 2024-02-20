@@ -12,6 +12,7 @@ import {
   nextTick,
   onUnmounted,
   toRefs,
+  shallowReactive,
 } from 'vue'
 import { merge } from 'lodash-es'
 import { useControl } from '../utils'
@@ -35,7 +36,7 @@ export default defineComponent({
     const dataRef = ref((props.dataSource || []) as Obj[])
     const wrapRef = ref()
 
-    const option: Obj = reactive(props.option || {})
+    const option: Obj = shallowReactive(props.option || {})
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
     merge(option, { attrs: mergeProps(option.attrs, ctxAttrs) })
     const searchForm = ref()
@@ -127,7 +128,7 @@ export default defineComponent({
             isSearch && query(_data)
           })
         } else if (opt.params) {
-          watch(opt.params, () => query())
+          watch(opt.params, () => query(), { deep: true })
         }
 
         if (option.immediate !== false) {

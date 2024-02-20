@@ -63,7 +63,7 @@ export function useSearchForm(tableOption, tableRef, onChange) {
           setParams(params)
           onChange(toRaw(formData), !isDebounce)
         },
-        { immediate: true }
+        { immediate: true, deep: true }
       )
     } else {
       /** 同步查询初始参数 */
@@ -74,10 +74,11 @@ export function useSearchForm(tableOption, tableRef, onChange) {
       //  不带按钮实时搜索
       // const debounceQuery = debounce(onChange, 500, { maxWait: 1000 })
       watch(
-        () => ({ ...tableOption.params, ...formData }),
-        (data) => {
-          onChange(data, true)
-        }
+        [tableOption.params, formData],
+        () => {
+          onChange(formData, true)
+        },
+        { deep: true }
       )
     }
   })

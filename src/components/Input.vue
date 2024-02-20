@@ -7,14 +7,14 @@
     :class="onSearch || option.enterButton ? 'ant-input-search ant-input-search-enter-button' : ''"
   >
     <template #addonAfter>
-      <component v-if="addonAfter && !option.enterButton && !onSearch" :is="toNode(addonAfter)" />
+      <component v-if="addonAfter && !option.enterButton && !onSearch" :is="toNode(addonAfter, effectData.value)" />
       <component
         v-if="!disabled && option.enterButton"
         :is="toNode(option.enterButton, effectData)"
         @click="() => onSearch?.(effectData.value)"
       />
       <Button v-else-if="!disabled && onSearch" @click="() => onSearch?.(effectData.value)">
-        <component v-if="addonAfter" :is="toNode(addonAfter)" />
+        <component v-if="addonAfter" :is="toNode(addonAfter, effectData.value)" />
         <SearchOutlined v-else />
       </Button>
     </template>
