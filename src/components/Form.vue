@@ -91,14 +91,14 @@ export default {
       },
       setFieldsValue(data) {
         formRef.value?.clearValidate()
-        return setFieldsValue(modelData.value, data)
+        return setFieldsValue(modelData.value, data, initialData)
       },
-      resetFields(defData?: Obj) {
-        resetFields(modelData.value, { ...initialData, ...defData })
+      resetFields(data: Obj = {}) {
+        resetFields(modelData.value, data, initialData)
         formRef.value?.clearValidate()
-        const data = cloneDeep(modelData.value)
-        emit('reset', data)
-        return onReset ? onReset(data) : data
+        const cloneData = cloneDeep(modelData.value)
+        emit('reset', cloneData)
+        return onReset ? onReset(cloneData) : cloneData
       },
     }
 

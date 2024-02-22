@@ -54,11 +54,11 @@ export function useSearchForm(tableOption, tableRef, onChange) {
         }),
     })
   }
-
+  const paramsRef = ref(tableOption.params)
   nextTick(() => {
     if (tableOption.params) {
       watch(
-        tableOption.params,
+        paramsRef,
         (params) => {
           setParams(params)
           onChange(toRaw(formData), !isDebounce)
@@ -74,7 +74,7 @@ export function useSearchForm(tableOption, tableRef, onChange) {
       //  不带按钮实时搜索
       // const debounceQuery = debounce(onChange, 500, { maxWait: 1000 })
       watch(
-        [tableOption.params, formData],
+        [paramsRef, formData],
         () => {
           onChange(formData, true)
         },

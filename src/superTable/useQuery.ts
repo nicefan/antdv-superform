@@ -1,5 +1,5 @@
 import type { RootTableOption } from '../exaTypes'
-import { computed, reactive, ref, unref, watch, mergeProps } from 'vue'
+import { computed, reactive, ref, watch, mergeProps } from 'vue'
 import { throttle } from 'lodash-es'
 
 export function useQuery(option: Partial<RootTableOption>) {
@@ -18,7 +18,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
-      ...unref(option.params),
+      ...ref(option.params).value,
       ...searchParam.value,
       ...manualParam.value,
       ...pageParam,
