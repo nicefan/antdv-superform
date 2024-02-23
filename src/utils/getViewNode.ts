@@ -3,6 +3,7 @@ import { ref, unref, h, reactive } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls from '../components'
 import useVModel from './useVModel'
+import { isPlainObject } from 'lodash-es'
 
 const buildProps = (option, effectData, model) => {
   const valueProps = useVModel({ option, model, effectData })
@@ -28,25 +29,28 @@ export function getViewNode(option, model, slots) {
       return ({ current }) => current[labelField as string]
     } else if (keepField) {
       return ({ current, text }) => (text || '') + ' - ' + (current[labelField as string] || '')
-    } else if (colOptions && typeof colOptions[0] === 'string') {
-      if (valueToLabel) return // 绑定值为Label时直接返回原值
-      return ({ text }) => colOptions[text]
-    } else if (dictName || colOptions) {
-      const options = ref<any[]>()
-      if (dictName && globalConfig.dictApi) {
-        globalConfig.dictApi(dictName).then((data) => (options.value = data))
-      } else if (typeof colOptions === 'function') {
-        Promise.resolve(colOptions({})).then((data) => (options.value = data))
+    } else if (colOptions || dictName) {
+      // 绑定值为Label时直接返回原值
+      if (valueToLabel) return
+      if (isPlainObject(colOptions) || typeof colOptions[0] === 'string') {
+        return ({ text }) => colOptions[text]
       } else {
-        options.value = unref(colOptions)
-      }
-      return ({ text }) => {
-        const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
-        const labels = arr.map((val) => {
-          const item = options.value?.find(({ value }) => (valueToNumber ? Number(value) : value) === val)
-          return item ? item.label : val
-        })
-        return labels.join(',')
+        const options = ref<any[]>()
+        if (dictName && globalConfig.dictApi) {
+          globalConfig.dictApi(dictName).then((data) => (options.value = data))
+        } else if (typeof colOptions === 'function') {
+          Promise.resolve(colOptions({})).then((data) => (options.value = data))
+        } else {
+          options.value = unref(colOptions)
+        }
+        return ({ text }) => {
+          const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
+          const labels = arr.map((val) => {
+            const item = options.value?.find(({ value }) => (valueToNumber ? Number(value) : value) === val)
+            return item ? item.label : val
+          })
+          return labels.join(',')
+        }
       }
     } else if (colType === 'Switch') {
       return ({ text }) => (option.valueLabels || '否是')[text]
