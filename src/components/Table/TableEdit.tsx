@@ -134,7 +134,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     },
     setup({ option, record }) {
       const { modelsMap, form } = getEditInfo(record)
-      const model = modelsMap.get(option)
+      const model = modelsMap.get(toRaw(option))
       const ruleName = model.propChain.join('.')
       const effectData = getEffectData({ current: model.parent, value: toRef(model, 'refData') })
       const { attrs } = useControl({ option, effectData })

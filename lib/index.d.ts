@@ -289,7 +289,7 @@ export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subIte
         labelIndex?: boolean
         rowKey?: string
     }
-    buttons?: ExtButtons<'delete' | 'add'>
+    rowButtons?: ExtButtons<'delete' | 'add'>
     columns: UniWidgetOption[]
 }
 

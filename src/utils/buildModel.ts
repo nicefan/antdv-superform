@@ -1,5 +1,5 @@
 import buildRule from './buildRule'
-import { reactive, ref, toRef, toValue, watch } from 'vue'
+import { reactive, ref, toRef, toValue, watch, markRaw } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import type { ExtBaseOption } from '../exaTypes'
 
@@ -72,7 +72,7 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
     } else if (columns) {
       subModel.listData = buildModelsMap(columns)
     }
-    modelsMap.set(child, subModel)
+    modelsMap.set(markRaw(child), subModel)
   })
   return {
     rules,

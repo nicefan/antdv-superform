@@ -254,7 +254,7 @@ interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
     labelIndex?: boolean
     rowKey?: string
   }
-  buttons?: ExtButtons<'delete' | 'add'>
+  rowButtons?: ExtButtons<'delete' | 'add'>
   columns: UniWidgetOption[]
 }
 interface ExtInputList extends ExtFormItemOption {

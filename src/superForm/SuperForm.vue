@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent, type PropType, ref, reactive, h, mergeProps, watchEffect, onMounted, computed } from 'vue'
-import { merge, defaults } from 'lodash-es'
+import { defineComponent, ref, h, mergeProps, watchEffect, onMounted, computed, shallowReactive } from 'vue'
+import { merge } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
@@ -29,7 +29,7 @@ export default defineComponent<SuperFormProps, any, unknown>({
     // const { class: __class, ...attrs } = ctx.attrs
     const formData: Obj = ref({})
     const formRef = ref()
-    const formOption = reactive<any>({
+    const formOption = shallowReactive<any>({
       ...props.config,
       // ...others,
       attrs: mergeProps({ ...globalProps.Form }, { ...props.config?.attrs }),
