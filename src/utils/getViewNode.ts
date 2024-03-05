@@ -32,7 +32,7 @@ export function getViewNode(option, model, slots) {
     } else if (colOptions || dictName) {
       // 绑定值为Label时直接返回原值
       if (valueToLabel) return
-      if (isPlainObject(colOptions) || typeof colOptions[0] === 'string') {
+      if (isPlainObject(colOptions) || typeof colOptions?.[0] === 'string') {
         return ({ text }) => colOptions[text]
       } else {
         const options = ref<any[]>()
