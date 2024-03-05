@@ -128,7 +128,11 @@ export default defineComponent({
             isSearch && query(_data)
           })
         } else if (opt.params) {
-          watch(opt.params, () => query(), { deep: true })
+          watch(
+            () => opt.params,
+            () => query(),
+            { deep: true }
+          )
         }
 
         if (option.immediate !== false) {

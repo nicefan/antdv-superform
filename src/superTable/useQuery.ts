@@ -40,7 +40,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     })
   }
 
-  const throttleRequest = throttle(request, 300, { 'trailing': false })
+  const throttleRequest = throttle(request, 300, { 'leading': false })
 
   const goPage = (current, size = pageParam.size) => {
     pageParam.current = current
