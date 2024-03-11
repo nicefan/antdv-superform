@@ -448,7 +448,7 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
     /**是否立即查询，默认为true */
     immediate?: boolean
     beforeSearch?: (data: { param?: Obj } | Obj) => Obj
-    searchSechma?: ExtFormOption | { subItems: (UniOption | string)[] }
+    searchSechma?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
     pagination?: PaginationProps | false
     maxHeight?: number
     /** 自动计算高度至底部 */

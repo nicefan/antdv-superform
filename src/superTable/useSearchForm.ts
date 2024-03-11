@@ -6,7 +6,7 @@ import { getEffectData } from '../utils'
 
 export function useSearchForm(tableOption, tableRef, onChange) {
   const { columns, searchSechma } = tableOption
-  const { buttons = {}, ...formOption } = searchSechma
+  const { buttons = {}, searchOnChange, ...formOption } = searchSechma
   Object.assign(formOption, {
     ignoreRules: true,
   })
@@ -39,17 +39,18 @@ export function useSearchForm(tableOption, tableRef, onChange) {
       })
   }
 
+  const isDebounce = !!searchOnChange
   const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
-  const actions = buttonsConfig.actions || ['search', 'reset']
-  const isDebounce = !actions?.length
-  if (!isDebounce) {
+  buttonsConfig.actions ??= !searchOnChange ? ['search', 'reset'] : undefined
+
+  if (buttonsConfig.actions?.length) {
     formOption.subItems.push({
       type: 'InfoSlot',
       align: 'right',
       span: 'auto',
       render: () =>
         h(ButtonGroup, {
-          config: { ...buttonsConfig, actions, methods: defaultAction },
+          config: { ...buttonsConfig, methods: defaultAction },
           param: getEffectData({ table: tableRef, form: formRef }),
         }),
     })
