@@ -94,12 +94,16 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
             if (editInfo.isNew) {
               newItems.value.splice(newItems.value.indexOf(record), 1)
               Object.assign(record, raw)
-              listener.onSave(record)
-              editInfo.isNew = false
+              listener.onSave(record).then(() => {
+                newItems.value.splice(newItems.value.indexOf(record), 1)
+                editInfo.isNew = false
+                editInfo.isEdit = false
+              })
             } else {
-              listener.onUpdate(raw, record)
+              listener.onUpdate(raw, record).then(() => {
+                editInfo.isEdit = false
+              })
             }
-            editInfo.isEdit = false
           })
           .catch((err) => {
             console.log('error', err)

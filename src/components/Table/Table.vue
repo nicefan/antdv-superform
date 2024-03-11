@@ -54,17 +54,16 @@ export default defineComponent({
 
     const listener = {
       async onSave(data) {
+        orgList.value.push(data)
         if (apis.save) {
           await apis.save(data)
-          return apis.query()
-        } else {
-          orgList.value.push(data)
+          return apis.query(true)
         }
       },
       async onUpdate(newData, oldData) {
         if (apis.update) {
           await apis.update(newData)
-          return apis.query()
+          return apis.query(true)
         } else {
           Object.assign(oldData, newData)
         }
@@ -72,7 +71,7 @@ export default defineComponent({
       async onDelete(items) {
         if (apis.delete) {
           await apis.delete(items)
-          return apis.query()
+          return apis.query(true)
         } else {
           items.forEach((item) => {
             orgList.value.splice(orgList.value.indexOf(item), 1)
@@ -97,7 +96,7 @@ export default defineComponent({
     const actions = {
       selectedRowKeys,
       selectedRows,
-      reload: (param) => apis.query?.(param),
+      reload: () => apis.query?.(true),
       add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
       edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
       delete: () => methods.delete?.(editParam),

@@ -47,7 +47,10 @@ export function useQuery(option: Partial<RootTableOption>) {
     pageParam.size = size
     throttleRequest()
   }
-  const query = (param?: Obj) => {
+  const query = (param?: true | Obj) => {
+    if (param === true) {
+      return request()
+    }
     manualParam.value = param
     pageParam.current = 1
     return throttleRequest()
