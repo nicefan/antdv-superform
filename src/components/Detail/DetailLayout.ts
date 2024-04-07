@@ -1,11 +1,11 @@
-import { type PropType, defineComponent, h, inject, toRef, unref } from 'vue'
-import { Col, Row } from 'ant-design-vue'
-import { getComputedStatus, getEffectData, getViewNode, useVModel } from '../../utils'
+import { type PropType, defineComponent, h, inject, toRef, unref, toValue, toRefs, reactive } from 'vue'
+import { Col, Row, Space } from 'ant-design-vue'
+import { getComputedStatus, getEffectData, getViewNode, toNode, useControl, useVModel } from '../../utils'
 import Controls, { containers } from '../index'
 import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
-import TableView from '../Table/TableView.vue'
 import { DataProvider } from '../../dataProvider'
+import { defaults } from 'lodash-es'
 
 const DetailLayouts = defineComponent({
   inheritAttrs: false,
@@ -23,116 +23,171 @@ const DetailLayouts = defineComponent({
     const config = {
       ...globalProps.Descriptions,
       ...gridConfig,
-      subSpan: option.subSpan,
-      gutter: option.gutter,
-      rowProps: option.rowProps,
-      ...ctx.attrs,
-      ...option.attrs,
-      ...option.descriptionsProps,
     }
-    config.mode ??= config.bordered ? 'table' : undefined
-    const rowProps = { ...globalProps.Row, gutter: config.gutter, ...config.rowProps }
-    rowProps.gutter ??= 16
+    const rowProps = defaults({ gutter: option.gutter }, option.rowProps || config.rowProps, globalProps.row, {
+      gutter: 16,
+    })
 
-    const presetSpan = (config.subSpan ??= 12)
+    const attrs = { subSpan: option.subSpan, ...option.descriptionsProps, ...ctx.attrs }
 
-    const items = buildNodes(modelsMap, option, config)
+    /** 向下继承信息 */
+    const provideData = {
+      ...config,
+      subSpan: option.subSpan ?? config.subSpan,
+      rowProps,
+      ...attrs,
+    }
+    // config.mode ??= config.bordered ? 'table' : undefined
+
+    const presetSpan = (provideData.subSpan ??= globalProps.Col?.span ?? 12)
+
+    const nodes = buildNodes(modelsMap, option, config)
 
     const nodeGroup: any[] = []
-    let current: any[] | undefined
-    let isRoot
+    let rowGroup: any[] | undefined
+    let section: any[] | undefined
+    // let isRoot = !option.type || option.type === 'Discriptions'
 
-    items.forEach((item, idx) => {
-      isRoot = isRoot || !item.option.type || item.option.type === 'Discriptions'
+    nodes.forEach((item, idx) => {
+      // isRoot = isRoot || !item.option.type || item.option.type === 'Discriptions'
+      const node = item.node || (() => h(Descriptions, { config: attrs, items: item.group, class: attrs.class }))
+      if (nodes.length === 1) {
+        nodeGroup.push(['block', node])
+        return
+      }
       if (item.isBlock) {
-        if (items.length === 1) {
-          nodeGroup.push(item.node)
+        if (item.group) {
+          if (!section) {
+            section = []
+            nodeGroup.push(['section', section])
+          }
+          section.push(node)
         } else {
-          nodeGroup.push(() => !unref(item.hidden) && h('div', { class: 'sup-form-section', key: idx }, item.node()))
+          if (section) {
+            // 当有混合block元素时，不生成section
+            section.push(() => !unref(item.hidden) && node())
+          } else {
+            nodeGroup.push([
+              'block',
+              () => !unref(item.hidden) && h('div', { class: 'sup-form-section', key: idx }, node()),
+            ])
+          }
         }
-        current = undefined
       } else {
-        let colProps: Obj = item.option.colProps
-        if (!colProps) {
-          colProps = { ...globalProps.Col }
-          colProps.span = item.option.span ?? presetSpan ?? colProps.span ?? 8
-        }
-        nodeGroup.push((current = []))
-        current.push(() => !unref(item.hidden) && h(Col, { ...colProps, key: idx }, item.node))
+        const colProps: Obj = defaults(
+          { span: item.option.span },
+          item.option.colProps,
+          { span: presetSpan },
+          globalProps.Col
+        )
+
+        !rowGroup && nodeGroup.push(['row', (rowGroup = [])])
+        rowGroup.push(() => !unref(item.hidden) && h(Col, { ...colProps, key: idx }, node))
+        section = undefined
       }
     })
 
     const content = () =>
-      h(DataProvider, { name: 'gridConfig', data: config }, () =>
-        nodeGroup.map((item, idx) => {
-          if (Array.isArray(item)) {
-            return h(Row, rowProps, () => item.map((node) => node()))
+      h(DataProvider, { name: 'gridConfig', data: provideData }, () =>
+        nodeGroup.map(([type, items]) => {
+          if (type === 'row') {
+            return h(Row, rowProps, () => items.map((node) => node()))
+          } else if (type === 'section') {
+            return h(
+              'div',
+              { class: 'sup-form-section' },
+              items.map((node) => node())
+            )
           } else {
-            return item()
+            return items()
           }
         })
       )
-    if (isRoot) {
-      return () =>
-        h(
-          Controls.Group,
-          {
-            class: 'sup-form-section',
-            option,
-            model: {},
-            effectData: getEffectData({}),
-            isView: true,
-          },
-          { innerContent: content }
-        )
-    } else {
-      return content
-    }
+    return content
+    // if (isRoot) {
+    //   return () =>
+    //     h(
+    //       Controls.Group,
+    //       {
+    //         class: 'sup-form-section',
+    //         option,
+    //         model: {},
+    //         effectData: getEffectData({}),
+    //         isView: true,
+    //       },
+    //       { innerContent: content }
+    //     )
+    // } else {
+    //   return content
+    // }
   },
 })
 
 function buildNodes(modelsMap: ModelsMap, preOption, config) {
   const nodes: any[] = []
-  let currentGroup: any[] = []
+  let currentGroup: any[] | undefined
   const rootSlots = inject<Obj>('rootSlots', {})
 
   ;[...modelsMap].forEach(([option, model], idx) => {
-    const { type, label, labelSlot, attrs, span, hideInDescription } = option
+    const { type, label, field, labelSlot = label, hideInDescription, viewRender } = option
     if (type === 'Hidden' || hideInDescription) return
-    const effectData = getEffectData({ current: toRef(model, 'parent'), text: toRef(model, 'refData') })
-    const hidden = getComputedStatus(option.hidden, effectData)
+    const effectData = getEffectData({
+      current: toRef(model, 'parent'),
+      index: idx,
+      field,
+      value: toRef(model, 'refData'),
+      text: toRef(model, 'refData'),
+    })
+    const { attrs, hidden } = useControl({ option, effectData })
+    const slots = {}
+    Object.entries(option.slots || {}).forEach(([key, value]) => {
+      slots[key] = typeof value === 'string' ? rootSlots[value] : value
+    })
 
-    const __label = labelSlot || label
+    const __label = labelSlot && (() => toNode(labelSlot, effectData))
     let isBlock = option.isBlock
     let wrapNode
     let node
     if (model.children || model.listData) {
+      wrapNode = viewRender && (() => toNode(viewRender, effectData))
       const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
       if (type === 'InputGroup') {
-        const contents = [...modelsMap].map((ent) => getContent(...ent))
+        if (!viewRender) {
+          let isBreak = option.isBreak
+          const contents = [...modelsMap].map(([opt, model]) => {
+            const labelSlot = opt.labelSlot || opt.label
+            const showLabel = option.attrs?.compact === false && labelSlot
+            const content = getContent(opt, model)
+            isBreak = opt.isBreak || isBreak
+            return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
+          })
+          wrapNode = () =>
+            h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () => contents.map((node) => node()))
+        }
         node = {
           option,
           label: __label,
-          span,
           hidden,
-          content: () => contents.map((node) => node?.()),
+          content: wrapNode,
         }
       } else {
         isBlock ??= !option.span // 未定义时默认为true
         const viewType = [...containers, 'InputList'].includes(type) ? type : 'Group'
         const Control = Controls[viewType]
-        wrapNode = () =>
-          h(Control, { option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }, rootSlots)
+        const defRender = () =>
+          h(Control, reactive({ option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }), slots)
+        wrapNode ??= defRender
         if (type === 'InputList') {
-          if (__label || config.mode !== 'table') {
-            isBlock = false
+          if (!isBlock || (labelSlot && !attrs?.labelIndex)) {
+            // isBlock = !option.label
             node = {
-              option: { ...option, descriptionsProps: { noInput: true } },
+              option: { ...option },
               label: __label,
-              span: 24,
               hidden,
               content: wrapNode,
             }
+          } else {
+            wrapNode = defRender
           }
         }
       }
@@ -142,7 +197,6 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
       node = content && {
         option,
         label: __label,
-        span,
         hidden,
         content,
       }
@@ -150,35 +204,38 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
     let blockNode
     if (node) {
       if (isBlock) {
-        const last = currentGroup.splice(-1)[0]
-        const style = option.align && { textAlign: option.align }
-        blockNode = { option: preOption, isBlock, node: () => h('div', { style }, last.content()) }
+        if (option.label) {
+          blockNode = { option: preOption, isBlock, group: [node] }
+        } else {
+          const style = option.align && { textAlign: option.align }
+          blockNode = { option: preOption, isBlock, node: () => h(node.content, { style }) }
+        }
       } else {
+        if (!currentGroup) {
+          currentGroup = []
+          nodes.push({ option: preOption, isBlock: true, group: currentGroup })
+        }
         currentGroup.push(node)
       }
     } else if (wrapNode) {
       blockNode = { option, isBlock, node: wrapNode, hidden }
     }
-    if (blockNode || idx === modelsMap.size - 1) {
-      // 如果当前元素是独立元素或是最后一个，则将之前字段包装
-      if (currentGroup?.length) {
-        const props = { option: preOption, items: currentGroup, effectData, class: config.class }
-        nodes.push({ option: preOption, isBlock: true, node: () => h(Descriptions, props) })
-        currentGroup = []
-      }
-      blockNode && nodes.push(blockNode)
+    if (blockNode) {
+      currentGroup = undefined
+      nodes.push(blockNode)
     }
   })
   return nodes
 }
 
 function getContent(option, model: ModelData) {
-  const rootSlots = inject<Obj>('rootSlots', {})
-  const value = toRef(model, 'refData')
-  const effectData = getEffectData({ current: toRef(model, 'parent'), value, text: value })
+  const { parent, refData } = toRefs(model)
 
-  const content = getViewNode(option, model, rootSlots)
-  return content === false ? undefined : () => (!content ? effectData.text : content(effectData))
+  const value = model.refName ? refData : undefined
+  const effectData = getEffectData({ current: parent, text: value, value, field: model.refName })
+
+  const content = getViewNode(option, effectData)
+  return content === false ? undefined : () => (content ? content() : model.refData)
 }
 
 export default DetailLayouts

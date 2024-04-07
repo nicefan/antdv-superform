@@ -103,18 +103,15 @@ export declare interface ExtBaseOption {
     type: string
     field?: string
     vModelFields?: Obj<string>
-    value?: Ref
+    // value?: Ref
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
+    help?: HelpMessage
     rules?: RuleConfig | RuleConfig[]
     /** 配置复用合并时方便插入 */
-    sort?: number
+    // sort?: number
     attrs?: Obj
-    /** 输入框列属性，置为空对象将清空继承属性 */
-    // wrapperCol?: ColProps & HTMLAttributes
-    /** 标题列属性，置为空对象将清空继承属性 */
-    // labelCol?: ColProps & HTMLAttributes
     dynamicAttrs?: Fn<Obj>
     /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
     hidden?: boolean | ((data: Readonly<Obj>) => boolean)
@@ -133,6 +130,7 @@ export declare interface ExtBaseOption {
     isBreak?: boolean
     align?: 'left' | 'right' | 'center'
     slots?: Obj<VSlot>
+    viewRender?: VSlot
     [key: `on${Capitalize<string>}${string}`]: Fn | undefined
 }
 
@@ -184,14 +182,9 @@ declare interface ExtDateRange extends ExtFormItemOption {
     keepField?: string
 }
 
-export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'> {
+export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
     title?: VSlot
-    gutter?: number
     buttons?: ExtButtons
-    /** 弹窗表单中的行间排版属性 */
-    rowProps?: RowProps & HTMLAttributes
-    /** 子元素的统一排列属性， */
-    subSpan?: number
     mode?: 'table' | 'form' | 'default'
     attrs?: ExtDescriptionsProps
     isContainer?: boolean
@@ -200,18 +193,17 @@ export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type
 
 declare type ExtDescriptionsProps = {
     mode?: 'table' | 'form' | 'default'
-    /** 行间排版属性 */
-    rowProps?: RowProps & HTMLAttributes
     /** 输入框列属性，置为空对象将清空继承属性 */
     wrapperCol?: ColProps & HTMLAttributes
     /** 标题列属性，置为空对象将清空继承属性 */
     labelCol?: ColProps & HTMLAttributes
     labelAlign?: 'left' | 'center' | 'right'
-    subSpan?: number
     labelBgColor?: string
     borderColor?: string
     noInput?: boolean
+    span?: number
 } & DescriptionsProps &
+ExtRow &
 HTMLAttributes
 
 /** 表单元素属性 */
@@ -221,7 +213,6 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     formItemProps?: FormItemProps
     descriptionsProps?: ExtDescriptionsProps
-    viewRender?: VSlot
 }
 
 export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
@@ -235,15 +226,10 @@ export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> 
     buttons?: ExtButtons<'submit' | 'reset' | 'search'>
 }
 
-export declare interface ExtGroupBaseOption extends ExtBaseOption {
+export declare interface ExtGroupBaseOption extends ExtBaseOption, ExtRow {
     title?: VSlot
-    gutter?: number
     buttons?: ExtButtons
-    subItems: UniOption[]
-    /** 弹窗表单中的行间排版属性 */
-    rowProps?: RowProps & HTMLAttributes
-    /** 子元素的统一排列属性， */
-    subSpan?: number
+    subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
     descriptionsProps?: ExtDescriptionsProps
 }
 
@@ -253,19 +239,17 @@ export declare interface ExtGroupOption extends ExtGroupBaseOption {
 
 declare type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption
 
-export declare interface ExtInputGroupOption extends ExtBaseOption {
-    gutter?: number
+export declare interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
     subItems: UniOption[]
 }
 
-declare interface ExtInputList extends ExtFormItemOption {
+declare interface ExtInputList extends ExtFormItemOption, ExtRow {
     title?: VSlot
     attrs?: {
         /** 标签后加序号 */
         labelIndex?: boolean
     }
     rowButtons?: ExtButtons<'delete' | 'add'>
-    subSpan?: number
     columns: UniWidgetOption[]
 }
 
@@ -283,7 +267,7 @@ export declare interface ExtInputOption extends ExtFormItemOption {
 declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
 
 export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
-    field: string,
+    field: string
     attrs?: {
         /** 标签后加序号 */
         labelIndex?: boolean
@@ -293,7 +277,7 @@ export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subIte
     columns: UniWidgetOption[]
 }
 
-export declare interface ExtListOption extends ExtBaseOption {
+export declare interface ExtListOption extends ExtBaseOption, ExtRow {
     field: string
     title?: VSlot
     attrs?: ListProps | Obj
@@ -301,8 +285,6 @@ export declare interface ExtListOption extends ExtBaseOption {
     columns: UniWidgetOption[]
     /** 列表元素右边按钮 */
     rowButtons?: ExtButtons<'delete' | 'edit'>
-    subSpan?: number
-    gutter?: number
 }
 
 declare type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & {
@@ -320,6 +302,13 @@ declare interface ExtRadioOption extends ExtFormItemOption {
     /** 选项中的value使用label */
     valueToLabel?: boolean
     attrs?: RadioGroupProps & HTMLAttributes
+}
+
+declare interface ExtRow {
+    /** 行间排版属性 */
+    rowProps?: RowProps & HTMLAttributes
+    subSpan?: number | 'auto'
+    gutter?: number
 }
 
 declare interface ExtSelectOption extends ExtFormItemOption {
@@ -363,7 +352,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
     modalProps?: ModalFuncProps | Obj
     descriptionsProps?: ExtDescriptionsProps
     /** 弹窗表单属性 */
-    formSechma?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
+    formschema?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
 }
 
 export declare interface ExtTabsOption extends ExtBaseOption {
@@ -413,6 +402,10 @@ declare interface GlobalConfig {
     defaultButtons?: Obj<ButtonItem>;
 }
 
+declare interface HelpMessage {
+    color: 'success' | 'info' | 'warning' | 'error'
+}
+
 declare interface InstallConfig extends GlobalConfig {
     locale?: Locale;
     components?: {
@@ -448,7 +441,7 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
     /**是否立即查询，默认为true */
     immediate?: boolean
     beforeSearch?: (data: { param?: Obj } | Obj) => Obj
-    searchSechma?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
+    searchschema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
     pagination?: PaginationProps | false
     maxHeight?: number
     /** 自动计算高度至底部 */
@@ -557,6 +550,7 @@ export declare type TableApis = {
     save?: Fn<Promise<any>>
     update?: Fn<Promise<any>>
     delete?: Fn<Promise<any>>
+    export?: Fn<Promise<any>>
 }
 
 export declare type UniOption = UniWrapperOption | UniWidgetOption
@@ -686,6 +680,7 @@ declare type WidgetTypes = {
     Checkbox: ExtRadioOption
     Switch: ExtSwitchOption
     Upload: ExtUpload
+    InputGroup: ExtInputGroupOption
     InputList: ExtInputList
 }
 
@@ -693,7 +688,6 @@ declare type WrapperTypes = {
     InfoSlot: ExtInfoSlotOption
     Form: ExtFormOption
     Group: ExtGroupOption
-    InputGroup: ExtInputGroupOption
     Card: ExtGroupBaseOption
     List: ExtListOption
     ListGroup: ExtListGroupOption

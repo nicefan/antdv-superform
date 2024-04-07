@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, inject, type PropType, provide, reactive, toRef, toRefs, mergeProps } from 'vue'
+import { computed, defineComponent, h, inject, type PropType, provide, reactive, toRef, toRefs, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults } from 'lodash-es'
 import Controls, { containers, formItemTypes } from './index'
@@ -21,12 +21,11 @@ export default defineComponent({
       type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
     effectData: Object,
-    disabled: [Boolean, Object],
   },
   setup(props, ctx) {
     const { type: parentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
     const rowProps = { gutter, ...props.option.rowProps, ...ctx.attrs }
-    const inheritOptions = inject<Obj>('inheritOptions', { disabled: toRef(props, 'disabled') })
+    const inheritOptions = inject<Obj>('inheritOptions', {})
     const presetSpan = subSpan ?? inheritOptions.subSpan
 
     const nodes: any[] = []
@@ -37,19 +36,18 @@ export default defineComponent({
 
       const colProps: Obj = { ...option.colProps, span }
 
-      if (span === 'auto' || (presetSpan === 0 && span === undefined)) {
+      defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
+      if (colProps.span === 0 || colProps.flex) {
         colProps.span = undefined
-        if (span === 'auto') colProps.flex = '1'
-      } else {
-        defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
       }
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
         ...props.effectData,
         current: parent,
-        value: option.field ? refData : undefined
+        field: subData.refName,
+        value: subData.refName ? refData : undefined,
       })
-      const { attrs, hidden } = useControl({
+      const { hidden, attrs } = useControl({
         option,
         effectData,
         inheritDisabled: inheritOptions.disabled,
@@ -65,25 +63,27 @@ export default defineComponent({
       }
 
       let node = innerNode
-      // 容器组件转递继承属性
+      /** 容器组件 */
       const independent = [...containers, 'InputList', 'InputGroup'].includes(type)
-      if (independent) {
-        const inheritOptions: Obj = {
-          disabled: attrs.disabled,
-          subSpan: option.subSpan ?? presetSpan,
-        }
-        node = () => h(DataProvider, { name: 'inheritOptions', data: inheritOptions }, innerNode)
-      }
-      const isListFormItem = type === 'InputList' && (labelSlot || label)
-      if (isListFormItem || (!independent && (option.field || !isBlock))) {
+      // const isListFormItem = type === 'InputList' && (labelSlot || label) && !option.attrs?.labelIndex
+      if (!independent && (option.field || !isBlock)) {
         // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
-        const rules = computed(() => (attrs.disabled.value ? undefined : subData.rules))
+        const rules = computed(() => (unref(attrs.disabled) ? undefined : subData.rules))
         const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
         const _label = labelSlot || label
         const _slots: Obj = { default: innerNode }
         _label !== undefined && (_slots.label = () => toNode(_label, effectData))
         node = () =>
           h(base.FormItem, reactive({ ...formItemAttrs, name: subData.propChain, rules, colon: !!_label }), _slots)
+      }
+
+      if (independent) {
+        // 容器组件转递继承属性
+        const inheritOptions: Obj = {
+          disabled: attrs.disabled,
+          subSpan: option.subSpan ?? presetSpan,
+        }
+        node = () => h(DataProvider, { name: 'inheritOptions', data: inheritOptions }, innerNode)
       }
 
       // 容器组件独行显示
@@ -97,15 +97,15 @@ export default defineComponent({
         )
       } else {
         if (type === 'InputList') {
-          currentGroup = undefined
-          colProps.span = option.span
-          colProps.flex = 'auto'
+          // currentGroup = undefined
+          colProps.span = 24
+          // colProps.flex = 'auto'
         }
         if (!currentGroup) {
           nodes.push((currentGroup = []))
         }
         currentGroup.push(() => !hidden.value && h(Col, mergeProps({ style: alignStyle, key: idx }, colProps), node))
-        if (option.isWrap || type === 'InputList') currentGroup = undefined
+        if (option.isWrap) currentGroup = undefined
       }
     })
 

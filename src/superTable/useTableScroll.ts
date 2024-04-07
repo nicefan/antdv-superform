@@ -87,8 +87,8 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
       // Table height from bottom
       bottomIncludeBody = tableView.bottomIncludeBody - outerPadding // 去掉一个页面底部边距
     }
-
-    const headerHeight = (tableEl.querySelector('.ant-table-title') as HTMLElement)?.offsetHeight ?? 0
+    const titleEl = tableEl.querySelector('.ant-table-title') as HTMLElement
+    const headerHeight = titleEl?.parentElement === tableEl ? titleEl.offsetHeight ?? 0 : 0
     const headEl = tableEl.querySelector('.ant-table-thead ')
     if (!headEl) return
 
@@ -99,7 +99,7 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
     }
     let footerHeight = 0
     const footerEl = tableEl.querySelector('.ant-table-footer') as HTMLElement
-    if (footerEl) {
+    if (footerEl && footerEl.parentElement === tableEl) {
       footerHeight += footerEl.offsetHeight || 0
     }
     // Pager height

@@ -14,14 +14,15 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
   const modalRef = ref()
 
   const footer = buttons && (() => h(ButtonGroup, { config: buttons, param: { modalRef } }))
-
-  const onOk = () =>
-    Promise.resolve(config.onOk?.())
+  const confirmLoading = ref<boolean>(false)
+  const onOk = () => {
+    confirmLoading.value = true
+    return Promise.resolve(config.onOk?.())
       .then(() => {
         visible.value = false
       })
-      .catch((err) => console.error(err))
-
+      .catch((err) => console.error(err)).finally(()=> (confirmLoading.value = false))
+    }
   const isUnmounted = ref(false)
   onUnmounted(() => {
     isUnmounted.value = true
@@ -39,6 +40,7 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
         visible: visible.value,
         class: 'sup-modal',
         'onUpdate:visible': updateVisible,
+        confirmLoading: confirmLoading.value,
         ...config,
         title: undefined,
         ...props,

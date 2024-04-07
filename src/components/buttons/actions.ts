@@ -77,30 +77,23 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
       const meta = { label: config.label, ...item.meta }
       const _onClick = item.onClick
 
-      const _action = async (text, method) => {
+      const _action = (text, method) => {
         if (text) {
-          return new Promise((resolve) =>
-            Modal.confirm({
-              title: text,
-              okText: '确定',
-              cancelText: '取消',
-              ...globalProps.Modal,
-              onOk: () => {
-                resolve(method())
-              },
-            })
-          )
+          Modal.confirm({
+            title: text,
+            okText: '确定',
+            cancelText: '取消',
+            ...globalProps.Modal,
+            onOk: method,
+          })
         } else {
-          return method()
+          method()
         }
       }
       config.onClick = (param) => {
         if (_onClick && innerMethod) {
           // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
-          _onClick(param, (exParam: Obj = {}) => {
-            const { confirmText = config.confirmText, __param } = exParam
-            return _action(confirmText, () => innerMethod?.({ ...param, meta, ...__param }))
-          })
+          _action(config.confirmText, () => _onClick(param, async (__param = param) => innerMethod(__param)))
         } else {
           _action(config.confirmText, () => (innerMethod || _onClick)?.({ ...param, meta }))
         }

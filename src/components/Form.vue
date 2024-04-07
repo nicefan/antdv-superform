@@ -19,7 +19,6 @@ export default {
     },
     /** 按钮事件 */
     methods: Object,
-    disabled: null as any,
     ignoreRules: {
       default: (raw) => raw.option.ignoreRules,
       type: Boolean,
@@ -153,7 +152,6 @@ export default {
               option,
               model: { refData: modelData, children: modelsMap },
               effectData,
-              disabled: attrs.disabled,
             }),
             defaultSlot?.(),
           ],

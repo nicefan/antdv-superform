@@ -17,17 +17,20 @@ export default function render({ option, effectData, inheritDisabled }: Param) {
   const hidden = getComputedStatus(__hidden, effectData)
 
   // 元素禁用控制
-  const disabled = computed(() => {
-    let bool = toValue(inheritDisabled)
-    if (!bool) {
-      if (typeof __disabled === 'function') {
-        bool = !!__disabled(effectData)
-      } else {
-        bool = toValue(__disabled)
-      }
-    }
-    return bool
-  })
+  const disabled =
+    inheritDisabled === undefined && __disabled === undefined
+      ? undefined
+      : computed(() => {
+          let bool = toValue(inheritDisabled)
+          if (!bool) {
+            if (typeof __disabled === 'function') {
+              bool = !!__disabled(effectData)
+            } else {
+              bool = toValue(__disabled)
+            }
+          }
+          return bool
+        })
 
   // 事件控制
   const listener = getListener(option, effectData)

@@ -65,7 +65,6 @@ export function useColumns({ childrenMap, effectData, getEditRender, actionColum
 }
 
 function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
-  const rootSlots = { ...inject('rootSlots', {}) }
   const columns: any[] = []
   ;[..._models].forEach(([col, model]) => {
     if (col.type === 'Hidden' || col.hideInTable || col.hidden === true) return
@@ -81,7 +80,7 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
         dataIndex: model.propChain.join('.'),
         // ...globalProps.Column,
         ...(col.columnProps as Obj),
-        customRender: getViewNode(col, model, rootSlots),
+        customRender: getViewNode(col),
       }
       columns.push(column)
       colsMap.set(col, column)

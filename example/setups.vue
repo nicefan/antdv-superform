@@ -14,7 +14,7 @@
   </div>
 </template>
 <script lang="ts">
-import { ref, defineComponent, inject, toRefs, h } from 'vue'
+import { ref, defineComponent, inject, toRefs, h, reactive } from 'vue'
 import exampleForm from './useExForm'
 import { useTable, SuperTable, useForm, type ButtonItem } from '../src'
 import { SuperButtons } from '../src/superButtons'
@@ -74,12 +74,12 @@ export default defineComponent({
       table.setData([...data])
       console.log(table)
     }
-    const abc = ref('')
+    const abc = reactive({fieldName:'aaa'})
     /** 页面组件注册表格 */
     const [registTable, { setData: setTableData2 }] = useTable({
       isContainer: true,
       ...myTableOption,
-      // searchSechma: undefined,
+      // searchschema: undefined,
       // maxHeight: 500,
       inheritHeight: true,
       // resizeHeightOffset: 16,
@@ -94,7 +94,8 @@ export default defineComponent({
         minWidth: 100,
         resizable: true,
       },
-
+      editMode: 'inline',
+      addMode: 'inline',
       attrs: {
         bordered: true,
         height: 600,
@@ -102,10 +103,7 @@ export default defineComponent({
           col.width = w
         },
       },
-      params: {
-        abc,
-        fieldName: 'abc'
-      },
+      params: abc,
       // apis: {
       //   query: (arg) =>
       //     Promise.resolve().then(() => {
@@ -175,7 +173,7 @@ export default defineComponent({
         color: 'success',
         label: '更新查询',
         onClick: () => {
-          abc.value = '2'
+          abc.fieldName = '2'
         },
       },
     ]

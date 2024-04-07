@@ -6,12 +6,12 @@ export const myTableOption = defineTable({
   buttons: {
     actions: ['add', 'edit', 'delete'],
   },
-  formSechma: {
+  formschema: {
     attrs: { layout: 'vertical' },
     subSpan: 24,
   },
   descriptionsProps: { column: 1, size: 'default', mode: 'table' },
-  searchSechma: {
+  searchschema: {
     attrs: {
       wrapperCol: { style: 'width:100px' },
     },
@@ -83,6 +83,7 @@ export const myTableOption = defineTable({
           { label: '文本', value: 'text' },
           { label: '数字', value: 'number' },
         ]),
+      viewRender:({text}) => text.replaceAll(',', ' /')
     },
     {
       type: 'Switch',
@@ -93,9 +94,10 @@ export const myTableOption = defineTable({
     { type: 'Input', field: 'col2', label: 'col2' },
     { 
       type: 'Upload', 
-    field: 'files', 
+      // hideInDescription: true,
+    field: 'fileIds', 
     label: '附件',
-    //  vModelFields: {fileList: 'files'}
+     vModelFields: {fileList: 'files'}
      },
   ],
 })

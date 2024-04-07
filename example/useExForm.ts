@@ -113,7 +113,7 @@ export default function exampleForm() {
           {
             type: 'InfoSlot',
             field: 'array',
-            label: 'render',
+            // label: 'render',
             initialValue: ['自定义消息'],
             render: (props) => {
               return h('h2', props.value?.[0])
@@ -241,19 +241,68 @@ export default function exampleForm() {
           },
           {
             type: 'InputList',
-            field: 'tips',
-            rowButtons: ['add', 'delete'],
-            // label: '时间段',
-            // span: 12,
+            field: 'nameList',
+            // isBlock: false,
+            // subSpan: 20,
+            label: '客户',
+            rules: { required: true, min: 2 },
             attrs: {
-              labelIndex: true,
+              // labelIndex: true,
             },
+            rowButtons: ['add', 'delete'],
+            columns: [
+              {
+                type: 'Input',
+                field: '$index',
+                label: '姓名',
+                // labelSlot: ({ index }) => '姓名' + '一二三四'[index],
+                rules: { required: true },
+              },
+            ],
+          },
+          {
+            type: 'InputList',
+            field: 'datelist',
+            // subSpan: 12,
+            descriptionsProps: {
+              span: 24,
+            },
+            label: '付款日期',
+            rules: { min: 2 },
+            rowButtons: ['add', 'delete'],
+            attrs: {
+              // labelIndex: true,
+            },
+            // viewRender(data) {
+            //   return JSON.stringify(data.value)
+            // },
             columns: [
               {
                 type: 'DatePicker',
-                label: '日期',
-                field: '$index',
+                label: '日期b',
+                field: 'index2',
+                onChange: (data) => {
+                  console.log(data)
+                },
+                isBreak: true,
+                // span: 8,
               },
+
+              {
+                type: 'DatePicker',
+                label: '日期c',
+                field: 'index3',
+                // rules: {required: true}
+                // span: 12,
+              },
+
+              // {
+              //   type: 'DatePicker',
+              //   label: ({index}) =>'日期a' + (index+1),
+              //   field: 'index1',
+              //   rules: {required: true}
+              //   // span: 12,
+              // },
             ],
           },
           {
@@ -271,8 +320,8 @@ export default function exampleForm() {
             disabled: ({ formData }) => !!formData.isReg,
             attrs: {
               apis: {
-                delete :(file) =>new Promise((resolve,reject) => setTimeout(reject, 5000)),
-                upload: (data) => new Promise((resolve,reject) => setTimeout(reject, 5000))
+                delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
+                upload: (data) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
               },
               // uploadMode: 'submit',
               multiple: true,
@@ -301,59 +350,29 @@ export default function exampleForm() {
         field: 'listGroup',
         title: '列表表单',
         descriptionsProps: {
-          column:3,
-          mode: 'table'
+          column: 3,
+          mode: 'table',
         },
         attrs: {
           labelIndex: true,
         },
-        columns:[
+        // rowButtons: [],
+        columns: [
           {
             type: 'DatePicker',
             label: '季度',
             field: 'quarter',
             attrs: {
               picker: 'quarter',
-            }
+            },
           },
           {
             type: 'InputNumber',
             label: '金额',
             field: 'money',
-            rules: {required: true}
+            rules: { required: true },
           },
-          {
-            type: 'InputList',
-            field: 'datelist',
-            // subSpan: 6,
-            label: '付款日期',
-            // rules: { min: 2 },
-            rowButtons: ['add', 'delete'],
-            columns: [
-              {
-                type: 'DatePicker',
-                label: '日期a',
-                field: 'index1',
-                rules: {required: true}
-                // span: 12,
-              },
-              {
-                type: 'DatePicker',
-                label: '日期b',
-                field: 'index2',
-                // span: 8,
-              },
-
-              {
-                type: 'DatePicker',
-                label: '日期c',
-                field: 'index3',
-                // rules: {required: true}
-                // span: 12,
-              },
-            ],
-          },
-        ]
+        ],
       },
       {
         type: 'Card',
@@ -469,7 +488,7 @@ export default function exampleForm() {
           buttonType: 'link',
           actions: ['edit', 'delete'],
         },
-        formSechma: {
+        formschema: {
           subSpan: 12,
           attrs: {
             layout: 'vertical',

@@ -14,7 +14,7 @@ function modalEdit({ initialData, rowKey, option, listener }) {
   const source = ref({})
   const formRef = ref()
 
-  const formOption: GetOption<'Form'> = { ...option.formSechma }
+  const formOption: GetOption<'Form'> = { ...option.formschema }
   // buttons: { actions: ['submit', 'reset'] },
   formOption.subItems = formOption.subItems || option.columns.filter((item) => !item.hideInForm)
 
@@ -35,7 +35,7 @@ function modalEdit({ initialData, rowKey, option, listener }) {
   const methods = {
     add({ meta = {}, resetData }: Obj = {}) {
       source.value = merge({}, initialData, { [rowKey]: nanoid(12), ...resetData })
-      openModal({
+      return openModal({
         title: meta.title || meta.label || '新增',
         onOk() {
           return formRef.value.submit().then((data) => {
@@ -51,7 +51,7 @@ function modalEdit({ initialData, rowKey, option, listener }) {
       } else {
         source.value = cloneDeep(data)
       }
-      openModal({
+      return openModal({
         title: meta.title || meta.label || '修改',
         onOk() {
           return formRef.value.submit().then((newData) => {

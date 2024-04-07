@@ -1,17 +1,20 @@
 import { globalConfig } from '../plugin'
-import { ref, unref, h, reactive } from 'vue'
+import { ref, unref, h, reactive, type VNode, inject } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls from '../components'
-import useVModel from './useVModel'
 import { isPlainObject } from 'lodash-es'
 
-const buildProps = (option, effectData, model) => {
-  const valueProps = useVModel({ option, model, effectData })
-
-  return { ...option.attrs, ...valueProps }
+const getVModelProps = (options, parent: Obj) => {
+  const vModels = {}
+  if (options.vModelFields) {
+    Object.entries(options.vModelFields as Obj).forEach(([name, field]) => {
+      vModels[name] = parent[field]
+    })
+  }
+  return vModels
 }
 
-export function getViewNode(option, model, slots) {
+export function getViewNode(option, effectData = {}) {
   const {
     type: colType = '',
     viewRender,
@@ -24,59 +27,62 @@ export function getViewNode(option, model, slots) {
     valueToLabel,
   } = option as any
 
+  const rootSlots = inject<Obj>('rootSlots', {})
+
   const content = (() => {
     if (labelField) {
-      return ({ current }) => current[labelField as string]
+      return ({ current } = effectData) => current[labelField as string]
     } else if (keepField) {
-      return ({ current, text }) => (text || '') + ' - ' + (current[labelField as string] || '')
+      return ({ current, text } = effectData) => (text || '') + ' - ' + (current[labelField as string] || '')
     } else if (colOptions || dictName) {
       // 绑定值为Label时直接返回原值
       if (valueToLabel) return
       if (isPlainObject(colOptions) || typeof colOptions?.[0] === 'string') {
-        return ({ text }) => colOptions[text]
+        return ({ text } = effectData) => colOptions[text]
       } else {
         const options = ref<any[]>()
         if (dictName && globalConfig.dictApi) {
           globalConfig.dictApi(dictName).then((data) => (options.value = data))
         } else if (typeof colOptions === 'function') {
-          Promise.resolve(colOptions({})).then((data) => (options.value = data))
+          Promise.resolve(colOptions(effectData)).then((data) => (options.value = data))
         } else {
           options.value = unref(colOptions)
         }
-        return ({ text }) => {
+        return ({ text } = effectData) => {
           const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
           const labels = arr.map((val) => {
             const item = options.value?.find(({ value }) => (valueToNumber ? Number(value) : value) === val)
             return item ? item.label : val
           })
-          return labels.join(',')
+          return labels.join(', ')
         }
       }
     } else if (colType === 'Switch') {
-      return ({ text }) => (option.valueLabels || '否是')[text]
+      return ({ text } = effectData) => (option.valueLabels || '否是')[text]
     } else if (colType === 'Buttons') {
       const buttonsSlot = createButtons({ config: option, isView: true })
-      return !!buttonsSlot && ((param) => buttonsSlot({ param }))
-    } else if (colType === 'Upload' || colType.startsWith('Ext')) {
-      return (effectData) => {
-        const attrs = buildProps(option, effectData, model)
-        return h(Controls[colType], reactive({ option, effectData, ...attrs, isView: true }), slots)
+      return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
+    } else if (!viewRender && (colType === 'Upload' || colType.startsWith('Ext'))) {
+      return (param = effectData) => {
+        const vModels = getVModelProps(option, param.current)
+        return h(Controls[colType], reactive({ option, effectData: param, ...option.attrs, ...vModels, isView: true }), rootSlots)
       }
     } else {
       // textRender为undefined将直接返回绑定的值
     }
-  })()
+  })() as false | undefined | ((param?: Obj) => VNode)
   const __render = viewRender || (colType === 'InfoSlot' && render)
 
-  if (__render) {
-    const colRender = typeof __render === 'string' ? slots[__render] : __render
-    return (effectData) => {
-      const attrs = buildProps(option, effectData, model)
-      const params = reactive({ props: attrs, ...effectData })
+  const colRender = typeof __render === 'string' ? rootSlots[__render] : __render
+
+  if (colRender) {
+    return (param: Obj = effectData) => {
+      const vModels = getVModelProps(option, param.current)
+      const props: Obj = reactive({ props: { ...option.attrs, ...vModels }, ...param })
       if (content) {
-        params.text = content(effectData)
+        props.text = content(param)
       }
-      return colRender(params)
+      return colRender(props)
     }
   } else {
     return content

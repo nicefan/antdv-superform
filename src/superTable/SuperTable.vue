@@ -109,7 +109,7 @@ export default defineComponent({
           unWatch()
           return
         }
-        const { columns, searchSechma, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
+        const { columns, searchschema, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
 
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
@@ -121,7 +121,7 @@ export default defineComponent({
 
         const { attrs } = useControl({ option: opt, effectData })
 
-        if (searchSechma) {
+        if (searchschema) {
           searchForm.value = useSearchForm(opt, tableRef, (data, isSearch) => {
             const _data = beforeSearch?.({ ...effectData, table: tableRef, param: data }) || data
             setSearchParam(_data)
@@ -149,10 +149,14 @@ export default defineComponent({
         if (isScanHeight || inheritHeight || maxHeight) {
           const { getScrollRef, redoHeight } = useTableScroll(option, dataRef, wrapRef, windowResize)
           tableAttrs.scroll = getScrollRef
-          const handleTableChange = tableAttrs.onChange
-          tableAttrs.onChange = (param) => {
+          const { onChange, onExpandedRowsChange } = tableAttrs
+          tableAttrs.onChange = (...args) => {
             !loading.value && redoHeight()
-            handleTableChange?.(param)
+            onChange?.(...args)
+          }
+          tableAttrs.onExpandedRowsChange = (param) => {
+            onExpandedRowsChange?.(param)
+            redoHeight()
           }
         }
       },

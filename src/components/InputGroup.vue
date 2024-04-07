@@ -17,7 +17,7 @@ export default defineComponent({
   },
   setup(props, { attrs }) {
     const { option, model, compact } = props
-    const { field, label, labelSlot } = option
+    const { field, label, labelSlot, slots } = option
 
     const formItemContext = ref()
     let ruleObj = model.rules
@@ -39,7 +39,11 @@ export default defineComponent({
         })
         ruleObj = [rule]
         // 监听子组件数据变化
-        watch(model.refData, () => () => formItemContext.value.onFieldChange(), { deep: true })
+        watch(
+          () => model.refData,
+          () => formItemContext.value.onFieldChange(),
+          { deep: true }
+        )
       } else {
         const { rules, propChain, refName } =
           [...model.children.values()].find((val) => !!val.rules) || ({} as ModelData)
@@ -53,6 +57,12 @@ export default defineComponent({
         }
       }
     } else {
+      if (ruleObj) {
+        watch(
+          () => model.refData,
+          () => formItemContext.value.onFieldChange()
+        )
+      }
       extProps.style = 'margin: 0'
     }
 
@@ -66,8 +76,12 @@ export default defineComponent({
         { ...formItemAttrs, rules: rules.value, ref: formItemContext, name: _propChain },
         {
           label: () => toNode(labelSlot || label, props.effectData),
-          default: () =>
-            h(FormItemRest, () => h(base.InputGroup, { compact, ...attrs }, () => h(Collections, { option, model }))),
+          default:
+            slots?.default ||
+            (() =>
+              h(FormItemRest, () =>
+                h(base.InputGroup, { compact, ...attrs }, () => h(Collections, { option, model }))
+              )),
         }
       )
   },

@@ -162,7 +162,7 @@ export default defineComponent({
           updateFileList(fileList)
         }
       },
-      { immediate: true }
+      { immediate: true, flush: 'sync' }
     )
     watch(
       () => toRaw(props.value),
@@ -171,6 +171,8 @@ export default defineComponent({
           innerFileList.value = []
           outValues.value = undefined
         }
+      }, {
+        flush: 'sync'
       }
     )
 

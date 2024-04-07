@@ -1,5 +1,5 @@
 <script lang="tsx">
-import { onMounted, reactive, ref, toRef, watchEffect } from 'vue'
+import { onMounted, reactive, ref, toRef, unref, watchEffect } from 'vue'
 import { DetailLayout } from './Detail'
 import type { ExtTabItem } from '../exaTypes'
 
@@ -38,11 +38,11 @@ const panes = [...props.model.children].map(([option, model], idx) => {
   const { key, field, label, icon } = option
   const effectData = getEffectData({ current: toRef(props.model, 'refData') })
 
-  const { attrs, hidden } = useControl({ option, effectData })
+  const { hidden, attrs } = useControl({ option, effectData })
   const tabKey = key || field || String(idx)
   const tabLabel = () => [useIcon(icon), toNode(label, effectData)]
   watchEffect(() => {
-    planeHideEvent(idx, tabKey, hidden.value || attrs.disabled.value)
+    planeHideEvent(idx, tabKey, unref(hidden) || unref(attrs.disabled))
   })
   return {
     attrs: reactive({

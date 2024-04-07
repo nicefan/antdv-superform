@@ -10,7 +10,6 @@ export default defineComponent({
     option: { type: Object, required: true },
     model: { type: Object as any, required: true },
     effectData: Object,
-    disabled: Boolean,
     isView: Boolean,
   },
   setup({ option, model, effectData, isView }, ctx) {
@@ -32,8 +31,8 @@ export default defineComponent({
       default:
         ctx.slots.innerContent ||
         (isView
-          ? () => h(DetailLayout, { option, modelsMap: model.children })
-          : () => h(Collections, { option, model })),
+          ? () => h(DetailLayout, { option: { descriptionsProps: option.attrs, ...option }, modelsMap: model.children })
+          : () => h(Collections, { option, model, effectData })),
     }
 
     const CustomComponent = option.component && toRaw(option.component)
@@ -50,17 +49,19 @@ export default defineComponent({
     }
     if (CustomComponent) {
       return () => h(CustomComponent, {}, slots)
-    } else {
+    } else if (title || buttonsSlot) {
       return () =>
         h('div', {}, [
-          (title || buttonsSlot) &&
+          (title || titleButton) &&
             h(Row, { align: 'middle', class: 'ant-descriptions-header' }, () => [
               h(Col, { class: 'sup-title' }, slots.title),
-              titleButton && titleButton(),
+              titleButton?.(),
             ]),
           slots.default(),
           bottomButton && bottomButton(),
         ])
+    } else {
+      return slots.default
     }
   },
 })

@@ -2,24 +2,25 @@ import { type PropType, defineComponent, h, inject, mergeProps, unref } from 'vu
 import { Col, Row } from 'ant-design-vue'
 import base from '../base'
 import { toNode } from '../../utils'
+import { defaults } from 'lodash-es'
+import { globalProps } from '../../plugin'
 
 export default defineComponent({
   props: {
-    option: {
-      type: Object as PropType<MixWrapper>,
-      required: true,
-    },
     items: {
-      type: Array as PropType<{ label: string; span: number; content: Fn; option: Obj; hidden: Ref }[]>,
+      type: Array as PropType<{ label?: Fn; span: number; content: Fn; option: Obj; hidden: Ref }[]>,
       required: true,
     },
-    effectData: Object,
+    config: {
+      type: Object,
+      required: true,
+    },
   },
   setup(props) {
-    const { type, subSpan, title, label, attrs: __attrs } = props.option || {}
     const gridConfig: Obj = inject('gridConfig', {})
+
+    const { subSpan, column } = props.config
     const {
-      column,
       layout,
       bordered,
       mode = bordered && 'table',
@@ -27,27 +28,19 @@ export default defineComponent({
       borderColor,
       rowProps,
       colon,
-      size,
+      size = 'middle',
       ...descriptionsProps
-    } = {
-      // bordered: true,
-      size: 'middle',
-      ...gridConfig,
-      ...__attrs,
-      ...props.option.descriptionsProps,
-    } as Obj
-    const presetSpan = subSpan ?? (column ? 24 / column : descriptionsProps.subSpan)
-    const colNum = (column as number) || Math.floor(24 / presetSpan)
-    // if (typeof descriptionsProps?.column === 'number') {
-    //   presetSpan = Math.floor(24 / descriptionsProps.column)
-    // }
-    // const __title = type !== 'Group' ? '' : title || label
+    } = gridConfig
+
+    let colNum = column || (Number(subSpan) ? Math.floor(24 / subSpan) : gridConfig.column)
+    colNum ??= Number(gridConfig.subSpan) ? Math.floor(24 / gridConfig.subSpan) : 2
     const rowGroup = (function () {
       const group: any[] = []
       let current: any[] = []
       let n = 0
-      props.items.forEach(({ option, span = presetSpan, label, content, hidden }, idx) => {
-        let ceil = Number(span) ? Math.ceil(span / presetSpan) : 1
+      props.items.forEach(({ option, label, content, hidden }, idx) => {
+        const { span = option.span } = option.descriptionsProps || {}
+        let ceil = Number(span) ? Math.ceil(span / (24 / colNum)) : 1
         ceil = ceil > colNum ? colNum : ceil
         const attrs = { ...descriptionsProps, ...option.formItemProps, ...option.descriptionsProps }
         const labelStyle = mergeProps(attrs.labelAlign ? { textAlign: attrs.labelAlign } : {}, attrs.labelStyle)
@@ -90,12 +83,11 @@ export default defineComponent({
       })
       return group
     })()
-    let colorStyle = ''
-    borderColor && (colorStyle += `--descriptions-border-color:${borderColor};`)
-    labelBgColor && (colorStyle += `--descriptions-bg-color:${labelBgColor};`)
-    // const prefixCls = inject<any>('configProvider', undefined)?.getPrefixCls() || 'ant'
-    let content
+
     if (mode === 'table') {
+      let colorStyle = ''
+      borderColor && (colorStyle += `--descriptions-border-color:${borderColor};`)
+      labelBgColor && (colorStyle += `--descriptions-bg-color:${labelBgColor};`)
       const rows = () =>
         layout === 'vertical'
           ? rowGroup.flatMap((group) => [
@@ -116,7 +108,7 @@ export default defineComponent({
                           },
                           { class: item.labelCol.class, style: item.labelCol.style }
                         ),
-                        toNode(item.label, props.effectData)
+                        item.label?.()
                       )
                   )
                 ),
@@ -145,7 +137,7 @@ export default defineComponent({
                 group.flatMap(
                   (item) =>
                     !unref(item.hidden) &&
-                    (group.length === 1 && !item.label
+                    (!item.label
                       ? [h('td', { colspan: item.colspan * 2 }, item.content())]
                       : [
                           h(
@@ -154,7 +146,7 @@ export default defineComponent({
                               { class: 'ant-descriptions-item-label' },
                               { class: item.labelCol.class, style: item.labelCol.style }
                             ),
-                            toNode(item.label, props.effectData)
+                            item.label()
                           ),
                           h(
                             'td',
@@ -172,50 +164,59 @@ export default defineComponent({
                 )
               )
             )
-      content = () => h('table', {}, rows())
+
+      return () =>
+        h(
+          'div',
+          {
+            style: colorStyle,
+            class: [
+              'ant-descriptions-view',
+              'ant-descriptions-bordered',
+              size !== 'default' && 'ant-descriptions-' + size,
+            ],
+          },
+          h('table', {}, rows())
+        )
     } else {
-      content = () =>
-        rowGroup.map((group) =>
-          group.length === 1 && !group[0].label
-            ? group[0].content()
-            : h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
-                group.map(
-                  (item) =>
-                    !unref(item.hidden) &&
-                    h(Col, { span: item.span, ...item.option.colProps }, () =>
-                      h(Row, { class: ['ant-descriptions-item-container'] }, () => [
-                        h(Col, mergeProps({ class: 'ant-descriptions-item-label' }, item.labelCol), () =>
-                          h('label', {}, toNode(item.label, props.effectData))
-                        ),
-                        h(Col, { class: 'ant-descriptions-item-content', ...item.wrapperCol }, () =>
-                          !item.attrs.noInput && mode === 'form'
-                            ? h('div', { class: 'sup-descriptions-item-input' }, item.content())
-                            : item.content()
-                        ),
-                      ])
-                    )
-                )
-              )
+      const render = () =>
+        h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
+          rowGroup.flat().map(({ option, content, span, label, labelCol, wrapperCol, hidden, attrs }) => {
+            if (unref(hidden)) return null
+            const colProps = { span, ...(attrs.colProps || option.colProps) }
+            if (colProps.span === 0 || colProps.flex) {
+              colProps.span = undefined
+            } else if (!Number(colProps.span)) {
+              colProps.span = gridConfig.column ? 24 / gridConfig.column : gridConfig.subSpan
+            }
+
+            return h(Col, colProps, () =>
+              h(Row, { class: ['ant-descriptions-item-container'] }, () => [
+                label &&
+                  h(Col, mergeProps({ class: 'ant-descriptions-item-label' }, labelCol), () => h('label', {}, label())),
+                h(Col, { class: 'ant-descriptions-item-content', ...wrapperCol }, () =>
+                  !attrs.noInput && mode === 'form' && label
+                    ? h('div', { class: 'sup-descriptions-item-input' }, content())
+                    : content()
+                ),
+              ])
+            )
+          })
+        )
+      return () =>
+        h(
+          'div',
+          {
+            class: [
+              'ant-descriptions-view',
+              layout === 'vertical' && 'ant-descriptions-vertical',
+              mode === 'form' ? 'sup-descriptions-mode-form' : 'sup-descriptions-default',
+              colon === false && 'ant-descriptions-item-no-colon',
+              size && size !== 'default' && 'ant-descriptions-' + size,
+            ],
+          },
+          render()
         )
     }
-    return () =>
-      h(
-        'div',
-        {
-          style: colorStyle,
-          class: [
-            'ant-descriptions-view',
-            layout === 'vertical' && 'ant-descriptions-vertical',
-            mode === 'form'
-              ? 'sup-descriptions-mode-form'
-              : mode === 'table'
-              ? 'ant-descriptions-bordered'
-              : 'sup-descriptions-default',
-            colon === false && 'ant-descriptions-item-no-colon',
-            size && size !== 'default' && 'ant-descriptions-' + size,
-          ],
-        },
-        content()
-      )
   },
 })

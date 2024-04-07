@@ -46,13 +46,16 @@ const getData = () => {
     },
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
+    listGroup: [{
+      datelist: [{ index1: '2002-02-02', index2: undefined, index3: undefined }],
+  }],
     fileList: [
-    {
+      {
         id: 'abc',
         name: 'logo.png',
         url: 'http://192.168.0.234:5001/logo.png',
       },
-    ]
+    ],
   }
 }
 const setValue = () => {
@@ -78,10 +81,13 @@ const [SuperButtons] = useButtons({
     { label: '校验', onClick: onSubmit },
     { label: '赋值', onClick: setValue },
     { label: '重置', onClick: reset },
-    { label: '预览', onClick: () =>{
-      detailForm.setData(form.getData())
-       detailModal.openModal()
-    } },
+    {
+      label: '预览',
+      onClick: () => {
+        detailForm.setData(form.getData())
+        detailModal.openModal()
+      },
+    },
     {
       label: '赋值预览',
       onClick: () => {

@@ -78,7 +78,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     },
     delete({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
-      listener.onDelete(items)
+      return listener.onDelete(items)
     },
   }
 

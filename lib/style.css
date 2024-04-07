@@ -55,6 +55,12 @@
 .sup-detail .sup-title {
   font-weight: bold;
 }
+.sup-detail .ant-descriptions-bordered + .ant-descriptions-bordered {
+  margin-top: -1px;
+}
+.sup-detail .ant-descriptions-bordered .ant-descriptions-bordered {
+  border: none;
+}
 .sup-detail .ant-descriptions-view.ant-descriptions-bordered table {
   border-collapse: collapse;
 }

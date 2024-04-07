@@ -33,10 +33,11 @@ const setValue = () => {
       id: '121',
       fieldName: 'la',
       title: '大因',
-      dataType: 'text',
+      dataType: ['text'],
       isRequire: 1,
       col2: '12',
-      files: [{
+       fileIds:['a'],
+     files: [{
         uid: 'a',
         name: 'a.a'
       }]
@@ -45,9 +46,10 @@ const setValue = () => {
       id: '122',
       fieldName: 'la2',
       title: '大因2',
-      dataType: 'text',
+      dataType: ['text'],
       isRequire: 1,
       col2: '122',
+      fileIds:['a2'],
       files: [{
         uid: 'a2',
         name: 'a2.a2'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, toRef } from 'vue'
+import { reactive, ref, toRef, unref } from 'vue'
 import { useControl, getEffectData, toNode } from '../utils'
 import { ButtonGroup } from './buttons'
 import base from './base'
@@ -15,18 +15,19 @@ const props = defineProps<{
   option: GetOption<'Collapse'>
   model: ModelDataGroup<any>
   effectData: Obj
-  disabled?: boolean
   isView?: boolean
 }>()
 
 const title = props.option.title || props.option.label
 const panels = [...props.model.children].map(([option, model], idx) => {
   const effectData = getEffectData({ current: toRef(props.model, 'refData') })
-  const { attrs: __attrs, hidden } = useControl({ option: option, effectData })
+  const {
+    hidden,
+    attrs: { disabled, ...attrs },
+  } = useControl({ option: option, effectData })
 
   const { key, field } = option
-  const { disabled, ...attrs } = __attrs
-  // console.log(__attrs, disabled)
+
   return {
     attrs: reactive(attrs),
     option: { ...option, type: 'CollapsePanel' },
@@ -48,7 +49,7 @@ const acKey = ref(props.option.activeKey || panels[0].key)
 
   <Collapse v-model:activeKey="acKey" v-bind="$attrs">
     <template v-for="{ attrs, hidden, option, disabled, model, header, effectData, key } of panels" :key="key">
-      <CollapsePanel v-if="!hidden.value" :collapsible="disabled.value ? 'disabled' : undefined" v-bind="attrs">
+      <CollapsePanel v-if="!hidden.value" :collapsible="unref(disabled) ? 'disabled' : undefined" v-bind="attrs">
         <template #header>
           <component :is="header" />
         </template>

@@ -6,6 +6,7 @@ import { buildData } from './buildData'
 import { Col, Row } from 'ant-design-vue'
 import type { TableApis } from '../../exaTypes'
 import { toNode } from '../../utils'
+import { globalProps } from '../../plugin'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -20,7 +21,6 @@ export default defineComponent({
       type: Object as PropType<ModelDataGroup>,
     },
     isView: Boolean,
-    disabled: Boolean,
     effectData: Object,
     apis: Object as PropType<TableApis>,
   },
@@ -34,9 +34,8 @@ export default defineComponent({
     const selectedRowKeys = ref<string[]>([])
     const selectedRows = ref<Obj[]>([])
     const rowSelection =
-      !attrs.rowSelection && attrs.rowSelection !== undefined
-        ? undefined
-        : reactive(
+      attrs.rowSelection || (attrs.rowSelection === undefined && editInline)
+        ? reactive(
             mergeProps(attrs.rowSelection, {
               fixed: true,
               selectedRowKeys,
@@ -51,6 +50,7 @@ export default defineComponent({
               }),
             })
           )
+        : undefined
 
     const listener = {
       async onSave(data) {
@@ -141,7 +141,7 @@ export default defineComponent({
     const { title: titleSlot, extra: extraSlot, ...__slots } = slots
     if (titleString || titleSlot || extraSlot) {
       __slots.title = () =>
-        h(Row, { align: 'middle' }, () => [
+        h(Row, { align: 'middle', style: 'width:100%' }, () => [
           h(Col, { class: 'sup-title' }, () => toNode(titleSlot || titleString, effectData)),
           extraSlot &&
             h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonsConfig?.align } }, extraSlot),
@@ -160,6 +160,7 @@ export default defineComponent({
       h(
         base.Table,
         {
+          ...globalProps.Table,
           ref: tableRef,
           dataSource: list.value,
           columns: reactive(columns),

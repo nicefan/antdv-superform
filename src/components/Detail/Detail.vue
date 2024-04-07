@@ -1,7 +1,7 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, toRef, provide } from 'vue'
+import { type PropType, defineComponent, h, toRef, provide, reactive } from 'vue'
 import { cloneModels } from '../../utils'
-import Layout from './DetailLayout'
+import Controls from '../index'
 
 export default defineComponent({
   props: {
@@ -19,15 +19,21 @@ export default defineComponent({
     },
   },
   setup(props, ctx) {
-    // const { subSpan, title, label, descriptionsProps, formSechma } = props.option || {}
-    const { modelsMap } = cloneModels(props.modelsMap, toRef(props, 'source'))
+    // const { subSpan, title, label, descriptionsProps, formschema } = props.option || {}
+    const source = toRef(props, 'source')
+    const { modelsMap } = cloneModels(props.modelsMap, source)
     provide('exaProvider', { data: toRef(props, 'source') })
 
     return () =>
       h(
         'div',
         { class: ['sup-form sup-detail', ctx.attrs?.isContainer && 'sup-container'] },
-        h(Layout, { option: props.option, modelsMap })
+        h(Controls.Descriptions, {
+          option: props.option,
+          model: { children: modelsMap },
+          effectData: reactive({ current: source }),
+          isView: true,
+        })
       )
   },
 })

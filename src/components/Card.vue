@@ -11,7 +11,6 @@ export default defineComponent({
     option: { type: Object, required: true },
     model: { type: Object as any, required: true },
     effectData: Object,
-    disabled: Boolean,
     isView: Boolean,
   },
   setup({ option, model, effectData, isView }) {

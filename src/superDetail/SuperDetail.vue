@@ -5,7 +5,6 @@ import { DetailLayout } from '../components/Detail'
 import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
 
 export default defineComponent({
-  name: 'SuperTable',
   props: {
     dataSource: Object,
     option: Object as PropType<ExtDescriptionsOption>,
@@ -47,7 +46,14 @@ export default defineComponent({
       h(
         'div',
         { class: ['sup-form sup-detail', option.isContainer && 'sup-container'] },
-        h(DetailLayout, { option: { type: 'Discriptions', ...option } as any, modelsMap: modelsMap.value })
+        h(DetailLayout, {
+          option: {
+            type: 'Discriptions',
+            ...option,
+            descriptionsProps: { ...option.attrs, ...option.descriptionsProps },
+          } as any,
+          modelsMap: modelsMap.value,
+        })
       )
   },
 })
