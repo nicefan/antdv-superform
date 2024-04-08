@@ -54,7 +54,7 @@ function buildDefaultActions(methods) {
     if (typeof methods[key] === 'function') {
       actions[key] && (actions[key].onClick = methods[key])
     } else {
-      Object.assign(actions[key], methods[key])
+      merge(actions[key], { attrs: { title: actions[key].label } }, methods[key])
     }
   })
   return actions

@@ -138,13 +138,12 @@ export default defineComponent({
     }
 
     const titleString = option.title || option.label
-    const { title: titleSlot, extra: extraSlot, ...__slots } = slots
-    if (titleString || titleSlot || extraSlot) {
+    const { title: titleSlot = titleString, extra: extraSlot, ...__slots } = slots
+    if (titleSlot || extraSlot) {
       __slots.title = () =>
         h(Row, { align: 'middle', style: 'width:100%' }, () => [
-          h(Col, { class: 'sup-title' }, () => toNode(titleSlot || titleString, effectData)),
-          extraSlot &&
-            h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonsConfig?.align } }, extraSlot),
+          titleSlot && h(Col, { class: 'sup-title', flex: 1 }, () => toNode(titleSlot, effectData)),
+          extraSlot && h(Col, { class: 'sup-title-buttons', style: { textAlign: buttonsConfig?.align } }, extraSlot),
         ])
     }
     /** 内置操作附加参数 */

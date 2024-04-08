@@ -14,7 +14,7 @@ function modalEdit({ initialData, rowKey, option, listener }) {
   const source = ref({})
   const formRef = ref()
 
-  const formOption: GetOption<'Form'> = { ...option.formschema }
+  const formOption: GetOption<'Form'> = { ...option.formSchema }
   // buttons: { actions: ['submit', 'reset'] },
   formOption.subItems = formOption.subItems || option.columns.filter((item) => !item.hideInForm)
 

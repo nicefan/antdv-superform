@@ -19,7 +19,7 @@ export default defineComponent({
     },
   },
   setup(props, ctx) {
-    // const { subSpan, title, label, descriptionsProps, formschema } = props.option || {}
+    // const { subSpan, title, label, descriptionsProps, formSchema } = props.option || {}
     const source = toRef(props, 'source')
     const { modelsMap } = cloneModels(props.modelsMap, source)
     provide('exaProvider', { data: toRef(props, 'source') })

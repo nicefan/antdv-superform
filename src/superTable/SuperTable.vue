@@ -109,7 +109,7 @@ export default defineComponent({
           unWatch()
           return
         }
-        const { columns, searchschema, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
+        const { columns, searchSchema, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
 
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
@@ -121,7 +121,7 @@ export default defineComponent({
 
         const { attrs } = useControl({ option: opt, effectData })
 
-        if (searchschema) {
+        if (searchSchema) {
           searchForm.value = useSearchForm(opt, tableRef, (data, isSearch) => {
             const _data = beforeSearch?.({ ...effectData, table: tableRef, param: data }) || data
             setSearchParam(_data)

@@ -8,6 +8,7 @@ import { containers } from '.'
 import base from './base'
 import { getViewNode, toNode } from '../utils'
 import { Space } from 'ant-design-vue'
+import { MinusOutlined, PlusOutlined} from '@ant-design/icons-vue'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -41,12 +42,17 @@ export default defineComponent({
     const orgList = toRef(model, 'refData')
 
     const methods = {
-      add() {
-        orgList.value = toRaw(orgList.value).concat(cloneDeep(__initialData))
+      add:{
+        onClick({ index }) {
+          orgList.value.splice(index, 0, cloneDeep(__initialData))
+          orgList.value = [...toRaw(orgList.value)]
+        },
+        label: () => h(PlusOutlined),
       },
       delete: {
         disabled: () => orgList.value.length === 1,
-        confirmText: undefined,
+        confirmText: '',
+        label: () => h(MinusOutlined),
         onClick({ index }) {
           orgList.value = toRaw(orgList.value).filter((_, idx) => idx !== index)
         },
@@ -58,7 +64,6 @@ export default defineComponent({
         type: 'Buttons',
         buttonType: 'link',
         size: 'small',
-        colProps: { flex: '0' },
         methods,
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
       }

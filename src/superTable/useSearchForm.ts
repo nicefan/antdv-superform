@@ -5,14 +5,14 @@ import Controls from '../components'
 import { getEffectData } from '../utils'
 
 export function useSearchForm(tableOption, tableRef, onChange) {
-  const { columns, searchschema } = tableOption
-  const { buttons = {}, searchOnChange, ...formOption } = searchschema
+  const { columns, searchSchema } = tableOption
+  const { buttons = {}, searchOnChange, ...formOption } = searchSchema
   Object.assign(formOption, {
     ignoreRules: true,
     subItems: [],
   })
 
-  searchschema.subItems.forEach((item) => {
+  searchSchema.subItems.forEach((item) => {
     if (typeof item === 'string') {
       const col = columns.find((col) => col.field === item)
       col && formOption.subItems.push({ type: 'Input', ...col })

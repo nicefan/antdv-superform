@@ -76,7 +76,7 @@ export default function exampleForm() {
         title: '基本信息',
         descriptionsProps: {
           title: '基本信息',
-          mode: 'form',
+          mode: 'table',
           column: 3,
         },
         subItems: [
@@ -356,7 +356,9 @@ export default function exampleForm() {
         attrs: {
           labelIndex: true,
         },
-        // rowButtons: [],
+        rowButtons: {
+          align: 'left'
+        },
         columns: [
           {
             type: 'DatePicker',
@@ -488,7 +490,7 @@ export default function exampleForm() {
           buttonType: 'link',
           actions: ['edit', 'delete'],
         },
-        formschema: {
+        formSchema: {
           subSpan: 12,
           attrs: {
             layout: 'vertical',

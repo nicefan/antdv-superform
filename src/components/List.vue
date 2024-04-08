@@ -27,7 +27,7 @@ export default defineComponent({
     isView: Boolean,
   },
   setup({ model, option, isView, effectData }, ctx) {
-    const { buttons: buttonsConfig, rowButtons, label, title = label, slots: optionSlots } = option
+    const { buttons: buttonsConfig, rowButtons, label, title = label } = option
     // 先构建一个数据结构
     const { modelsMap: childrenMap, initialData, rules } = model.listData
 
@@ -92,8 +92,8 @@ export default defineComponent({
     if (titleSlot || extraSlot) {
       __slots.header = () =>
         h(Row, { align: 'middle' }, () => [
-          h(Col, { class: 'sup-title' }, slots.title),
-          h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: (buttonsConfig as any)?.align } }, extraSlot),
+          titleSlot && h(Col, { class: 'sup-title', flex: 1 }, titleSlot),
+          extraSlot && h(Col, { class: 'sup-title-buttons', style: { textAlign: buttonsConfig?.['align'] } }, extraSlot),
         ])
     }
     const rowButtonsConfig: Obj | undefined = rowButtons && {

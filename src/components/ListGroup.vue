@@ -5,6 +5,7 @@ import { cloneModels } from '../utils/buildModel'
 import { DetailLayout } from './Detail'
 import Controls from '.'
 import { nanoid } from 'nanoid'
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -27,7 +28,7 @@ export default defineComponent({
   },
   setup(props, ctx) {
     const { model, isView, effectData, labelIndex, rowKey = '' } = props
-    const { columns, rowButtons = ['delete', 'add'], slots: optionSlots, ...option } = props.option
+    const { columns, rowButtons, slots: optionSlots, ...option } = props.option
     const { modelsMap: childrenMap, initialData, rules } = model.listData
 
     const { propChain } = model
@@ -35,13 +36,14 @@ export default defineComponent({
 
     const methods = {
       add: {
-        label: '添加',
+        label: () => h(PlusOutlined),
         onClick: () => (orgList.value = orgList.value.concat(cloneDeep(initialData))),
       },
       delete: {
         hidden: () => orgList.value.length === 1,
         disabled: false,
-        confirmText: undefined,
+        confirmText: '',
+        label: () => h(MinusOutlined),
         onClick({ index }) {
           orgList.value = orgList.value.filter((_, idx) => idx !== index)
         },
@@ -53,6 +55,7 @@ export default defineComponent({
       buttonType: 'link',
       size: 'small',
       methods,
+      actions: ['delete', 'add'],
       ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
     }
 

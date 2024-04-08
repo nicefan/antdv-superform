@@ -38,13 +38,18 @@ export default defineComponent({
     const CustomComponent = option.component && toRaw(option.component)
 
     let titleButton, bottomButton
+    const buttonAlign = buttons?.align
     if (buttonsSlot) {
       if (buttons.placement === 'bottom') {
         bottomButton = () =>
-          h('div', { class: 'sup-bottom-buttons', style: { textAlign: buttons.align } }, buttonsSlot())
+          h('div', { class: 'sup-bottom-buttons', style: { textAlign: buttonAlign || 'center' } }, buttonsSlot())
       } else {
         titleButton = () =>
-          h(Col, { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttons.align } }, buttonsSlot)
+          h(
+            Col,
+            { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonAlign || (title ? 'right' : undefined) } },
+            buttonsSlot
+          )
       }
     }
     if (CustomComponent) {
@@ -54,12 +59,14 @@ export default defineComponent({
         h('div', {}, [
           (title || titleButton) &&
             h(Row, { align: 'middle', class: 'ant-descriptions-header' }, () => [
-              h(Col, { class: 'sup-title' }, slots.title),
+              title && h(Col, { class: 'sup-title' }, slots.title),
               titleButton?.(),
             ]),
           slots.default(),
           bottomButton && bottomButton(),
         ])
+    } else if (ctx.slots.innerContent) {
+      return () => h('div', slots.default())
     } else {
       return slots.default
     }

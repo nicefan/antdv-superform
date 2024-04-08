@@ -352,7 +352,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
     modalProps?: ModalFuncProps | Obj
     descriptionsProps?: ExtDescriptionsProps
     /** 弹窗表单属性 */
-    formschema?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
+    formSchema?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
 }
 
 export declare interface ExtTabsOption extends ExtBaseOption {
@@ -441,7 +441,7 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
     /**是否立即查询，默认为true */
     immediate?: boolean
     beforeSearch?: (data: { param?: Obj } | Obj) => Obj
-    searchschema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
+    searchSchema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
     pagination?: PaginationProps | false
     maxHeight?: number
     /** 自动计算高度至底部 */
