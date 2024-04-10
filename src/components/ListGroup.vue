@@ -12,7 +12,7 @@ export default defineComponent({
   props: {
     option: {
       required: true,
-      type: Object as PropType<GetOption<'List'>>,
+      type: Object as PropType<GetOption<'ListGroup'>>,
     },
     model: {
       required: true,
@@ -37,7 +37,10 @@ export default defineComponent({
     const methods = {
       add: {
         label: () => h(PlusOutlined),
-        onClick: () => (orgList.value = orgList.value.concat(cloneDeep(initialData))),
+        onClick({ index }) {
+          orgList.value.splice(index + 1, 0, cloneDeep(initialData))
+          orgList.value = [...toRaw(orgList.value)]
+        },
       },
       delete: {
         hidden: () => orgList.value.length === 1,
@@ -50,14 +53,15 @@ export default defineComponent({
       },
     }
 
-    const rowButtonsConfig: any = !isView && {
-      type: 'Buttons',
-      buttonType: 'link',
-      size: 'small',
-      methods,
-      actions: ['delete', 'add'],
-      ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
-    }
+    const rowButtonsConfig: any = !isView &&
+      rowButtons !== false && {
+        type: 'Buttons',
+        buttonType: 'link',
+        size: 'small',
+        methods,
+        actions: ['add', 'delete'],
+        ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
+      }
 
     const keyMap = new WeakMap()
     const listItems = ref<any[]>([])
@@ -66,8 +70,7 @@ export default defineComponent({
       orgList,
       (list) => {
         if (list.length === 0) {
-          // list.push(cloneDeep(initialData))
-          return methods.add.onClick()
+          list.push(cloneDeep(initialData))
         }
 
         listItems.value = list.map((record, idx) => {

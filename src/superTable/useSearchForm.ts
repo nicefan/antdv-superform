@@ -45,7 +45,7 @@ export function useSearchForm(tableOption, tableRef, onChange) {
   const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
   buttonsConfig.actions ??= !searchOnChange ? ['search', 'reset'] : undefined
 
-  if (buttonsConfig.actions?.length) {
+  if (buttonsConfig !== false && buttonsConfig.actions?.length) {
     formOption.subItems.push({
       type: 'InfoSlot',
       align: 'right',

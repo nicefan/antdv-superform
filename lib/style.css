@@ -17,13 +17,8 @@
   width: 100%;
 }
 .sup-form .ant-list .ant-list-item {
-  padding: 0;
-}
-.sup-form .sup-form-section > .ant-list .ant-form-item {
-  margin-top: 24px;
-}
-.sup-form .sup-form-section > .ant-list .ant-list-item {
-  padding: 0;
+  padding-bottom: 0;
+  padding-top: 24px;
 }
 .sup-form .sup-upload-tip {
   color: #b7b7b7;

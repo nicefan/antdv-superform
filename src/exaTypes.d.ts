@@ -108,7 +108,7 @@ type ExtDescriptionsProps = {
 interface ExtGroupBaseOption extends ExtBaseOption, ExtRow {
   title?: VSlot
   buttons?: ExtButtons
-  subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
+  subItems?: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
   descriptionsProps?: ExtDescriptionsProps
 }
 interface ExtGroupOption extends ExtGroupBaseOption {
@@ -124,14 +124,16 @@ interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
 }
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
-  // type?: 'Form'
+// type?: 'Form'
   attrs?: FormProps & HTMLAttributes
   isContainer?: boolean
   /** 减少行距 */
   compact?: boolean
   /** 不做校验 */
   ignoreRules?: boolean
+  subItems: UniOption[]
   buttons?: ExtButtons<'submit' | 'reset' | 'search'>
+  descriptionsProps?: ExtDescriptionsProps
 }
 
 interface ButtonItem {
@@ -241,6 +243,7 @@ interface ExtListOption extends ExtBaseOption, ExtRow {
   columns: UniWidgetOption[]
   /** 列表元素右边按钮 */
   rowButtons?: ExtButtons<'delete' | 'edit'>
+  descriptionsProps?: ExtDescriptionsProps
 }
 interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
   field: string
@@ -249,7 +252,7 @@ interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
     labelIndex?: boolean
     rowKey?: string
   }
-  rowButtons?: ExtButtons<'delete' | 'add'>
+  rowButtons?: false | ExtButtons<'delete' | 'add'>
   columns: UniWidgetOption[]
 }
 interface ExtInputList extends ExtFormItemOption, ExtRow {
@@ -258,7 +261,7 @@ interface ExtInputList extends ExtFormItemOption, ExtRow {
     /** 标签后加序号 */
     labelIndex?: boolean
   }
-  rowButtons?: ExtButtons<'delete' | 'add'>
+  rowButtons?: false | ExtButtons<'delete' | 'add'>
   columns: UniWidgetOption[]
 }
 interface ExtInputGroupOption extends ExtBaseOption, ExtRow {

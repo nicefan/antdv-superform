@@ -223,13 +223,15 @@ export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> 
     compact?: boolean
     /** 不做校验 */
     ignoreRules?: boolean
+    subItems: UniOption[]
     buttons?: ExtButtons<'submit' | 'reset' | 'search'>
+    descriptionsProps?: ExtDescriptionsProps
 }
 
 export declare interface ExtGroupBaseOption extends ExtBaseOption, ExtRow {
     title?: VSlot
     buttons?: ExtButtons
-    subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
+    subItems?: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
     descriptionsProps?: ExtDescriptionsProps
 }
 
@@ -249,7 +251,7 @@ declare interface ExtInputList extends ExtFormItemOption, ExtRow {
         /** 标签后加序号 */
         labelIndex?: boolean
     }
-    rowButtons?: ExtButtons<'delete' | 'add'>
+    rowButtons?: false | ExtButtons<'delete' | 'add'>
     columns: UniWidgetOption[]
 }
 
@@ -273,7 +275,7 @@ export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subIte
         labelIndex?: boolean
         rowKey?: string
     }
-    rowButtons?: ExtButtons<'delete' | 'add'>
+    rowButtons?: false | ExtButtons<'delete' | 'add'>
     columns: UniWidgetOption[]
 }
 
@@ -285,6 +287,7 @@ export declare interface ExtListOption extends ExtBaseOption, ExtRow {
     columns: UniWidgetOption[]
     /** 列表元素右边按钮 */
     rowButtons?: ExtButtons<'delete' | 'edit'>
+    descriptionsProps?: ExtDescriptionsProps
 }
 
 declare type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & {

@@ -96,7 +96,7 @@ export default defineComponent({
           extraSlot && h(Col, { class: 'sup-title-buttons', style: { textAlign: buttonsConfig?.['align'] } }, extraSlot),
         ])
     }
-    const rowButtonsConfig: Obj | undefined = rowButtons && {
+    const rowButtonsConfig: any = rowButtons && {
       buttonType: 'link',
       size: 'small',
       ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
@@ -109,7 +109,7 @@ export default defineComponent({
         {
           default: () => [
             isView
-              ? h(DetailLayout, { option, modelsMap: item.model.children, mode: 'default', labelAlign: 'right' })
+              ? h(DetailLayout, { option, modelsMap: item.model.children })
               : h(Collections, { model: item.model, option, class: 'ant-list-item-meta' }),
             rowButtonsConfig &&
               createButtons({

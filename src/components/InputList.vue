@@ -8,14 +8,14 @@ import { containers } from '.'
 import base from './base'
 import { getViewNode, toNode } from '../utils'
 import { Space } from 'ant-design-vue'
-import { MinusOutlined, PlusOutlined} from '@ant-design/icons-vue'
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 
 export default defineComponent({
   inheritAttrs: false,
   props: {
     option: {
       required: true,
-      type: Object as PropType<GetOption<'List'>>,
+      type: Object as PropType<GetOption<'InputList'>>,
     },
     model: {
       required: true,
@@ -42,9 +42,9 @@ export default defineComponent({
     const orgList = toRef(model, 'refData')
 
     const methods = {
-      add:{
+      add: {
         onClick({ index }) {
-          orgList.value.splice(index, 0, cloneDeep(__initialData))
+          orgList.value.splice(index + 1, 0, cloneDeep(__initialData))
           orgList.value = [...toRaw(orgList.value)]
         },
         label: () => h(PlusOutlined),
@@ -59,12 +59,14 @@ export default defineComponent({
       },
     }
 
-    const rowButtonsConfig: any = rowButtons &&
-      !isView && {
+    const rowButtonsConfig: any = !isView &&
+      rowButtons !== false && {
         type: 'Buttons',
         buttonType: 'link',
         size: 'small',
+        colProps: { flex: '0' },
         methods,
+        actions: ['add', 'delete'],
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
       }
 
@@ -107,7 +109,7 @@ export default defineComponent({
               itemOption = { ...groupOption }
               itemModel = { parent: orgList, refData, children: cloneChild }
               if (!labelIndex) {
-                itemOption = { type: 'Group', isBlock: false, span: 'auto' }
+                itemOption = { type: 'Group', span: 'auto', isBreak: true }
               }
             }
           }
@@ -149,11 +151,11 @@ export default defineComponent({
         } else {
           return () =>
             listItems.value.map(({ children, effectData }) => {
-              const [_option, model] = [...children][0]
-              const option = _option.descriptionsProps
-                ? _option
-                : { ..._option, descriptionsProps: { mode: 'default', labelCol: {} } }
-              return h(DetailLayout, { modelsMap: model.children, option, effectData })
+              // const [_option, model] = [...children][0]
+              // const option = _option.descriptionsProps
+              //   ? _option
+              //   : { ..._option, descriptionsProps: { mode: 'default', labelCol: {} } }
+              return h(DetailLayout, { modelsMap: children, option, effectData })
             })
         }
       }

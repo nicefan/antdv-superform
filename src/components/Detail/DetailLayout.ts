@@ -56,22 +56,18 @@ const DetailLayouts = defineComponent({
         return
       }
       if (item.isBlock) {
-        if (item.group) {
+        if (item.group || item.option.type === 'InputList') {
           if (!section) {
             section = []
             nodeGroup.push(['section', section])
           }
-          section.push(node)
+          section.push(() => !unref(item.hidden) && node())
         } else {
-          if (section) {
-            // 当有混合block元素时，不生成section
-            section.push(() => !unref(item.hidden) && node())
-          } else {
-            nodeGroup.push([
-              'block',
-              () => !unref(item.hidden) && h('div', { class: 'sup-form-section', key: idx }, node()),
-            ])
-          }
+          nodeGroup.push([
+            'block',
+            () => !unref(item.hidden) && h('div', { class: 'sup-form-section', key: idx }, node()),
+          ])
+          section = undefined
         }
       } else {
         const colProps: Obj = defaults(
@@ -179,7 +175,6 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
         wrapNode ??= defRender
         if (type === 'InputList') {
           if (!isBlock || (labelSlot && !attrs?.labelIndex)) {
-            // isBlock = !option.label
             node = {
               option: { ...option },
               label: __label,

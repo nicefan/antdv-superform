@@ -70,17 +70,18 @@ function modalEdit({ initialData, rowKey, option, listener }) {
 
 function buildDetail(option, modelsMap, rowKey) {
   const source = ref({})
-  const detail = () => h(View, { option, modelsMap, source })
+  const { title, modalProps, apis, ..._option } = option
+  const detail = () => h(View, { option: _option, modelsMap, source })
   const { openModal, closeModal } = useModal(detail, {
     ...globalProps.Modal,
-    ...option.modalProps,
-    title: '查看详情',
+    ...modalProps,
+    title: `${title ? title + ' - ' : ''}详情`,
     footer: null,
   })
   return async ({ record, selectedRows, meta }) => {
     const data = record || selectedRows[0]
-    if (option.apis?.info) {
-      source.value = await option.apis.info(record[rowKey], record)
+    if (apis?.info) {
+      source.value = await apis.info(record[rowKey], record)
     } else {
       source.value = data
     }
