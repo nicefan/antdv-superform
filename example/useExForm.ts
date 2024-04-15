@@ -43,6 +43,10 @@ export default function exampleForm() {
       labelCol: { style: 'width:120px;' },
       wrapperCol: { style: 'margin-right: 20px' },
     },
+    descriptionsProps: {
+      mode: 'form',
+      column: 2,
+    },
     buttons: ['submit'],
     subSpan: 12,
     subItems: [
@@ -241,31 +245,11 @@ export default function exampleForm() {
           },
           {
             type: 'InputList',
-            field: 'nameList',
-            // isBlock: false,
-            // subSpan: 20,
-            label: '客户',
-            rules: { required: true, min: 2 },
-            attrs: {
-              // labelIndex: true,
-            },
-            rowButtons: ['add', 'delete'],
-            columns: [
-              {
-                type: 'Input',
-                field: '$index',
-                label: '姓名',
-                // labelSlot: ({ index }) => '姓名' + '一二三四'[index],
-                rules: { required: true },
-              },
-            ],
-          },
-          {
-            type: 'InputList',
             field: 'datelist',
             // subSpan: 12,
             descriptionsProps: {
-              span: 24,
+              // span: 24,
+              column: 2,
             },
             label: '付款日期',
             rules: { min: 2 },
@@ -284,7 +268,7 @@ export default function exampleForm() {
                 onChange: (data) => {
                   console.log(data)
                 },
-                isBreak: true,
+                // isBreak: true,
                 // span: 8,
               },
 
@@ -307,6 +291,37 @@ export default function exampleForm() {
           },
           {
             type: 'Upload',
+            label: '头像',
+            field: 'head',
+            span: 24,
+            rules: { required: true },
+            descriptionsProps: {
+              noInput: true,
+            },
+            attrs: {
+              apis: {
+                delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
+                upload: (data) => new Promise((resolve, reject) => setTimeout(()=>resolve({url:'http://abc.jpg'}), 5000)),
+              },
+              valueKey: 'url',
+              uploadMode: 'auto',
+              listType: 'picture',
+              isSingle: true,
+              showUploadList: false,
+            },
+            slots: {
+              default(data) {
+                const {value, fileList} = data
+                const url = fileList[0]?.objectUrl || fileList[0]?.url
+                return h('div', {style: {background:`center / cover url("${url}")`, width: '90px', height:'120px', border: '1px solid'}})
+              }
+            },
+            viewRender({value}) {
+
+            }
+          },
+          {
+            type: 'Upload',
             label: '附件',
             field: 'file',
             vModelFields: {
@@ -325,8 +340,9 @@ export default function exampleForm() {
               },
               // uploadMode: 'submit',
               multiple: true,
-              maxCount: 3,
+              maxCount: 1,
               accept: 'image/*',
+              outHide: true,
               maxSize: 5,
               // listType: 'picture'
             },
@@ -349,10 +365,10 @@ export default function exampleForm() {
         type: 'ListGroup',
         field: 'listGroup',
         title: '列表表单',
-        descriptionsProps: {
-          column: 3,
-          mode: 'table',
-        },
+        // descriptionsProps: {
+        //   column: 3,
+        //   mode: 'table',
+        // },
         attrs: {
           labelIndex: true,
         },
@@ -381,11 +397,10 @@ export default function exampleForm() {
         field: 'group',
         title: () => h('b', '分格线'),
         disabled: ({ formData }) => !!formData.isReg,
-        descriptionsProps: {
-          column: 3,
-          mode: 'table',
-          labelCol: {},
-        },
+        // descriptionsProps: {
+        //   column: 3,
+        //   labelCol: {},
+        // },
         buttons: {
           limit: 3,
           size: 'small',
@@ -418,6 +433,27 @@ export default function exampleForm() {
           ],
         },
         subItems: [
+          {
+            type: 'InputList',
+            field: 'nameList',
+            // isBlock: false,
+            // subSpan: 20,
+            // label: '客户',
+            rules: { required: true, min: 2 },
+            attrs: {
+              labelIndex: true,
+            },
+            // rowButtons: ['add', 'delete'],
+            columns: [
+              {
+                type: 'Input',
+                field: 'index',
+                label: '姓名',
+                // labelSlot: ({ index }) => '姓名' + '一二三四'[index],
+                rules: { required: true },
+              },
+            ],
+          },
           {
             type: 'InputNumber',
             field: 'width',

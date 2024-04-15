@@ -379,15 +379,25 @@ declare interface ExtUpload extends ExtFormItemOption {
         apis?: {
             upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
             delete?: (file: Obj) => Promise<any>
+            download?: (file: Obj) => Promise<any>
         }
         /** 指定文件信息字段 */
-        infoNames?: { [k in 'uid' | 'name' | 'url']?: string | { name: string; isValue?: boolean } } | Obj<string>
+        infoNames?: { [k in 'uid' | 'name' | 'url']?: string } | Obj<string>
+        /** 指定文件信息中某属性作为同步绑定值，不指定将同步绑定文件对象 */
+        valueKey?: string
+        /** 文件最小MB */
         minSize?: number
+        /** 文件最大MB */
         maxSize?: number
+        /** 单文件上传, 绑定值为字符串或文件对象 */
         isSingle?: boolean
+        /** 超出文件数量时，隐藏上传主体 */
+        outHide?: boolean
+        /** 上传模式，默认auto,选择文件后自动上传，submit:提交时上传，custom通过绑定fileList中的文件对象手动上传 */
         uploadMode?: 'auto' | 'submit' | 'custom'
         tip?: string
-        title?: string
+        /** 上传按钮标题 */
+        title?: VSlot
         /** 是否允许重名文件 */
         repeatable?: boolean
         /** 查看模式 */

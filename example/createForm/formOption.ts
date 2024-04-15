@@ -6,12 +6,12 @@ export const myTableOption = defineTable({
   buttons: {
     actions: ['add', 'edit', 'delete'],
   },
-  formschema: {
+  formSchema: {
     attrs: { layout: 'vertical' },
     subSpan: 24,
   },
   descriptionsProps: { column: 1, size: 'default', mode: 'table' },
-  searchschema: {
+  searchSchema: {
     attrs: {
       wrapperCol: { style: 'width:100px' },
     },
@@ -23,6 +23,7 @@ export const myTableOption = defineTable({
     console.log(data)
     return data
   },
+  title: 'avc',
   params: {fieldName: 'abc'},
   modalProps: { width: '500px' },
   rowButtons: {

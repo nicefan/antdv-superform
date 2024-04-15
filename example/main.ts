@@ -19,10 +19,6 @@ const defaultProps = {
     layout: 'vertical',
   },
   Upload: {
-    infoNames: {
-      uid: 'id',
-      name: { isValue: true }
-    },
     mode: 'submit'
   }
 }

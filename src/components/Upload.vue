@@ -11,9 +11,8 @@ import {
 import base from './base'
 import { message, Modal, Upload } from 'ant-design-vue'
 import { globalProps } from '../plugin'
-import { toNode } from '../utils'
 import usePreview from './usePreview'
-import { defaults } from 'lodash-es'
+import { isFunction } from 'lodash-es'
 
 interface FileInfo {
   /** 文件id */
@@ -46,11 +45,13 @@ export default defineComponent({
   props: {
     option: { type: Object, required: true },
     model: Object,
-    effectData: Object,
-    value: [String, Array] as PropType<string | string[]>,
+    effectData: { type: Object, required: true },
+    value: [String, Array, Object] as PropType<string | string[] | Obj | Obj[]>,
     fileList: Array as PropType<any[]>,
     /** 指定文件信息字段 */
     infoNames: Object as PropType<Partial<Pick<FileInfo, 'uid' | 'name' | 'url'>>>,
+    /** 指定文件信息中一个属性存为绑定值 */
+    valueKey: String,
     //TODO apis 可从全局配置， 当前配置为字符串时，作为url参数传到全局api方法
     customRequest: Function,
     minSize: Number,
@@ -59,7 +60,9 @@ export default defineComponent({
     maxCount: Number,
     uploadMode: String as PropType<'auto' | 'submit' | 'custom'>,
     tip: String,
-    title: String,
+    title: [String, Function],
+    /** 超出最大数量隐藏上传 */
+    outHide: Boolean,
     repeatable: Boolean,
     isView: Boolean,
     disabled: Boolean,
@@ -75,37 +78,29 @@ export default defineComponent({
     const {
       uploadMode: mode = 'auto',
       apis = {},
+      isSingle,
       minSize,
       maxSize,
-      maxCount,
+      maxCount = isSingle ? 1 : 0,
       infoNames,
       repeatable,
       onPreview,
       onDownload,
       isImageUrl = fileIsImage,
-    } = defaults({ ...props }, globalProps.Upload)
+      outHide,
+      valueKey,
+    } = props
     const { accept, listType } = ctx.attrs as Obj<string>
-    const { label, vModelFields = {} } = props.option
 
     const preview = usePreview()
 
-    let valueField = 'uid'
-    let nameMap: [string, string][] = []
     const __names: Obj = { uid: 'uid', status: 'status', url: 'url', name: 'name', ...infoNames }
     if (mode === 'custom') __names.originFileObj = ''
 
-    Object.entries(__names as Obj<string | Obj>).map(([key, value]) => {
-      const { name = key, isValue } = typeof value === 'object' ? value : ({ name: value } as Obj)
-      if (isValue) {
-        valueField = key
-      }
-      nameMap.push([key, name])
-    })
-
     const convertInfo = (info) => {
       const __info = { status: 'done', ...info }
-      nameMap.forEach(([key, name]) => {
-        if (name && name !== key) {
+      Object.entries(__names).forEach(([key, name]) => {
+        if (name && name !== key && name in __info) {
           __info[key] = __info[name as string]
           delete __info[name as string]
         }
@@ -114,15 +109,12 @@ export default defineComponent({
     }
     const reconvert = (info) => {
       const __info = {}
-      nameMap.forEach(([key, name]) => {
+      Object.entries(__names).forEach(([key, name]) => {
         const value = info[key]
         if (name && value !== undefined) __info[name] = value
       })
       return __info
     }
-
-    // 绑定值为fileList时不再提交value变化
-    const valueIsFileList = props.option.field === vModelFields.fileList
 
     const { onSubmit } = inject<any>('exaProvider', {})
 
@@ -143,20 +135,26 @@ export default defineComponent({
     }
 
     const updateValue = () => {
-      if (valueIsFileList) {
-        outValues.value = outFileList.value
-        ctx.emit('update:value', outFileList.value)
+      if (props.isSingle) {
+        const frist = toRaw(outFileList.value[0])
+        outValues.value = !valueKey ? frist : frist?.[valueKey] ?? innerFileList.value[0]?.uid // 指定key无值时用uid替代，满足表单校验
+      } else if (valueKey) {
+        outValues.value = innerFileList.value.map((item) => item[__names[valueKey]] ?? item.uid)
       } else {
-        outValues.value = innerFileList.value.map((item) => item[valueField])
-        ctx.emit('update:value', outValues.value)
+        outValues.value = outFileList.value
       }
+      ctx.emit('update:value', outValues.value)
     }
 
     watch(
       () => toRaw(props.fileList),
       (list) => {
         if (!list) {
-          updateFileList([])
+          if (isSingle && props.value) {
+            updateFileList([valueKey ? convertInfo({ [valueKey]: props.value }) : props.value])
+          } else {
+            updateFileList([])
+          }
         } else if (list !== outFileList.value) {
           const fileList = list.map(convertInfo)
           updateFileList(fileList)
@@ -171,12 +169,13 @@ export default defineComponent({
           innerFileList.value = []
           outValues.value = undefined
         }
-      }, {
-        flush: 'sync'
+      },
+      {
+        flush: 'sync',
       }
     )
 
-    const isLoading = ref(true)
+    const isLoading = ref(false)
     const openModal = (onOk?: Fn) => {
       return Modal.info({
         title: () => ' 文件同步中，请稍候...',
@@ -249,7 +248,7 @@ export default defineComponent({
         if (res !== undefined) return res
       }
       const errMessage = (() => {
-        if (maxCount) {
+        if (maxCount > 1) {
           const count = outFileList.value.length + resFileList.indexOf(file)
           if (count >= maxCount) {
             return '文件数量最多' + maxCount
@@ -282,14 +281,26 @@ export default defineComponent({
       if (mode === 'custom') {
         return false
       }
+      if (maxCount === 1 && innerFileList.value.length) {
+        const info = innerFileList.value[0]
+        tasks.delete(info.uid)
+        waitingTasks.delete(info.uid)
+        info.status === 'done' && apis.delete?.(outFileList.value[0])
+      }
     }
 
     function handleChange({ file, fileList, event }) {
       if (file.status === 'removed') {
+        // 删除完成后清除上传任务
         tasks.delete(file.uid)
         waitingTasks.delete(file.uid)
-      } else if (mode !== 'auto' && !event && file.status === 'uploading') {
-        file.status = 'waiting'
+      } else if (file.status === 'uploading') {
+        if (!event && mode !== 'auto') {
+          file.status = 'waiting'
+        }
+        if (listType?.startsWith('picture')) {
+          file.objectUrl = window.URL.createObjectURL(file.originFileObj)
+        }
         // } else if (file.status === 'done' && file.response) {
         //   Object.assign(file, convertInfo(file.response))
       }
@@ -337,6 +348,7 @@ export default defineComponent({
         })
         .then(successHandler, errorHandler)
     }
+
     const removeFileMap = new Map()
     const remove = async (file) => {
       let result = await props.onRemove?.(file)
@@ -439,30 +451,34 @@ export default defineComponent({
         return h(PaperClipOutlined)
       }
     }
-    // const formItemContext = Form.useInjectFormItemContext();
-    const title = '上传文件' // + (typeof label === 'string' ? label : '')
+    const __title = props.title
+    const title = typeof props.title === 'string' ? props.title : '上传文件'
+    const effectData = reactive({ ...toRaw(props.effectData), fileList: innerFileList })
+    const titleSlot = isFunction(__title) && (() => __title(effectData))
     const tips: string[] = []
     accept && tips.push('支持文件格式：' + accept)
     maxSize && tips.push('单个文件不超过' + maxSize + 'MB')
     const tip = props.tip || tips.join(', ')
-    const slots: Obj = {}
+    const slots: Obj = { ...ctx.slots }
     if (listType === 'picture-card') {
       slots.default = () =>
-        props.title ? toNode(props.title) : h('div', [h(PlusOutlined), h('div', { style: 'margin-top:8px' }, title)])
+        ctx.slots.default?.(effectData) ||
+        h('div', [h(PlusOutlined), titleSlot ? titleSlot() : h('div', { style: 'margin-top:8px' }, title)])
     } else {
       slots.default = () => [
-        h(base.Button, {}, () => (props.title ? toNode(props.title) : [h(UploadOutlined), title])),
+        ctx.slots.default?.(effectData) ||
+          h(base.Button, {}, () => [h(UploadOutlined), titleSlot ? titleSlot() : title]),
         tip && h('div', { class: 'sup-upload-tip' }, tip),
       ]
     }
     const isView = computed(() => props.disabled || props.isView)
+    const hideBody = computed(() => outHide && maxCount && innerFileList.value.length >= maxCount)
     return () =>
       isView.value && outFileList.value.length === 0
         ? h('div', { class: 'sup-upload-tip' }, '暂无附件')
         : h(
             base.Upload,
             {
-              ...globalProps.Upload,
               class: { 'upload-disabled': isView.value },
               customRequest,
               beforeUpload,
@@ -475,9 +491,10 @@ export default defineComponent({
               isImageUrl,
               iconRender,
               onDownload: fileDownload,
-            },
+            } as any,
             {
-              default: isView.value ? null : slots.default,
+              ...slots,
+              default: isView.value || hideBody.value ? null : slots.default,
             }
           )
   },

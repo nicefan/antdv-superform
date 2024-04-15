@@ -152,7 +152,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
           let isBreak = option.isBreak
           const contents = [...modelsMap].map(([opt, model]) => {
             const labelSlot = opt.labelSlot || opt.label
-            const showLabel = option.attrs?.compact === false && labelSlot
+            const showLabel = attrs?.compact === false && labelSlot
             const content = getContent(opt, model)
             isBreak = opt.isBreak || isBreak
             return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])

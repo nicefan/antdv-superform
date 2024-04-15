@@ -1,8 +1,9 @@
 import { globalConfig } from '../plugin'
-import { ref, unref, h, reactive, type VNode, inject } from 'vue'
+import { ref, unref, h, reactive, type VNode, inject, computed } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls from '../components'
 import { isPlainObject } from 'lodash-es'
+import useControl from './useControl'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -62,27 +63,33 @@ export function getViewNode(option, effectData = {}) {
     } else if (colType === 'Buttons') {
       const buttonsSlot = createButtons({ config: option, isView: true })
       return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
-    } else if (!viewRender && (colType === 'Upload' || colType.startsWith('Ext'))) {
-      return (param = effectData) => {
-        const vModels = getVModelProps(option, param.current)
-        return h(Controls[colType], reactive({ option, effectData: param, ...option.attrs, ...vModels, isView: true }), rootSlots)
-      }
     } else {
       // textRender为undefined将直接返回绑定的值
     }
   })() as false | undefined | ((param?: Obj) => VNode)
+
   const __render = viewRender || (colType === 'InfoSlot' && render)
-
   const colRender = typeof __render === 'string' ? rootSlots[__render] : __render
+  if (colRender || colType === 'Upload' || colType.startsWith('Ext')) {
+    const slots = {}
+    Object.entries(option.slots || {}).forEach(([key, value]) => {
+      slots[key] = typeof value === 'string' ? rootSlots[value] : value
+    })
 
-  if (colRender) {
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)
-      const props: Obj = reactive({ props: { ...option.attrs, ...vModels }, ...param })
-      if (content) {
-        props.text = content(param)
-      }
-      return colRender(props)
+      const {
+        attrs: { disabled, ...attrs },
+      } = useControl({ option, effectData: param })
+
+      const props: Obj = reactive({
+        props: { ...attrs, ...vModels },
+        ...param,
+        ...(content && { text: computed(() => content(param)) }),
+      })
+      return colRender
+        ? colRender(props)
+        : h(Controls[colType], reactive({ option, effectData: param, ...attrs, ...vModels, isView: true }), slots)
     }
   } else {
     return content

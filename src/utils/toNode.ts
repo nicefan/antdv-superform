@@ -7,6 +7,6 @@ export function toNode(node, param: any = {}) {
   } else if (typeof node !== 'object') {
     return h('span', node)
   } else {
-    return h(node)
+    return h(node, { effectData: param })
   }
 }
