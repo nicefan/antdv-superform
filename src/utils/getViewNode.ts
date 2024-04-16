@@ -15,7 +15,7 @@ const getVModelProps = (options, parent: Obj) => {
   return vModels
 }
 
-export function getViewNode(option, effectData = {}) {
+export function getViewNode(option, effectData: Obj = {}) {
   const {
     type: colType = '',
     viewRender,
@@ -89,7 +89,11 @@ export function getViewNode(option, effectData = {}) {
       })
       return colRender
         ? colRender(props)
-        : h(Controls[colType], reactive({ option, effectData: param, ...attrs, ...vModels, isView: true }), slots)
+        : h(
+            Controls[colType],
+            reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true }),
+            slots
+          )
     }
   } else {
     return content

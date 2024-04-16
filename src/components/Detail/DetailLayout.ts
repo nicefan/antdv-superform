@@ -141,7 +141,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
     })
 
     const __label = labelSlot && (() => toNode(labelSlot, effectData))
-    let isBlock = option.isBlock
+    let isBlock = option.blocked
     let wrapNode
     let node
     if (model.children || model.listData) {
@@ -149,12 +149,12 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
       const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
       if (type === 'InputGroup') {
         if (!viewRender) {
-          let isBreak = option.isBreak
+          let isBreak = option.wrapping
           const contents = [...modelsMap].map(([opt, model]) => {
             const labelSlot = opt.labelSlot || opt.label
             const showLabel = attrs?.compact === false && labelSlot
             const content = getContent(opt, model)
-            isBreak = opt.isBreak || isBreak
+            isBreak = opt.wrapping || isBreak
             return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
           })
           wrapNode = () =>

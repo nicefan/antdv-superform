@@ -96,9 +96,9 @@ export const myTableOption = defineTable({
     { 
       type: 'Upload', 
       // hideInDescription: true,
-    field: 'fileIds', 
+    field: 'files', 
     label: '附件',
-     vModelFields: {fileList: 'files'}
+    //  vModelFields: {fileList: 'files'}
      },
   ],
 })

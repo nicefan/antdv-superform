@@ -177,6 +177,7 @@ export default function exampleForm() {
             type: 'Textarea',
             field: 'memo',
             label: '备注',
+            wrapping: true,
             disabled(data) {
               return !!data.formData.foreverName
             },
@@ -268,7 +269,6 @@ export default function exampleForm() {
                 onChange: (data) => {
                   console.log(data)
                 },
-                // isBreak: true,
                 // span: 8,
               },
 
@@ -303,7 +303,6 @@ export default function exampleForm() {
                 delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
                 upload: (data) => new Promise((resolve, reject) => setTimeout(()=>resolve({url:'http://abc.jpg'}), 5000)),
               },
-              valueKey: 'url',
               uploadMode: 'auto',
               listType: 'picture',
               isSingle: true,
@@ -334,23 +333,22 @@ export default function exampleForm() {
             },
             disabled: ({ formData }) => !!formData.isReg,
             attrs: {
+              valueKey: 'uid',
               apis: {
                 delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
-                upload: (data) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
+                upload: (data) => new Promise((resolve, reject) => setTimeout(()=>reject({message:'abc'}), 5000)),
               },
-              // uploadMode: 'submit',
+              uploadMode: 'auto',
               multiple: true,
-              maxCount: 1,
               accept: 'image/*',
-              outHide: true,
               maxSize: 5,
-              // listType: 'picture'
+              listType: 'picture-card'
             },
           },
           {
             type: 'Buttons',
             align: 'center',
-            isBlock: true,
+            blocked: true,
             actions: [
               {
                 icon: AndroidOutlined,
@@ -436,7 +434,6 @@ export default function exampleForm() {
           {
             type: 'InputList',
             field: 'nameList',
-            // isBlock: false,
             // subSpan: 20,
             // label: '客户',
             rules: { required: true, min: 2 },

@@ -12,7 +12,7 @@ import base from './base'
 import { message, Modal, Upload } from 'ant-design-vue'
 import { globalProps } from '../plugin'
 import usePreview from './usePreview'
-import { isFunction } from 'lodash-es'
+import { isArray, isFunction } from 'lodash-es'
 
 interface FileInfo {
   /** 文件id */
@@ -121,7 +121,7 @@ export default defineComponent({
     const innerFileList = ref<any[]>([])
 
     const outFileList = shallowRef<any[]>([])
-    const outValues = shallowRef<any[]>()
+    const outValues = shallowRef<any>()
 
     const tasks = new Map<string, Awaited<any>>()
     const waitingTasks = new Map<string, Fn<Awaited<any>>>()
@@ -147,32 +147,30 @@ export default defineComponent({
     }
 
     watch(
-      () => toRaw(props.fileList),
-      (list) => {
-        if (!list) {
-          if (isSingle && props.value) {
-            updateFileList([valueKey ? convertInfo({ [valueKey]: props.value }) : props.value])
+      () => toRaw(props.value),
+      (value) => {
+        if (value !== outValues.value) {
+          outValues.value = value
+          if (!valueKey && value) {
+            outFileList.value = isArray(value) ? value : [value]
+            const fileList = outFileList.value.map(convertInfo)
+            innerFileList.value = fileList
           } else {
-            updateFileList([])
+            innerFileList.value = []
           }
-        } else if (list !== outFileList.value) {
-          const fileList = list.map(convertInfo)
-          updateFileList(fileList)
         }
       },
       { immediate: true, flush: 'sync' }
     )
     watch(
-      () => toRaw(props.value),
-      (value) => {
-        if (value !== outValues.value) {
-          innerFileList.value = []
-          outValues.value = undefined
+      () => toRaw(props.fileList),
+      (list) => {
+        if (list && list !== outFileList.value) {
+          const fileList = list.map(convertInfo)
+          updateFileList(fileList)
         }
       },
-      {
-        flush: 'sync',
-      }
+      { immediate: true }
     )
 
     const isLoading = ref(false)
@@ -212,8 +210,8 @@ export default defineComponent({
           }
           stack = Promise.all(__tasks)
         }
-        if (removeFileMap.size) isLoading.value = true
       }
+      if (removeFileMap.size) isLoading.value = true
 
       if (isLoading.value) {
         const modal = openModal()
@@ -285,7 +283,11 @@ export default defineComponent({
         const info = innerFileList.value[0]
         tasks.delete(info.uid)
         waitingTasks.delete(info.uid)
-        info.status === 'done' && apis.delete?.(outFileList.value[0])
+        if (info.status === 'done' && apis.delete) {
+          // 提交时进行远程删除
+          const __file = { ...outFileList.value[0] }
+          removeFileMap.set(__file, () => apis.delete(__file))
+        }
       }
     }
 
@@ -301,8 +303,6 @@ export default defineComponent({
         if (listType?.startsWith('picture')) {
           file.objectUrl = window.URL.createObjectURL(file.originFileObj)
         }
-        // } else if (file.status === 'done' && file.response) {
-        //   Object.assign(file, convertInfo(file.response))
       }
       updateFileList([...fileList])
     }
@@ -321,7 +321,10 @@ export default defineComponent({
       const { file, filename, onProgress, onError, onSuccess } = args
 
       const errorHandler = (error) => {
-        onError(error)
+        const changeItem = innerFileList.value.find((item) => item.uid === file.uid)
+        Object.assign(changeItem, { error, status: 'error' })
+        updateFileList([...innerFileList.value])
+        // onError(error, undefined, file)
         return Promise.reject(error)
       }
       const successHandler = (data) => {
@@ -362,14 +365,16 @@ export default defineComponent({
             maskClosable: false,
             ...globalProps.Modal,
             onOk() {
-              const handler = () => apis.delete(reconvert(file))
+              const __file = reconvert(file)
+              const handler = () => apis.delete(__file)
               if (mode === 'submit') {
-                const __file = { ...file }
-                removeFileMap.set(__file, () =>
-                  handler().then(
-                    () => removeFileMap.delete(__file)
-                    // () => updateFileList([...innerFileList.value, __file]) // 删除失败后还原文件
-                  )
+                removeFileMap.set(
+                  __file,
+                  () => handler()
+                  // .then(
+                  //   () => removeFileMap.delete(__file)
+                  //   // () => updateFileList([...innerFileList.value, __file]) // 删除失败后还原文件
+                  // )
                 )
                 resolve(true)
               } else {
@@ -401,7 +406,7 @@ export default defineComponent({
       onDownload ||
       ((file) => {
         if (apis.download) {
-          apis.download(reconvert(file)).then((result) => downloadByData(result.data, file.name))
+          apis.download(reconvert(file)).then((result) => downloadByData(result, file.name))
         }
       })
     function downloadByData(data: BlobPart, filename: string, bom?: BlobPart) {
@@ -437,7 +442,7 @@ export default defineComponent({
           .filter((item) => isImageUrl(item))
           .map((item, idx) => {
             if (item === file) current = idx
-            return item.url || item.thumbUrl
+            return item.objectUrl || item.url || item.thumbUrl
           })
         preview.open({ images, current })
       }
@@ -458,7 +463,7 @@ export default defineComponent({
     const tips: string[] = []
     accept && tips.push('支持文件格式：' + accept)
     maxSize && tips.push('单个文件不超过' + maxSize + 'MB')
-    const tip = props.tip || tips.join(', ')
+    const tip = props.tip ?? tips.join(', ')
     const slots: Obj = { ...ctx.slots }
     if (listType === 'picture-card') {
       slots.default = () =>
@@ -474,7 +479,7 @@ export default defineComponent({
     const isView = computed(() => props.disabled || props.isView)
     const hideBody = computed(() => outHide && maxCount && innerFileList.value.length >= maxCount)
     return () =>
-      isView.value && outFileList.value.length === 0
+      isView.value && innerFileList.value.length === 0
         ? h('div', { class: 'sup-upload-tip' }, '暂无附件')
         : h(
             base.Upload,

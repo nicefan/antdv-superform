@@ -77,9 +77,9 @@ interface ExtBaseOption {
   /** 快捷实现col span */
   span?: number | 'auto'
   /** 是否为独立块，分组元素默认为true */
-  isBlock?: boolean
+  blocked?: boolean
   /** 是否换行 */
-  isBreak?: boolean
+  wrapping?: boolean
   align?: 'left' | 'right' | 'center'
   slots?: Obj<VSlot>
   viewRender?: VSlot
@@ -172,8 +172,6 @@ interface ExtButtonGroup<T extends string = string> {
   placement?: 'top' | 'bottom'
   /** 分隔符， type为'link'/'text'时默认true */
   divider?: boolean
-  /** 是否独立行 */
-  isBlock?: boolean
   /** 是否只显示图标 */
   iconOnly?: boolean
   /** 更多按钮slot */

@@ -68,7 +68,7 @@ export default defineComponent({
           n = ceil
           current = [item]
         }
-        if (option.isBreak) {
+        if (option.wrapping) {
           group.push(current)
           n = 0
           current = []

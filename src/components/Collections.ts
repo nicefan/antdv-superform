@@ -31,7 +31,7 @@ export default defineComponent({
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
-      const { type, label, align, isBlock, span, hideInForm, labelSlot } = option
+      const { type, label, align, blocked, span, hideInForm, labelSlot } = option
       if (type === 'Hidden' || hideInForm) return
 
       const colProps: Obj = { ...option.colProps, span }
@@ -66,7 +66,7 @@ export default defineComponent({
       /** 容器组件 */
       const independent = [...containers, 'InputList', 'InputGroup'].includes(type)
       // const isListFormItem = type === 'InputList' && (labelSlot || label) && !option.attrs?.labelIndex
-      if (!independent && (option.field || !isBlock)) {
+      if (!independent && (option.field || !blocked)) {
         // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
         const rules = computed(() => (unref(attrs.disabled) ? undefined : subData.rules))
         const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
@@ -87,7 +87,7 @@ export default defineComponent({
       }
 
       // 容器组件独行显示
-      const __isBlock = isBlock ?? (containers.includes(type) && !option.span)
+      const __isBlock = blocked ?? (containers.includes(type) && !option.span)
       const alignStyle = align && `text-align: ${align}`
       if (__isBlock) {
         currentGroup = undefined
@@ -105,7 +105,7 @@ export default defineComponent({
           nodes.push((currentGroup = []))
         }
         currentGroup.push(() => !hidden.value && h(Col, mergeProps({ style: alignStyle, key: idx }, colProps), node))
-        if (option.isWrap) currentGroup = undefined
+        if (option.wrapping) currentGroup = undefined
       }
     })
 

@@ -109,7 +109,7 @@ export default defineComponent({
               itemOption = { ...groupOption }
               itemModel = { parent: orgList, refData, children: cloneChild }
               if (!labelIndex) {
-                itemOption = { type: 'Group', span: 'auto', isBreak: true }
+                itemOption = { type: 'Group', span: 'auto' }
               }
             }
           }
@@ -141,9 +141,9 @@ export default defineComponent({
     if (isView) {
       if (isFormItem) {
         if (isSingle) {
-          const { isBreak, label, labelSlot = label } = columns[0]
+          const { wrapping, label, labelSlot = label } = columns[0]
           return () =>
-            h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () =>
+            h(Space, { direction: wrapping ? 'vertical' : 'horizontal' }, () =>
               listItems.value.map(({ children, effectData }) => {
                 return h('span', [toNode(labelSlot, effectData), labelSlot ? ': ' : '', effectData.record])
               })
