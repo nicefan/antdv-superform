@@ -16,7 +16,7 @@ export function useDetail(option: DetailOption, data = {}) {
     if (actions) {
       if (!actionsRef.value) {
         syncOption.then(actions.setOption)
-        actions.setData(source.value)
+        actions.setData(source)
       }
       actionsRef.value = actions
     } else {

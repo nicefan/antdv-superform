@@ -10,11 +10,13 @@
 <script setup lang="ts">
 import useOption from './useExForm'
 import { SuperDetail, useDetail } from '../src'
+import { ref } from 'vue';
 
+const source = ref({})
 const { options, changeSelect } = useOption()
 const [detailRegister, { setData }] = useDetail(async () => {
   return { isContainer: true, ...options }
-})
+}, source)
 
 // const MyDetail = detailRegister()
 setTimeout(() => {

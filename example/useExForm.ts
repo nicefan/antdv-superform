@@ -323,9 +323,9 @@ export default function exampleForm() {
             type: 'Upload',
             label: '附件',
             field: 'file',
-            vModelFields: {
-              fileList: 'fileList',
-            },
+            // vModelFields: {
+            //   fileList: 'fileList',
+            // },
             span: 24,
             // rules: { required: true, type: 'array', min: 3 },
             descriptionsProps: {
@@ -338,7 +338,7 @@ export default function exampleForm() {
                 delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
                 upload: (data) => new Promise((resolve, reject) => setTimeout(()=>reject({message:'abc'}), 5000)),
               },
-              uploadMode: 'auto',
+              uploadMode: 'submit',
               multiple: true,
               accept: 'image/*',
               maxSize: 5,
@@ -513,7 +513,7 @@ export default function exampleForm() {
         type: 'Table',
         field: 'table',
         label: '表格',
-        attrs: { bordered: true },
+        // attrs: { bordered: true },
         editMode: 'inline',
         // addMode: 'modal',
         buttons: {

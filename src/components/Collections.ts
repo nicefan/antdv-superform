@@ -93,7 +93,17 @@ export default defineComponent({
         currentGroup = undefined
         nodes.push(
           () =>
-            !hidden.value && h('div', { class: 'sup-form-section', style: alignStyle, key: idx, ...ctx.attrs }, node())
+            !hidden.value &&
+            h(
+              'div',
+              {
+                class: ['sup-form-section', type === 'Descriptions' && 'sup-detail'],
+                style: alignStyle,
+                key: idx,
+                ...ctx.attrs,
+              },
+              node()
+            )
         )
       } else {
         if (type === 'InputList') {
@@ -146,8 +156,7 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     node = () => h(ButtonGroup, { config: option, param: effectData })
   } else if (containers.includes(type) || type === 'InputList') {
     // 容器组件不绑定value
-    const viewProps = type === 'Descriptions' && { isView: true, class: 'sup-detail' }
-    node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs, ...viewProps }), slots)
+    node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs }), slots)
   } else {
     // 表单输入组件
     const valueProps = useVModel({ option, model, effectData })

@@ -14,11 +14,11 @@ export default defineComponent({
   },
   setup({ option, model, effectData, isView }, ctx) {
     const { type, label, title = label, buttons } = option
-
+    const _isView = type === 'Descriptions' || isView
     let buttonsSlot
     if (buttons) {
       const _buttons = Array.isArray(buttons) ? { actions: buttons } : buttons
-      if (type === 'Discriptions') {
+      if (type === 'Descriptions') {
         _buttons.vaildIn ??= 'detail'
       }
       buttonsSlot = createButtons({ config: _buttons, params: effectData, isView })
@@ -30,7 +30,7 @@ export default defineComponent({
       actions: buttonsSlot,
       default:
         ctx.slots.innerContent ||
-        (isView
+        (_isView
           ? () => h(DetailLayout, { option: { descriptionsProps: option.attrs, ...option }, modelsMap: model.children })
           : () => h(Collections, { option, model, effectData })),
     }

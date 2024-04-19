@@ -48,11 +48,12 @@ export default defineComponent({
         { class: ['sup-detail', option.isContainer && 'sup-container'] },
         h(DetailLayout, {
           option: {
-            type: 'Discriptions',
+            type: 'Descriptions',
             ...option,
             descriptionsProps: { ...option.attrs, ...option.descriptionsProps },
           } as any,
           modelsMap: modelsMap.value,
+          isRoot: true
         })
       )
   },

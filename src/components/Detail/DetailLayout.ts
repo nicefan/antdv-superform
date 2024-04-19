@@ -15,8 +15,9 @@ const DetailLayouts = defineComponent({
       type: Object as PropType<ModelsMap>,
       required: true,
     },
+    isRoot: Boolean,
   },
-  setup({ option, modelsMap }, ctx) {
+  setup({ option, modelsMap, isRoot }, ctx) {
     const formAttrs = inject<any>('exaProvider', {}).attrs
     const gridConfig: Obj = inject('gridConfig', formAttrs)
 
@@ -37,7 +38,6 @@ const DetailLayouts = defineComponent({
       rowProps,
       ...attrs,
     }
-    // config.mode ??= config.bordered ? 'table' : undefined
 
     const presetSpan = (provideData.subSpan ??= globalProps.Col?.span ?? 12)
 
@@ -46,76 +46,70 @@ const DetailLayouts = defineComponent({
     const nodeGroup: any[] = []
     let rowGroup: any[] | undefined
     let section: any[] | undefined
-    // let isRoot = !option.type || option.type === 'Discriptions'
 
     nodes.forEach((item, idx) => {
-      // isRoot = isRoot || !item.option.type || item.option.type === 'Discriptions'
-      const node = item.node || (() => h(Descriptions, { config: attrs, items: item.group, class: attrs.class }))
-      if (nodes.length === 1) {
-        nodeGroup.push(['block', node])
-        return
-      }
+      item.node ??= () => h(Descriptions, { config: attrs, items: item.group, class: attrs.class })
+      // if (nodes.length === 1) {
+      //   nodeGroup.push(['block', item])
+      //   return
+      // }
       if (item.isBlock) {
         if (item.group || item.option.type === 'InputList') {
           if (!section) {
             section = []
             nodeGroup.push(['section', section])
           }
-          section.push(() => !unref(item.hidden) && node())
+          section.push(item)
         } else {
-          nodeGroup.push([
-            'block',
-            () => !unref(item.hidden) && h('div', { class: 'sup-form-section', key: idx }, node()),
-          ])
+          nodeGroup.push(['block', item])
           section = undefined
         }
+        rowGroup = undefined
       } else {
-        const colProps: Obj = defaults(
-          { span: item.option.span },
-          item.option.colProps,
-          { span: presetSpan },
-          globalProps.Col
-        )
-
         !rowGroup && nodeGroup.push(['row', (rowGroup = [])])
-        rowGroup.push(() => !unref(item.hidden) && h(Col, { ...colProps, key: idx }, node))
+        rowGroup.push(item)
         section = undefined
       }
     })
 
     const content = () =>
       h(DataProvider, { name: 'gridConfig', data: provideData }, () =>
-        nodeGroup.map(([type, items]) => {
+        nodeGroup.map(([type, items], idx) => {
+          let slot = items.node
           if (type === 'row') {
-            return h(Row, rowProps, () => items.map((node) => node()))
+            slot = () =>
+              h(Row, rowProps, () =>
+                items.map((item, idx) => {
+                  const colProps = item.option.colProps || { span: item.option.span ?? presetSpan }
+                  return !unref(item.hidden) && h(Col, { ...globalProps.Col, ...colProps, key: idx }, item.node)
+                })
+              )
           } else if (type === 'section') {
-            return h(
-              'div',
-              { class: 'sup-form-section' },
-              items.map((node) => node())
-            )
-          } else {
-            return items()
+            slot = () => items.map((item) => !unref(item.hidden) && item.node())
           }
+          return (
+            !unref(items.hidden) &&
+            (nodeGroup.length > 1 ? h('div', { class: 'sup-form-section', key: idx }, slot()) : slot())
+          )
         })
       )
-    return content
-    // if (isRoot) {
-    //   return () =>
-    //     h(
-    //       Controls.Group,
-    //       {
-    //         class: 'sup-form-section',
-    //         option,
-    //         model: {},
-    //         effectData: getEffectData({}),
-    //         isView: true,
-    //       },
-    //       { innerContent: content }
-    //     )
-    // } else {
-    //   return content
-    // }
+
+    if (isRoot && nodeGroup.length === 1) {
+      return () =>
+        h(
+          Controls.Group,
+          {
+            class: 'sup-form-section',
+            option,
+            model: {},
+            effectData: getEffectData({}),
+            isView: true,
+          },
+          { innerContent: content }
+        )
+    } else {
+      return content
+    }
   },
 })
 
