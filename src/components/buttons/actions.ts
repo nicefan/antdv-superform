@@ -2,6 +2,8 @@ import { Modal } from 'ant-design-vue'
 import type { ButtonItem } from '../../exaTypes'
 import { globalProps, globalConfig } from '../../plugin'
 import { defaults, merge } from 'lodash-es'
+import { ref } from 'vue'
+import { toNode } from '../../utils'
 
 const getDefault = () => {
   return merge(
@@ -51,10 +53,14 @@ const getDefault = () => {
 function buildDefaultActions(methods) {
   const actions: Obj = getDefault()
   Object.keys(methods).forEach((key) => {
-    if (typeof methods[key] === 'function') {
-      actions[key] && (actions[key].onClick = methods[key])
+    if (actions[key]) {
+      if (typeof methods[key] === 'function') {
+        actions[key].onClick = methods[key]
+      } else {
+        merge(actions[key], { attrs: { title: actions[key].label } }, methods[key])
+      }
     } else {
-      merge(actions[key], { attrs: { title: actions[key].label } }, methods[key])
+      actions[key] = methods[key]
     }
   })
   return actions
@@ -69,7 +75,8 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
       const { onClick: innerMethod, ...config } = defaultActions[name] || {}
-      config.attrs = defaults({ ...commonAttrs }, config.attrs)
+      const loading = ref(false)
+      config.attrs = defaults({ ...commonAttrs, loading }, config.attrs)
       if (typeof item === 'object') {
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
       }
@@ -77,25 +84,28 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
       const meta = { label: config.label, ...item.meta }
       const _onClick = item.onClick
 
-      const _action = (text, method) => {
+      const _action = (text, method, param) => {
         if (text) {
           Modal.confirm({
-            title: text,
+            title: () => toNode(text, param),
             okText: '确定',
             cancelText: '取消',
             ...globalProps.Modal,
             onOk: method,
           })
         } else {
-          method()
+          loading.value = true
+          Promise.resolve(method()).finally(() => {
+            loading.value = false
+          })
         }
       }
       config.onClick = (param) => {
         if (_onClick && innerMethod) {
           // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
-          _action(config.confirmText, () => _onClick(param, async (__param = param) => innerMethod(__param)))
+          _action(config.confirmText, () => _onClick(param, async (__param = param) => innerMethod(__param)), param)
         } else {
-          _action(config.confirmText, () => (innerMethod || _onClick)?.({ ...param, meta }))
+          _action(config.confirmText, () => (innerMethod || _onClick)?.({ ...param, meta }), param)
         }
       }
 

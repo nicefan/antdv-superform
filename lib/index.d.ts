@@ -630,6 +630,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     readonly setData: (data: Obj[]) => void;
     /** 返回当前表格数据 */
     readonly getData: () => any;
+    readonly dataSource: ComputedRef<any>;
     /** 跳转到指定页 */
     readonly goPage: (page: number) => void;
     /** 刷新数据，不改动查询条件与当前页 */
@@ -644,6 +645,8 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     readonly resetSearchForm: (param?: Obj) => void;
     readonly selectedRowKeys: ComputedRef<any>;
     readonly selectedRows: ComputedRef<any>;
+    /** 设置选中行 */
+    readonly setSelectedRows: (arr: any[]) => any;
     /** 新增行 */
     readonly add: (param?: {
         /** 初始化数据 */

@@ -146,9 +146,13 @@ function buildData({ option, listData, orgList, rowKey, listener, isView }: Buil
   })
 
   context.columns = useColumns({ childrenMap, effectData, getEditRender: __getEditRender, actionColumn })
-  context.columns.forEach((item) => {
-    defaults(item, option.columnProps, globalProps.Column)
-  })
+  ;(function mergeOption(columns = context.columns) {
+    columns.forEach((item) => {
+      defaults(item, option.columnProps, globalProps.Column)
+      if (item.children) mergeOption(item.children)
+    })
+  })()
+
   context.methods.detail = buildDetail(option, childrenMap, rowKey)
 
   return context

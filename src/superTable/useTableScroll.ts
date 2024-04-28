@@ -110,7 +110,7 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
     }
 
     // 表格最大高度
-    let tableHeight = bottomIncludeBody - (resizeHeightOffset || 0) - paddingHeight - paginationHeight
+    let tableHeight = Math.ceil(bottomIncludeBody) - (resizeHeightOffset || 0) - paddingHeight - paginationHeight
 
     // 表格行滚动高度
     const innerHeight = maxHeight || tableHeight - footerHeight - headerHeight - headerCellHeight - 1

@@ -60,6 +60,7 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       getData() {
         return toValue(tableRef.value?.dataRef)
       },
+      dataSource: computed(() => tableRef.value?.dataRef),
       /** 跳转到指定页 */
       goPage(page: number) {
         tableRef.value?.goPage(page)
@@ -87,6 +88,8 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       },
       selectedRowKeys: computed(() => tableRef.value?.selectedRowKeys),
       selectedRows: computed(() => tableRef.value?.selectedRows),
+      /** 设置选中行 */
+      setSelectedRows: (arr: any[]) => tableRef.value?.setSelectedRows(arr),
       /** 新增行 */
       add: (param?: AddParam) => tableRef.value?.add(param),
       /** 修改行，须判断是否已有选中行 */

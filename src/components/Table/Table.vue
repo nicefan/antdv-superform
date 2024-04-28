@@ -96,6 +96,11 @@ export default defineComponent({
     const actions = {
       selectedRowKeys,
       selectedRows,
+      setSelectedRows:(arr:any[]) => {
+        selectedRows.value = arr
+        selectedRowKeys.value = arr.map(item => item[rowKey]);
+        // selectedRows.value = []
+      },
       reload: () => apis.query?.(true),
       add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
       edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
