@@ -20,8 +20,7 @@ export function useDetail(option: DetailOption, data = {}) {
       }
       actionsRef.value = actions
     } else {
-      return (props) =>
-        h(SuperDetail, { config: option, dataSource: source, ...props, onRegister: register }, useSlots())
+      return (props) => h(SuperDetail, { config: option, ...props, onRegister: register }, useSlots())
     }
   }
 
