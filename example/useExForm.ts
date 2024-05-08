@@ -131,10 +131,13 @@ export default function exampleForm() {
             render: 'test',
           },
           {
-            type: 'Text',
-            label: '提示',
-            field: 'text',
-            initialValue: '文本显示，如需要格式化显示，请使用InfoSlot',
+            type: 'TagInput',
+            label: '标签',
+            field: 'tags',
+            initialValue: 'abc,ddo',
+            attrs: {
+              valueToString: true,
+            }
           },
           {
             type: 'DatePicker',
@@ -161,17 +164,19 @@ export default function exampleForm() {
             // disabled: (data) => data.age > 20,
           },
           {
-            type: 'Select',
+            type: 'TagSelect',
             field: 'other',
             label: '其它',
-            options: () => Promise.resolve(list.value),
-            valueToNumber: true,
+            // options: () => Promise.resolve(list.value),
+            options: selectList,
+            // valueToNumber: true,
             attrs: {
-              placeholder: 'value转换成字符型',
+              // placeholder: 'value转换成字符型',
+              multiple: true,
             },
-            computed(val, data) {
-              return data.formData.forever !== null && 1
-            },
+            // computed(val, data) {
+            //   return data.formData.forever !== null && 1
+            // },
           },
           {
             type: 'Textarea',
@@ -315,9 +320,6 @@ export default function exampleForm() {
                 return h('div', {style: {background:`center / cover url("${url}")`, width: '90px', height:'120px', border: '1px solid'}})
               }
             },
-            viewRender({value}) {
-
-            }
           },
           {
             type: 'Upload',

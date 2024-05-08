@@ -34,4 +34,6 @@ export {
   Row,
   Col,
   Upload,
+  Tag,
+  CheckableTag,
 } from 'ant-design-vue'

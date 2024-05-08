@@ -293,15 +293,7 @@ declare type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & {
     [k: string]: any;
 });
 
-declare interface ExtRadioOption extends ExtFormItemOption {
-    labelField?: string
-    options?: SelectOptions
-    /** 字典名称 */
-    dictName?: string
-    /** 选项中的value转成number类型 */
-    valueToNumber?: boolean
-    /** 选项中的value使用label */
-    valueToLabel?: boolean
+declare interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
     attrs?: RadioGroupProps & HTMLAttributes
 }
 
@@ -312,7 +304,7 @@ declare interface ExtRow {
     gutter?: number
 }
 
-declare interface ExtSelectOption extends ExtFormItemOption {
+declare interface ExtSelect {
     labelField?: string
     options?: SelectOptions
     /** 字典名称 */
@@ -321,6 +313,9 @@ declare interface ExtSelectOption extends ExtFormItemOption {
     valueToNumber?: boolean
     /** 选项中的value使用label */
     valueToLabel?: boolean
+}
+
+declare interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
     attrs?: SelectProps & HTMLAttributes
 }
 
@@ -361,6 +356,19 @@ export declare interface ExtTabsOption extends ExtBaseOption {
     forceRender?: boolean
     buttons?: ExtButtons<'add' | 'refresh'>
     subItems: ExtTabItem[]
+}
+
+declare interface ExtTagInputOption extends ExtFormItemOption {
+    attrs?: {
+        valueToString?: boolean
+    }
+}
+
+declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect{
+    attrs?: {
+        multiple?: boolean
+        valueToString?: boolean
+    }
 }
 
 export declare interface ExtTreeOption extends ExtFormItemOption {
@@ -696,6 +704,8 @@ declare type WidgetTypes = {
     Upload: ExtUpload
     InputGroup: ExtInputGroupOption
     InputList: ExtInputList
+    TagInput: ExtTagInputOption
+    TagSelect: ExtTagSelectOption
 }
 
 declare type WrapperTypes = {

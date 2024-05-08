@@ -318,7 +318,7 @@ type SelectOptions =
   | Readonly<DefaultOptionsType>
   | Ref<DefaultOptionsType>
   | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
-interface ExtSelectOption extends ExtFormItemOption {
+interface ExtSelect {
   labelField?: string
   options?: SelectOptions
   /** 字典名称 */
@@ -327,7 +327,20 @@ interface ExtSelectOption extends ExtFormItemOption {
   valueToNumber?: boolean
   /** 选项中的value使用label */
   valueToLabel?: boolean
+}
+interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
   attrs?: SelectProps & HTMLAttributes
+}
+interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect{
+  attrs?: {
+    multiple?: boolean
+    valueToString?: boolean
+  }
+}
+interface ExtTagInputOption extends ExtFormItemOption {
+  attrs?: {
+    valueToString?: boolean
+  }
 }
 interface ExtTreeOption extends ExtFormItemOption {
   labelField?: string
@@ -342,15 +355,7 @@ interface ExtDateRange extends ExtFormItemOption {
   /** 绑定结束日期字段 */
   keepField?: string
 }
-interface ExtRadioOption extends ExtFormItemOption {
-  labelField?: string
-  options?: SelectOptions
-  /** 字典名称 */
-  dictName?: string
-  /** 选项中的value转成number类型 */
-  valueToNumber?: boolean
-  /** 选项中的value使用label */
-  valueToLabel?: boolean
+interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
   attrs?: RadioGroupProps & HTMLAttributes
 }
 interface ExtUpload extends ExtFormItemOption {
@@ -422,6 +427,8 @@ type WidgetTypes = {
   Upload: ExtUpload
   InputGroup: ExtInputGroupOption
   InputList: ExtInputList
+  TagInput: ExtTagInputOption
+  TagSelect: ExtTagSelectOption
 }
 export type OptionType = WrapperTypes & WidgetTypes
 export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]

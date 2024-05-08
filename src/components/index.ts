@@ -21,6 +21,8 @@ import Radio from './Radio.vue'
 import Checkbox from './Checkbox.vue'
 import TreeSelect from './TreeSelect.vue'
 import Upload from './Upload.vue'
+import TagInput from './TagInput.vue'
+import TagSelect from './TagSelect.vue'
 import { override } from './base'
 
 export { ButtonGroup } from './buttons'
@@ -53,6 +55,8 @@ const formItems = {
   Checkbox,
   TreeSelect,
   Upload,
+  TagInput,
+  TagSelect,
 }
 
 export const containers = Object.keys(components)
