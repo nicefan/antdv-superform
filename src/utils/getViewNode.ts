@@ -4,6 +4,7 @@ import { createButtons } from '../components/buttons'
 import Controls from '../components'
 import { isPlainObject } from 'lodash-es'
 import useControl from './useControl'
+import { useInnerSlots } from './useInnerSlots'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -70,11 +71,9 @@ export function getViewNode(option, effectData: Obj = {}) {
 
   const __render = viewRender || (colType === 'InfoSlot' && render)
   const colRender = typeof __render === 'string' ? rootSlots[__render] : __render
+  if (__render && !colRender) return false
   if (colRender || colType === 'Upload' || colType.startsWith('Ext')) {
-    const slots = {}
-    Object.entries(option.slots || {}).forEach(([key, value]) => {
-      slots[key] = typeof value === 'string' ? rootSlots[value] : value
-    })
+    const slots = useInnerSlots(option.slots)
 
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)

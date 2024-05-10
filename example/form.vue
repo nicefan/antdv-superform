@@ -1,9 +1,11 @@
 <template>
   <div style="background: #eee; padding: 16px">
     <SuperForm @register="formRegister">
-      <div style="text-align: center; margin-top: 16px; background: #fff">
-        <super-buttons style="margin: 16px" />
-      </div>
+      <template #formTop>
+        <div style="text-align: center; background: #fff">
+          <super-buttons style="margin: 16px" />
+        </div>
+      </template>
       <template #test="{ attrs, current }">
         <div v-bind="attrs">这是个插槽！{{ current.name }}</div>
       </template>
@@ -46,9 +48,11 @@ const getData = () => {
     },
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
-    listGroup: [{
-      datelist: [{ index1: '2002-02-02', index2: undefined, index3: undefined }],
-  }],
+    listGroup: [
+      {
+        datelist: [{ index1: '2002-02-02', index2: undefined, index3: undefined }],
+      },
+    ],
     fileList: [
       {
         id: 'abc',

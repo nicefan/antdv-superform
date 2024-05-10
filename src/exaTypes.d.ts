@@ -22,6 +22,7 @@ import type {
   RadioGroupProps,
   ListProps,
   UploadProps,
+  TabsProps,
 } from 'ant-design-vue'
 
 interface RuleConfig {
@@ -124,7 +125,7 @@ interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
 }
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
-// type?: 'Form'
+  // type?: 'Form'
   attrs?: FormProps & HTMLAttributes
   isContainer?: boolean
   /** 减少行距 */
@@ -144,7 +145,7 @@ interface ButtonItem {
   roleName?: string
   roleMode?: 'hidden' | 'disable'
   color?: 'success' | 'error' | 'warning' | 'primary'
-  vaildIn?: 'form' | 'detail' | 'both'
+  validOn?: 'form' | 'detail' | 'both'
   tooltip?: string
   icon?: string | Component
   attrs?: Obj & HTMLAttributes
@@ -168,7 +169,7 @@ interface ExtButtonGroup<T extends string = string> {
   buttonShape?: 'circle' | 'round' | 'default'
   size?: 'large' | 'middle' | 'small'
   align?: 'right' | 'left' | 'center'
-  vaildIn?: 'form' | 'detail' | 'both'
+  validOn?: 'form' | 'detail' | 'both'
   placement?: 'top' | 'bottom'
   /** 分隔符， type为'link'/'text'时默认true */
   divider?: boolean
@@ -187,7 +188,16 @@ interface ExtButtonGroup<T extends string = string> {
   // subItems?: ButtonItem[]
 }
 type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
-
+interface TabsFilter extends Omit<TabsProps,'activeKey'> {
+  bordered?: boolean
+  options?: SelectOptions
+  /** 字典名称 */
+  dictName?: string
+  /** 选项中的value使用label */
+  valueToLabel?: boolean
+  activeKey?: string | number | Ref<string | number | undefined>
+  slots?: Obj<VSlot>
+}
 type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
   /** 应用于表格或编辑表单 */
   hideInTable?: boolean
@@ -202,6 +212,7 @@ interface ExtTableOption extends ExtBaseOption {
   editMode?: 'inline' | 'modal'
   addMode?: 'inline' | 'modal'
   columns: ExtColumnsItem[]
+  tabsFilter?: TabsFilter
   /** 公共列配置 */
   columnProps?: TableColumnProps
   buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'>
@@ -331,7 +342,7 @@ interface ExtSelect {
 interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
   attrs?: SelectProps & HTMLAttributes
 }
-interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect{
+interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
   attrs?: {
     multiple?: boolean
     valueToString?: boolean

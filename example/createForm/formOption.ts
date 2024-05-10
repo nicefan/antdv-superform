@@ -1,9 +1,13 @@
 import { defineTable } from '../../src'
 export const myTableOption = defineTable({
-  attrs: { bordered: true, rowKey: 'id' },
+  attrs: { 
+    // bordered: true, 
+    rowKey: 'id' 
+  },
   // editMode: 'inline',
   addMode: 'modal',
   buttons: {
+    // forSlot: 'tabBarExtraContent',
     actions: ['add', 'edit', 'delete'],
   },
   formSchema: {
@@ -23,7 +27,7 @@ export const myTableOption = defineTable({
     console.log(data)
     return data
   },
-  title: 'avc',
+  // title: 'avc',
   params: {fieldName: 'abc'},
   modalProps: { width: '500px' },
   rowButtons: {
@@ -47,6 +51,14 @@ export const myTableOption = defineTable({
         // }
       },
     ],
+  },
+  tabsFilter: {
+    options: ['湖南', '广东'],
+    valueToLabel: true,
+    bordered: true,
+  },
+  slots: {
+    footer: 'tableFooter'
   },
   columns: [
     { type: 'Hidden', field: 'id' },

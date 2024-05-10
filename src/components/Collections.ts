@@ -4,7 +4,7 @@ import { defaults } from 'lodash-es'
 import Controls, { containers, formItemTypes } from './index'
 import { ButtonGroup } from './buttons'
 import base from './base'
-import { getEffectData, toNode, useControl, useVModel } from '../utils'
+import { getEffectData, toNode, useControl, useInnerSlots, useVModel } from '../utils'
 import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
 
@@ -141,14 +141,10 @@ export default defineComponent({
 export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
   const { type, render } = option
   const rootSlots = inject<Obj>('rootSlots', {})
-  const { default: _, ...slots } = rootSlots
-  if (option.slots) {
-    Object.entries(option.slots).forEach(([key, value]) => {
-      slots[key] = typeof value === 'string' ? rootSlots[value] : value
-    })
-  }
 
-  const renderSlot = render ? (typeof render === 'function' ? render : slots[render]) : Controls[type]
+  const slots = useInnerSlots(option.slots)
+
+  const renderSlot = render ? (typeof render === 'function' ? render : rootSlots[render]) : Controls[type]
   let node
   if (type === 'Text' || type === 'InfoSlot') {
     node = renderSlot ? () => renderSlot({ props: attrs, ...effectData }) : () => h('span', attrs, model.refData)

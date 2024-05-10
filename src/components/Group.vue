@@ -19,9 +19,9 @@ export default defineComponent({
     if (buttons) {
       const _buttons = Array.isArray(buttons) ? { actions: buttons } : buttons
       if (type === 'Descriptions') {
-        _buttons.vaildIn ??= 'detail'
+        _buttons.validOn ??= 'detail'
       }
-      buttonsSlot = createButtons({ config: _buttons, params: effectData, isView })
+      buttonsSlot = createButtons({ config: _buttons, params: effectData, isView: _isView })
     }
 
     const slots = {

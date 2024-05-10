@@ -33,7 +33,7 @@ export function useOptions(option, attrOptions, effectData) {
       // 普通数组转成选项对象数组
       _options = uniq(_list).map((val, idx) => {
         const label = String(val)
-        return { value: valueToLabel ? label : idx, label }
+        return { value: valueToLabel ? label : String(idx), label }
       })
     } else if (valueToLabel) {
       // value 替换成 label

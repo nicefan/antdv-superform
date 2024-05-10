@@ -123,17 +123,6 @@ export default {
       emit('register', exposeData)
     }
     expose(exposeData)
-    const rootSlots = inject('rootSlots', {})
-    const { default: defaultSlot, ...__slots } = ctxSlots
-    Object.assign(rootSlots, __slots)
-    provide('rootSlots', rootSlots)
-
-    const slots = { ...__slots }
-    if (option.slots) {
-      Object.entries(option.slots).forEach(([key, value]) => {
-        slots[key] = typeof value === 'string' ? rootSlots[value] : value
-      })
-    }
 
     return () =>
       h(
@@ -146,15 +135,13 @@ export default {
           ...attrs,
         },
         {
-          ...slots,
-          default: () => [
+          ...ctxSlots,
+          default: () =>
             h(Collections, {
               option,
               model: { refData: modelData, children: modelsMap },
               effectData,
             }),
-            defaultSlot?.(),
-          ],
         }
       )
   },

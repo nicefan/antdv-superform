@@ -7,19 +7,19 @@ type UseButtonsParams = { config: ExtButtons; methods?: Obj; params?: Obj; isVie
 export default function createButtons({ config, methods, params, isView }: UseButtonsParams) {
   const buttons = Array.isArray(config) ? { actions: config } : config
 
-  if (!buttons || (isView && buttons.vaildIn === 'form') || (!isView && buttons.vaildIn === 'detail')) return
+  if (!buttons || (isView && buttons.validOn === 'form') || (!isView && buttons.validOn === 'detail')) return
 
   let actions = buttons.actions || []
-  if (!buttons.vaildIn) {
+  if (!buttons.validOn) {
     buttons.actions = actions = actions.filter((item) => {
       if (typeof item === 'string') {
         return !isView
       } else {
-        const vaildIn = item.vaildIn
+        const validOn = item.validOn
         if (isView) {
-          return vaildIn === 'both' || vaildIn === 'detail'
+          return validOn === 'both' || validOn === 'detail'
         } else {
-          return vaildIn !== 'detail'
+          return validOn !== 'detail'
         }
       }
     })

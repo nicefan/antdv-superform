@@ -138,7 +138,17 @@ export default defineComponent({
                   (item) =>
                     !unref(item.hidden) &&
                     (!item.label
-                      ? [h('td', { colspan: item.colspan * 2 }, item.content())]
+                      ? [
+                          h(
+                            'td',
+                            {
+                              class: 'ant-descriptions-item-content',
+                              style: item.wrapperCol.style,
+                              colspan: item.colspan * 2,
+                            },
+                            item.content()
+                          ),
+                        ]
                       : [
                           h(
                             'th',

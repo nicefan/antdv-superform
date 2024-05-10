@@ -1,6 +1,6 @@
 import { type PropType, defineComponent, h, inject, toRef, unref, toValue, toRefs, reactive } from 'vue'
 import { Col, Row, Space } from 'ant-design-vue'
-import { getComputedStatus, getEffectData, getViewNode, toNode, useControl, useVModel } from '../../utils'
+import { getComputedStatus, getEffectData, getViewNode, toNode, useControl, useInnerSlots, useVModel } from '../../utils'
 import Controls, { containers } from '../index'
 import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
@@ -129,17 +129,15 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
       text: toRef(model, 'refData'),
     })
     const { attrs, hidden } = useControl({ option, effectData })
-    const slots = {}
-    Object.entries(option.slots || {}).forEach(([key, value]) => {
-      slots[key] = typeof value === 'string' ? rootSlots[value] : value
-    })
+    const slots = useInnerSlots(option.slots)
 
     const __label = labelSlot && (() => toNode(labelSlot, effectData))
     let isBlock = option.blocked
     let wrapNode
     let node
     if (model.children || model.listData) {
-      wrapNode = viewRender && (() => toNode(viewRender, effectData))
+      const __viewRender = typeof viewRender === 'string' ? rootSlots[viewRender as string] : viewRender
+      wrapNode = __viewRender && (() => toNode(__viewRender, effectData))
       const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
       if (type === 'InputGroup') {
         if (!viewRender) {

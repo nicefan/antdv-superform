@@ -29,6 +29,7 @@ import type { RowProps } from 'ant-design-vue';
 import type { SelectProps } from 'ant-design-vue';
 import type { TableColumnProps } from 'ant-design-vue';
 import type { TableProps } from 'ant-design-vue';
+import type { TabsProps } from 'ant-design-vue';
 import { TreeDataItem } from 'ant-design-vue/es/tree/Tree';
 import type { TreeProps } from 'ant-design-vue';
 import type { UploadProps } from 'ant-design-vue';
@@ -47,7 +48,7 @@ export declare interface ButtonItem {
     roleName?: string
     roleMode?: 'hidden' | 'disable'
     color?: 'success' | 'error' | 'warning' | 'primary'
-    vaildIn?: 'form' | 'detail' | 'both'
+    validOn?: 'form' | 'detail' | 'both'
     tooltip?: string
     icon?: string | Component
     attrs?: Obj & HTMLAttributes
@@ -140,7 +141,7 @@ export declare interface ExtButtonGroup<T extends string = string> {
     buttonShape?: 'circle' | 'round' | 'default'
     size?: 'large' | 'middle' | 'small'
     align?: 'right' | 'left' | 'center'
-    vaildIn?: 'form' | 'detail' | 'both'
+    validOn?: 'form' | 'detail' | 'both'
     placement?: 'top' | 'bottom'
     /** 分隔符， type为'link'/'text'时默认true */
     divider?: boolean
@@ -339,6 +340,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     columns: ExtColumnsItem[]
+    tabsFilter?: TabsFilter
     /** 公共列配置 */
     columnProps?: TableColumnProps
     buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'>
@@ -364,7 +366,7 @@ declare interface ExtTagInputOption extends ExtFormItemOption {
     }
 }
 
-declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect{
+declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
     attrs?: {
         multiple?: boolean
         valueToString?: boolean
@@ -570,6 +572,17 @@ export declare type TableApis = {
     update?: Fn<Promise<any>>
     delete?: Fn<Promise<any>>
     export?: Fn<Promise<any>>
+}
+
+declare interface TabsFilter extends Omit<TabsProps,'activeKey'> {
+    bordered?: boolean
+    options?: SelectOptions
+    /** 字典名称 */
+    dictName?: string
+    /** 选项中的value使用label */
+    valueToLabel?: boolean
+    activeKey?: string | number | Ref<string | number | undefined>
+    slots?: Obj<VSlot>
 }
 
 export declare type UniOption = UniWrapperOption | UniWidgetOption

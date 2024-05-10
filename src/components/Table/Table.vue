@@ -7,6 +7,7 @@ import { Col, Row } from 'ant-design-vue'
 import type { TableApis } from '../../exaTypes'
 import { toNode } from '../../utils'
 import { globalProps } from '../../plugin'
+import TabsFilter from './TabsFilter.vue'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -96,9 +97,9 @@ export default defineComponent({
     const actions = {
       selectedRowKeys,
       selectedRows,
-      setSelectedRows:(arr:any[]) => {
+      setSelectedRows: (arr: any[]) => {
         selectedRows.value = arr
-        selectedRowKeys.value = arr.map(item => item[rowKey]);
+        selectedRowKeys.value = arr.map((item) => item[rowKey])
         // selectedRows.value = []
       },
       reload: () => apis.query?.(true),
@@ -119,17 +120,12 @@ export default defineComponent({
     )
 
     const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys, tableRef: exposed })
-    const rootSlots = inject('rootSlots', { ...ctx.slots })
-    const slots: Obj = { ...rootSlots }
-    if (option.slots) {
-      Object.entries(option.slots).forEach(([key, value]) => {
-        slots[key] = typeof value === 'string' ? rootSlots[value] : (value as any)
-      })
-    }
+
+    const slots: Obj = { ...ctx.slots }
 
     const buttonsConfig = option.buttons as any
+    const slotName = buttonsConfig?.forSlot || 'extra'
     if (buttonsConfig) {
-      const slotName = buttonsConfig.forSlot || 'extra'
       const orgSlot = slots[slotName]
       const buttonsSlot = createButtons({
         config: buttonsConfig,
@@ -144,22 +140,14 @@ export default defineComponent({
 
     const titleString = option.title || option.label
     const { title: titleSlot = titleString, extra: extraSlot, ...__slots } = slots
-    if (titleSlot || extraSlot) {
-      __slots.title = () =>
+    const titleBar =
+      (titleSlot || extraSlot) &&
+      (() =>
         h(Row, { align: 'middle', style: 'width:100%' }, () => [
           titleSlot && h(Col, { class: 'sup-title', flex: 1 }, () => toNode(titleSlot, effectData)),
           extraSlot && h(Col, { class: 'sup-title-buttons', style: { textAlign: buttonsConfig?.align } }, extraSlot),
-        ])
-    }
-    /** 内置操作附加参数 */
-    interface ActionOuter {
-      meta: {
-        /** 弹窗标题 */
-        title?: string
-      }
-    }
-
-    return () => [
+        ]))
+    const render = () => [
       modalSlot?.(),
       h(
         base.Table,
@@ -177,6 +165,25 @@ export default defineComponent({
         __slots
       ),
     ]
+    if (option.tabsFilter) {
+      return () =>
+        h(TabsFilter, { ...option.tabsFilter, effectData } as any, {
+          [slotName]: slots[slotName],
+          title: titleSlot && (() => toNode(titleSlot, effectData)),
+          extra: extraSlot,
+          titleBar,
+          default: render,
+        })
+    } else {
+      return () => [titleBar?.(), render()]
+    }
+    /** 内置操作附加参数 */
+    interface ActionOuter {
+      meta: {
+        /** 弹窗标题 */
+        title?: string
+      }
+    }
   },
 })
 </script>

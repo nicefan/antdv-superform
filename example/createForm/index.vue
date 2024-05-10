@@ -1,6 +1,15 @@
 <template>
   <div>
-    <MyForm class="hi" />
+    <!-- <MyTable class="hi"> 
+      <template #tableFooter>
+        <h3>表格footer插槽</h3>
+      </template>
+    </MyTable> -->
+    <SuperTable @register="register">
+      <template #tableFooter>
+        <h3>表格footer插槽</h3>
+      </template>
+    </SuperTable>
     <Row :gutter="10">
       <!-- <a-button @click="changeSelect">切换选项</a-button> -->
       <Button @click="onSubmit">提交</Button>
@@ -9,19 +18,32 @@
   </div>
 </template>
 <script setup lang="ts">
-import { inject, reactive, ref } from 'vue'
+import { watch, reactive, ref, toRef } from 'vue'
 import { Row, Button } from 'ant-design-vue'
 import { myTableOption } from './formOption'
-import { useForm, useTable } from '../../src'
+import { useForm, useTable, SuperTable } from '../../src'
 
 const props = defineProps<{
   msg: string
   other?: string
 }>()
+const activeKey = ref<string>()
+watch(activeKey, (k) => console.log(k))
 // const myModel = useExampleModal()
-const [register, table] = useTable(myTableOption)
+const params = reactive({
+  name: undefined
+})
+const [register, table] = useTable({
+  ...myTableOption,
+  tabsFilter: {
+    options: ['湖南', '广东'],
+    valueToLabel: true,
+    activeKey: toRef(params, 'name'),
+  },
+  params
+})
 
-const MyForm = register()
+// const MyTable = register()
 
 const onSubmit = () => {
   console.log(table.selectedRows)

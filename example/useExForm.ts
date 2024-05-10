@@ -51,6 +51,11 @@ export default function exampleForm() {
     subSpan: 12,
     subItems: [
       {
+        type: 'InfoSlot',
+        render: 'formTop',
+        blocked: true,
+      },
+      {
         type: 'Descriptions',
         title: '基本信息',
         attrs: {
@@ -85,6 +90,16 @@ export default function exampleForm() {
         },
         subItems: [
           {
+            type: 'InfoSlot',
+            field: 'array',
+            // label: 'render',
+            span: 24,
+            initialValue: ['自定义消息'],
+            render: (props) => {
+              return h('h2', props.value?.[0])
+            },
+          },
+          {
             type: 'Input',
             field: 'name',
             label: '姓名',
@@ -115,19 +130,10 @@ export default function exampleForm() {
             viewRender: ({ text }) => text,
           },
           {
-            type: 'InfoSlot',
-            field: 'array',
-            // label: 'render',
-            initialValue: ['自定义消息'],
-            render: (props) => {
-              return h('h2', props.value?.[0])
-            },
-          },
-          {
             type: 'InputSlot',
             field: 'test',
             label: '模板插槽',
-            labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name}`),
+            labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name || ''}`),
             render: 'test',
           },
           {
@@ -492,6 +498,7 @@ export default function exampleForm() {
             field: 'food',
             label: '食物',
             initialValue: [],
+            labelField:'foodName',
             options: [
               { label: '中餐', value: '1' },
               { label: '西餐', value: '2' },

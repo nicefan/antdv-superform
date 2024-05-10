@@ -1,10 +1,11 @@
 <script lang="ts">
-import { defineComponent, ref, h, mergeProps, watchEffect, onMounted, computed, shallowReactive } from 'vue'
+import { defineComponent, ref, h, mergeProps, watchEffect, onMounted, computed, shallowReactive, provide } from 'vue'
 import { merge } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
 import type { FormProps } from 'ant-design-vue'
+import { useInnerSlots } from '../utils'
 
 type SuperFormProps = FormProps & {
   /** 是否为容器包装 */
@@ -48,6 +49,7 @@ export default defineComponent<SuperFormProps, any, unknown>({
       },
     }
 
+    provide('rootSlots', ctx.slots)
     watchEffect(() => actions.setData(props.model))
 
     ctx.emit('register', actions)
@@ -80,7 +82,7 @@ export default defineComponent<SuperFormProps, any, unknown>({
           onRegister: register,
           class: { 'sup-container': isContainer.value },
         },
-        ctx.slots
+        useInnerSlots(formOption.slots, ctx.slots)
       )
 
     return formNode

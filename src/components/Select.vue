@@ -20,7 +20,15 @@ const props = defineProps<{
   option: GetOption<'Select'>
   model: ModelData
   effectData: Obj
-  options?: any[]
+  options?: any
+  labelField?: string
+
+  /** 字典名称 */
+  dictName?: string
+  /** 选项中的value转成number类型 */
+  valueToNumber?: boolean
+  /** 选项中的value使用label */
+  valueToLabel?: boolean
   onChange?: Fn
   onSearch?: Fn
 }>()

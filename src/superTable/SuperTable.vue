@@ -15,7 +15,7 @@ import {
   shallowReactive,
 } from 'vue'
 import { merge } from 'lodash-es'
-import { useControl } from '../utils'
+import { useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
@@ -100,7 +100,7 @@ export default defineComponent({
       ctx.emit('register', null)
     })
     provide('rootSlots', ctx.slots)
-
+    const slots = useInnerSlots(option.slots, ctx.slots)
     const unWatch = watch(
       option,
       (opt) => {
@@ -177,7 +177,7 @@ export default defineComponent({
               ),
               [
                 h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode()),
-                h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, ctx.slots)),
+                h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, slots)),
               ]
             )
           : h(
@@ -192,7 +192,7 @@ export default defineComponent({
                   style,
                 }
               ),
-              h(Controls.Table, tableAttrs as any, ctx.slots)
+              h(Controls.Table, tableAttrs as any, slots)
             )
       )
   },
