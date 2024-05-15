@@ -59,7 +59,7 @@ export default defineComponent({
             default: innerContent,
             title,
             tabBarExtraContent: tabBarExtraSlot || (!title ? extra : undefined),
-            extra: tabBarExtraSlot ? extra : undefined,
+            extra: tabBarExtraSlot || title ? extra : undefined,
             ...innerSlots,
           }
         )

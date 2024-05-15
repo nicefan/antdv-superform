@@ -1,5 +1,6 @@
 <template>
   <checkable-tag
+    v-bind ="$attrs"
     class="tag-select"
     v-for="{ label, value } of optionsRef"
     :key="value"

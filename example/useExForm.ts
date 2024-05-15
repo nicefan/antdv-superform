@@ -64,7 +64,15 @@ export default function exampleForm() {
           // labelBgColor: '#faf2f2',
           bordered: true,
         },
-        component: CustomGroup,
+        buttons:{
+          // vaildIn:'detail',
+          actions:[
+            {
+              label: '开始'
+            }
+          ]
+        },
+        // component: CustomGroup,
         subItems: [
           {
             type: 'Input',

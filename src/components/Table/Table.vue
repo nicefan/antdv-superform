@@ -143,9 +143,14 @@ export default defineComponent({
     const titleBar =
       (titleSlot || extraSlot) &&
       (() =>
-        h(Row, { align: 'middle', style: 'width:100%' }, () => [
-          titleSlot && h(Col, { class: 'sup-title', flex: 1 }, () => toNode(titleSlot, effectData)),
-          extraSlot && h(Col, { class: 'sup-title-buttons', style: { textAlign: buttonsConfig?.align } }, extraSlot),
+        h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
+          titleSlot && h(Col, { class: 'sup-title' }, () => toNode(titleSlot, effectData)),
+          extraSlot &&
+            h(
+              Col,
+              { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonsConfig?.align || 'right' } },
+              extraSlot
+            ),
         ]))
     const render = () => [
       modalSlot?.(),

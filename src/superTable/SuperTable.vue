@@ -100,7 +100,7 @@ export default defineComponent({
       ctx.emit('register', null)
     })
     provide('rootSlots', ctx.slots)
-    const slots = useInnerSlots(option.slots, ctx.slots)
+    const slots = ref({})
     const unWatch = watch(
       option,
       (opt) => {
@@ -109,6 +109,7 @@ export default defineComponent({
           unWatch()
           return
         }
+        slots.value = useInnerSlots(option.slots, ctx.slots)
         const { columns, searchSchema, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
 
         // 列表控件子表单模型
@@ -177,7 +178,7 @@ export default defineComponent({
               ),
               [
                 h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode()),
-                h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, slots)),
+                h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, slots.value)),
               ]
             )
           : h(
@@ -192,7 +193,7 @@ export default defineComponent({
                   style,
                 }
               ),
-              h(Controls.Table, tableAttrs as any, slots)
+              h(Controls.Table, tableAttrs as any, slots.value)
             )
       )
   },

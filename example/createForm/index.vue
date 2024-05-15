@@ -39,6 +39,7 @@ const [register, table] = useTable({
     options: ['湖南', '广东'],
     valueToLabel: true,
     activeKey: toRef(params, 'name'),
+    bordered:true,
   },
   params
 })

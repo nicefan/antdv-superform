@@ -160,6 +160,9 @@
 .sup-form-section .ant-table-title {
   padding: 16px 0;
 }
+.sup-form-section .sup-titlebar {
+  margin-bottom: 8px;
+}
 .sup-form-section .sup-title {
   font-size: 16px;
   font-weight: 700;
