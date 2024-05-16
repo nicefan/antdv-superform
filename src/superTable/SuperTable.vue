@@ -126,7 +126,7 @@ export default defineComponent({
           searchForm.value = useSearchForm(opt, tableRef, (data, isSearch) => {
             const _data = beforeSearch?.({ ...effectData, table: tableRef, param: data }) || data
             setSearchParam(_data)
-            isSearch && query(_data)
+            isSearch && query()
           })
         } else if (opt.params) {
           watch(

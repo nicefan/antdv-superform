@@ -11,7 +11,7 @@
   </checkable-tag>
 </template>
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, effect, ref } from 'vue'
 import baseComps from './base'
 import { useOptions } from '../utils/useOptions'
 
@@ -32,7 +32,7 @@ const props = defineProps<{
   isView?: boolean
 }>()
 
-const emit = defineEmits(['update:value'])
+const emit = defineEmits(['update:value', 'change'])
 const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
 const selected = computed(() => {
@@ -57,6 +57,7 @@ const handleChange = (tag, checked) => {
     ? [tag]
     : []
   updateValue(nextSelected)
+  emit('change', props.effectData, tag, checked )
 }
 
 const updateValue = (val: string[]) => {

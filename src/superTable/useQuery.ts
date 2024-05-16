@@ -8,19 +8,18 @@ export function useQuery(option: Partial<RootTableOption>) {
   })
   const pageParam = reactive<Obj>({})
   const searchParam = ref()
-  const manualParam = ref()
   const loading = ref(false)
   const dataSource = ref()
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
-  const request = () => {
+  const request = (param?:Obj) => {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
       ...ref(option.params).value,
       ...searchParam.value,
-      ...manualParam.value,
+      ...param,
       ...pageParam,
     }
     loading.value = true
@@ -51,9 +50,8 @@ export function useQuery(option: Partial<RootTableOption>) {
     if (param === true) {
       return request()
     }
-    manualParam.value = param
     pageParam.current = 1
-    return throttleRequest()
+    return throttleRequest(param)
   }
   const setSearchParam = (param?: Obj) => {
     searchParam.value = param
