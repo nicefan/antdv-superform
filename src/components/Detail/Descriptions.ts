@@ -55,18 +55,21 @@ export default defineComponent({
           hidden,
           colspan: ceil,
         }
-
-        if (n + ceil <= colNum) {
-          n += ceil
-          current.push(item)
-        } else {
-          group.push(current)
-          if (n < colNum) {
-            const mod = colNum - n
-            current[current.length - 1].colspan += mod
+        if (mode === 'table') {
+          if (n + ceil <= colNum) {
+            n += ceil
+            current.push(item)
+          } else {
+            group.push(current)
+            if (n < colNum) {
+              const mod = colNum - n
+              current[current.length - 1].colspan += mod
+            }
+            n = ceil
+            current = [item]
           }
-          n = ceil
-          current = [item]
+        } else {
+          current.push(item)
         }
         if (option.wrapping) {
           group.push(current)
@@ -190,28 +193,32 @@ export default defineComponent({
         )
     } else {
       const render = () =>
-        h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
-          rowGroup.flat().map(({ option, content, span, label, labelCol, wrapperCol, hidden, attrs }) => {
-            if (unref(hidden)) return null
-            const colProps = { span, ...(attrs.colProps || option.colProps) }
-            if (colProps.span === 0 || colProps.flex) {
-              colProps.span = undefined
-            } else if (!Number(colProps.span)) {
-              colProps.span = gridConfig.column ? 24 / gridConfig.column : gridConfig.subSpan
-            }
+        rowGroup.map((group) =>
+          h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
+            group.map(({ option, content, span, label, labelCol, wrapperCol, hidden, attrs }) => {
+              if (unref(hidden)) return null
+              const colProps = { span, ...(attrs.colProps || option.colProps) }
+              if (colProps.span === 0 || colProps.flex) {
+                colProps.span = undefined
+              } else if (!Number(colProps.span)) {
+                colProps.span = gridConfig.column ? 24 / gridConfig.column : gridConfig.subSpan
+              }
 
-            return h(Col, colProps, () =>
-              h(Row, { class: ['ant-descriptions-item-container'] }, () => [
-                label &&
-                  h(Col, mergeProps({ class: 'ant-descriptions-item-label' }, labelCol), () => h('label', {}, label())),
-                h(Col, { class: 'ant-descriptions-item-content', ...wrapperCol }, () =>
-                  !attrs.noInput && mode === 'form' && label
-                    ? h('div', { class: 'sup-descriptions-item-input' }, content())
-                    : content()
-                ),
-              ])
-            )
-          })
+              return h(Col, colProps, () =>
+                h(Row, { class: ['ant-descriptions-item-container'] }, () => [
+                  label &&
+                    h(Col, mergeProps({ class: 'ant-descriptions-item-label' }, labelCol), () =>
+                      h('label', {}, label())
+                    ),
+                  h(Col, { class: 'ant-descriptions-item-content', ...wrapperCol }, () =>
+                    !attrs.noInput && mode === 'form' && label
+                      ? h('div', { class: 'sup-descriptions-item-input' }, content())
+                      : content()
+                  ),
+                ])
+              )
+            })
+          )
         )
       return () =>
         h(

@@ -1,4 +1,4 @@
-import { h, ref } from 'vue'
+import { h, ref, watchEffect } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
 import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { Button, Modal } from 'ant-design-vue'
@@ -10,7 +10,10 @@ export default function exampleForm() {
     { value: '1', label: '一' },
     { value: '2', label: '二' },
   ])
-  const { openModal } = useModal(() => '这是内容')
+  
+  const { openModal } = useModal(() => '这是内容', {
+    destroyOnClose: false,
+  })
   const selectList = ['游戏', '唱歌', '跑步', '打牌']
   const treeData = [
     {
@@ -37,6 +40,9 @@ export default function exampleForm() {
     },
   ]
   const acKey = ref()
+  watchEffect(() => {
+    console.log(acKey.value)
+  })
   const options = defineForm({
     attrs: {
       layout: 'horizontal',
@@ -93,7 +99,7 @@ export default function exampleForm() {
         title: '基本信息',
         descriptionsProps: {
           title: '基本信息',
-          mode: 'table',
+          mode: 'form',
           column: 3,
         },
         subItems: [
@@ -208,7 +214,7 @@ export default function exampleForm() {
             type: 'Switch',
             label: '是否注册',
             field: 'isReg',
-            valueLabels: ['是', '否'],
+            valueLabels: ['否', '是'],
           },
           {
             type: 'InputGroup',
@@ -549,7 +555,7 @@ export default function exampleForm() {
         columns: [
           {
             type: 'Input',
-            label: 'col1',
+            label: () => h('span', {style: 'color:red'},'col1'),
             field: 'col1',
             initialValue: 'init',
             rules: { required: true },

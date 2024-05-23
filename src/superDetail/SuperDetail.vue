@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, type PropType, ref, watch, h, provide, shallowReactive, readonly } from 'vue'
+import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, readonly } from 'vue'
 import { buildModelsMap } from '../utils/buildModel'
 import { DetailLayout } from '../components/Detail'
 import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
@@ -12,11 +12,11 @@ export default defineComponent({
   emits: ['register'],
   setup(props, ctx) {
     const dataRef = ref(props.dataSource || {})
-    const option: Obj = shallowReactive(props.option || {})
+    const option: Obj = shallowRef(props.option || {})
 
     const exposed = {
       setOption: (_option: ExtFormOption) => {
-        Object.assign(option, _option)
+        option.value = _option
       },
       setData: (data) => {
         dataRef.value = data
@@ -45,12 +45,12 @@ export default defineComponent({
       modelsMap.value &&
       h(
         'div',
-        { class: ['sup-detail', option.isContainer && 'sup-container'] },
+        { class: ['sup-detail', option.value.isContainer && 'sup-container'] },
         h(DetailLayout, {
           option: {
             type: 'Descriptions',
-            ...option,
-            descriptionsProps: { ...option.attrs, ...option.descriptionsProps },
+            ...option.value,
+            descriptionsProps: { ...option.value.attrs, ...option.value.descriptionsProps },
           } as any,
           modelsMap: modelsMap.value,
           isRoot: true

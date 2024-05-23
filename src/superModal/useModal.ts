@@ -21,18 +21,14 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
       .then(() => {
         visible.value = false
       })
-      .catch((err) => console.error(err)).finally(()=> (confirmLoading.value = false))
-    }
-  const isUnmounted = ref(false)
-  onUnmounted(() => {
-    isUnmounted.value = true
-  })
+      .catch((err) => console.error(err))
+      .finally(() => (confirmLoading.value = false))
+  }
 
   const titleSlot = () => (config.icon ? [useIcon(config.icon), toNode(config.title)] : toNode(config.title))
 
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>
-    !isUnmounted.value &&
     h(
       base.Modal,
       {
@@ -72,21 +68,41 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
 type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & { buttons?: ExtButtons; [k: string]: any })
 export function useModal(content: () => VNodeTypes, config?: ExtModalProps) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
-  const ins: any = getCurrentInstance() // || currentInstance
+  const wrap: any = document.createDocumentFragment()
+  let vm
+
+  const destroy = () => {
+    render(null, wrap)
+    vm = null
+  }
+  onUnmounted(() => {
+    vm && destroy()
+  })
 
   const open = (option?: ModalFuncProps | Obj) => {
     if (modalRef.value) {
       return openModal(option)
     } else {
-      const wrap = document.createElement('div')
-      // currentInstance = currentInstance || ins
-      const vm = createVNode(modalSlot, { appContext: ins?.appContext })
+      const ins: any = getCurrentInstance() // || currentInstance
+      vm = createVNode(modalSlot)
       vm.appContext = ins?.appContext // 这句很关键，关联起了数据
 
       render(vm, wrap)
+      if (modalRef.value?.destroyOnClose) {
+        const afterClose = modalRef.value?.afterClose
+        setModal({
+          afterClose() {
+            afterClose?.()
+            destroy()
+          },
+        })
+      }
       return nextTick(() => openModal(option))
     }
   }
+  // const close = () => {
+  //   if (config.)
+  // }
 
   return {
     modalRef,

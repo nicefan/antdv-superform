@@ -152,6 +152,9 @@ export default defineComponent({
               extraSlot
             ),
         ]))
+    __slots.headerCell = (col) => {
+      return slots.headerCell?.(col) || toNode(col.title, effectData)
+    }
     const render = () => [
       modalSlot?.(),
       h(

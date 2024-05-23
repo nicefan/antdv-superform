@@ -69,7 +69,7 @@ declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
 
 export declare function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
     modalRef: Ref_2<any>;
-    modalSlot: (props: any, ctx: any) => false | VNode<RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     setModal: (option?: ModalFuncProps | Obj) => void;
@@ -620,7 +620,7 @@ declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Prom
 export declare function useModal(content: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any>;
     openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
-    modalSlot: (props: any, ctx: any) => false | VNode<RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;

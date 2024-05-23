@@ -16,14 +16,14 @@ import { ButtonGroup } from './buttons'
 
 const { Tabs, TabPane } = base
 
-const props = defineProps<{
+const { option, model, isView } = defineProps<{
   option: GetOption<'Tabs'>
   model: ModelDataGroup<ExtTabItem>
   effectData: Obj
   isView?: boolean
 }>()
 
-const activeKey = ref(toRef(props.option, 'activeKey') as any)
+const activeKey = ref(option.activeKey as any)
 const paneKeys: string[] = []
 const planeHideEvent = (idx, key, invalid) => {
   paneKeys[idx] = !invalid && key
@@ -34,9 +34,9 @@ const planeHideEvent = (idx, key, invalid) => {
 onMounted(() => {
   activeKey.value ??= paneKeys.find((val) => val)
 })
-const panes = [...props.model.children].map(([option, model], idx) => {
+const panes = [...model.children].map(([option, model], idx) => {
   const { key, field, label, icon } = option
-  const effectData = getEffectData({ current: toRef(props.model, 'refData') })
+  const effectData = getEffectData({ current: toRef(model, 'refData') })
 
   const { hidden, attrs } = useControl({ option, effectData })
   const tabKey = key || field || String(idx)

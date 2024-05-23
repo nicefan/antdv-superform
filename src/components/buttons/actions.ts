@@ -75,7 +75,7 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
     actions.forEach((item) => {
       const name = typeof item === 'string' ? item : item.name
       const { onClick: innerMethod, ...config } = defaultActions[name] || {}
-      const loading = ref(false)
+      const loading = ref<boolean|Obj>(false)
       config.attrs = defaults({ ...commonAttrs, loading }, config.attrs)
       if (typeof item === 'object') {
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
@@ -94,7 +94,7 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
             onOk: method,
           })
         } else {
-          loading.value = true
+          loading.value = { delay: 300 }
           Promise.resolve(method()).finally(() => {
             loading.value = false
           })

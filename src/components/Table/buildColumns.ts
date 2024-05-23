@@ -68,15 +68,16 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
   const columns: any[] = []
   ;[..._models].forEach(([col, model]) => {
     if (col.type === 'Hidden' || col.hideInTable || col.hidden === true) return
+    const title = col.labelSlot || col.label
     if (model.children) {
       const sub = buildColumns(model.children, colsMap)
       columns.push({
-        title: col.label,
+        title,
         children: sub.columns,
       })
     } else {
       const column = {
-        title: col.label,
+        title,
         dataIndex: model.propChain.join('.'),
         // ...globalProps.Column,
         ...(col.columnProps as Obj),

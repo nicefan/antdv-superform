@@ -27,7 +27,7 @@ export const myTableOption = defineTable({
     console.log(data)
     return data
   },
-  // title: 'avc',
+  title: 'avc',
   params: {fieldName: 'abc'},
   modalProps: { width: '500px' },
   rowButtons: {
