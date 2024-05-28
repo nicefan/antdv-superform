@@ -82,7 +82,7 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
       const loading = ref<boolean|Obj>(false)
       const __loading = config.attrs.loading
       const isCustomLoading = isRef(__loading)
-      if (!isCustomLoading) {
+      if (!isCustomLoading && __loading) {
         config.attrs.loading = loading
       }
       const setLoading = (flag) => {

@@ -31,7 +31,7 @@ export default defineComponent({
     dataSource: Array,
     option: Object as PropType<RootTableOption>,
   },
-  emits: ['register', 'change'],
+  emits: ['register', 'load'],
   setup(props, ctx) {
     const dataRef = ref((props.dataSource || []) as Obj[])
     const wrapRef = ref()
@@ -42,10 +42,6 @@ export default defineComponent({
     const searchForm = ref()
 
     const { dataSource, loading, pagination, onLoaded, apis, goPage, reload, query, setSearchParam } = useQuery(option)
-    onLoaded((data) => {
-      ctx.emit('change', data)
-      option.onChange?.(data)
-    })
 
     const exposed = {
       setOption: (_option: RootTableOption) => {
@@ -120,7 +116,13 @@ export default defineComponent({
           listData,
         })
 
-        const { attrs } = useControl({ option: opt, effectData })
+        const {
+          attrs: { onLoad, ...attrs },
+        } = useControl({ option: opt, effectData })
+        onLoaded((data) => {
+          ctx.emit('load', data)
+          onLoad?.(data)
+        })
 
         if (searchSchema) {
           searchForm.value = useSearchForm(opt, tableRef, (data, isSearch) => {

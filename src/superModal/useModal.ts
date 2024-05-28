@@ -68,6 +68,7 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
 type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & { buttons?: ExtButtons; [k: string]: any })
 export function useModal(content: () => VNodeTypes, config?: ExtModalProps) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
+  const ins: any = getCurrentInstance() // || currentInstance
   const wrap: any = document.createDocumentFragment()
   let vm
 
@@ -83,7 +84,6 @@ export function useModal(content: () => VNodeTypes, config?: ExtModalProps) {
     if (modalRef.value) {
       return openModal(option)
     } else {
-      const ins: any = getCurrentInstance() // || currentInstance
       vm = createVNode(modalSlot)
       vm.appContext = ins?.appContext // 这句很关键，关联起了数据
 

@@ -557,11 +557,11 @@ declare type SuperFormProps = FormProps & {
 export declare const SuperTable: DefineComponent<{
     dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("change" | "register")[], "change" | "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
+}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("register" | "load")[], "register" | "load", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ArrayConstructor;
     option: PropType<RootTableOption>;
 }>> & {
-    onChange?: ((...args: any[]) => any) | undefined;
+    onLoad?: ((...args: any[]) => any) | undefined;
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
 
