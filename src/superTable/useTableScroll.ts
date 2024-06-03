@@ -3,7 +3,12 @@ import { ref, computed, unref, nextTick, watch, onMounted, onUnmounted } from 'v
 import { getViewportOffset } from '../utils/dom'
 import { debounce } from 'lodash-es'
 
-export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HTMLElement | null>,abortController?: AbortController) {
+export function useTableScroll(
+  option: Obj,
+  dataRef: Ref<Obj[]>,
+  wrapRef: Ref<HTMLElement | null>,
+  abortController?: AbortController
+) {
   const scrollHeightRef: Ref<number | null> = ref(null)
   // const modalFn = useModalContext();
 
@@ -131,6 +136,9 @@ export function useTableScroll(option: Obj, dataRef: Ref<Obj[]>, wrapRef: Ref<HT
         if (emptyEl) {
           const emptyCell = tableEl.querySelector('.ant-table-tbody .ant-table-cell') as HTMLElement
           emptyCell!.style.height = `${innerHeight}px`
+          const tableWrap = wrapEl.querySelector('.ant-table-wrapper') as HTMLElement
+          tableWrap.style.height = `${tableHeight}px`
+          tableWrap.style['overflow-y'] = 'hidden'
         }
         return
       }
