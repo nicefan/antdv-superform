@@ -96,7 +96,7 @@ export default function exampleForm() {
       },
       {
         type: 'Group',
-        title: '基本信息',
+        title: () => h('h1','基本信息'),
         descriptionsProps: {
           title: '基本信息',
           mode: 'form',
@@ -110,7 +110,7 @@ export default function exampleForm() {
             span: 24,
             initialValue: ['自定义消息'],
             render: (props) => {
-              return h('h2', props.value?.[0])
+              return h('h2', {style:'border-bottom:1px solid'}, props.value?.[0])
             },
           },
           {
@@ -121,7 +121,7 @@ export default function exampleForm() {
             prefix: UserOutlined,
             attrs: {
               // 可改变查询按钮标签
-              // addonAfter: '查询',
+              addonAfter: '查询',
             },
             // 可个性化查询按钮
             // enterButton: () => h(Button, () => 'abc'),

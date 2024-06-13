@@ -32,7 +32,7 @@ const props = defineProps<{
   isView?: boolean
 }>()
 
-const emit = defineEmits(['update:value', 'change'])
+const emit = defineEmits(['update:value', 'change', 'check'])
 const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
 const selected = computed(() => {
@@ -53,11 +53,11 @@ const handleChange = (tag, checked) => {
     ? checked
       ? [...selected.value, tag]
       : selected.value.filter((_tag) => _tag !== tag)
-    : checked
-    ? [tag]
-    : []
+    : [tag]
+
+  emit('check', tag, checked)
   updateValue(nextSelected)
-  emit('change', props.effectData, tag, checked )
+  emit('change', tag, nextSelected)
 }
 
 const updateValue = (val: string[]) => {

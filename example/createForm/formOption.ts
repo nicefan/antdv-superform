@@ -21,7 +21,7 @@ export const myTableOption = defineTable({
     },
     buttons: ['search', 'reset', { label: '新增', onClick: ({ table }) => table.add() }],
     subSpan: 8,
-    subItems: ['fieldName', 'title', { type: 'Input', label: '其它', field: 'other' }],
+    subItems: ['date', 'title', { type: 'Input', label: '其它', field: 'other' }],
   },
   beforeSearch(data) {
     console.log(data)
@@ -63,9 +63,9 @@ export const myTableOption = defineTable({
   columns: [
     { type: 'Hidden', field: 'id' },
     {
-      type: 'Input',
-      label: '字段名',
-      field: 'fieldName',
+      type: 'DatePicker',
+      label: '日期',
+      field: 'date',
       rules: { required: true },
     },
     {

@@ -14,6 +14,7 @@
       <!-- <a-button @click="changeSelect">切换选项</a-button> -->
       <Button @click="onSubmit">提交</Button>
       <Button @click="setValue">赋值</Button>
+      <Button @click="setSelected">选中</Button>
     </Row>
   </div>
 </template>
@@ -31,21 +32,38 @@ const activeKey = ref<string>()
 watch(activeKey, (k) => console.log(k))
 // const myModel = useExampleModal()
 const params = reactive({
-  name: undefined
+  name: undefined,
 })
+const selectedRowKeys = ref(['121'])
 const [register, table] = useTable({
   ...myTableOption,
+  apis: {
+    query: () =>
+      new Promise((resolve) => {
+        setTimeout(() => resolve([]), 1000)
+      }),
+  },
+  attrs: {
+    rowSelection: {
+      selectedRowKeys
+    },
+  },
   tabsFilter: {
     options: ['湖南', '广东'],
     valueToLabel: true,
     activeKey: toRef(params, 'name'),
-    bordered:true,
+    bordered: true,
   },
-  params
+  params,
 })
 
 // const MyTable = register()
-
+const setSelected = () => {
+  selectedRowKeys.value = ['122']
+}
+watch(selectedRowKeys, (v) => {
+  console.log('v-：' + v)
+})
 const onSubmit = () => {
   console.log(table.selectedRows)
   console.log(table.getData())
@@ -59,11 +77,13 @@ const setValue = () => {
       dataType: ['text'],
       isRequire: 1,
       col2: '12',
-       fileIds:['a'],
-     files: [{
-        uid: 'a',
-        name: 'a.a'
-      }]
+      fileIds: ['a'],
+      files: [
+        {
+          uid: 'a',
+          name: 'a.a',
+        },
+      ],
     },
     {
       id: '122',
@@ -72,11 +92,13 @@ const setValue = () => {
       dataType: ['text'],
       isRequire: 1,
       col2: '122',
-      fileIds:['a2'],
-      files: [{
-        uid: 'a2',
-        name: 'a2.a2'
-      }]
+      fileIds: ['a2'],
+      files: [
+        {
+          uid: 'a2',
+          name: 'a2.a2',
+        },
+      ],
     },
   ]
   table.setData(data)

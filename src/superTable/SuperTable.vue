@@ -82,13 +82,13 @@ export default defineComponent({
     ctx.expose(tableRef.value)
 
     const tableAttrs: Obj = reactive({
-      option,
       apis,
       pagination,
       onRegister: register,
       loading,
     })
 
+    const tableSlot = ref()
     const windowResize = new AbortController()
     onUnmounted(() => {
       // 异步更新option,添加resize事件，需提前配置销毁
@@ -101,7 +101,7 @@ export default defineComponent({
       option,
       (opt) => {
         if (!opt?.columns) return
-        if (tableAttrs.model) {
+        if (tableSlot.value) {
           unWatch()
           return
         }
@@ -119,6 +119,8 @@ export default defineComponent({
         const {
           attrs: { onLoad, ...attrs },
         } = useControl({ option: opt, effectData })
+        Object.assign(tableAttrs, attrs)
+
         onLoaded((data) => {
           ctx.emit('load', data)
           onLoad?.(data)
@@ -144,11 +146,6 @@ export default defineComponent({
           })
         }
 
-        Object.assign(tableAttrs, attrs, {
-          effectData,
-          model,
-        })
-
         if (isScanHeight || inheritHeight || maxHeight) {
           const { getScrollRef, redoHeight } = useTableScroll(option, dataRef, wrapRef, windowResize)
           tableAttrs.scroll = getScrollRef
@@ -162,6 +159,7 @@ export default defineComponent({
             redoHeight()
           }
         }
+        tableSlot.value = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
       },
       {
         immediate: true,
@@ -169,7 +167,7 @@ export default defineComponent({
     )
 
     return () =>
-      option.columns &&
+      tableSlot.value &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
         searchForm.value
           ? h(
@@ -180,7 +178,7 @@ export default defineComponent({
               ),
               [
                 h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode()),
-                h('div', { class: 'sup-form-section section-last' }, h(Controls.Table, tableAttrs as any, slots.value)),
+                h('div', { class: 'sup-form-section section-last' }, tableSlot.value()),
               ]
             )
           : h(
@@ -195,7 +193,7 @@ export default defineComponent({
                   style,
                 }
               ),
-              h(Controls.Table, tableAttrs as any, slots.value)
+              tableSlot.value()
             )
       )
   },

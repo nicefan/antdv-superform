@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, inject, watch } from 'vue'
+import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, inject, watch, toRaw } from 'vue'
 import { ButtonGroup, createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
@@ -32,25 +32,27 @@ export default defineComponent({
     const rowKey = attrs.rowKey || 'id'
     const orgList = toRef(model, 'refData')
     const listData = model.listData
-    const selectedRowKeys = ref<string[]>([])
+    const __rowSelection = option.attrs?.rowSelection // === true ? {} : attrs.rowSelection
+    const selectedRowKeys = ref<string[]>(__rowSelection?.selectedRowKeys || [])
     const selectedRows = ref<Obj[]>([])
     const rowSelection =
-      attrs.rowSelection || (attrs.rowSelection === undefined && editInline)
-        ? reactive(
-            mergeProps(attrs.rowSelection, {
-              fixed: true,
-              selectedRowKeys,
-              onChange: (_selectedRowKeys, _selectedRows) => {
-                selectedRowKeys.value = _selectedRowKeys
-                selectedRows.value = _selectedRows
-              },
-              ...(editInline && {
-                getCheckboxProps: (record) => ({
-                  disabled: !orgList.value.includes(record),
-                }),
+      __rowSelection || (__rowSelection === undefined && editInline)
+        ? {
+            fixed: true,
+            ...__rowSelection,
+            selectedRowKeys,
+            onChange: (_selectedRowKeys, _selectedRows) => {
+              selectedRowKeys.value = _selectedRowKeys
+              selectedRows.value = _selectedRows
+              __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows)
+            },
+            ...(editInline && {
+              getCheckboxProps: (record) => ({
+                disabled: !orgList.value.includes(record),
+                ...__rowSelection?.getCheckboxProps?.(record),
               }),
-            })
-          )
+            }),
+          }
         : undefined
 
     const listener = {
