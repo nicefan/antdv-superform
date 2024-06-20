@@ -18,7 +18,7 @@ const getVModelProps = (options, parent: Obj) => {
 
 export function getViewNode(option, effectData: Obj = {}) {
   const {
-    type: colType = '',
+    type: colType = 'Text',
     viewRender,
     render,
     options: colOptions,
@@ -61,14 +61,6 @@ export function getViewNode(option, effectData: Obj = {}) {
       }
     } else if (colType === 'Switch') {
       return ({ text } = effectData) => (option.valueLabels || '否是')[text]
-    } else if (colType === 'Buttons') {
-      const buttonsSlot = createButtons({ config: option, isView: true })
-      return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
-    } else if (colType === 'Text' || colType === 'HTML') {
-      return ({ text } = effectData) => {
-        const attrs = { ...option.attrs, ...(colType === 'HTML' && { innerHTML: text }) }
-        return h('span', attrs, attrs.innerHTML ? undefined : text)
-      }
     } else {
       // textRender为undefined将直接返回绑定的值
     }
@@ -98,6 +90,14 @@ export function getViewNode(option, effectData: Obj = {}) {
             reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true }),
             slots
           )
+    }
+  } else if (colType === 'Buttons') {
+    const buttonsSlot = createButtons({ config: option, isView: true })
+    return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
+  } else if (colType === 'Text' || colType === 'HTML') {
+    return ({ text } = effectData) => {
+      const attrs = { ...option.attrs, ...(colType === 'HTML' && { innerHTML: text }) }
+      return h('span', attrs, attrs.innerHTML ? undefined : text)
     }
   } else {
     return content
