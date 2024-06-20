@@ -87,10 +87,13 @@ export default function exampleForm() {
             label: '公司名称',
           },
           {
-            type: 'Text',
+            type: 'HTML',
             label: '编号',
             field: 'ser',
-            initialValue: '123456',
+            // attrs: {
+            //   innerHTML: '<a>avc</a>'
+            // },
+            initialValue: '<a>123456</a>',
           },
         ],
       },

@@ -64,6 +64,11 @@ export function getViewNode(option, effectData: Obj = {}) {
     } else if (colType === 'Buttons') {
       const buttonsSlot = createButtons({ config: option, isView: true })
       return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
+    } else if (colType === 'Text' || colType === 'HTML') {
+      return ({ text } = effectData) => {
+        const attrs = { ...option.attrs, ...(colType === 'HTML' && { innerHTML: text }) }
+        return h('span', attrs, attrs.innerHTML ? undefined : text)
+      }
     } else {
       // textRender为undefined将直接返回绑定的值
     }

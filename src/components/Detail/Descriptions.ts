@@ -46,7 +46,11 @@ export default defineComponent({
         const labelStyle = mergeProps(attrs.labelAlign ? { textAlign: attrs.labelAlign } : {}, attrs.labelStyle)
         const item: Obj = {
           labelCol: mergeProps({ style: labelStyle, class: { 'sup-label-no-colon': attrs.noColon } }, attrs.labelCol),
-          wrapperCol: mergeProps({ style: attrs.contentStyle }, attrs.wrapperCol),
+          wrapperCol: mergeProps(
+            { style: layout === 'vertical' && { textAlign: attrs.labelAlign } },
+            { style: attrs.contentStyle },
+            attrs.wrapperCol
+          ),
           option,
           attrs,
           span,

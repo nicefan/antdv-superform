@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, inject, type PropType, provide, reactive, toRef, toRefs, mergeProps, unref } from 'vue'
+import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults } from 'lodash-es'
 import Controls, { containers, formItemTypes } from './index'
@@ -148,6 +148,8 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
   let node
   if (type === 'Text' || type === 'InfoSlot') {
     node = renderSlot ? () => renderSlot({ props: attrs, ...effectData }) : () => h('span', attrs, model.refData)
+  } else if (type === 'HTML') {
+    node = () => h('span', { ...attrs, innerHTML: model.refData })
   } else if (type === 'Buttons') {
     node = () => h(ButtonGroup, { config: option, param: effectData })
   } else if (containers.includes(type) || type === 'InputList') {

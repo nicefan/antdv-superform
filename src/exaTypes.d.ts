@@ -424,6 +424,7 @@ type WidgetTypes = {
   InputSlot: ExtInputSlotOption
   InfoSlot: ExtInfoSlotOption
   Text: ExtFormItemOption
+  HTML: ExtFormItemOption
   Textarea: ExtFormItemOption
   Input: ExtInputOption
   InputNumber: ExtFormItemOption
