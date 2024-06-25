@@ -1,6 +1,6 @@
 import { type PropType, defineComponent, h, inject, toRef, unref, toValue, toRefs, reactive } from 'vue'
 import { Col, Row, Space } from 'ant-design-vue'
-import { getComputedStatus, getEffectData, getViewNode, toNode, useControl, useInnerSlots, useVModel } from '../../utils'
+import { getEffectData, getViewNode, toNode, useControl, useInnerSlots} from '../../utils'
 import Controls, { containers } from '../index'
 import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
@@ -180,7 +180,6 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
       }
     } else {
       const content = getContent(option, model)
-
       node = content && {
         option,
         label: __label,
@@ -222,7 +221,7 @@ function getContent(option, model: ModelData) {
   const effectData = getEffectData({ current: parent, text: value, value, field: model.refName })
 
   const content = getViewNode(option, effectData)
-  return content === false ? undefined : () => (content ? content() : model.refData)
+  return content === false ? undefined : () => (content ? content() : String(model.refData ?? ''))
 }
 
 export default DetailLayouts

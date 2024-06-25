@@ -63,9 +63,10 @@ export const myTableOption = defineTable({
   columns: [
     { type: 'Hidden', field: 'id' },
     {
-      type: 'DatePicker',
+      type: 'DateRange',
       label: '日期',
       field: 'date',
+      keepField: 'date2',
       rules: { required: true },
     },
     {
@@ -96,7 +97,7 @@ export const myTableOption = defineTable({
           { label: '文本', value: 'text' },
           { label: '数字', value: 'number' },
         ]),
-      viewRender:({text}) => text.replaceAll(',', ' /')
+      // viewRender:({text}) => text.replaceAll(',', ' /')
     },
     {
       type: 'Switch',

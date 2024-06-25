@@ -140,7 +140,6 @@ export default function exampleForm() {
             label: '自定义组件',
             field: 'de',
             attrs: {
-              readonly: true,
               style: 'width: 100%',
               placeholder: '自定义组件加Ext前缀',
             },
@@ -173,6 +172,7 @@ export default function exampleForm() {
             field: 'forever',
             labelField: 'foreverName',
             label: '爱好',
+            valueToNumber: true,
             attrs: {
               placeholder: '使用普通数组生成下拉选项',
             },
@@ -277,7 +277,7 @@ export default function exampleForm() {
             field: 'datelist',
             // subSpan: 12,
             descriptionsProps: {
-              // span: 24,
+              span: 24,
               column: 2,
             },
             label: '付款日期',
@@ -525,8 +525,12 @@ export default function exampleForm() {
             type: 'TreeSelect',
             field: 'tree',
             label: '树形',
-            labelField: 'treeName',
+            // labelField: 'treeName',
             data: treeData,
+            // initialValue: () => ['0-0'],
+            attrs: {
+              multiple: true,
+            },
             on: {
               change(...args) {
                 console.log(args)

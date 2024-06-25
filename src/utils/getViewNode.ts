@@ -35,7 +35,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     if (labelField) {
       return ({ current } = effectData) => current[labelField as string]
     } else if (keepField) {
-      return ({ current, text } = effectData) => (text || '') + ' - ' + (current[labelField as string] || '')
+      return ({ current, text } = effectData) => (text || '') + ' - ' + (current[keepField as string] || '')
     } else if (colOptions || dictName) {
       // 绑定值为Label时直接返回原值
       if (valueToLabel) return
@@ -94,7 +94,7 @@ export function getViewNode(option, effectData: Obj = {}) {
   } else if (colType === 'Buttons') {
     const buttonsSlot = createButtons({ config: option, isView: true })
     return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
-  } else if (colType === 'Text' || colType === 'HTML') {
+  } else if ((!content && colType === 'Text') || colType === 'HTML') {
     return ({ text } = effectData) => {
       const attrs = { ...option.attrs, ...(colType === 'HTML' && { innerHTML: text }) }
       return h('span', attrs, attrs.innerHTML ? undefined : text)

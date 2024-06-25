@@ -597,7 +597,7 @@ export declare function useButtons(config: ExtButtonGroup): (() => VNode<Rendere
     [key: string]: any;
 }>)[];
 
-export declare function useDetail(option: DetailOption, data?: {}): readonly [(actions?: Obj) => any, {
+export declare function useDetail(option: DetailOption, data?: Obj): readonly [(actions?: Obj) => any, {
     readonly setData: (data: any) => void;
 }];
 
