@@ -1,10 +1,11 @@
 import { globalConfig } from '../plugin'
-import { ref, unref, h, reactive, type VNode, inject, computed } from 'vue'
+import { ref, unref, h, reactive, type VNode, inject, computed, mergeProps } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls from '../components'
 import { isPlainObject } from 'lodash-es'
 import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
+import { getComputedAttr } from './reactivity'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -95,9 +96,12 @@ export function getViewNode(option, effectData: Obj = {}) {
     const buttonsSlot = createButtons({ config: option, isView: true })
     return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
   } else if ((!content && colType === 'Text') || colType === 'HTML') {
-    return ({ text } = effectData) => {
-      const attrs = { ...option.attrs, ...(colType === 'HTML' && { innerHTML: text }) }
-      return h('span', attrs, attrs.innerHTML ? undefined : text)
+    return (data = effectData) => {
+      const dynamicAttrs = getComputedAttr(option.dynamicAttrs, data)
+      const attrs = mergeProps(dynamicAttrs, option.attrs, {
+        ...(colType === 'HTML' && { innerHTML: data.text }),
+      })
+      return h('span', attrs, attrs.innerHTML ? undefined : data.text)
     }
   } else {
     return content
