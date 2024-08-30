@@ -101,7 +101,7 @@ export function buildActionSlot({ buttons, methods, editSlot, isView }: BuildAct
   const buttonsSlot = createButtons({ config, methods, isView })
   if (!buttonsSlot) return
   const render = (param) => {
-    return editSlot?.(param, config) || buttonsSlot({ key: param.record, param })
+    return editSlot?.(param, config) || buttonsSlot({ key: param.record, effectData: param })
   }
   return {
     forSlot,

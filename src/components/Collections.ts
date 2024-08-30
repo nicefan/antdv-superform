@@ -57,8 +57,9 @@ export default defineComponent({
       if (!innerNode) return
 
       if (parentType === 'InputGroup' && parentAttrs?.compact !== false) {
-        const width = (100 / (24 / colProps.span)).toFixed(2) + '%'
-        nodes.push(() => h(innerNode, { style: `width:${width};` }))
+        const width = Number(colProps.span) && (100 / (24 / colProps.span)).toFixed(2) + '%'
+        // const _class = colProps.span && 'ant-col-' + colProps.span
+        nodes.push(() => !hidden.value && h(innerNode, { style: { width } }))
         return
       }
 
@@ -151,7 +152,7 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
   } else if (type === 'HTML') {
     node = () => h('span', { ...attrs, innerHTML: model.refData })
   } else if (type === 'Buttons') {
-    node = () => h(ButtonGroup, { config: option, param: effectData })
+    node = () => h(ButtonGroup, { option, effectData, ...attrs })
   } else if (containers.includes(type) || type === 'InputList') {
     // 容器组件不绑定value
     node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs }), slots)

@@ -1,8 +1,8 @@
 import { h } from 'vue'
-import { ButtonGroup } from '../components/buttons'
 import type { ExtButtonGroup } from '../exaTypes'
+import SuperButtons from './SuperButtons.vue'
 
-export default function useButtons(config: ExtButtonGroup) {
-  const vNode = () => h(ButtonGroup, { config })
+export default function useButtons(option: ExtButtonGroup) {
+  const vNode = () => h(SuperButtons, option as any)
   return [vNode]
 }

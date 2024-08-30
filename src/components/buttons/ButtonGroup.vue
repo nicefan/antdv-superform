@@ -1,21 +1,21 @@
 <template>
-  <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'">
+  <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
     <template v-for="({ attrs, icon, label, tooltip }, index) of btns" :key="label">
       <Tooltip v-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
           ><component v-if="icon" :is="useIcon(icon)" />
-          <component v-if="!icon || !iconOnly" :is="() => toNode(label, param)"
+          <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
         /></Button>
       </Tooltip>
       <Button v-else v-bind="attrs">
-        <component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toNode(label, param)" />
+        <component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toNode(label, effectData)" />
       </Button>
       <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
 
     <Dropdown v-if="moreBtns.length">
       <Button v-bind="defaultAttrs">
-        <component v-if="moreLabel" :is="() => toNode(moreLabel, param)" /><ellipsis-outlined v-else />
+        <component v-if="moreLabel" :is="() => toNode(moreLabel, effectData)" /><ellipsis-outlined v-else />
       </Button>
       <template #overlay>
         <Menu>
@@ -40,21 +40,21 @@ import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
 
 const props = defineProps<{
-  config: ExtButtons
+  option: ExtButtons
   methods?: Obj
-  param?: Obj
+  effectData?: Obj
 }>()
-const { config, methods, param } = props
+const { option, methods, effectData } = props
 
-const __config = Array.isArray(config) ? { actions: config } : config
-const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(param || {}), methods || __config.methods)
-const isDivider = __config.divider ?? ['link', 'text'].includes(__config.buttonType || '')
-const { moreLabel, iconOnly } = __config
+const __config = Array.isArray(option) ? { actions: option } : option
+const { attrs, moreLabel, iconOnly, divider, buttonType } = __config
+const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(effectData || {}), methods || __config.methods)
+const isDivider = divider ?? (attrs?.direction !== 'vertical' && ['link', 'text'].includes(buttonType || ''))
 </script>
 
 <script lang="ts">
 function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
-  const { size, buttonShape, buttonType, roleMode, limit = 3, hidden, disabled, actions } = config
+  const { size, buttonShape, buttonType, roleMode, limit = 3, hidden, disabled, actions, iconOnly } = config
   const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)
   const isHide = getComputedStatus(hidden, param)
@@ -90,7 +90,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
 
   watchEffect(() => {
     const items = isHide.value ? [] : allBtns.filter(({ isHide }) => !isHide.value)
-    const count = items.length === limit + 1 ? limit + 1 : limit
+    const count = iconOnly && items.length === limit + 1 ? limit + 1 : limit
     btns.value = items.slice(0, count)
     moreBtns.value = items.slice(count)
   })

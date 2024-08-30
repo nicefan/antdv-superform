@@ -15,7 +15,7 @@ const props = defineProps<{
   onChange?: Fn
 }>()
 
-const treeData = ref<Obj[]>([])
+const treeData = ref<any[]>([])
 const { data, labelField } = props.option
 if (typeof data === 'function') {
   watchPostEffect(() => {

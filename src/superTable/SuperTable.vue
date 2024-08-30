@@ -41,7 +41,8 @@ export default defineComponent({
     merge(option, { attrs: mergeProps(option.attrs, ctxAttrs) })
     const searchForm = ref()
 
-    const { dataSource, loading, pagination, onLoaded, apis, goPage, reload, query, setSearchParam } = useQuery(option)
+    const { dataSource, loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setSearchParam } =
+      useQuery(option)
 
     const exposed = {
       setOption: (_option: RootTableOption) => {
@@ -53,7 +54,7 @@ export default defineComponent({
         Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
       },
       setData: (data) => {
-        data && (dataRef.value = data)
+        data && setPageData(data)
       },
       goPage,
       reload,
@@ -70,7 +71,10 @@ export default defineComponent({
       dataRef,
     }
 
-    watch(() => dataSource.value || props.dataSource, exposed.setData)
+    watch(
+      () => dataSource.value || props.dataSource,
+      (data) => (dataRef.value = data)
+    )
 
     const tableRef = ref({ ...exposed })
     const register = (comp) => {
@@ -151,13 +155,14 @@ export default defineComponent({
           tableAttrs.scroll = getScrollRef
           const { onChange, onExpandedRowsChange } = tableAttrs
           tableAttrs.onChange = (...args) => {
-            !loading.value && redoHeight()
+            // !loading.value && redoHeight()
             onChange?.(...args)
           }
           tableAttrs.onExpandedRowsChange = (param) => {
             onExpandedRowsChange?.(param)
             redoHeight()
           }
+          watch(dataRef, redoHeight)
         }
         tableSlot.value = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
       },

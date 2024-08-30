@@ -79,7 +79,7 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
       if (typeof item === 'object') {
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
       }
-      const loading = ref<boolean|Obj>(false)
+      const loading = ref<boolean | Obj>(false)
       const __loading = config.attrs.loading
       const isCustomLoading = isRef(__loading)
       if (!isCustomLoading && __loading) {
@@ -110,11 +110,16 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
         }
       }
       config.onClick = (param) => {
+        const metaParam = { ...param, meta }
         if (_onClick && innerMethod) {
           // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
-          _action(config.confirmText, () => _onClick(param, async (__param = param) => innerMethod(__param)), param)
+          _action(
+            config.confirmText,
+            () => _onClick(metaParam, async (__param = metaParam) => innerMethod(__param)),
+            param
+          )
         } else {
-          _action(config.confirmText, () => (innerMethod || _onClick)?.({ ...param, meta }), param)
+          _action(config.confirmText, () => (innerMethod || _onClick)?.(metaParam), param)
         }
       }
 

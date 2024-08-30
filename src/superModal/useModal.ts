@@ -13,7 +13,7 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
   const config = reactive({ ...__config, ...globalProps.Modal })
   const modalRef = ref()
 
-  const footer = buttons && (() => h(ButtonGroup, { config: buttons, param: { modalRef } }))
+  const footer = buttons && (() => h(ButtonGroup, { option: buttons, effectData: { modalRef } }))
   const confirmLoading = ref<boolean>(false)
   const onOk = () => {
     confirmLoading.value = true

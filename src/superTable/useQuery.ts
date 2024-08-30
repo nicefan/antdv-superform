@@ -13,7 +13,7 @@ export function useQuery(option: Partial<RootTableOption>) {
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
-  const request = (param?:Obj) => {
+  const request = (param?: Obj) => {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
@@ -23,22 +23,25 @@ export function useQuery(option: Partial<RootTableOption>) {
       ...pageParam,
     }
     loading.value = true
-    return Promise.resolve(
-      queryApi.value?.(_params).then((res) => {
-        if (Array.isArray(res)) {
-          dataSource.value = res
-          pagination.value = false
-        } else if (res?.records) {
-          dataSource.value = res.records
-          pagination.value &&= { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
-        }
-        callbacks.forEach((cb) => cb(res))
-      })
-    ).finally(() => {
+    return Promise.resolve(queryApi.value?.(_params).then(setPageData)).finally(() => {
       loading.value = false
     })
   }
 
+  const setPageData = (res) => {
+    if (Array.isArray(res)) {
+      dataSource.value = res
+      if (defPagination.value !== false) {
+        pagination.value = { ...pagination.value, total: res.length, current: 1 }
+      }
+    } else if (res?.records) {
+      dataSource.value = res.records
+      if (defPagination.value !== false) {
+        pagination.value = { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
+      }
+    }
+    return Promise.all(callbacks.map((cb) => cb(res)))
+  }
   const throttleRequest = throttle(request, 300, { 'leading': false })
 
   const goPage = (current, size = pageParam.size) => {
@@ -58,18 +61,18 @@ export function useQuery(option: Partial<RootTableOption>) {
   }
 
   const pagination = ref<false | Obj>(false)
+  const defPagination = computed(() => option.pagination || (option.attrs as Obj)?.pagination)
   watch(
-    () => option.pagination || option.attrs?.pagination,
+    defPagination,
     (def) => {
-      pagination.value =
-        (def || def !== false) &&
-        mergeProps(
-          {
-            onChange: goPage,
-            // onShowSizeChange: goPage,
-          },
-          def
-        )
+      if (def === false) return
+      pagination.value = mergeProps(
+        {
+          onChange: goPage,
+          // onShowSizeChange: goPage,
+        },
+        { ...def }
+      )
       if (def?.pageSize) pageParam.size = def.pageSize
     },
     {
@@ -88,6 +91,7 @@ export function useQuery(option: Partial<RootTableOption>) {
     setSearchParam,
     query,
     pagination,
+    setPageData,
     dataSource,
     onLoaded,
     loading,

@@ -27,11 +27,11 @@ import { RendererElement } from 'vue';
 import { RendererNode } from 'vue';
 import type { RowProps } from 'ant-design-vue';
 import type { SelectProps } from 'ant-design-vue';
+import type { SpaceProps } from 'ant-design-vue';
 import type { TableColumnProps } from 'ant-design-vue';
 import type { TableProps } from 'ant-design-vue';
 import type { TabsProps } from 'ant-design-vue';
-import { TreeDataItem } from 'ant-design-vue/es/tree/Tree';
-import type { TreeProps } from 'ant-design-vue';
+import type { TreeSelectProps } from 'ant-design-vue';
 import type { UploadProps } from 'ant-design-vue';
 import { VNode } from 'vue';
 import { VNodeProps } from 'vue';
@@ -136,6 +136,7 @@ export declare interface ExtBaseOption {
 }
 
 export declare interface ExtButtonGroup<T extends string = string> {
+    attrs?: SpaceProps & HTMLAttributes
     limit?: number
     buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
     buttonShape?: 'circle' | 'round' | 'default'
@@ -156,6 +157,8 @@ export declare interface ExtButtonGroup<T extends string = string> {
     /** 将按钮放置到组件的指定slot中 */
     forSlot?: string
     methods?: Obj<Fn>
+    /** 传递到事件方法中可响应数据 */
+    effectData?: Obj
     actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
     // subItems?: ButtonItem[]
 }
@@ -169,6 +172,7 @@ export declare interface ExtCollapseOption extends ExtBaseOption {
 }
 
 export declare type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
+    field?: string
     /** 应用于表格或编辑表单 */
     hideInTable?: boolean
     /** 表格内容渲染 */
@@ -375,8 +379,8 @@ declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
 
 export declare interface ExtTreeOption extends ExtFormItemOption {
     labelField?: string
-    attrs?: TreeProps & HTMLAttributes
-    data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
+    attrs?: TreeSelectProps & HTMLAttributes
+    data: TreeSelectProps['treeData'][] | Fn<Promise<TreeSelectProps['treeData'][]>>
 }
 
 declare interface ExtUpload extends ExtFormItemOption {
@@ -455,7 +459,7 @@ declare interface RegistPram {
     value?: any;
 }
 
-export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'> {
+export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
     isContainer?: boolean
     apis?: TableApis | TableApis['query']
     params?: Obj
@@ -464,15 +468,7 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
     beforeSearch?: (data: { param?: Obj } | Obj) => Obj
     searchSchema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
     pagination?: PaginationProps | false
-    maxHeight?: number
-    /** 自动计算高度至底部 */
-    isScanHeight?: boolean
-    /**计算高度时表格底部至边缘边距不等于36px时，进行补齐 */
-    resizeHeightOffset?: number
-    /** 固定高度，分页移至底部 */
-    isFixedHeight?: boolean
-    /** 按父元素填充高度 */
-    inheritHeight?: boolean
+    attrs?: TableProps | TableScanHight | Obj
 }
 
 declare interface RuleConfig {
@@ -507,24 +503,26 @@ export declare const SuperButtons: DefineComponent<{
     limit: NumberConstructor;
     buttonType: PropType<"default" | "text" | "primary" | "link" | "dashed" | "ghost">;
     buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"small" | "large" | "middle">;
+    size: PropType<"small" | "middle" | "large">;
     /** 是否只显示图标 */
     iconOnly: BooleanConstructor;
     hidden: BooleanConstructor;
     disabled: BooleanConstructor;
     actions: PropType<ButtonItem[]>;
+    effectData: ObjectConstructor;
 }, () => VNode<RendererNode, RendererElement, {
     [key: string]: any;
 }>, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     limit: NumberConstructor;
     buttonType: PropType<"default" | "text" | "primary" | "link" | "dashed" | "ghost">;
     buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"small" | "large" | "middle">;
+    size: PropType<"small" | "middle" | "large">;
     /** 是否只显示图标 */
     iconOnly: BooleanConstructor;
     hidden: BooleanConstructor;
     disabled: BooleanConstructor;
     actions: PropType<ButtonItem[]>;
+    effectData: ObjectConstructor;
 }>>, {
     hidden: boolean;
     disabled: boolean;
@@ -574,7 +572,19 @@ export declare type TableApis = {
     export?: Fn<Promise<any>>
 }
 
-declare interface TabsFilter extends Omit<TabsProps,'activeKey'> {
+declare interface TableScanHight {
+    maxHeight?: number
+    /** 自动计算高度至底部 */
+    isScanHeight?: boolean
+    /**计算高度时表格底部至边缘边距不等于36px时，进行补齐 */
+    resizeHeightOffset?: number
+    /** 固定高度，分页移至底部 */
+    isFixedHeight?: boolean
+    /** 按父元素填充高度 */
+    inheritHeight?: boolean
+}
+
+declare interface TabsFilter extends Omit<TabsProps, 'activeKey'> {
     bordered?: boolean
     options?: SelectOptions
     /** 字典名称 */
@@ -593,7 +603,7 @@ export declare type UniWidgetOption =
 
 export declare type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
 
-export declare function useButtons(config: ExtButtonGroup): (() => VNode<RendererNode, RendererElement, {
+export declare function useButtons(option: ExtButtonGroup): (() => VNode<RendererNode, RendererElement, {
     [key: string]: any;
 }>)[];
 

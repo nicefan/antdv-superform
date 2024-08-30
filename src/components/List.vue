@@ -79,7 +79,7 @@ export default defineComponent({
       const orgSlot = slots[slotName]
       const buttonsSlot = createButtons({
         config: buttonsConfig,
-        params: effectData,
+        effectData,
         methods,
         isView,
       })
@@ -115,7 +115,7 @@ export default defineComponent({
               createButtons({
                 config: rowButtonsConfig,
                 methods,
-                params: item.effectData,
+                effectData: item.effectData,
                 isView,
               })?.({ class: 'ant-list-item-action' }),
           ],

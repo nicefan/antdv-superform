@@ -2,9 +2,9 @@ import { h } from 'vue'
 import { ButtonGroup } from './'
 import type { ExtButtons } from '../../exaTypes'
 
-type UseButtonsParams = { config: ExtButtons; methods?: Obj; params?: Obj; isView?: boolean }
+type UseButtonsParams = { config: ExtButtons; methods?: Obj; effectData?: Obj; isView?: boolean }
 
-export default function createButtons({ config, methods, params, isView }: UseButtonsParams) {
+export default function createButtons({ config, methods, effectData, isView }: UseButtonsParams) {
   const buttons = Array.isArray(config) ? { actions: config } : config
 
   if (!buttons || (isView && buttons.validOn === 'form') || (!isView && buttons.validOn === 'detail')) return
@@ -26,5 +26,5 @@ export default function createButtons({ config, methods, params, isView }: UseBu
   }
   if (actions.length === 0) return
 
-  return (props = {}) => h(ButtonGroup, { config: buttons, methods, param: params, ...props })
+  return (props = {}) => h(ButtonGroup, { option: buttons, methods, effectData, ...props })
 }

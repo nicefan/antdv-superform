@@ -215,7 +215,7 @@ export default defineComponent({
                       h('label', {}, label())
                     ),
                   h(Col, { class: 'ant-descriptions-item-content', ...wrapperCol }, () =>
-                    !attrs.noInput && mode === 'form' && label
+                    !attrs.noInput && mode === 'form' && label !== undefined
                       ? h('div', { class: 'sup-descriptions-item-input' }, content())
                       : content()
                   ),

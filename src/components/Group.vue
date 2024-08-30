@@ -21,7 +21,7 @@ export default defineComponent({
       if (type === 'Descriptions') {
         _buttons.validOn ??= 'detail'
       }
-      buttonsSlot = createButtons({ config: _buttons, params: effectData, isView: _isView })
+      buttonsSlot = createButtons({ config: _buttons, effectData, isView: _isView })
     }
 
     const slots = {

@@ -54,7 +54,7 @@ const acKey = ref(props.option.activeKey || panels[0].key)
           <component :is="header" />
         </template>
         <template #extra v-if="!isView">
-          <ButtonGroup v-if="option.buttons" :config="option.buttons" :param="effectData" />
+          <ButtonGroup v-if="option.buttons" :option="option.buttons" :effectData="effectData" />
         </template>
 
         <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" />

@@ -52,8 +52,8 @@ export function useSearchForm(tableOption, tableRef, onChange) {
       span: 'auto',
       render: () =>
         h(ButtonGroup, {
-          config: { ...buttonsConfig, methods: defaultAction },
-          param: getEffectData({ table: tableRef, form: formRef }),
+          option: { ...buttonsConfig, methods: defaultAction },
+          effectData: getEffectData({ table: tableRef, form: formRef }),
         }),
     })
   }

@@ -15,10 +15,12 @@ export default defineComponent({
     hidden: Boolean || Function,
     disabled: Boolean || (Function as PropType<Fn<boolean>>),
     actions: Array as PropType<ButtonItem[]>,
+    effectData: Object,
   },
   setup(props, { slots }) {
     const slotsNode = slots.default?.()
-    const actions = !slotsNode
+    const { effectData, ...config } = props
+    const __actions = !slotsNode
       ? props.actions
       : slotsNode.flatMap(({ children, props = {} }: any) => {
           const { roleName, roleMode, onClick, confirmText, tooltip, icon, ...attrs } = mapKeys(props, (_, key) =>
@@ -36,7 +38,7 @@ export default defineComponent({
             attrs,
           }
         })
-    return () => h(ButtonGroup, { config: { ...props, actions } })
+    return () => h(ButtonGroup, { option: { ...config, actions: __actions }, effectData })
   },
 })
 </script>

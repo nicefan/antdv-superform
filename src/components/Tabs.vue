@@ -59,7 +59,7 @@ const panes = [...model.children].map(([option, model], idx) => {
 <template>
   <Tabs v-model:activeKey="activeKey">
     <template #rightExtra>
-      <ButtonGroup v-if="!isView && option.buttons" :config="option.buttons"></ButtonGroup>
+      <ButtonGroup v-if="!isView && option.buttons" :option="option.buttons"></ButtonGroup>
     </template>
 
     <template v-for="{ attrs, hidden, option, model } of panes" :key="attrs.key">

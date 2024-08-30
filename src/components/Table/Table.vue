@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, inject, watch, toRaw } from 'vue'
+import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, watch } from 'vue'
 import { ButtonGroup, createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
@@ -131,7 +131,7 @@ export default defineComponent({
       const orgSlot = slots[slotName]
       const buttonsSlot = createButtons({
         config: buttonsConfig,
-        params: editParam,
+        effectData: editParam,
         methods,
         isView,
       })

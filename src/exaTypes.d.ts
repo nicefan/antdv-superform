@@ -17,12 +17,13 @@ import type {
   FormItemProps,
   InputProps,
   DescriptionsProps,
-  TreeProps,
   TableProps,
   RadioGroupProps,
   ListProps,
   UploadProps,
   TabsProps,
+  TreeSelectProps,
+  SpaceProps,
 } from 'ant-design-vue'
 
 interface RuleConfig {
@@ -164,6 +165,7 @@ type TableApis = {
   export?: Fn<Promise<any>>
 }
 interface ExtButtonGroup<T extends string = string> {
+  attrs?: SpaceProps & HTMLAttributes
   limit?: number
   buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
   buttonShape?: 'circle' | 'round' | 'default'
@@ -184,11 +186,13 @@ interface ExtButtonGroup<T extends string = string> {
   /** 将按钮放置到组件的指定slot中 */
   forSlot?: string
   methods?: Obj<Fn>
+  /** 传递到事件方法中可响应数据 */
+  effectData?: Obj
   actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
   // subItems?: ButtonItem[]
 }
 type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
-interface TabsFilter extends Omit<TabsProps,'activeKey'> {
+interface TabsFilter extends Omit<TabsProps, 'activeKey'> {
   bordered?: boolean
   options?: SelectOptions
   /** 字典名称 */
@@ -199,6 +203,7 @@ interface TabsFilter extends Omit<TabsProps,'activeKey'> {
   slots?: Obj<VSlot>
 }
 type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
+  field?: string
   /** 应用于表格或编辑表单 */
   hideInTable?: boolean
   /** 表格内容渲染 */
@@ -225,15 +230,7 @@ interface ExtTableOption extends ExtBaseOption {
   formSchema?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
 }
 
-interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'> {
-  isContainer?: boolean
-  apis?: TableApis | TableApis['query']
-  params?: Obj
-  /**是否立即查询，默认为true */
-  immediate?: boolean
-  beforeSearch?: (data: { param?: Obj } | Obj) => Obj
-  searchSchema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
-  pagination?: PaginationProps | false
+interface TableScanHight {
   maxHeight?: number
   /** 自动计算高度至底部 */
   isScanHeight?: boolean
@@ -243,6 +240,17 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'> {
   isFixedHeight?: boolean
   /** 按父元素填充高度 */
   inheritHeight?: boolean
+}
+interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
+  isContainer?: boolean
+  apis?: TableApis | TableApis['query']
+  params?: Obj
+  /**是否立即查询，默认为true */
+  immediate?: boolean
+  beforeSearch?: (data: { param?: Obj } | Obj) => Obj
+  searchSchema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
+  pagination?: PaginationProps | false
+  attrs?: TableProps | TableScanHight | Obj
 }
 interface ExtListOption extends ExtBaseOption, ExtRow {
   field: string
@@ -355,8 +363,8 @@ interface ExtTagInputOption extends ExtFormItemOption {
 }
 interface ExtTreeOption extends ExtFormItemOption {
   labelField?: string
-  attrs?: TreeProps & HTMLAttributes
-  data: TreeDataItem[] | Fn<Promise<TreeDataItem[]>>
+  attrs?: TreeSelectProps & HTMLAttributes
+  data: TreeSelectProps['treeData'][] | Fn<Promise<TreeSelectProps['treeData'][]>>
 }
 interface ExtSwitchOption extends ExtFormItemOption {
   valueLabels?: [string, string]

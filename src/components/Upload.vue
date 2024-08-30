@@ -261,7 +261,7 @@ export default defineComponent({
             return '文件最小需要' + minSize + 'M'
           }
           if (maxSize && maxSize < fileSize) {
-            return '文件最大不超过' + minSize + 'M'
+            return '文件最大不超过' + maxSize + 'M'
           }
         }
         if (!repeatable) {

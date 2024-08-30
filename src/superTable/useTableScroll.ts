@@ -131,14 +131,14 @@ export function useTableScroll(
       if (!inheritHeight) {
         wrapEl.style.height = 'unset'
       }
+      const tableWrap = wrapEl.querySelector('.ant-table-wrapper') as HTMLElement
+      tableWrap.style.height = ''
+      tableWrap.style['overflow-y'] = undefined
       if (!unref(tableData) || tableData.length === 0) {
         const emptyEl = tableEl.querySelector('.ant-empty')
         if (emptyEl) {
           const emptyCell = tableEl.querySelector('.ant-table-tbody .ant-table-cell') as HTMLElement
           emptyCell!.style.height = `${innerHeight}px`
-          const tableWrap = wrapEl.querySelector('.ant-table-wrapper') as HTMLElement
-          tableWrap.style.height = `${tableHeight}px`
-          tableWrap.style['overflow-y'] = 'hidden'
         }
         return
       }

@@ -80,7 +80,7 @@ export default defineComponent({
             slots?.default ||
             (() =>
               h(FormItemRest, () =>
-                h(base.InputGroup, { compact, ...attrs }, () => h(Collections, { option, model }))
+                h(base.InputGroup, mergeProps({ compact, style: compact && {display: 'flex'} }, attrs ), () => h(Collections, { option, model }))
               )),
         }
       )

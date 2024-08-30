@@ -128,7 +128,9 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
 
   const editButtonsSlot = (param, config) => {
     const editInfo = getEditInfo(param.record)
-    return editInfo.isEdit ? h(ButtonGroup, { key: 'edit', config: { ...config, actions: editActions }, param }) : null
+    return editInfo.isEdit
+      ? h(ButtonGroup, { key: 'edit', option: { ...config, actions: editActions }, effectData: param })
+      : null
   }
 
   const InputNode = defineComponent({

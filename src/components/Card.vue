@@ -21,7 +21,7 @@ export default defineComponent({
         {},
         {
           title: title && (() => h('div', { class: 'sup-title' }, toNode(title, effectData))),
-          extra: () => buttons && !isView && h(ButtonGroup, { config: buttons, param: effectData }),
+          extra: () => buttons && !isView && h(ButtonGroup, { option: buttons, effectData }),
           default: () =>
             isView ? h(DetailLayout, { option, modelsMap: model.children }) : h(Collections, { option, model }),
         }

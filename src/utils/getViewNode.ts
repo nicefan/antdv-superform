@@ -19,7 +19,7 @@ const getVModelProps = (options, parent: Obj) => {
 
 export function getViewNode(option, effectData: Obj = {}) {
   const {
-    type: colType = 'Text',
+    type: colType = '',
     viewRender,
     render,
     options: colOptions,
@@ -95,7 +95,7 @@ export function getViewNode(option, effectData: Obj = {}) {
   } else if (colType === 'Buttons') {
     const buttonsSlot = createButtons({ config: option, isView: true })
     return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
-  } else if ((!content && colType === 'Text') || colType === 'HTML') {
+  } else if ((!content && colType === 'Text' && option.attrs) || colType === 'HTML') {
     return (data = effectData) => {
       const dynamicAttrs = getComputedAttr(option.dynamicAttrs, data)
       const attrs = mergeProps(dynamicAttrs, option.attrs, {
