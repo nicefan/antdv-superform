@@ -553,10 +553,10 @@ declare type SuperFormProps = FormProps & {
 };
 
 export declare const SuperTable: DefineComponent<{
-    dataSource: ArrayConstructor;
+    dataSource: PropType<Obj<any>[]>;
     option: PropType<RootTableOption>;
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("register" | "load")[], "register" | "load", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
-    dataSource: ArrayConstructor;
+    dataSource: PropType<Obj<any>[]>;
     option: PropType<RootTableOption>;
 }>> & {
     onLoad?: ((...args: any[]) => any) | undefined;

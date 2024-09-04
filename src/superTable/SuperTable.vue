@@ -28,7 +28,7 @@ export default defineComponent({
   name: 'SuperTable',
   inheritAttrs: false,
   props: {
-    dataSource: Array,
+    dataSource: Array as PropType<Obj[]>,
     option: Object as PropType<RootTableOption>,
   },
   emits: ['register', 'load'],
@@ -41,8 +41,10 @@ export default defineComponent({
     merge(option, { attrs: mergeProps(option.attrs, ctxAttrs) })
     const searchForm = ref()
 
-    const { dataSource, loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setSearchParam } =
-      useQuery(option)
+    const { loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setSearchParam } = useQuery(
+      option,
+      dataRef
+    )
 
     const exposed = {
       setOption: (_option: RootTableOption) => {
@@ -54,7 +56,7 @@ export default defineComponent({
         Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
       },
       setData: (data) => {
-        data && setPageData(data)
+        data && (dataRef.value = data)
       },
       goPage,
       reload,
@@ -67,14 +69,10 @@ export default defineComponent({
           console.warn(e)
         }
       },
+      setPageData,
       getData: () => dataRef.value,
       dataRef,
     }
-
-    watch(
-      () => dataSource.value || props.dataSource,
-      (data) => (dataRef.value = data)
-    )
 
     const tableRef = ref({ ...exposed })
     const register = (comp) => {

@@ -2,14 +2,13 @@ import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, watch, mergeProps } from 'vue'
 import { throttle } from 'lodash-es'
 
-export function useQuery(option: Partial<RootTableOption>) {
+export function useQuery(option: Partial<RootTableOption>, dataSource: Ref) {
   const queryApi = computed(() => {
     return typeof option.apis === 'function' ? apis : option.apis?.query
   })
   const pageParam = reactive<Obj>({})
   const searchParam = ref()
   const loading = ref(false)
-  const dataSource = ref()
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
 
@@ -92,7 +91,6 @@ export function useQuery(option: Partial<RootTableOption>) {
     query,
     pagination,
     setPageData,
-    dataSource,
     onLoaded,
     loading,
   }

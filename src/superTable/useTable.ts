@@ -54,7 +54,7 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       getTable,
       tableRef,
       setData(data: Obj[]) {
-        asyncCall('setData', data)
+        asyncCall('setPageData', data)
       },
       /** 返回当前表格数据 */
       getData() {
