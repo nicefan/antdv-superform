@@ -1,4 +1,4 @@
-import { toRef, watch, onMounted, ref, unref, toValue, computed } from 'vue'
+import { toRef, watch, onMounted, ref, unref, toValue, computed, isRef } from 'vue'
 import type { ExtFormItemOption } from '../exaTypes'
 
 type Param = {
@@ -8,7 +8,7 @@ type Param = {
 }
 
 export default function useVModel({ option, model, effectData }: Param, defaultValue?: any) {
-  const { type, field, keepField, computed: __computed, vModelFields }: MixOption = option
+  const { type, field, keepField, computed: __computed, vModelFields, value }: MixOption = option
   if (!field) return
   if (defaultValue !== undefined) model.refData ??= toValue(defaultValue)
   // 实际存储变量
@@ -24,6 +24,12 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   const vModels = {
     value: tempData,
     'onUpdate:value': updateValue,
+  }
+
+  // 同步外部引用值
+  if (isRef(value)) {
+    watch(refValue, (val) => (value.value = val))
+    watch(value, updateValue)
   }
 
   if (vModelFields) {

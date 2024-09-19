@@ -43,7 +43,7 @@ declare type BaseComps = 'Divider' | 'InputGroup' | 'FormItem' | 'Tooltip' | 'Bu
 export declare interface ButtonItem {
     label?: VSlot
     /** 确认提示文本 */
-    confirmText?: string
+    confirmText?: string | Fn<string>
     /** 权限标识 */
     roleName?: string
     roleMode?: 'hidden' | 'disable'
@@ -104,7 +104,7 @@ export declare interface ExtBaseOption {
     type: string
     field?: string
     vModelFields?: Obj<string>
-    // value?: Ref
+    value?: Ref_2
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
@@ -159,7 +159,7 @@ export declare interface ExtButtonGroup<T extends string = string> {
     methods?: Obj<Fn>
     /** 传递到事件方法中可响应数据 */
     effectData?: Obj
-    actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
+    actions?: (T | ({ name?: T } & ButtonItem))[]
     // subItems?: ButtonItem[]
 }
 
@@ -167,7 +167,7 @@ export declare type ExtButtons<T extends string = string> = ExtButtonGroup<T> | 
 
 export declare interface ExtCollapseOption extends ExtBaseOption {
     title?: VSlot
-    activeKey?: string | Ref<string>
+    activeKey?: string | Ref_2<string>
     subItems: CollapseItem[]
 }
 
@@ -187,6 +187,7 @@ declare interface ExtDateRange extends ExtFormItemOption {
 
 export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
     title?: VSlot
+    dataSource?: Obj
     buttons?: ExtButtons
     mode?: 'table' | 'form' | 'default'
     attrs?: ExtDescriptionsProps
@@ -212,6 +213,8 @@ HTMLAttributes
 /** 表单元素属性 */
 export declare interface ExtFormItemOption extends ExtBaseOption {
     field: string
+    /** 指定ref对象时，同步变化 */
+    value?: any
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     formItemProps?: FormItemProps
@@ -220,6 +223,7 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
 
 export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
     // type?: 'Form'
+    dataSource?: Obj
     attrs?: FormProps & HTMLAttributes
     isContainer?: boolean
     /** 减少行距 */
@@ -344,12 +348,12 @@ export declare interface ExtTableOption extends ExtBaseOption {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     columns: ExtColumnsItem[]
-    tabsFilter?: TabsFilter
+    tabsFilter?: TabsFilter | false
     /** 公共列配置 */
     columnProps?: TableColumnProps
-    buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'>
+    buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
     /** 列表元素右边按钮 */
-    rowButtons?: ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
+    rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps })
     /** 弹窗属性 */
     modalProps?: ModalFuncProps | Obj
     descriptionsProps?: ExtDescriptionsProps
@@ -358,7 +362,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
 }
 
 export declare interface ExtTabsOption extends ExtBaseOption {
-    activeKey?: Ref<string>
+    activeKey?: Ref_2<string>
     forceRender?: boolean
     buttons?: ExtButtons<'add' | 'refresh'>
     subItems: ExtTabItem[]
@@ -367,20 +371,24 @@ export declare interface ExtTabsOption extends ExtBaseOption {
 declare interface ExtTagInputOption extends ExtFormItemOption {
     attrs?: {
         valueToString?: boolean
-    }
+    } & HTMLAttributes
 }
 
 declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
     attrs?: {
         multiple?: boolean
         valueToString?: boolean
-    }
+    } & HTMLAttributes
 }
 
 export declare interface ExtTreeOption extends ExtFormItemOption {
     labelField?: string
     attrs?: TreeSelectProps & HTMLAttributes
-    data: TreeSelectProps['treeData'][] | Fn<Promise<TreeSelectProps['treeData'][]>>
+    /**
+     * @deprecated 使用`treeData`
+     */
+    data?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
+    treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
 }
 
 declare interface ExtUpload extends ExtFormItemOption {
@@ -462,10 +470,14 @@ declare interface RegistPram {
 export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
     isContainer?: boolean
     apis?: TableApis | TableApis['query']
+    dataSource?: Obj[] | Ref_2<any[]>
     params?: Obj
     /**是否立即查询，默认为true */
     immediate?: boolean
-    beforeSearch?: (data: { param?: Obj } | Obj) => Obj
+    /** 查询请求前可对请求参数进行处理 */
+    beforeQuery?: (data: Obj) => Obj
+    /** 查询请求后可对返回结果进行处理 */
+    afterQuery?: (data: Obj) => Obj
     searchSchema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
     pagination?: PaginationProps | false
     attrs?: TableProps | TableScanHight | Obj
@@ -494,7 +506,7 @@ declare interface RuleConfig {
 declare type SelectOptions =
 | DefaultOptionsType
 | Readonly<DefaultOptionsType>
-| Ref<DefaultOptionsType>
+| Ref_2<DefaultOptionsType>
 | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
 
 declare function setDefaultProps(props: Obj): void;
@@ -531,10 +543,10 @@ export declare const SuperButtons: DefineComponent<{
 
 export declare const SuperDetail: DefineComponent<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtDescriptionsOption>;
+    schema: PropType<ExtDescriptionsOption>;
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ObjectConstructor;
-    option: PropType<ExtDescriptionsOption>;
+    schema: PropType<ExtDescriptionsOption>;
 }>> & {
     onRegister?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
@@ -544,20 +556,21 @@ export declare const SuperForm: DefineComponent<SuperFormProps, any, unknown, {}
 declare type SuperFormProps = FormProps & {
     /** 是否为容器包装 */
     isContainer?: boolean;
-    config?: ExtFormOption;
+    schema?: ExtFormOption;
     /** 减少行距 */
     compact?: boolean;
     /** 不做校验 */
     ignoreRules?: boolean;
+    dataSource?: Obj;
     onRegister?: () => void;
 };
 
 export declare const SuperTable: DefineComponent<{
     dataSource: PropType<Obj<any>[]>;
-    option: PropType<RootTableOption>;
+    schema: PropType<RootTableOption>;
 }, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("register" | "load")[], "register" | "load", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: PropType<Obj<any>[]>;
-    option: PropType<RootTableOption>;
+    schema: PropType<RootTableOption>;
 }>> & {
     onLoad?: ((...args: any[]) => any) | undefined;
     onRegister?: ((...args: any[]) => any) | undefined;
@@ -585,13 +598,15 @@ declare interface TableScanHight {
 }
 
 declare interface TabsFilter extends Omit<TabsProps, 'activeKey'> {
+    field?: string
+    initialValue?: any
     bordered?: boolean
     options?: SelectOptions
     /** 字典名称 */
     dictName?: string
     /** 选项中的value使用label */
     valueToLabel?: boolean
-    activeKey?: string | number | Ref<string | number | undefined>
+    activeKey?: Ref_2<string | number | undefined>
     slots?: Obj<VSlot>
 }
 
@@ -674,6 +689,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     readonly onLoaded: (callback: (data: any) => void) => void;
     /** 重置查询表单，并重新查询 */
     readonly resetSearchForm: (param?: Obj) => void;
+    readonly getQueryParams: () => any;
     readonly selectedRowKeys: ComputedRef<any>;
     readonly selectedRows: ComputedRef<any>;
     /** 设置选中行 */

@@ -6,7 +6,7 @@ import type { ExtBaseOption } from '../exaTypes'
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
 function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
-  const { field, keepField = option.labelField, columns, subItems, initialValue } = option
+  const { field, keepField = option.labelField, columns, subItems, initialValue, value } = option
   const nameArr = field ? field.split('.') : []
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]
@@ -32,9 +32,9 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
         if (columns || subItems) {
           model.parent[refName] ??= toValue(initialValue) ?? (columns ? [] : {})
         } else {
-          model.parent[refName] ??= toValue(initialValue)
+          model.parent[refName] ??= toValue(value) ?? toValue(initialValue)
         }
-        model.refData = toRef(model.parent, refName)
+        model.refData = toRef(model.parent, refName, value)
         if (keepField) model.parent[keepField] ??= undefined
       } else {
         model.refData = data

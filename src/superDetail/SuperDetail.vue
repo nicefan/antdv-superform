@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, readonly } from 'vue'
+import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, readonly, toRef } from 'vue'
 import { buildModelsMap } from '../utils/buildModel'
 import { DetailLayout } from '../components/Detail'
 import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
@@ -7,22 +7,23 @@ import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
 export default defineComponent({
   props: {
     dataSource: Object,
-    option: Object as PropType<ExtDescriptionsOption>,
+    schema: Object as PropType<ExtDescriptionsOption>,
   },
   emits: ['register'],
   setup(props, ctx) {
-    const dataRef = ref(props.dataSource || {})
-    const option: Obj = shallowRef(props.option || {})
+    const option: Obj = shallowRef(props.schema || {})
+    const dataRef = props.dataSource ? toRef(props, 'dataSource') : ref(props.schema?.dataSource || {})
 
     const exposed = {
       setOption: (_option: ExtFormOption) => {
         option.value = _option
+        _option.dataSource && (dataRef.value = _option.dataSource)
       },
       setData: (data) => {
         dataRef.value = data
       },
     }
-    watch(() => props.dataSource, exposed.setData)
+    // watch(() => props.dataSource, exposed.setData)
 
     const modelsMap = ref()
     watch(
@@ -53,7 +54,7 @@ export default defineComponent({
             descriptionsProps: { ...option.value.attrs, ...option.value.descriptionsProps },
           } as any,
           modelsMap: modelsMap.value,
-          isRoot: true
+          isRoot: true,
         })
       )
   },

@@ -1,33 +1,47 @@
 import type { RootTableOption } from '../exaTypes'
-import { computed, reactive, ref, watch, mergeProps } from 'vue'
+import { computed, reactive, ref, watch, mergeProps, nextTick } from 'vue'
 import { throttle } from 'lodash-es'
 
 export function useQuery(option: Partial<RootTableOption>, dataSource: Ref) {
+  let isInit = false
+  nextTick(() => {
+    isInit = true
+    if (option.immediate !== false) {
+      query()
+    }
+  })
+
+  const searchParam = ref()
+  const otherParam = {}
+  const pageParam = reactive<Obj>({})
+  const loading = ref(false)
+
+  const callbacks: Fn[] = []
+  const onLoaded = (cb: Fn) => callbacks.push(cb)
+
   const queryApi = computed(() => {
     return typeof option.apis === 'function' ? apis : option.apis?.query
   })
-  const pageParam = reactive<Obj>({})
-  const searchParam = ref()
-  const loading = ref(false)
-  const callbacks: Fn[] = []
-  const onLoaded = (cb: Fn) => callbacks.push(cb)
 
   const request = (param?: Obj) => {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = {
-      ...ref(option.params).value,
+      ...otherParam,
       ...searchParam.value,
       ...param,
       ...pageParam,
     }
+    const _data = option.beforeQuery?.(_params) || _params
+
     loading.value = true
-    return Promise.resolve(queryApi.value?.(_params).then(setPageData)).finally(() => {
+    return Promise.resolve(queryApi.value?.(_data).then(setPageData)).finally(() => {
       loading.value = false
     })
   }
 
-  const setPageData = (res) => {
+  const setPageData = (data) => {
+    const res = option.afterQuery?.(data) || data
     if (Array.isArray(res)) {
       dataSource.value = res
       if (defPagination.value !== false) {
@@ -48,16 +62,26 @@ export function useQuery(option: Partial<RootTableOption>, dataSource: Ref) {
     pageParam.size = size
     throttleRequest()
   }
+
   const query = (param?: true | Obj) => {
     if (param === true) {
-      return request()
+    // 强制刷新，在新增修改后刷新数据
+      return request() 
     }
-    pageParam.current = 1
-    return throttleRequest(param)
+    if (isInit) {
+      pageParam.current = 1
+      return throttleRequest(param)
+    }
   }
-  const setSearchParam = (param?: Obj) => {
-    searchParam.value = param
+
+  const setQueryParams = (data?: Obj, target?: string) => {
+    if (target === 'form') {
+      searchParam.value = data
+    } else {
+      Object.assign(otherParam, data)
+    }
   }
+  const getQueryParams = () => ({ ...otherParam, ...searchParam.value })
 
   const pagination = ref<false | Obj>(false)
   const defPagination = computed(() => option.pagination || (option.attrs as Obj)?.pagination)
@@ -80,14 +104,15 @@ export function useQuery(option: Partial<RootTableOption>, dataSource: Ref) {
     }
   )
   const apis = computed(() => {
-    return queryApi.value && { ...option.apis, query: throttleRequest }
+    return queryApi.value && { ...option.apis, query }
   })
 
   return {
     apis,
     goPage,
     reload: throttleRequest,
-    setSearchParam,
+    setQueryParams,
+    getQueryParams,
     query,
     pagination,
     setPageData,

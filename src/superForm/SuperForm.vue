@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, ref, h, mergeProps, watchEffect, onMounted, computed, shallowReactive, provide } from 'vue'
-import { merge } from 'lodash-es'
+import { merge, defaults } from 'lodash-es'
 import Controls from '../components'
 import { globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
@@ -10,47 +10,46 @@ import { useInnerSlots } from '../utils'
 type SuperFormProps = FormProps & {
   /** 是否为容器包装 */
   isContainer?: boolean
-  config?: ExtFormOption
+  schema?: ExtFormOption
   /** 减少行距 */
   compact?: boolean
   /** 不做校验 */
   ignoreRules?: boolean
+  dataSource?: Obj
   onRegister?: () => void
 }
 export default defineComponent<SuperFormProps, any, unknown>({
   name: 'SuperForm',
   props: {
-    config: Object,
+    schema: Object,
     model: Object,
+    dataSource: Object,
     isContainer: Boolean,
   } as any,
   emits: ['register'],
   setup(props, ctx) {
-    // const { config, model, ...others } = props
-    // const { class: __class, ...attrs } = ctx.attrs
-    const formData: Obj = ref({})
     const formRef = ref()
     const formOption = shallowReactive<any>({
-      ...props.config,
-      // ...others,
-      attrs: mergeProps({ ...globalProps.Form }, { ...props.config?.attrs }),
+      ...props.schema,
+      dataSource: props.dataSource || props.model || props.schema?.dataSource,
+      attrs: mergeProps({ ...globalProps.Form }, { ...props.schema?.attrs }),
     })
     const actions = {
       setOption: (_option: ExtFormOption) => {
-        merge(formOption, props.config, _option)
-        formOption.attrs = mergeProps({ ...globalProps.Form }, { ...formOption.attrs })
-        if (formOption.model) {
-          formData.value = formOption.model
-          delete formOption.model
-        }
+        defaults(formOption, _option)
+        formOption.attrs = mergeProps(formOption.attrs, { ..._option.attrs }, { ...props.schema?.attrs })
+        // if (formOption.dataSource) {
+        //   formData.value = formOption.dataSource
+        //   // delete formOption.model
+        // }
       },
       setData: (data) => {
-        data && (formData.value = data)
+        data && (formOption.dataSource = data)
       },
     }
 
     provide('rootSlots', ctx.slots)
-    watchEffect(() => actions.setData(props.model))
+    // watchEffect(() => actions.setData(props.model))
 
     ctx.emit('register', actions)
     const register = (compRef) => {
@@ -78,7 +77,7 @@ export default defineComponent<SuperFormProps, any, unknown>({
         Controls.Form,
         {
           option: formOption,
-          source: formData.value,
+          // dataSource: formData.value,
           onRegister: register,
           class: { 'sup-container': isContainer.value },
         },

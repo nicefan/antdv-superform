@@ -4,8 +4,7 @@
 import Vue from 'vue'
 
 import { DefaultOptionType } from 'ant-design-vue/es/select'
-import type { Component, HTMLAttributes, VNode, VNodeChild, VNodeTypes } from 'vue'
-import { TreeDataItem } from 'ant-design-vue/es/tree/Tree'
+import type { Component, HTMLAttributes, VNode, VNodeChild, VNodeTypes, Ref } from 'vue'
 import type {
   SelectProps,
   FormProps,
@@ -57,7 +56,7 @@ interface ExtBaseOption {
   type: string
   field?: string
   vModelFields?: Obj<string>
-  // value?: Ref
+  value?: Ref
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
@@ -118,6 +117,7 @@ interface ExtGroupOption extends ExtGroupBaseOption {
 }
 interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
   title?: VSlot
+  dataSource?: Obj
   buttons?: ExtButtons
   mode?: 'table' | 'form' | 'default'
   attrs?: ExtDescriptionsProps
@@ -127,6 +127,7 @@ interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
   // type?: 'Form'
+  dataSource?: Obj
   attrs?: FormProps & HTMLAttributes
   isContainer?: boolean
   /** 减少行距 */
@@ -141,7 +142,7 @@ interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
 interface ButtonItem {
   label?: VSlot
   /** 确认提示文本 */
-  confirmText?: string
+  confirmText?: string | Fn<string>
   /** 权限标识 */
   roleName?: string
   roleMode?: 'hidden' | 'disable'
@@ -188,18 +189,20 @@ interface ExtButtonGroup<T extends string = string> {
   methods?: Obj<Fn>
   /** 传递到事件方法中可响应数据 */
   effectData?: Obj
-  actions?: (T | (ButtonItem | ({ name: T } & ButtonItem)))[]
+  actions?: (T | ({ name?: T } & ButtonItem))[]
   // subItems?: ButtonItem[]
 }
 type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 interface TabsFilter extends Omit<TabsProps, 'activeKey'> {
+  field?: string
+  initialValue?: any
   bordered?: boolean
   options?: SelectOptions
   /** 字典名称 */
   dictName?: string
   /** 选项中的value使用label */
   valueToLabel?: boolean
-  activeKey?: string | number | Ref<string | number | undefined>
+  activeKey?: Ref<string | number | undefined>
   slots?: Obj<VSlot>
 }
 type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
@@ -217,12 +220,12 @@ interface ExtTableOption extends ExtBaseOption {
   editMode?: 'inline' | 'modal'
   addMode?: 'inline' | 'modal'
   columns: ExtColumnsItem[]
-  tabsFilter?: TabsFilter
+  tabsFilter?: TabsFilter | false
   /** 公共列配置 */
   columnProps?: TableColumnProps
-  buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'>
+  buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
   /** 列表元素右边按钮 */
-  rowButtons?: ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps }
+  rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps })
   /** 弹窗属性 */
   modalProps?: ModalFuncProps | Obj
   descriptionsProps?: ExtDescriptionsProps
@@ -244,10 +247,14 @@ interface TableScanHight {
 interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
   isContainer?: boolean
   apis?: TableApis | TableApis['query']
+  dataSource?: Obj[] | Ref<any[]>
   params?: Obj
   /**是否立即查询，默认为true */
   immediate?: boolean
-  beforeSearch?: (data: { param?: Obj } | Obj) => Obj
+  /** 查询请求前可对请求参数进行处理 */
+  beforeQuery?: (data: Obj) => Obj
+  /** 查询请求后可对返回结果进行处理 */
+  afterQuery?: (data: Obj) => Obj
   searchSchema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
   pagination?: PaginationProps | false
   attrs?: TableProps | TableScanHight | Obj
@@ -315,6 +322,8 @@ interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
 /** 表单元素属性 */
 interface ExtFormItemOption extends ExtBaseOption {
   field: string
+  /** 指定ref对象时，同步变化 */
+  value?: any
   /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
   computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
   formItemProps?: FormItemProps
@@ -354,17 +363,21 @@ interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
   attrs?: {
     multiple?: boolean
     valueToString?: boolean
-  }
+  } & HTMLAttributes
 }
 interface ExtTagInputOption extends ExtFormItemOption {
   attrs?: {
     valueToString?: boolean
-  }
+  } & HTMLAttributes
 }
 interface ExtTreeOption extends ExtFormItemOption {
   labelField?: string
   attrs?: TreeSelectProps & HTMLAttributes
-  data: TreeSelectProps['treeData'][] | Fn<Promise<TreeSelectProps['treeData'][]>>
+  /**
+   * @deprecated 使用`treeData`
+   */
+  data?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
+  treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
 }
 interface ExtSwitchOption extends ExtFormItemOption {
   valueLabels?: [string, string]

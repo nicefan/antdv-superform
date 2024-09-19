@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, h, provide, inject, reactive, readonly, ref, watch } from 'vue'
+import { type PropType, h, provide, inject, reactive, readonly, ref, watch, toRef } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -14,9 +14,6 @@ export default {
       required: true,
       type: Object as PropType<GetOption<'Form'>>,
     },
-    source: {
-      type: Object,
-    },
     /** 按钮事件 */
     methods: Object,
     ignoreRules: {
@@ -28,10 +25,10 @@ export default {
       type: Boolean,
     },
   },
-  // emits: ['register', 'submit', 'reset'],
+  emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit, slots: ctxSlots }) {
     const formRef = ref()
-    const modelData = ref(props.source || {})
+    const modelData = ref(props.option.dataSource || {})
     const {
       option: { onSubmit, onReset, ...option },
       ignoreRules,
@@ -101,15 +98,15 @@ export default {
       },
     }
 
-    watch(
-      () => props.source,
-      (data) => {
-        if (data) {
-          formRef.value?.clearValidate()
-          modelData.value = data
-        }
-      }
-    )
+    // watch(
+    //   () => props.dataSource,
+    //   (data) => {
+    //     if (data) {
+    //       formRef.value?.clearValidate()
+    //       modelData.value = data
+    //     }
+    //   }
+    // )
 
     const exposeData = reactive({ ...actions })
     const getForm = (form) => {

@@ -6,9 +6,13 @@ import { getEffectData } from '../utils'
 
 export function useSearchForm(tableOption, tableRef, onChange) {
   const { columns, searchSchema } = tableOption
+  const formRef = ref()
+  const dataSource: Obj = searchSchema.dataSource || reactive({})
+
   const { buttons = {}, searchOnChange, ...formOption } = searchSchema
   Object.assign(formOption, {
     ignoreRules: true,
+    dataSource,
     subItems: [],
   })
 
@@ -20,28 +24,26 @@ export function useSearchForm(tableOption, tableRef, onChange) {
       return formOption.subItems.push(item)
     }
   })
-  const formRef = ref()
-  const formData: Obj = reactive({})
 
   const defaultAction = {
     search() {
-      onChange(toRaw(formData), true)
+      onChange()
     },
-    reset() {
-      const data = formRef.value.resetFields()
-      onChange(data, true)
+    reset(data?: Obj) {
+      formRef.value.resetFields(data)
+      // onChange(toRaw(dataSource))
     },
   }
 
   /** 手动设置查询条件 */
   const setParams = (params?: Obj) => {
-    params &&
-      Object.keys(params).forEach((key) => {
-        if (key in formData) formData[key] = params[key]
-      })
+    Object.assign(dataSource, params)
+    // params &&
+    //   Object.keys(params).forEach((key) => {
+    //     if (key in dataSource) dataSource[key] = params[key]
+    //   })
   }
 
-  const isDebounce = !!searchOnChange
   const buttonsConfig = Array.isArray(buttons) ? { actions: buttons } : { ...buttons }
   buttonsConfig.actions ??= !searchOnChange ? ['search', 'reset'] : undefined
 
@@ -57,35 +59,22 @@ export function useSearchForm(tableOption, tableRef, onChange) {
         }),
     })
   }
-  const paramsRef = ref(tableOption.params)
-  nextTick(() => {
-    if (tableOption.params) {
-      watch(
-        paramsRef,
-        (params) => {
-          setParams(params)
-          onChange(toRaw(formData), !isDebounce)
-        },
-        { immediate: true, deep: true }
-      )
-    } else {
-      /** 同步查询初始参数 */
-      onChange(formData, false)
+  // 更新初始化数据
+  const unWatch = watch(formRef, () => {
+    onChange(dataSource)
+    // 立即查询监听
+    if (searchOnChange) {
+      watch(dataSource, () => onChange())
     }
-
-    if (isDebounce) {
-      //  不带按钮实时搜索
-      // const debounceQuery = debounce(onChange, 500, { maxWait: 1000 })
-      watch(
-        [paramsRef, formData],
-        () => {
-          onChange(formData, true)
-        },
-        { deep: true }
-      )
-    }
+    unWatch()
   })
 
-  const formNode = () => h(Controls.Form, { option: formOption, source: formData, ref: formRef })
-  return { formNode, formRef, formData }
+  const formNode = () =>
+    h(Controls.Form, {
+      option: formOption,
+      ref: formRef,
+      onSubmit: defaultAction.search,
+      onReset: defaultAction.search,
+    })
+  return { formNode, formRef, ...defaultAction, dataSource }
 }

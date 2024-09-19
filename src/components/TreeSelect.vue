@@ -1,5 +1,5 @@
 <template>
-  <tree-select :placeholder="'请选择' + option.label" allow-clear @Change="onChange" :tree-data="treeData" />
+  <tree-select :placeholder="'请选择' + option.label" allow-clear @Change="onChange" :tree-data="dataRef" />
 </template>
 
 <script setup lang="ts">
@@ -15,18 +15,18 @@ const props = defineProps<{
   onChange?: Fn
 }>()
 
-const treeData = ref<any[]>([])
-const { data, labelField } = props.option
-if (typeof data === 'function') {
+const dataRef = ref<any[]>([])
+const { data, treeData = data, labelField } = props.option
+if (typeof treeData === 'function') {
   watchPostEffect(() => {
-    Promise.resolve(data(props.effectData)).then((res) => {
-      treeData.value = res
+    Promise.resolve(treeData(props.effectData)).then((res) => {
+      dataRef.value = res || []
     })
   })
 } else if (data) {
   watch(
-    () => props.option.data,
-    (data) => (treeData.value = data as any),
+    () => treeData,
+    (data) => (dataRef.value = data as any),
     { immediate: true }
   )
 }

@@ -15,13 +15,14 @@ export default defineComponent({
     /** 选项中的value使用label */
     valueToLabel: Boolean,
     activeKey: [String, Number, Object],
+    defaultActiveKey: [String, Number], 
     slots: Object,
   },
   emits: ['update:activeKey'],
   setup(props, { attrs, slots, emit }) {
     const { Card, Tabs, TabPane } = baseComps
     const { optionsRef } = useOptions(props, props.options, props.effectData)
-    const activeKey = ref(props.activeKey) as Ref<string | number | undefined>
+    const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<string | number | undefined>
     const updateActiveKey = (key) => {
       activeKey.value = key
       emit('update:activeKey', key)

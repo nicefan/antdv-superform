@@ -84,8 +84,9 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       /** 重置查询表单，并重新查询 */
       resetSearchForm(param?: Obj) {
         tableRef.value?.resetSearchForm(param)
-        tableRef.value?.query(param)
       },
+      getQueryParams: () => tableRef.value?.getQueryParams(),
+      // setQueryParams: (params: Obj) => asyncCall('setQueryParams', params),
       selectedRowKeys: computed(() => tableRef.value?.selectedRowKeys),
       selectedRows: computed(() => tableRef.value?.selectedRows),
       /** 设置选中行 */

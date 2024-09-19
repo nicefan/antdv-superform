@@ -58,7 +58,7 @@ export default defineComponent({
       return () =>
         h('div', {}, [
           (title || titleButton) &&
-            h(Row, { align: 'middle', class: 'ant-descriptions-header' }, () => [
+            h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
               title && h(Col, { class: 'sup-title' }, slots.title),
               titleButton?.(),
             ]),

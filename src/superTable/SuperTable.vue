@@ -9,12 +9,13 @@ import {
   watch,
   h,
   provide,
-  nextTick,
   onUnmounted,
+  toRef,
   toRefs,
   shallowReactive,
+  computed,
+  watchEffect,
 } from 'vue'
-import { merge } from 'lodash-es'
 import { useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
@@ -29,32 +30,33 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     dataSource: Array as PropType<Obj[]>,
-    option: Object as PropType<RootTableOption>,
+    schema: Object as PropType<RootTableOption>,
   },
   emits: ['register', 'load'],
   setup(props, ctx) {
-    const dataRef = ref((props.dataSource || []) as Obj[])
+    const dataRef = props.dataSource ? toRef(props, 'dataSource') : ref()
     const wrapRef = ref()
 
-    const option: Obj = shallowReactive(props.option || {})
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
-    merge(option, { attrs: mergeProps(option.attrs, ctxAttrs) })
-    const searchForm = ref()
+    const option: Obj = shallowReactive({ attrs: ctxAttrs })
 
-    const { loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setSearchParam } = useQuery(
-      option,
-      dataRef
-    )
+    const searchForm = ref()
+    const setOption = (_option: RootTableOption) => {
+      const { isScanHeight, inheritHeight, isFixedHeight, isContainer, ...attrs } = mergeProps(
+        globalProps.Table,
+        { ..._option.attrs },
+        option.attrs
+      )
+      Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
+    }
+
+    watchEffect(() => props.schema && setOption(props.schema))
+
+    const { loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setQueryParams, getQueryParams } =
+      useQuery(option, dataRef)
 
     const exposed = {
-      setOption: (_option: RootTableOption) => {
-        const { isScanHeight, inheritHeight, isFixedHeight, isContainer, ...attrs } = mergeProps(
-          globalProps.Table,
-          { ..._option.attrs },
-          option.attrs
-        )
-        Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
-      },
+      setOption,
       setData: (data) => {
         data && (dataRef.value = data)
       },
@@ -70,8 +72,10 @@ export default defineComponent({
         }
       },
       setPageData,
+      getQueryParams,
       getData: () => dataRef.value,
       dataRef,
+      searchForm: computed(() => searchForm.value?.formRef),
     }
 
     const tableRef = ref({ ...exposed })
@@ -90,7 +94,6 @@ export default defineComponent({
       loading,
     })
 
-    const tableSlot = ref()
     const windowResize = new AbortController()
     onUnmounted(() => {
       // 异步更新option,添加resize事件，需提前配置销毁
@@ -98,7 +101,10 @@ export default defineComponent({
       ctx.emit('register', null)
     })
     provide('rootSlots', ctx.slots)
+
     const slots = ref({})
+    const tableSlot = ref()
+
     const unWatch = watch(
       option,
       (opt) => {
@@ -108,8 +114,8 @@ export default defineComponent({
           return
         }
         slots.value = useInnerSlots(option.slots, ctx.slots)
-        const { columns, searchSchema, beforeSearch, maxHeight, isScanHeight = true, inheritHeight } = opt
-
+        const { columns, searchSchema, dataSource, maxHeight, isScanHeight = true, inheritHeight } = opt
+        dataRef.value ??= dataSource || []
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
         const effectData = reactive({ formData: dataRef, current: dataRef })
@@ -129,24 +135,32 @@ export default defineComponent({
         })
 
         if (searchSchema) {
-          searchForm.value = useSearchForm(opt, tableRef, (data, isSearch) => {
-            const _data = beforeSearch?.({ ...effectData, table: tableRef, param: data }) || data
-            setSearchParam(_data)
-            isSearch && query()
-          })
-        } else if (opt.params) {
-          watch(
-            () => opt.params,
-            () => query(),
-            { deep: true }
-          )
-        }
-
-        if (option.immediate !== false) {
-          nextTick(() => {
+          searchForm.value = useSearchForm(opt, tableRef, (data) => {
+            // 初始化时同步表单数据
+            data && setQueryParams(data, 'form')
             query()
           })
         }
+        const tabsField = opt.tabsFilter?.field
+        if (tabsField) {
+          const tabsKey = (opt.tabsFilter.activeKey ??= ref(opt.tabsFilter.defaultActiveKey))
+          watch(
+            tabsKey,
+            (key) => {
+              setQueryParams({ [tabsField]: key })
+              query()
+            },
+            { immediate: true }
+          )
+        }
+        watch(
+          ref(opt.params),
+          (p) => {
+            setQueryParams(p)
+            query()
+          },
+          { deep: true, immediate: true }
+        )
 
         if (isScanHeight || inheritHeight || maxHeight) {
           const { getScrollRef, redoHeight } = useTableScroll(option, dataRef, wrapRef, windowResize)
