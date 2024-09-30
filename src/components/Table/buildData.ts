@@ -22,7 +22,7 @@ function modalEdit({ initialData, rowKey, option, listener }) {
   const editForm = () =>
     h(Controls.Form, {
       option: formOption,
-      source: source,
+      dataSource: source,
       onRegister: (data) => (formRef.value = data),
     })
 

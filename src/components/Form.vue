@@ -14,6 +14,7 @@ export default {
       required: true,
       type: Object as PropType<GetOption<'Form'>>,
     },
+    dataSource: Object,
     /** 按钮事件 */
     methods: Object,
     ignoreRules: {
@@ -28,7 +29,7 @@ export default {
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit, slots: ctxSlots }) {
     const formRef = ref()
-    const modelData = ref(props.option.dataSource || {})
+    const modelData = props.dataSource ? toRef(props, 'dataSource') : ref(props.option.dataSource || {})
     const {
       option: { onSubmit, onReset, ...option },
       ignoreRules,
