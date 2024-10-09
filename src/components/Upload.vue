@@ -71,6 +71,7 @@ export default defineComponent({
     onPreview: Function,
     onRemove: Function,
     onDownload: Function,
+    onChange: Function,
     apis: Object,
   },
   emits: ['update:value', 'update:fileList'],
@@ -305,6 +306,7 @@ export default defineComponent({
         }
       }
       updateFileList([...fileList])
+      props.onChange?.({ file, fileList, event })
     }
 
     const customRequest = (args) => {
@@ -499,7 +501,7 @@ export default defineComponent({
             } as any,
             {
               ...slots,
-              default: isView.value || hideBody.value ? null : slots.default,
+              default: () => isView.value || (hideBody.value ? null : slots.default()),
             }
           )
   },
