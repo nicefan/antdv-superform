@@ -9,13 +9,12 @@ export default defineComponent({
     effectData: Object,
     disabledDate: Function,
   },
-
   setup(props, ctx) {
     const disabledDate = (currentDate) => {
       return props.disabledDate?.(currentDate, props.effectData)
     }
 
-    return () => h(base.DatePicker, { autofocus: true, valueFormat: 'YYYY-MM-DD', disabledDate }, ctx.slots)
+    return () => h(base.DatePicker, { valueFormat: 'YYYY-MM-DD', disabledDate }, ctx.slots)
   },
 })
 </script>

@@ -175,9 +175,9 @@ export default defineComponent({
         __slots
       ),
     ]
-    if (option.tabsFilter) {
+    if (option.tabs) {
       return () =>
-        h(TabsFilter, { ...option.tabsFilter, effectData } as any, {
+        h(TabsFilter, { ...option.tabs, effectData } as any, {
           [slotName]: slots[slotName],
           title: titleSlot && (() => toNode(titleSlot, effectData)),
           extra: extraSlot,

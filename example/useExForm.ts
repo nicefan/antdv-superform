@@ -1,4 +1,4 @@
-import { h, ref, watchEffect } from 'vue'
+import { h, ref, toRaw, watchEffect } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
 import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { Button, Modal } from 'ant-design-vue'
@@ -10,7 +10,7 @@ export default function exampleForm() {
     { value: '1', label: '一' },
     { value: '2', label: '二' },
   ])
-  
+
   const { openModal } = useModal(() => '这是内容', {
     destroyOnClose: false,
   })
@@ -70,13 +70,13 @@ export default function exampleForm() {
           // labelBgColor: '#faf2f2',
           bordered: true,
         },
-        buttons:{
+        buttons: {
           // vaildIn:'detail',
-          actions:[
+          actions: [
             {
-              label: '开始'
-            }
-          ]
+              label: '开始',
+            },
+          ],
         },
         // component: CustomGroup,
         subItems: [
@@ -99,7 +99,7 @@ export default function exampleForm() {
       },
       {
         type: 'Group',
-        title: () => h('h1','基本信息'),
+        title: () => h('h1', {}, '基本信息'),
         descriptionsProps: {
           title: '基本信息',
           mode: 'form',
@@ -110,10 +110,11 @@ export default function exampleForm() {
             type: 'InfoSlot',
             field: 'array',
             // label: 'render',
-            span: 24,
+            // span: 24,
+            blocked: true,
             initialValue: ['自定义消息'],
             render: (props) => {
-              return h('h2', {style:'border-bottom:1px solid'}, props.value?.[0])
+              return h('h2', { style: 'border-bottom:1px solid' }, props.value?.[0])
             },
           },
           {
@@ -147,7 +148,7 @@ export default function exampleForm() {
           },
           {
             type: 'InputSlot',
-            field: 'test',
+            // field: 'test',
             label: '模板插槽',
             labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name || ''}`),
             render: 'test',
@@ -159,11 +160,13 @@ export default function exampleForm() {
             initialValue: 'abc,ddo',
             attrs: {
               valueToString: true,
-            }
+              class: 'a',
+            },
           },
           {
             type: 'DatePicker',
             field: 'born',
+            initialValue: '2020-09-01',
             label: '生日',
             rules: { required: true, trigger: 'change' },
           },
@@ -240,7 +243,8 @@ export default function exampleForm() {
                 type: 'Select',
                 field: 'street',
                 label: '街道',
-                span: 10,
+                // hidden: true,
+                span: 'auto',
                 attrs: {
                   placeholder: '可输入动态添加选项',
                   showSearch: true,
@@ -271,6 +275,7 @@ export default function exampleForm() {
             label: '有效期',
             field: 'startDate',
             keepField: 'endDate',
+            hidden: ({ current }) => !current.isReg,
           },
           {
             type: 'InputList',
@@ -294,8 +299,8 @@ export default function exampleForm() {
                 type: 'DatePicker',
                 label: '日期b',
                 field: 'index2',
-                onChange: (data) => {
-                  console.log(data)
+                onChange: (...args) => {
+                  console.log(args)
                 },
                 // span: 8,
               },
@@ -304,6 +309,9 @@ export default function exampleForm() {
                 type: 'DatePicker',
                 label: '日期c',
                 field: 'index3',
+                attrs: {
+                  picker: 'quarter',
+                },
                 // rules: {required: true}
                 // span: 12,
               },
@@ -327,22 +335,22 @@ export default function exampleForm() {
               noInput: true,
             },
             attrs: {
-              apis: {
-                delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
-                upload: (data) => new Promise((resolve, reject) => setTimeout(()=>resolve({url:'http://abc.jpg'}), 5000)),
-              },
-              uploadMode: 'auto',
-              listType: 'picture',
+              // apis: {
+              //   delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
+              //   upload: (data) => new Promise((resolve, reject) => setTimeout(()=>resolve({url:'http://abc.jpg'}), 5000)),
+              // },
+              // uploadMode: 'auto',
+              listType: 'picture-card',
               isSingle: true,
-              showUploadList: false,
+              // showUploadList: false,
             },
-            slots: {
-              default(data) {
-                const {value, fileList} = data
-                const url = fileList[0]?.objectUrl || fileList[0]?.url
-                return h('div', {style: {background:`center / cover url("${url}")`, width: '90px', height:'120px', border: '1px solid'}})
-              }
-            },
+            // slots: {
+            //   default(data) {
+            //     const {value, fileList} = data
+            //     const url = fileList[0]?.objectUrl || fileList[0]?.url
+            //     return h('div', {style: {background:`center / cover url("${url}")`, width: '90px', height:'120px', border: '1px solid'}})
+            //   }
+            // },
           },
           {
             type: 'Upload',
@@ -361,13 +369,13 @@ export default function exampleForm() {
               valueKey: 'uid',
               apis: {
                 delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
-                upload: (data) => new Promise((resolve, reject) => setTimeout(()=>reject({message:'abc'}), 5000)),
+                upload: (data) => new Promise((resolve, reject) => setTimeout(() => reject({ message: 'abc' }), 5000)),
               },
               uploadMode: 'submit',
               multiple: true,
               accept: 'image/*',
               maxSize: 5,
-              listType: 'picture-card'
+              listType: 'picture-card',
             },
           },
           {
@@ -392,11 +400,12 @@ export default function exampleForm() {
         //   column: 3,
         //   mode: 'table',
         // },
+        subSpan: 6,
         attrs: {
           labelIndex: true,
         },
         rowButtons: {
-          align: 'left'
+          align: 'left',
         },
         columns: [
           {
@@ -413,13 +422,42 @@ export default function exampleForm() {
             field: 'money',
             rules: { required: true },
           },
+          {
+            type: 'InputNumber',
+            label: '合计',
+            field: 'total',
+            attrs: {
+              readonly: true,
+            },
+            computed(_, { formData, current, index }) {
+              let total = 0
+              formData.listGroup.some((item, i) => {
+                total += item.money || 0
+                return i === index
+              })
+              // current.total = total
+              return total
+            },
+          },
+          {
+            type: 'InputNumber',
+            label: '合计2',
+            field: 'total2',
+            attrs: {
+              readonly: true,
+            },
+            computed(_, { formData, current, index }) {
+              return current.total + 1
+            },
+          },
         ],
       },
       {
         type: 'Card',
         field: 'group',
         title: () => h('b', '分格线'),
-        disabled: ({ formData }) => !!formData.isReg,
+        // hidden:({current}) => current.isReg,
+        // disabled: ({ formData }) => !!formData.isReg,
         // descriptionsProps: {
         //   column: 3,
         //   labelCol: {},
@@ -477,6 +515,12 @@ export default function exampleForm() {
             ],
           },
           {
+            type: 'DateRange',
+            label: '有效期',
+            field: 'born',
+            keepField: 'end',
+          },
+          {
             type: 'InputNumber',
             field: 'width',
             label: '体重',
@@ -515,7 +559,7 @@ export default function exampleForm() {
             field: 'food',
             label: '食物',
             initialValue: [],
-            labelField:'foodName',
+            labelField: 'foodName',
             options: [
               { label: '中餐', value: '1' },
               { label: '西餐', value: '2' },
@@ -536,6 +580,9 @@ export default function exampleForm() {
                 console.log(args)
               },
             },
+            slots: {
+              title: (data) => h('span', {}, `${data.title}[${data.value}]`),
+            },
           },
         ],
       },
@@ -553,7 +600,7 @@ export default function exampleForm() {
           buttonType: 'link',
           actions: ['edit', 'delete'],
         },
-        formSchema: {
+        editForm: {
           subSpan: 12,
           attrs: {
             layout: 'vertical',
@@ -562,7 +609,7 @@ export default function exampleForm() {
         columns: [
           {
             type: 'Input',
-            label: () => h('span', {style: 'color:red'},'col1'),
+            label: () => h('span', { style: 'color:red' }, 'col1'),
             field: 'col1',
             initialValue: 'init',
             rules: { required: true },
@@ -587,6 +634,7 @@ export default function exampleForm() {
             key: 'tab1',
             label: '第一页',
             icon: AppleOutlined,
+            field: 'tab1',
             subItems: [
               {
                 type: 'List',
@@ -643,6 +691,7 @@ export default function exampleForm() {
           {
             key: 'tab2',
             label: '第二页',
+            field: 'tab2',
             hidden: ({ formData }) => formData.forever === 3,
             // disabled: true,
             subItems: [
@@ -656,11 +705,18 @@ export default function exampleForm() {
                 field: 'tab4',
                 label: 'tab4',
               },
+              {
+                type: 'DateRange',
+                label: '有效期',
+                field: 'startDate',
+                keepField: 'endDate',
+              },
             ],
           },
           {
             key: 'tab3',
             label: '第三页',
+            field: 'tab3',
             disabled: ({ formData }) => {
               console.log(formData)
               return !formData.isReg

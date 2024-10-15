@@ -5,7 +5,7 @@
         <h3>表格footer插槽</h3>
       </template>
     </MyTable> -->
-    <SuperTable @register="register">
+    <SuperTable :schema="tableSchema">
       <template #tableFooter>
         <h3>表格footer插槽</h3>
       </template>
@@ -22,7 +22,7 @@
 import { watch, reactive, ref, toRef } from 'vue'
 import { Row, Button } from 'ant-design-vue'
 import { myTableOption } from './formOption'
-import { useForm, useTable, SuperTable } from '../../src'
+import { useForm, useTable, SuperTable, defineTable } from '../../src'
 
 const props = defineProps<{
   msg: string
@@ -35,20 +35,22 @@ const params = reactive({
   name: undefined,
 })
 const selectedRowKeys = ref(['121'])
-const [register, table] = useTable({
+const dataso = ref<any[]>([])
+const tableSchema = defineTable({
   ...myTableOption,
+  dataSource: dataso,
   apis: {
     query: () =>
       new Promise((resolve) => {
-        setTimeout(() => resolve([]), 1000)
+        setTimeout(() => resolve(getData()), 1000)
       }),
   },
   attrs: {
     rowSelection: {
-      selectedRowKeys
+      selectedRowKeys,
     },
   },
-  tabsFilter: {
+  tabs: {
     options: ['湖南', '广东'],
     valueToLabel: true,
     activeKey: toRef(params, 'name'),
@@ -65,10 +67,10 @@ watch(selectedRowKeys, (v) => {
   console.log('v-：' + v)
 })
 const onSubmit = () => {
-  console.log(table.selectedRows)
-  console.log(table.getData())
+  // console.log(table.selectedRows)
+  // console.log(table.getData())
 }
-const setValue = () => {
+const getData = () => {
   const data = [
     {
       id: '121',
@@ -76,8 +78,9 @@ const setValue = () => {
       title: '大因',
       dataType: ['text'],
       isRequire: 1,
+      tip: '我租了二楼的三个商业用房共经营面积185平，装修时打通共用一个出入口，导致每个点步行到达过道上消火栓的距离大于25米，我现在应该是在室内加个消火栓，还是应该在面向消火栓的隔墙处加个开口？我这符合安装消火栓的要求吗？消火栓可以装在非公共区域吗？',
       col2: '12',
-      fileIds: ['a'],
+      // fileIds: ['a'],
       files: [
         {
           uid: 'a',
@@ -92,7 +95,7 @@ const setValue = () => {
       dataType: ['text'],
       isRequire: 1,
       col2: '122',
-      fileIds: ['a2'],
+      // fileIds: ['a2'],
       files: [
         {
           uid: 'a2',
@@ -101,6 +104,10 @@ const setValue = () => {
       ],
     },
   ]
-  table.setData(data)
+  return data
+}
+const setValue = () => {
+  // table.setData(data)
+  dataso.value = getData()
 }
 </script>

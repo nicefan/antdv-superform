@@ -1,8 +1,11 @@
+import { ref } from 'vue'
 import { defineTable } from '../../src'
+
+const key = ref()
 export const myTableOption = defineTable({
-  attrs: { 
-    // bordered: true, 
-    rowKey: 'id' 
+  attrs: {
+    // bordered: true,
+    rowKey: 'id',
   },
   // editMode: 'inline',
   addMode: 'modal',
@@ -10,12 +13,12 @@ export const myTableOption = defineTable({
     // forSlot: 'tabBarExtraContent',
     actions: ['add', 'edit', 'delete'],
   },
-  formSchema: {
+  editForm: {
     attrs: { layout: 'vertical' },
     subSpan: 24,
   },
   descriptionsProps: { column: 1, size: 'default', mode: 'table' },
-  searchSchema: {
+  searchForm: {
     attrs: {
       wrapperCol: { style: 'width:100px' },
     },
@@ -23,12 +26,12 @@ export const myTableOption = defineTable({
     subSpan: 8,
     subItems: ['date', 'title', { type: 'Input', label: '其它', field: 'other' }],
   },
-  beforeSearch(data) {
+  beforeQuery(data) {
     console.log(data)
     return data
   },
   title: 'avc',
-  params: {fieldName: 'abc'},
+  params: { fieldName: 'abc' },
   modalProps: { width: '500px' },
   rowButtons: {
     columnProps: {
@@ -52,13 +55,17 @@ export const myTableOption = defineTable({
       },
     ],
   },
-  tabsFilter: {
+  tabs: {
     options: ['湖南', '广东'],
     valueToLabel: true,
     bordered: true,
+    activeKey: key,
   },
   slots: {
-    footer: 'tableFooter'
+    footer: 'tableFooter',
+  },
+  columnProps: {
+    ellipsis: true,
   },
   columns: [
     { type: 'Hidden', field: 'id' },
@@ -76,14 +83,14 @@ export const myTableOption = defineTable({
       rules: { required: true },
     },
     {
-      type: 'Textarea',
+      // type: 'Textarea',
       label: '说明',
       field: 'tip',
       span: 24,
       rules: { required: true },
-      viewRender: (data) => {
-        return data.text
-      },
+      // viewRender: (data) => {
+      //   return data.text
+      // },
     },
     {
       type: 'Select',
@@ -106,12 +113,12 @@ export const myTableOption = defineTable({
       valueLabels: ['否', '是'],
     },
     { type: 'Input', field: 'col2', label: 'col2' },
-    { 
-      type: 'Upload', 
+    {
+      type: 'Upload',
       // hideInDescription: true,
-    field: 'files', 
-    label: '附件',
-    //  vModelFields: {fileList: 'files'}
-     },
+      field: 'files',
+      label: '附件',
+      //  vModelFields: {fileList: 'files'}
+    },
   ],
 })

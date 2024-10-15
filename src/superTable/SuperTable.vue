@@ -114,8 +114,8 @@ export default defineComponent({
           return
         }
         slots.value = useInnerSlots(option.slots, ctx.slots)
-        const { columns, searchSchema, dataSource, maxHeight, isScanHeight = true, inheritHeight } = opt
-        dataRef.value ??= dataSource || []
+        const { columns, searchSchema = opt.searchForm, dataSource, maxHeight, isScanHeight = true, inheritHeight } = opt
+        dataRef.value ??= toRef(dataSource || [])
         // 列表控件子表单模型
         const listData = buildModelsMap(columns)
         const effectData = reactive({ formData: dataRef, current: dataRef })
@@ -141,9 +141,9 @@ export default defineComponent({
             query()
           })
         }
-        const tabsField = opt.tabsFilter?.field
+        const tabsField = opt.tabs?.field
         if (tabsField) {
-          const tabsKey = (opt.tabsFilter.activeKey ??= ref(opt.tabsFilter.defaultActiveKey))
+          const tabsKey = (opt.tabs.activeKey ??= ref(opt.tabs.defaultActiveKey))
           watch(
             tabsKey,
             (key) => {

@@ -16,14 +16,14 @@ import Select from './Select.vue'
 import Switch from './Switch.vue'
 import DateRange from './DateRange.vue'
 import DatePicker from './DatePicker.vue'
-import TimePicker from './TimePicker.vue'
+// import TimePicker from './TimePicker.vue'
 import Radio from './Radio.vue'
 import Checkbox from './Checkbox.vue'
 import TreeSelect from './TreeSelect.vue'
 import Upload from './Upload.vue'
 import TagInput from './TagInput.vue'
 import TagSelect from './TagSelect.vue'
-import { override } from './base'
+import base, { override } from './base'
 
 export { ButtonGroup } from './buttons'
 export { default as Collections } from './Collections'
@@ -50,7 +50,7 @@ const formItems = {
   Switch,
   DateRange,
   DatePicker,
-  TimePicker,
+  TimePicker: base.TimePicker,
   Radio,
   Checkbox,
   TreeSelect,

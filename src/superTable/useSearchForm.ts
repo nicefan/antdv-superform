@@ -5,7 +5,7 @@ import Controls from '../components'
 import { getEffectData } from '../utils'
 
 export function useSearchForm(tableOption, tableRef, onChange) {
-  const { columns, searchSchema } = tableOption
+  const { columns, searchSchema = tableOption.searchForm } = tableOption
   const formRef = ref()
   const dataSource: Obj = searchSchema.dataSource || reactive({})
 

@@ -6,6 +6,9 @@
     :disabled="disabled"
     :class="onSearch || option.enterButton ? 'ant-input-search ant-input-search-enter-button' : ''"
   >
+    <template v-for="(slot, name) of $slots" #[name]="data">
+      <slot :name="name" v-bind="data"></slot>
+    </template>
     <template #addonAfter>
       <component v-if="addonAfter && !option.enterButton && !onSearch" :is="toNode(addonAfter, effectData.value)" />
       <component

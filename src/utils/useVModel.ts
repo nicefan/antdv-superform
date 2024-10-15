@@ -46,7 +46,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   // 表单绑定值，变更后同步处理后再改到实际存储变量中
   let effect: Fn
   if (type === 'DateRange' && keepField) {
-    tempData.value = []
+    tempData.value = [refValue.value, model.parent[keepField]]
     effect = (val) => {
       const [start, end] = val || []
       refValue.value = start

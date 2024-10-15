@@ -15,8 +15,11 @@ import { ref } from 'vue';
 const source = ref({})
 const { options, changeSelect } = useOption()
 const [detailRegister, { setData }] = useDetail(async () => {
-  return { isContainer: true, ...options }
-}, source)
+  return { 
+    isContainer: true,
+    // dataSource: source, 
+    ...options }
+})
 
 // const MyDetail = detailRegister()
 setTimeout(() => {

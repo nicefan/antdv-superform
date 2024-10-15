@@ -348,7 +348,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     columns: ExtColumnsItem[]
-    tabsFilter?: TabsFilter | false
+    tabs?: TabsHeader | false
     /** 公共列配置 */
     columnProps?: TableColumnProps
     buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
@@ -357,8 +357,10 @@ export declare interface ExtTableOption extends ExtBaseOption {
     /** 弹窗属性 */
     modalProps?: ModalFuncProps | Obj
     descriptionsProps?: ExtDescriptionsProps
-    /** 弹窗表单属性 */
-    formSchema?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
+    /** @deprecated 改为editForm */
+    formSchema?: void
+    /** 弹窗表单配置 */
+    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
 }
 
 export declare interface ExtTabsOption extends ExtBaseOption {
@@ -478,7 +480,12 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
     beforeQuery?: (data: Obj) => Obj
     /** 查询请求后可对返回结果进行处理 */
     afterQuery?: (data: Obj) => Obj
-    searchSchema?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
+    /**
+     * @deprecated 改为searchForm 
+     */
+    searchSchema?: void
+    /** 查询表单配置 */
+    searchForm?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
     pagination?: PaginationProps | false
     attrs?: TableProps | TableScanHight | Obj
 }
@@ -597,7 +604,7 @@ declare interface TableScanHight {
     inheritHeight?: boolean
 }
 
-declare interface TabsFilter extends Omit<TabsProps, 'activeKey'> {
+declare interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
     field?: string
     initialValue?: any
     bordered?: boolean
