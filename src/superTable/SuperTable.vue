@@ -34,7 +34,11 @@ export default defineComponent({
   },
   emits: ['register', 'load'],
   setup(props, ctx) {
-    const dataRef = props.dataSource ? toRef(props, 'dataSource') : ref()
+    const model = reactive({
+      refData: props.dataSource,
+      listData: undefined as any,
+    })
+    const dataRef = toRef(model, 'refData')
     const wrapRef = ref()
 
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
@@ -115,14 +119,14 @@ export default defineComponent({
         }
         slots.value = useInnerSlots(option.slots, ctx.slots)
         const { columns, searchSchema = opt.searchForm, dataSource, maxHeight, isScanHeight = true, inheritHeight } = opt
-        dataRef.value ??= toRef(dataSource || [])
+        if (!dataRef.value) {
+          model.refData = dataSource || []
+        }
         // 列表控件子表单模型
-        const listData = buildModelsMap(columns)
+        model.listData = buildModelsMap(columns)
+
         const effectData = reactive({ formData: dataRef, current: dataRef })
-        const model = reactive({
-          refData: dataRef,
-          listData,
-        })
+
 
         const {
           attrs: { onLoad, ...attrs },

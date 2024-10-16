@@ -41,15 +41,14 @@ export function useQuery(option: Partial<RootTableOption>, dataSource: Ref) {
   }
 
   const setPageData = (data) => {
-    const __data = isRef(dataSource.value) ? dataSource.value : dataSource
     const res = option.afterQuery?.(data) || data
     if (Array.isArray(res)) {
-      __data.value = res
+      dataSource.value = res
       if (defPagination.value !== false) {
         pagination.value = { ...pagination.value, total: res.length, current: 1 }
       }
     } else if (res?.records) {
-      __data.value = res.records
+      dataSource.value = res.records
       if (defPagination.value !== false) {
         pagination.value = { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
       }

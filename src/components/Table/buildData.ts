@@ -35,6 +35,8 @@ function modalEdit({ initialData, rowKey, option, listener }) {
   const methods = {
     add({ meta = {}, resetData }: Obj = {}) {
       source.value = merge({}, initialData, { [rowKey]: nanoid(12), ...resetData })
+      formRef.value?.clearValidate()
+
       return openModal({
         title: meta.title || meta.label || '新增',
         onOk() {
@@ -51,6 +53,7 @@ function modalEdit({ initialData, rowKey, option, listener }) {
       } else {
         source.value = cloneDeep(data)
       }
+      formRef.value?.clearValidate()
       return openModal({
         title: meta.title || meta.label || '修改',
         onOk() {

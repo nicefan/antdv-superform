@@ -5,7 +5,7 @@ import { debounce } from 'lodash-es'
 
 export function useTableScroll(
   option: Obj,
-  dataRef: Ref<Obj[]>,
+  dataRef: Ref<any>,
   wrapRef: Ref<HTMLElement | null>,
   abortController?: AbortController
 ) {
@@ -67,7 +67,6 @@ export function useTableScroll(
   }
 
   async function calcTableHeight() {
-    const tableData = unref(dataRef)
 
     const wrapEl = unref(wrapRef)
     if (!wrapEl) return
@@ -134,7 +133,7 @@ export function useTableScroll(
       const tableWrap = wrapEl.querySelector('.ant-table-wrapper') as HTMLElement
       tableWrap.style.height = ''
       tableWrap.style['overflow-y'] = undefined
-      if (!unref(tableData) || tableData.length === 0) {
+      if (!(unref(dataRef)?.length > 0)) {
         const emptyEl = tableEl.querySelector('.ant-empty')
         if (emptyEl) {
           const emptyCell = tableEl.querySelector('.ant-table-tbody .ant-table-cell') as HTMLElement
