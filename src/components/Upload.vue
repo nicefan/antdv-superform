@@ -46,7 +46,7 @@ export default defineComponent({
     option: { type: Object, required: true },
     model: Object,
     effectData: { type: Object, required: true },
-    value: [String, Array, Object] as PropType<string | string[] | Obj | Obj[]>,
+    value: null as unknown as PropType<any>,
     fileList: Array as PropType<any[]>,
     /** 指定文件信息字段 */
     infoNames: Object as PropType<Partial<Pick<FileInfo, 'uid' | 'name' | 'url'>>>,
@@ -68,6 +68,7 @@ export default defineComponent({
     disabled: Boolean,
     isImageUrl: Function,
     beforeUpload: Function,
+    showUploadList: { type: [Object, Boolean], default: undefined },
     onPreview: Function,
     onRemove: Function,
     onDownload: Function,
@@ -85,13 +86,14 @@ export default defineComponent({
       maxCount = isSingle ? 1 : 0,
       infoNames,
       repeatable,
+      showUploadList,
       onPreview,
       onDownload,
       isImageUrl = fileIsImage,
       outHide,
       valueKey,
     } = props
-    const { accept, listType } = ctx.attrs as Obj<string>
+    const { accept, listType } = ctx.attrs as Obj
 
     const preview = usePreview()
 
@@ -429,10 +431,15 @@ export default defineComponent({
       window.URL.revokeObjectURL(blobURL)
     }
     // 查看模式时，控制操作按钮
-    const listConfig = computed(() => ({
-      showRemoveIcon: !props.isView && !props.disabled,
-      showDownloadIcon: props.isView,
-    }))
+    const listConfig = computed(() =>
+      typeof showUploadList === 'boolean'
+        ? showUploadList
+        : {
+            showRemoveIcon: !props.isView && !props.disabled,
+            showDownloadIcon: props.isView,
+            ...showUploadList,
+          }
+    )
 
     const filePreview = (file) => {
       if (onPreview) {

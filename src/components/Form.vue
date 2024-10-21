@@ -46,7 +46,7 @@ export default {
     const submitRegister = (fn?: Fn<undefined | false | ({ errMessage: string } & Obj) | Awaited<any>>) => {
       fn && submitHandlers.add(fn)
     }
-    submitRegister(onSubmit)
+    // submitRegister(onSubmit)
 
     provide('exaProvider', {
       data: readonly(modelData),
@@ -77,6 +77,7 @@ export default {
             () => {
               const data = cloneDeep(modelData.value)
               emit('submit', data)
+              onSubmit?.(data)
               return data
             },
             (err) => {

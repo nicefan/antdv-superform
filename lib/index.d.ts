@@ -397,7 +397,7 @@ declare interface ExtUpload extends ExtFormItemOption {
     vModelFields?: {
         fileList?: string
     }
-    attrs: UploadProps & {
+    attrs?: UploadProps & {
         apis?: {
             upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
             delete?: (file: Obj) => Promise<any>
