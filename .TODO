@@ -1,0 +1,12 @@
+1、表单组件支持绑定动态值。
+  增加value属性绑定ref值
+  (可合并)增加vModelField属性，绑定其它同步field，原vModel用于绑定动态值
+
+2、修复：Hidden类型computed属性不生效
+
+3、useModal支持默认插槽
+
+4、computed属性没有立即执行
+5、 按钮limit按指定数量隐藏✅
+6、表格行按钮竖排 ✅
+7、useForm 添加onSubmit事件

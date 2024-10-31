@@ -339,7 +339,7 @@ export default function exampleForm() {
               //   delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
               //   upload: (data) => new Promise((resolve, reject) => setTimeout(()=>resolve({url:'http://abc.jpg'}), 5000)),
               // },
-              // uploadMode: 'auto',
+              uploadMode: 'custom',
               listType: 'picture-card',
               isSingle: true,
               // showUploadList: false,

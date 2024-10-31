@@ -19,7 +19,10 @@ const defaultProps = {
     layout: 'vertical',
   },
   Upload: {
-    uploadMode: 'submit'
+    uploadMode: 'submit',
+    showUploadList: {
+      showDownloadIcon: true,
+    }
   }
 }
 app

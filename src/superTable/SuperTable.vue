@@ -10,11 +10,12 @@ import {
   h,
   provide,
   onUnmounted,
-  toRef,
   toRefs,
   shallowReactive,
   computed,
   watchEffect,
+  isRef,
+  unref,
 } from 'vue'
 import { useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -32,17 +33,22 @@ export default defineComponent({
     dataSource: Array as PropType<Obj[]>,
     schema: Object as PropType<RootTableOption>,
   },
-  emits: ['register', 'load'],
+  emits: ['register', 'load', 'update:dataSource'],
   setup(props, ctx) {
-    const model = reactive({
-      refData: props.dataSource,
-      listData: undefined as any,
-    })
-    const dataRef = toRef(model, 'refData')
-    const wrapRef = ref()
-
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
     const option: Obj = shallowReactive({ attrs: ctxAttrs })
+    const dataRef = ref()
+    const wrapRef = ref()
+
+    const updateSource = (data) => {
+      dataRef.value = data
+      ctx.emit('update:dataSource', data)
+      if (isRef(option.dataSource)) {
+        option.dataSource.value = data
+      }
+    }
+    watchEffect(() => props.dataSource && updateSource(props.dataSource))
+    watchEffect(() => option.dataSource && updateSource(unref(option.dataSource)))
 
     const searchForm = ref()
     const setOption = (_option: RootTableOption) => {
@@ -57,12 +63,12 @@ export default defineComponent({
     watchEffect(() => props.schema && setOption(props.schema))
 
     const { loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setQueryParams, getQueryParams } =
-      useQuery(option, dataRef)
+      useQuery(option, updateSource)
 
     const exposed = {
       setOption,
       setData: (data) => {
-        data && (dataRef.value = data)
+        data && updateSource(data)
       },
       goPage,
       reload,
@@ -118,15 +124,15 @@ export default defineComponent({
           return
         }
         slots.value = useInnerSlots(option.slots, ctx.slots)
-        const { columns, searchSchema = opt.searchForm, dataSource, maxHeight, isScanHeight = true, inheritHeight } = opt
-        if (!dataRef.value) {
-          model.refData = dataSource || []
-        }
+        const { columns, searchSchema = opt.searchForm, maxHeight, isScanHeight = true, inheritHeight } = opt
+
         // 列表控件子表单模型
-        model.listData = buildModelsMap(columns)
+        const model = reactive({
+          refData: dataRef,
+          listData: buildModelsMap(columns),
+        })
 
         const effectData = reactive({ formData: dataRef, current: dataRef })
-
 
         const {
           attrs: { onLoad, ...attrs },

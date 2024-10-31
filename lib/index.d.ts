@@ -575,12 +575,13 @@ declare type SuperFormProps = FormProps & {
 export declare const SuperTable: DefineComponent<{
     dataSource: PropType<Obj<any>[]>;
     schema: PropType<RootTableOption>;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("register" | "load")[], "register" | "load", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
+}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("register" | "load" | "update:dataSource")[], "register" | "load" | "update:dataSource", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: PropType<Obj<any>[]>;
     schema: PropType<RootTableOption>;
 }>> & {
     onLoad?: ((...args: any[]) => any) | undefined;
     onRegister?: ((...args: any[]) => any) | undefined;
+    "onUpdate:dataSource"?: ((...args: any[]) => any) | undefined;
 }, {}, {}>;
 
 export declare type TableApis = {

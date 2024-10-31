@@ -2,7 +2,7 @@ import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, watch, mergeProps, nextTick, isRef } from 'vue'
 import { throttle } from 'lodash-es'
 
-export function useQuery(option: Partial<RootTableOption>, dataSource: Ref) {
+export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   let isInit = false
   nextTick(() => {
     isInit = true
@@ -43,12 +43,12 @@ export function useQuery(option: Partial<RootTableOption>, dataSource: Ref) {
   const setPageData = (data) => {
     const res = option.afterQuery?.(data) || data
     if (Array.isArray(res)) {
-      dataSource.value = res
+      updateSource(res)
       if (defPagination.value !== false) {
         pagination.value = { ...pagination.value, total: res.length, current: 1 }
       }
     } else if (res?.records) {
-      dataSource.value = res.records
+      updateSource(res.records)
       if (defPagination.value !== false) {
         pagination.value = { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
       }

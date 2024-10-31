@@ -56,8 +56,8 @@ export default {
 
     const submitValidate = (data) =>
       Promise.all(
-        [...submitHandlers].map(async (fn) => {
-          const validate = await fn(data)
+        [...submitHandlers, onSubmit].map(async (fn) => {
+          const validate = await fn?.(data)
           if (validate === false || (validate && validate.errMessage)) {
             return Promise.reject({ message: validate && validate.errMessage })
           } else {
@@ -77,7 +77,6 @@ export default {
             () => {
               const data = cloneDeep(modelData.value)
               emit('submit', data)
-              onSubmit?.(data)
               return data
             },
             (err) => {

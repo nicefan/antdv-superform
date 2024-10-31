@@ -1,6 +1,6 @@
 <template>
   <div style="background: #eee; padding: 16px">
-    <SuperForm @register="formRegister">
+    <SuperForm @register="formRegister" @submit="submitHandler">
       <template #formTop>
         <div style="text-align: center; background: #fff">
           <super-buttons style="margin: 16px" />
@@ -40,11 +40,14 @@ const dataSource = reactive({a:'a'})
 const [formRegister, form] = useForm({ isContainer: true, dataSource, ...options })
 // const sourceData = form.getSource()
 
-const onSubmit = () => {
+const submit = () => {
   console.log(dataSource)
   return form.submit().then((data) => {
     console.log(data)
   })
+}
+const submitHandler = (...arg) => {
+  console.log('提交了', arg)
 }
 const getData = () => {
   return {
@@ -95,7 +98,7 @@ const [SuperButtons] = useButtons({
   limit: 5,
   actions: [
     { label: '切换选项', onClick: changeSelect },
-    { label: '校验', onClick: onSubmit },
+    { label: '校验', onClick: submit },
     { label: '赋值', onClick: setValue },
     { label: '重置', onClick: reset },
     {
