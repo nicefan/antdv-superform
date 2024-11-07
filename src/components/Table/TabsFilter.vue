@@ -3,7 +3,7 @@ import baseComps from '../base'
 
 import { useOptions } from '../../utils/useOptions'
 import { h, computed, defineComponent, ref, toRef } from 'vue'
-import { useInnerSlots } from '../../utils'
+import { toNode, useInnerSlots } from '../../utils'
 
 export default defineComponent({
   props: {
@@ -15,7 +15,8 @@ export default defineComponent({
     /** 选项中的value使用label */
     valueToLabel: Boolean,
     activeKey: [String, Number, Object],
-    defaultActiveKey: [String, Number], 
+    defaultActiveKey: [String, Number],
+    customTab: Function,
     slots: Object,
   },
   emits: ['update:activeKey'],
@@ -40,12 +41,18 @@ export default defineComponent({
     const innerSlots = useInnerSlots(props.slots)
     const tabBarExtraSlot = tabBarExtra || rightExtra || tabBarExtraContent
     const tabList = computed(() => {
-      const list = optionsRef.value.map(({ value, label }) => ({ key: value, tab: label }))
+      const list = optionsRef.value.map(({ value, label, ...item }) => ({
+        ...item,
+        key: item.key ?? value,
+        tab: item.tab ?? label,
+      }))
       if (activeKey.value === undefined) {
-        updateActiveKey(list[0].key)
+        updateActiveKey(list[0]?.key)
       }
       return list
     })
+    const customTab = (item) =>
+      toNode(innerSlots.customTab || props.customTab || item.tab, { ...props.effectData, item })
     if (props.bordered) {
       return () =>
         h(
@@ -58,6 +65,7 @@ export default defineComponent({
           {
             ..._slots,
             default: innerContent,
+            customTab,
             title,
             tabBarExtraContent: tabBarExtraSlot || (!title ? extra : undefined),
             extra: tabBarExtraSlot || title ? extra : undefined,
@@ -76,7 +84,7 @@ export default defineComponent({
           },
           {
             ..._slots,
-            default: () => tabList.value.map((item) => h(TabPane, item)),
+            default: () => tabList.value.map((item) => h(TabPane, { ...item, tab: () => customTab(item) })),
             rightExtra: tabBarExtraSlot || (!title ? extra : undefined),
             ...innerSlots,
           }

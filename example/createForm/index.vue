@@ -19,7 +19,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { watch, reactive, ref, toRef } from 'vue'
+import { watch, reactive, ref, toRef, h } from 'vue'
 import { Row, Button } from 'ant-design-vue'
 import { myTableOption } from './formOption'
 import { useForm, useTable, SuperTable, defineTable } from '../../src'
@@ -55,6 +55,7 @@ const tableSchema = defineTable({
     valueToLabel: true,
     activeKey: toRef(params, 'name'),
     bordered: true,
+    customTab: ({ item }) => h('span', { style: 'font-size:18px' }, item.tab),
   },
   params,
 })

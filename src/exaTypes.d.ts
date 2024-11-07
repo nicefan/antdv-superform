@@ -204,6 +204,8 @@ interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
   valueToLabel?: boolean
   activeKey?: Ref<string | number | undefined>
   slots?: Obj<VSlot>
+  /** 设置tab标签 */
+  customTab?: Fn
 }
 type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
   field?: string

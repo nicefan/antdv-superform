@@ -616,6 +616,8 @@ declare interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
     valueToLabel?: boolean
     activeKey?: Ref_2<string | number | undefined>
     slots?: Obj<VSlot>
+    /** 设置tab标签 */
+    customTab?: Fn
 }
 
 export declare type UniOption = UniWrapperOption | UniWidgetOption
