@@ -264,7 +264,7 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
   */
   searchSchema?: void
   /** 查询表单配置 */
-  searchForm?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean }
+  searchForm?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean; teleport?: string }
   pagination?: PaginationProps | false
   attrs?: TableProps | TableScanHight | Obj
 }

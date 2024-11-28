@@ -1,6 +1,6 @@
 import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, watch, mergeProps, nextTick, isRef } from 'vue'
-import { throttle } from 'lodash-es'
+import { merge, throttle } from 'lodash-es'
 
 export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   let isInit = false
@@ -26,12 +26,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   const request = (param?: Obj) => {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
-    const _params = {
-      ...otherParam,
-      ...searchParam.value,
-      ...param,
-      ...pageParam,
-    }
+    const _params = merge({}, otherParam, searchParam.value, param, pageParam)
     const _data = option.beforeQuery?.(_params) || _params
 
     loading.value = true
@@ -65,8 +60,8 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
 
   const query = (param?: true | Obj) => {
     if (param === true) {
-    // 强制刷新，在新增修改后刷新数据
-      return request() 
+      // 强制刷新，在新增修改后刷新数据
+      return request()
     }
     if (isInit) {
       pageParam.current = 1
@@ -78,10 +73,10 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     if (target === 'form') {
       searchParam.value = data
     } else {
-      Object.assign(otherParam, data)
+      merge(otherParam, data)
     }
   }
-  const getQueryParams = () => ({ ...otherParam, ...searchParam.value })
+  const getQueryParams = () => merge({}, otherParam, searchParam.value)
 
   const pagination = ref<false | Obj>(false)
   const defPagination = computed(() => option.pagination || (option.attrs as Obj)?.pagination)

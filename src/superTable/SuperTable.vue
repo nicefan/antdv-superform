@@ -16,6 +16,7 @@ import {
   watchEffect,
   isRef,
   unref,
+  Teleport,
 } from 'vue'
 import { useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -196,7 +197,7 @@ export default defineComponent({
     return () =>
       tableSlot.value &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
-        searchForm.value
+        searchForm.value && !option.searchForm?.teleport
           ? h(
               'div',
               mergeProps(
@@ -220,7 +221,15 @@ export default defineComponent({
                   style,
                 }
               ),
-              tableSlot.value()
+              [
+                searchForm.value &&
+                  h(
+                    Teleport,
+                    { to: option.searchForm.teleport },
+                    h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode())
+                  ),
+                tableSlot.value(),
+              ]
             )
       )
   },
