@@ -41,6 +41,33 @@ function fileIsImage(file) {
   return (file.url || file.thumbUrl) && acceptValidtor('.png,.jpg,.jpeg,.gif,.webp,.svg,.tif,.tiff', file)
 }
 
+function createLoadModal(title, onOk?: Fn) {
+  const modal = Modal.info({
+    title: () => title,
+    okButtonProps: {
+      loading: true,
+    },
+    closable: false,
+    centered: true,
+    maskClosable: false,
+    keyboard: false,
+    onOk,
+  })
+
+  const setError = (title, err) => {
+    modal.update({
+      icon: () => h(CloseCircleOutlined),
+      okButtonProps: {
+        loading: false,
+      },
+      type: 'error',
+      title,
+      content: err?.message,
+    })
+  }
+  return { setError, ...modal }
+}
+
 export default defineComponent({
   props: {
     option: { type: Object, required: true },
@@ -177,19 +204,6 @@ export default defineComponent({
     )
 
     const isLoading = ref(false)
-    const openModal = (onOk?: Fn) => {
-      return Modal.info({
-        title: () => ' 文件同步中，请稍候...',
-        okButtonProps: reactive({
-          loading: isLoading,
-        }),
-        closable: false,
-        centered: true,
-        maskClosable: false,
-        keyboard: false,
-        onOk,
-      })
-    }
     onSubmit?.(() => {
       let stack: Promise<any> = Promise.resolve()
       if (mode === 'auto') {
@@ -217,7 +231,7 @@ export default defineComponent({
       if (removeFileMap.size) isLoading.value = true
 
       if (isLoading.value) {
-        const modal = openModal()
+        const modal = createLoadModal(' 文件同步中，请稍候...')
         return stack
           .then((data) =>
             // 文件删除出错不中断提交
@@ -226,17 +240,13 @@ export default defineComponent({
               .catch((err) => console.error(err))
               .finally(() => {
                 modal?.destroy()
+                isLoading.value = false
                 return data
               })
           )
           .catch((err) => {
             isLoading.value = false
-            modal.update({
-              icon: () => h(CloseCircleOutlined),
-              type: 'error',
-              title: '文件上传失败',
-              content: err?.message,
-            })
+            modal.setError('文件上传失败', err)
             return false
           })
       }
@@ -406,11 +416,19 @@ export default defineComponent({
       }
       return result
     }
+    const downloading = ref(false)
     const fileDownload =
       onDownload ||
       ((file) => {
-        if (apis.download) {
-          apis.download(reconvert(file)).then((result) => downloadByData(result, file.name))
+        if (apis.download && !downloading.value) {
+          const downModal = createLoadModal('文件下载中，请稍候...')
+          apis
+            .download(reconvert(file))
+            .then((result) => downloadByData(result, file.name))
+            .then(() => downModal.destroy())
+            .catch((err) => {
+              downModal.setError('文件下载失败', err)
+            }).finally(() => (isLoading.value = false))
         }
       })
     function downloadByData(data: BlobPart, filename: string, bom?: BlobPart) {

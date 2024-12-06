@@ -77,6 +77,7 @@ export default defineComponent({
     const abc = reactive({fieldName:'aaa'})
     /** 页面组件注册表格 */
     const [registTable, { setData: setTableData2 }] = useTable({
+      dataSource: ref([...data]),
       isContainer: true,
       ...myTableOption,
       // searchschema: undefined,

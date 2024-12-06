@@ -38,7 +38,7 @@ export default defineComponent({
   setup(props, ctx) {
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
     const option: Obj = shallowReactive({ attrs: ctxAttrs })
-    const dataRef = ref()
+    const dataRef = ref([])
     const wrapRef = ref()
 
     const updateSource = (data) => {

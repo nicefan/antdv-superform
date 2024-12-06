@@ -691,7 +691,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     readonly goPage: (page: number) => void;
     /** 刷新数据，不改动查询条件与当前页 */
     readonly reload: () => void;
-    /** 增加条件刷新数据 */
+    /** @deprecated 增加条件刷新数据 */
     readonly request: (param: Obj) => void;
     /** 手动执行条件查询，覆盖搜索表单参数 */
     readonly query: (param?: Obj) => Promise<any>;

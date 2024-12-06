@@ -69,7 +69,7 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       reload() {
         tableRef.value?.reload()
       },
-      /** 增加条件刷新数据 */
+      /** @deprecated 增加条件刷新数据 */
       request(param: Obj) {
         tableRef.value?.reload(param)
       },

@@ -115,6 +115,11 @@ export const myTableOption = defineTable({
     { type: 'Input', field: 'col2', label: 'col2' },
     {
       type: 'Upload',
+      attrs: {
+        apis:{
+          download: () => new Promise((resolve,reject) => setTimeout(reject, 2000))
+        },
+      },
       // hideInDescription: true,
       field: 'files',
       label: '附件',
