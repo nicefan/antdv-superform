@@ -67,7 +67,7 @@ declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
     buttons?: ExtButtons
 }
 
-export declare function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
+export declare function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
     modalRef: Ref_2<any>;
     modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
@@ -652,7 +652,7 @@ export declare function useForm(option: UseFormOption, data?: Obj): readonly [(a
 
 declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>);
 
-export declare function useModal(content: () => VNodeTypes, config?: ExtModalProps): {
+export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any>;
     openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
     modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
@@ -666,7 +666,6 @@ export declare function useModalForm(formOption: ExtFormOption, config?: ExtModa
     openModal: ({ data, onOk, ...__config }?: ModalFuncProps & {
         data?: Obj<any> | undefined;
     }) => Promise<void>;
-    closeModal: () => Promise<void>;
     formActions: {
         readonly dataSource: ComputedRef<any>;
         readonly getForm: () => Promise<any>;
@@ -677,6 +676,12 @@ export declare function useModalForm(formOption: ExtFormOption, config?: ExtModa
         readonly setFieldsValue: (data: Obj<any>) => Promise<any>;
         readonly setData: (data: any) => void;
     };
+    modalRef: Ref_2<any>;
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
+        [key: string]: any;
+    }>;
+    closeModal: () => Promise<void>;
+    setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
 };
 
 export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {

@@ -1,14 +1,16 @@
-import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, onUnmounted } from 'vue'
+import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, onUnmounted, inject } from 'vue'
 import type { VNode, VNodeTypes } from 'vue'
 import base from '../components/base'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
 import type { ModalProps, ModalFuncProps } from 'ant-design-vue'
+import { ConfigProvider } from 'ant-design-vue'
+
 import type { ExtButtons, ExtFormOption } from '../exaTypes'
 import { useForm } from '../superForm'
 import { toNode, useIcon } from '../utils'
 
-export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ...__config }: Obj = {}) {
+export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }: Obj = {}) {
   const visible = ref(false)
   const config = reactive({ ...__config, ...globalProps.Modal })
   const modalRef = ref()
@@ -42,7 +44,7 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
         ...props,
         onOk,
       },
-      { footer, title: titleSlot, ...ctx?.slots, default: content }
+      { footer, title: titleSlot, ...ctx?.slots, ...(content && { default: content }) }
     )
 
   const openModal = async (option?: ModalFuncProps | Obj) => {
@@ -66,11 +68,19 @@ export function createModal(content: (() => VNodeTypes) | VNode, { buttons, ..._
   }
 }
 type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & { buttons?: ExtButtons; [k: string]: any })
-export function useModal(content: () => VNodeTypes, config?: ExtModalProps) {
+export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
   const wrap: any = document.createDocumentFragment()
   let vm
+  const global = inject('configProvider', {} as any)
+  const Wrapper = (props) => {
+    const rootPrefixCls = global.getPrefixCls()
+    const prefixCls = props.prefixCls || ''.concat(rootPrefixCls, '-modal')
+    return h(ConfigProvider, { ...global, 'notUpdateGlobalConfig': true, 'prefixCls': rootPrefixCls }, () =>
+      modalSlot({ ...props, rootPrefixCls, prefixCls },{})
+    )
+  }
 
   const destroy = () => {
     render(null, wrap)
@@ -84,7 +94,7 @@ export function useModal(content: () => VNodeTypes, config?: ExtModalProps) {
     if (modalRef.value) {
       return openModal(option)
     } else {
-      vm = createVNode(modalSlot)
+      vm = createVNode(Wrapper, option as any)
       vm.appContext = ins?.appContext // 这句很关键，关联起了数据
 
       render(vm, wrap)
@@ -124,5 +134,5 @@ export function useModalForm(formOption: ExtFormOption, config: ExtModalProps = 
     form.resetFields(data)
     return modal.openModal({ ...__config, onOk: __onOk })
   }
-  return { openModal, closeModal: modal.closeModal, formActions: form }
+  return { ...modal, openModal, formActions: form }
 }

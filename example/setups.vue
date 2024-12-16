@@ -10,7 +10,7 @@
     <div style="margin-top: 16px; height: 800px">
       <super-table @register="registTable" :rowSelection="false" />
     </div>
-    <component :is="FormModalSlot" />
+    <!-- <component :is="FormModalSlot" /> -->
   </div>
 </template>
 <script lang="ts">
@@ -18,7 +18,7 @@ import { ref, defineComponent, inject, toRefs, h, reactive } from 'vue'
 import exampleForm from './useExForm'
 import { useTable, SuperTable, useForm, type ButtonItem } from '../src'
 import { SuperButtons } from '../src/superButtons'
-import { useModal } from '../src'
+import { useModal, useModalForm } from '../src'
 import { myTableOption } from './createForm/formOption'
 import { nanoid } from 'nanoid'
 import { SyncOutlined } from '@ant-design/icons-vue'
@@ -53,20 +53,20 @@ export default defineComponent({
       icon: () => h(SyncOutlined),
       width: 1400,
       height: 300,
-      buttons: [
-        {
-          label: '赋值',
-          onClick: () => {
-            myTable.setData([...data])
-          },
-        },
-        {
-          label: '确定',
-          onClick: ({ modalRef }) => {
-            modalRef?.onOk()
-          },
-        },
-      ],
+      // buttons: [
+      //   {
+      //     label: '赋值',
+      //     onClick: () => {
+      //       myTable.setData([...data])
+      //     },
+      //   },
+      //   {
+      //     label: '确定',
+      //     onClick: ({ modalRef }) => {
+      //       modalRef?.onOk()
+      //     },
+      //   },
+      // ],
     })
     const openTable = async () => {
       await myTableModal.openModal()
@@ -130,28 +130,31 @@ export default defineComponent({
       list: [{ tab1: 'tab1' }],
     })
     /** 弹窗表单 */
-    const dataSource = ref({})
-    const [exampleFormReg, form] = useForm(exampleForm().options)
-    const formModal = useModal(exampleFormReg(), {
-      title: '新增测试数据',
-      width: 1600,
-      destroyOnClose: true,
-      onOk() {
-        return form.submit().then((data) => {
-          console.log(data)
-        })
-      },
-    })
+    const formModal = useModalForm(exampleForm().options, {width: 1400})
+    // const dataSource = ref({})
+    // const [exampleFormReg, form] = useForm(exampleForm().options)
+    // const formModal = useModal(exampleFormReg(), {
+    //   title: '新增测试数据',
+    //   width: 1600,
+    //   destroyOnClose: true,
+    //   onOk() {
+    //     return form.submit().then((data) => {
+    //       console.log(data)
+    //     })
+    //   },
+    // })
     const openForm = () => {
-      setModalFormValue()
+      // setModalFormValue()
       // dataSource.value = getData()
-      formModal.openModal().then((form) => {
+      formModal.openModal({
+        data: getData()
+      }).then((form) => {
         console.log(form)
       })
     }
-    const setModalFormValue = () => {
-      form.setData(getData())
-    }
+    // const setModalFormValue = () => {
+    //   form.setData(getData())
+    // }
     const btnActions: ButtonItem[] = [
       {
         label: '弹窗表单',
@@ -179,7 +182,7 @@ export default defineComponent({
       },
     ]
     return {
-      FormModalSlot: formModal.modalSlot,
+      // FormModalSlot: formModal.modalSlot,
       btnActions,
       registTable,
     }

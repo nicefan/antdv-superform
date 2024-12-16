@@ -5,8 +5,7 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep, merge } from 'lodash-es'
-import message from 'ant-design-vue/es/message'
-import { useForm } from 'ant-design-vue/es/form'
+import {message, Form } from 'ant-design-vue'
 import style from '../style.module.scss'
 import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
@@ -31,7 +30,7 @@ function createEditCache(childrenMap) {
     if (!editInfo.editData) {
       const editData = reactive(cloneDeep(data))
       const { modelsMap, rules } = cloneModelsFlat(toRaw(childrenMap), editData)
-      const form = useForm(editData, ref(rules))
+      const form = Form.useForm(editData, ref(rules))
       form.clearValidate()
       Object.assign(editInfo, { ...info, form, modelsMap, editData })
     } else {
