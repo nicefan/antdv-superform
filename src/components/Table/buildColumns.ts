@@ -76,12 +76,22 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
         children: sub.columns,
       })
     } else {
+      const render = getViewNode(col)
       const column = {
         title,
         dataIndex: model.propChain.join('.'),
         // ...globalProps.Column,
         ...(col.columnProps as Obj),
-        customRender: getViewNode(col),
+        customRender:
+          render &&
+          ((...args) => {
+            const val = render(...args)
+            if (typeof val === 'string') {
+              return h('span', { title: val }, val)
+            } else {
+              return val
+            }
+          }),
       }
       columns.push(column)
       colsMap.set(col, column)

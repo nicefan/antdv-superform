@@ -83,6 +83,7 @@ export function getViewNode(option, effectData: Obj = {}) {
         props: { ...attrs, ...vModels },
         ...param,
         ...(content && { text: computed(() => content(param)) }),
+        isView: true
       })
       return colRender
         ? colRender(props)

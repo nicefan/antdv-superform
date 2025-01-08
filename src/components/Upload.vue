@@ -1,5 +1,17 @@
 <script lang="ts">
-import { defineComponent, type PropType, computed, ref, h, reactive, inject, shallowRef, watch, toRaw } from 'vue'
+import {
+  defineComponent,
+  type PropType,
+  computed,
+  ref,
+  h,
+  reactive,
+  inject,
+  shallowRef,
+  watch,
+  toRaw,
+  nextTick,
+} from 'vue'
 import {
   UploadOutlined,
   PaperClipOutlined,
@@ -13,6 +25,7 @@ import { message, Modal, Upload } from 'ant-design-vue'
 import { globalProps } from '../plugin'
 import usePreview from './usePreview'
 import { isArray, isFunction } from 'lodash-es'
+import { downloadByData, getBase64WithFile } from '../utils/file'
 
 interface FileInfo {
   /** 文件id */
@@ -31,14 +44,24 @@ interface FileInfo {
   status?: 'waiting' | 'error' | 'success' | 'done' | 'uploading' | 'removed'
 }
 
-function acceptValidtor(accept: string, file: FileInfo) {
+function acceptValidtor(file: FileInfo, accept: string) {
   return accept.split(',').some((str) => {
-    return file.name.endsWith(str) || (file.type && new RegExp(`^${str.replace('*', '\\S*')}$`).test(file.type))
+    return file.name?.endsWith(str) || (file.type && new RegExp(`^${str.replace('*', '\\S*')}$`).test(file.type))
   })
 }
 
+const imgs = '.png,.jpg,.jpeg,.gif,.webp,.svg,.tif,.tiff'
 function fileIsImage(file) {
-  return (file.url || file.thumbUrl) && acceptValidtor('.png,.jpg,.jpeg,.gif,.webp,.svg,.tif,.tiff', file)
+  if (file.thumbUrl) return true
+  if (file.url || file.originFileObj) {
+    const exName = (file.name || file.url)?.match(/[^\\.]*$/)?.[0]
+    if (exName && imgs.includes(exName)) {
+      return true
+    } else {
+      const type = file.type || file.url?.match(/^data:(\S*?);/)?.[1]
+      return type?.startsWith('image')
+    } 
+  }
 }
 
 function createLoadModal(title, onOk?: Fn) {
@@ -85,7 +108,7 @@ export default defineComponent({
     maxSize: Number,
     isSingle: Boolean,
     maxCount: Number,
-    uploadMode: String as PropType<'auto' | 'submit' | 'custom'>,
+    uploadMode: String as PropType<'auto' | 'submit' | 'custom' | 'base64'>,
     tip: String,
     title: [String, Function],
     /** 超出最大数量隐藏上传 */
@@ -124,7 +147,14 @@ export default defineComponent({
 
     const preview = usePreview()
 
-    const __names: Obj = { uid: 'uid', status: 'status', url: 'url', name: 'name', ...infoNames }
+    const __names: Obj = {
+      ...(valueKey && { [valueKey]: valueKey }),
+      uid: 'uid',
+      status: 'status',
+      url: 'url',
+      name: 'name',
+      ...infoNames,
+    }
     if (mode === 'custom') __names.originFileObj = ''
 
     const convertInfo = (info) => {
@@ -157,19 +187,20 @@ export default defineComponent({
     const waitingTasks = new Map<string, Fn<Awaited<any>>>()
 
     const updateFileList = (list) => {
-      innerFileList.value = list
       outFileList.value = list.map(reconvert)
-      if (props.isView) return
-      ctx.emit('update:fileList', outFileList.value)
-      updateValue()
+      if (!props.isView) {
+        ctx.emit('update:fileList', outFileList.value)
+        updateValue()
+      }
+      innerFileList.value = list
     }
 
     const updateValue = () => {
       if (props.isSingle) {
         const frist = toRaw(outFileList.value[0])
-        outValues.value = !valueKey ? frist : frist?.[valueKey] ?? innerFileList.value[0]?.uid // 指定key无值时用uid替代，满足表单校验
+        outValues.value = !valueKey ? frist : frist?.[valueKey] ?? frist?.[__names.uid] // 指定key无值时用uid替代，满足表单校验
       } else if (valueKey) {
-        outValues.value = innerFileList.value.map((item) => item[__names[valueKey]] ?? item.uid)
+        outValues.value = outFileList.value.map((item) => item[valueKey] ?? item[__names.uid])
       } else {
         outValues.value = outFileList.value
       }
@@ -181,12 +212,12 @@ export default defineComponent({
       (value) => {
         if (value !== outValues.value) {
           outValues.value = value
-          if (!valueKey && value) {
-            outFileList.value = isArray(value) ? value : [value]
-            const fileList = outFileList.value.map(convertInfo)
-            innerFileList.value = fileList
-          } else {
+          if (!value) {
             innerFileList.value = []
+          } else {
+            const values = isArray(value) ? value : [value]
+            outFileList.value = valueKey ? values.map((val) => ({ [valueKey]: val })) : values
+            innerFileList.value = outFileList.value.map(convertInfo)
           }
         }
       },
@@ -265,7 +296,7 @@ export default defineComponent({
             return '文件数量最多' + maxCount
           }
         }
-        if (accept && !acceptValidtor(accept, file)) {
+        if (accept && !acceptValidtor(file, accept )) {
           return '请选择正确的文件类型！'
         }
         if (minSize || maxSize) {
@@ -290,9 +321,11 @@ export default defineComponent({
         return Upload.LIST_IGNORE
       }
       if (mode === 'custom') {
-        return false
-      }
-      if (maxCount === 1 && innerFileList.value.length) {
+        // 显示上传列表时，返回false，禁用原上传！
+        if (showUploadList !== false) {
+          return false
+        }
+      } else if (maxCount === 1 && innerFileList.value.length) {
         const info = innerFileList.value[0]
         tasks.delete(info.uid)
         waitingTasks.delete(info.uid)
@@ -313,42 +346,45 @@ export default defineComponent({
         if (!event && mode !== 'auto') {
           file.status = 'waiting'
         }
-        if (listType?.startsWith('picture')) {
-          file.objectUrl = window.URL.createObjectURL(file.originFileObj)
-        }
       }
-      updateFileList([...fileList])
+      //beforeUpload返回false时，file为原始File对象，无status
       props.onChange?.({ file, fileList, event })
+      updateFileList([...fileList])
     }
 
     const customRequest = (args) => {
       const { file } = args
 
       if (mode === 'auto') {
-        tasks.set(file.uid, upload(args))
+        const promise = upload(args)
+        tasks.set(file.uid, promise)
+        return promise
       } else if (mode === 'submit') {
         waitingTasks.set(file.uid, () => upload(args))
+      } else if (mode === 'base64') {
+        return getBase64WithFile(file).then(({ result }) => successHandler({ url: result }, file))
       }
+    }
+
+    const errorHandler = (error, file) => {
+      const changeItem = innerFileList.value.find((item) => item.uid === file.uid)
+      Object.assign(changeItem, { error, status: 'error' })
+      updateFileList([...innerFileList.value])
+      // onError(error, undefined, file)
+      return Promise.reject(error)
+    }
+    const successHandler = (data, file) => {
+      const changeItem = innerFileList.value.find((item) => item.uid === file.uid)
+      Object.assign(changeItem, convertInfo(data), { status: 'done' })
+      updateFileList([...innerFileList.value])
+      return data
     }
 
     const upload = (args) => {
       const { file, filename, onProgress, onError, onSuccess } = args
 
-      const errorHandler = (error) => {
-        const changeItem = innerFileList.value.find((item) => item.uid === file.uid)
-        Object.assign(changeItem, { error, status: 'error' })
-        updateFileList([...innerFileList.value])
-        // onError(error, undefined, file)
-        return Promise.reject(error)
-      }
-      const successHandler = (data) => {
-        const changeItem = innerFileList.value.find((item) => item.uid === file.uid)
-        Object.assign(changeItem, convertInfo(data), { status: 'done' })
-        updateFileList([...innerFileList.value])
-        return data
-      }
       if (!apis.upload) {
-        return Promise.resolve().then(() => errorHandler(Error('Api config error')))
+        return Promise.resolve().then(() => errorHandler(Error('Api config error'), file))
       }
       const formData: any = new FormData()
       formData.append(filename, file)
@@ -359,11 +395,10 @@ export default defineComponent({
         onProgress(e)
       }
 
-      return apis
-        .upload(formData, {
-          onUploadProgress,
-        })
-        .then(successHandler, errorHandler)
+      return apis.upload(formData, { onUploadProgress }).then(
+        (res) => successHandler(res, file),
+        (err) => errorHandler(err, file)
+      )
     }
 
     const removeFileMap = new Map()
@@ -428,26 +463,11 @@ export default defineComponent({
             .then(() => downModal.destroy())
             .catch((err) => {
               downModal.setError('文件下载失败', err)
-            }).finally(() => (isLoading.value = false))
+            })
+            .finally(() => (isLoading.value = false))
         }
       })
-    function downloadByData(data: BlobPart, filename: string, bom?: BlobPart) {
-      const blobData = typeof bom !== 'undefined' ? [bom, data] : [data]
-      const blob = new Blob(blobData, { type: 'application/octet-stream' })
 
-      const blobURL = window.URL.createObjectURL(blob)
-      const tempLink = document.createElement('a')
-      tempLink.style.display = 'none'
-      tempLink.href = blobURL
-      tempLink.setAttribute('download', filename)
-      if (typeof tempLink.download === 'undefined') {
-        tempLink.setAttribute('target', '_blank')
-      }
-      document.body.appendChild(tempLink)
-      tempLink.click()
-      document.body.removeChild(tempLink)
-      window.URL.revokeObjectURL(blobURL)
-    }
     // 查看模式时，控制操作按钮
     const listConfig = computed(() =>
       typeof showUploadList === 'boolean'
@@ -469,11 +489,16 @@ export default defineComponent({
           .filter((item) => isImageUrl(item))
           .map((item, idx) => {
             if (item === file) current = idx
-            return item.objectUrl || item.url || item.thumbUrl
+            const url = item.url || item.thumbUrl
+            if (!url && item.originFileObj) {
+              item.objectUrl = window.URL.createObjectURL(item.originFileObj)
+            }
+            return url || item.objectUrl
           })
         preview.open({ images, current })
       }
     }
+
     const iconRender = ({ file, listType }) => {
       if (file.status === 'waiting') {
         return h(SyncOutlined)

@@ -31,7 +31,7 @@ const getDefault = () => {
         disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
       },
       submit: {
-        label: '确定',
+        label: '提交',
         attrs: {
           type: 'primary',
         },

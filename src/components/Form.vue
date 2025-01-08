@@ -6,6 +6,7 @@ import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
 import base from './base'
 import { message } from 'ant-design-vue'
+import { ButtonGroup } from './buttons'
 
 export default {
   name: 'SuperForm',
@@ -31,12 +32,11 @@ export default {
     const formRef = ref()
     const modelData = props.dataSource ? toRef(props, 'dataSource') : ref(props.option.dataSource || {})
     const {
-      option: { onSubmit, onReset, ...option },
+      option: { onSubmit, onReset, buttons, ...option },
       ignoreRules,
       compact,
     } = props
 
-    const { modelsMap, initialData } = buildModelsMap(option.subItems, modelData)
     const effectData = reactive({ formData: modelData, current: modelData })
     const { attrs } = useControl({ option, effectData })
 
@@ -108,6 +108,27 @@ export default {
     //     }
     //   }
     // )
+
+    const buttonsConfig: any = Array.isArray(buttons) ? { actions: buttons } : buttons
+
+    if (buttonsConfig?.actions?.length) {
+      option.subItems = [
+        ...option.subItems,
+        {
+          type: 'InfoSlot',
+          align: buttonsConfig.align || 'center',
+          span: buttonsConfig.span,
+          blocked: buttonsConfig.blocked ?? true,
+          render: () =>
+            h(ButtonGroup, {
+              option: buttonsConfig,
+              methods: { submit: actions.submit, reset: actions.resetFields },
+              effectData,
+            }),
+        },
+      ]
+    }
+    const { modelsMap, initialData } = buildModelsMap(option.subItems, modelData)
 
     const exposeData = reactive({ ...actions })
     const getForm = (form) => {

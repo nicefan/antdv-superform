@@ -53,7 +53,12 @@ export default function exampleForm() {
       mode: 'form',
       column: 2,
     },
-    buttons: ['submit'],
+    buttons: {
+      attrs: {
+        size:40,
+      },
+      actions:['submit', 'reset'],
+    },
     subSpan: 12,
     subItems: [
       {
@@ -339,16 +344,17 @@ export default function exampleForm() {
               //   delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
               //   upload: (data) => new Promise((resolve, reject) => setTimeout(()=>resolve({url:'http://abc.jpg'}), 5000)),
               // },
-              uploadMode: 'custom',
+              uploadMode: 'base64',
               listType: 'picture-card',
               isSingle: true,
+              valueKey: 'url',
               // showUploadList: false,
             },
             // slots: {
             //   default(data) {
             //     const {value, fileList} = data
             //     const url = fileList[0]?.objectUrl || fileList[0]?.url
-            //     return h('div', {style: {background:`center / cover url("${url}")`, width: '90px', height:'120px', border: '1px solid'}})
+            //     return h('div', {style: {background:`center / cover url("${url}")`, width: '100%', height:'100%'}})
             //   }
             // },
           },
