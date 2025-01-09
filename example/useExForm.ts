@@ -57,7 +57,11 @@ export default function exampleForm() {
       attrs: {
         size:40,
       },
-      actions:['submit', 'reset'],
+      actions: ['submit', 'reset'],
+    },
+    onSubmit: (data) => {
+      console.log(data)
+      return Promise.resolve()
     },
     subSpan: 12,
     subItems: [
@@ -381,7 +385,7 @@ export default function exampleForm() {
               multiple: true,
               accept: 'image/*',
               maxSize: 5,
-              listType: 'picture-card',
+              // listType: 'picture-card',
             },
           },
           {
@@ -597,14 +601,15 @@ export default function exampleForm() {
         field: 'table',
         label: '表格',
         // attrs: { bordered: true },
-        editMode: 'inline',
+        edit: true,
+        // editMode: 'inline',
         // addMode: 'modal',
         buttons: {
           actions: ['add', 'edit', 'delete'],
         },
         rowButtons: {
           buttonType: 'link',
-          actions: ['edit', 'delete'],
+          actions: ['add', 'delete'],
         },
         editForm: {
           subSpan: 12,
@@ -615,7 +620,8 @@ export default function exampleForm() {
         columns: [
           {
             type: 'Input',
-            label: () => h('span', { style: 'color:red' }, 'col1'),
+            labelSlot: () => h('span', { style: 'color:red' }, '第一列'),
+            label: '第一列',
             field: 'col1',
             initialValue: 'init',
             rules: { required: true },
@@ -625,10 +631,11 @@ export default function exampleForm() {
             label: '分组',
             span: 24,
             subItems: [
-              { type: 'Input', field: 'group1', label: '分组1' },
+              { type: 'Input', field: 'group1', label: '分组1', rules: { required: true }, },
               { type: 'Input', field: 'group2', label: '分组2' },
             ],
           },
+          { type: 'Switch', field: 'okable', label: '开关' },
           { type: 'Input', field: 'col2', label: 'col2', hideInTable: true },
         ],
       },

@@ -70,7 +70,8 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
       watch(
         // 使用ref让计算结果即使一样也会进行后面的赋值
         () => ref(__computed(raw, effectData)),
-        (val) => effect(unref(val))
+        (val) => effect(unref(val)),
+        {immediate: true, flush: 'post'}
       )
     )
   }

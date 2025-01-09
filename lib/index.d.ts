@@ -178,6 +178,8 @@ export declare type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type'
     /** 表格内容渲染 */
     viewRender?: VSlot
     columnProps?: TableColumnProps
+    /**是否可编辑 */
+    editable?: boolean
 }
 
 declare interface ExtDateRange extends ExtFormItemOption {
@@ -345,6 +347,8 @@ export declare interface ExtTableOption extends ExtBaseOption {
     field: string
     title?: VSlot
     attrs?: TableProps | Obj
+    /** 表格全部为编辑状态，开启后editMode无效 */
+    edit?: boolean
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     columns: ExtColumnsItem[]
@@ -353,7 +357,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
     columnProps?: TableColumnProps
     buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
     /** 列表元素右边按钮 */
-    rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail'> & { columnProps?: TableColumnProps })
+    rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnProps })
     /** 弹窗属性 */
     modalProps?: ModalFuncProps | Obj
     descriptionsProps?: ExtDescriptionsProps

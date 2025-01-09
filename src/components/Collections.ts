@@ -1,7 +1,7 @@
 import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults } from 'lodash-es'
-import Controls, { containers, formItemTypes } from './index'
+import Controls, { containers } from './index'
 import { ButtonGroup } from './buttons'
 import base from './base'
 import { getEffectData, toNode, useControl, useInnerSlots, useVModel } from '../utils'
@@ -32,14 +32,6 @@ export default defineComponent({
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
       const { type, label, align, blocked, span, hideInForm, labelSlot } = option
-      if (type === 'Hidden' || hideInForm) return
-
-      const colProps: Obj = { ...option.colProps, span }
-
-      defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
-      if (colProps.span === 0 || colProps.flex) {
-        colProps.span = undefined
-      }
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
         ...props.effectData,
@@ -47,6 +39,10 @@ export default defineComponent({
         field: subData.refName,
         value: subData.refName ? refData : undefined,
       })
+      if (type === 'Hidden' || hideInForm) {
+        useVModel({ option, model: subData, effectData })
+        return
+      }
       const { hidden, attrs } = useControl({
         option,
         effectData,
@@ -55,6 +51,12 @@ export default defineComponent({
 
       const innerNode = buildInnerNode(option, subData, effectData, attrs)
       if (!innerNode) return
+
+      const colProps: Obj = { ...option.colProps, span }
+      defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
+      if (colProps.span === 0 || colProps.flex) {
+        colProps.span = undefined
+      }
 
       if (parentType === 'InputGroup' && parentAttrs?.compact !== false) {
         const width = Number(colProps.span) && (100 / (24 / colProps.span)).toFixed(2) + '%'

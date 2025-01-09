@@ -31,7 +31,6 @@ export default defineComponent({
     const attrs: Obj = ctx.attrs
     const rowKey = attrs.rowKey || 'id'
     const orgList = toRef(model, 'refData')
-    const listData = model.listData
     const __rowSelection = option.attrs?.rowSelection // === true ? {} : attrs.rowSelection
     const selectedRowKeys = ref<string[]>(__rowSelection?.selectedRowKeys || [])
     const selectedRows = ref<Obj[]>([])
@@ -92,7 +91,7 @@ export default defineComponent({
       },
     }
 
-    const { list, columns, methods, modalSlot } = buildData({ option, listData, orgList, rowKey, listener, isView })
+    const { list, columns, methods, modalSlot } = buildData({ option, model, orgList, rowKey, listener, isView })
     const tableRef = ref()
 
     // TODO: 补充TS
