@@ -1,5 +1,5 @@
 <template>
-  <input-number style="width: 100%" type="number" allow-clear :placeholder="'请输入' + option.label" />
+  <input-number style="width: 100%" type="number" :placeholder="'请输入' + option.label" />
 </template>
 
 <script setup lang="ts">

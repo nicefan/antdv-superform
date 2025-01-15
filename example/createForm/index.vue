@@ -12,8 +12,8 @@
     </SuperTable>
     <Row :gutter="10">
       <!-- <a-button @click="changeSelect">切换选项</a-button> -->
-      <Button @click="onSubmit">提交</Button>
       <Button @click="setValue">赋值</Button>
+      <Button @click="nextPage">下一页</Button>
       <Button @click="setSelected">选中</Button>
     </Row>
   </div>
@@ -36,19 +36,23 @@ const params = reactive({
 })
 const selectedRowKeys = ref(['121'])
 const dataso = ref<any[]>([])
+const currentPage = ref(1)
 const tableSchema = defineTable({
   ...myTableOption,
   dataSource: dataso,
-  apis: {
-    query: () =>
-      new Promise((resolve) => {
-        setTimeout(() => resolve(getData()), 1000)
-      }),
-  },
+  // apis: {
+  //   query: () =>
+  //     new Promise((resolve) => {
+  //       setTimeout(() => resolve(getData()), 1000)
+  //     }),
+  // },
   attrs: {
     rowSelection: {
       selectedRowKeys,
     },
+    pagination:{
+      pageSize: 2,
+    }
   },
   tabs: {
     options: ['湖南', '广东'],
@@ -67,7 +71,8 @@ const setSelected = () => {
 watch(selectedRowKeys, (v) => {
   console.log('v-：' + v)
 })
-const onSubmit = () => {
+const nextPage = () => {
+  currentPage.value += 1
   // console.log(table.selectedRows)
   // console.log(table.getData())
 }
@@ -96,6 +101,21 @@ const getData = () => {
       dataType: ['text'],
       isRequire: 1,
       col2: '122',
+      // fileIds: ['a2'],
+      files: [
+        {
+          uid: 'a2',
+          name: 'a2.a2',
+        },
+      ],
+    },
+    {
+      id: '123',
+      fieldName: 'la3',
+      title: '大因3',
+      dataType: ['text'],
+      isRequire: 1,
+      col2: '123',
       // fileIds: ['a2'],
       files: [
         {

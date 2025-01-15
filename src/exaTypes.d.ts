@@ -148,6 +148,7 @@ interface ButtonItem {
   roleMode?: 'hidden' | 'disable'
   color?: 'success' | 'error' | 'warning' | 'primary'
   validOn?: 'form' | 'detail' | 'both'
+  dropdown?: DefaultOptionType
   tooltip?: string
   icon?: string | Component
   attrs?: Obj & HTMLAttributes
@@ -270,7 +271,7 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
   /** 查询表单配置 */
   searchForm?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean; teleport?: string }
   pagination?: PaginationProps | false
-  attrs?: TableProps | TableScanHight | Obj
+  attrs?: TableProps | (TableProps & TableScanHight) | Obj
 }
 interface ExtListOption extends ExtBaseOption, ExtRow {
   field: string

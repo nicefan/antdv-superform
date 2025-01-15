@@ -1,7 +1,18 @@
 <template>
   <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
-    <template v-for="({ attrs, icon, label, tooltip }, index) of btns" :key="label">
-      <Tooltip v-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
+    <template v-for="({ attrs, icon, label, tooltip, dropdown, menu, onClick }, index) of btns" :key="label">
+      <Dropdown v-if="dropdown">
+        <template #overlay>
+          <Menu @click="onClick">
+            <menu-item v-for="item of menu" :key="item.value">{{ item.label }}</menu-item>
+          </Menu>
+        </template>
+        <Button v-bind="attrs">
+          <component v-if="icon" :is="useIcon(icon)" />
+          <component :is="() => toNode(label, effectData)" /><DownOutlined />
+        </Button>
+      </Dropdown>
+      <Tooltip v-else-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
           ><component v-if="icon" :is="useIcon(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
@@ -33,11 +44,12 @@
 <script setup lang="ts">
 import { ref, watchEffect, reactive, toValue } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
-import { EllipsisOutlined } from '@ant-design/icons-vue'
+import { EllipsisOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { getComputedStatus, useDisabled, useIcon, toNode } from '../../utils'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
+import { isArray, isPlainObject, uniq } from 'lodash-es'
 
 const props = defineProps<{
   option: ExtButtons
@@ -54,7 +66,7 @@ const isDivider = divider ?? (attrs?.direction !== 'vertical' && ['link', 'text'
 
 <script lang="ts">
 function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
-  const { size, buttonShape, buttonType, roleMode, limit = 3, hidden, disabled, actions, iconOnly } = config
+  const { size, buttonShape, buttonType, roleMode, limit, hidden, disabled, actions, iconOnly } = config
   const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)
   const isHide = getComputedStatus(hidden, param)
@@ -78,10 +90,19 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
     const isHide = getComputedStatus(item.hidden, param)
     const disabled = item.disabled !== undefined ? useDisabled(item.disabled, param) : dis
     const onClick = (e) => {
-      e.stopPropagation()
-      item.onClick?.(param)
+      !(e.domEvent || e).stopPropagation()
+      item.onClick?.({ ...param, e })
     }
     const _class = item.color && `ant-btn-${item.color}`
+    if (item.dropdown) {
+      let menu = isArray(item.dropdown) ? item.dropdown : []
+      if (isPlainObject(item.dropdown)) {
+        menu = Object.entries(item.dropdown).map(([value, label]) => ({ value, label }))
+      } else if (typeof menu[0] !== 'object') {
+        menu = uniq(menu).map((txt) => ({ value: txt, label: txt }))
+      }
+      return { isHide, ...item, menu, onClick, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled } }
+    }
     return { isHide, ...item, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled, onClick } }
   })
 
@@ -90,9 +111,12 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
 
   watchEffect(() => {
     const items = isHide.value ? [] : allBtns.filter(({ isHide }) => !isHide.value)
-    const count = iconOnly && items.length === limit + 1 ? limit + 1 : limit
-    btns.value = items.slice(0, count)
-    moreBtns.value = items.slice(count)
+    btns.value = items
+    if (limit) {
+      const count = iconOnly && items.length === limit + 1 ? limit + 1 : limit
+      btns.value = items.slice(0, count)
+      moreBtns.value = items.slice(count)
+    }
   })
   return { btns, moreBtns, defaultAttrs }
 }

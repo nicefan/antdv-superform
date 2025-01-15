@@ -2,7 +2,6 @@
   <Input
     :placeholder="'请输入' + (option.label || '')"
     max-length="100"
-    allow-clear
     :disabled="disabled"
     :class="onSearch || option.enterButton ? 'ant-input-search ant-input-search-enter-button' : ''"
   >

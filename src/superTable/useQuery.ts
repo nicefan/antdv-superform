@@ -1,5 +1,5 @@
 import type { RootTableOption } from '../exaTypes'
-import { computed, reactive, ref, watch, mergeProps, nextTick, isRef } from 'vue'
+import { computed, reactive, ref, watch, mergeProps, nextTick } from 'vue'
 import { merge, throttle } from 'lodash-es'
 
 export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
@@ -39,13 +39,15 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     const res = option.afterQuery?.(data) || data
     if (Array.isArray(res)) {
       updateSource(res)
-      if (defPagination.value !== false) {
-        pagination.value = { ...pagination.value, total: res.length, current: 1 }
+      if (pagination.value !== false) {
+        Object.assign(pagination.value, { total: res.length })
+        // pagination.value = { ...pagination.value, total: res.length, current: 1 }
       }
     } else if (res?.records) {
       updateSource(res.records)
-      if (defPagination.value !== false) {
-        pagination.value = { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
+      if (pagination.value !== false) {
+        Object.assign(pagination.value, { total: res.total })
+        // pagination.value = { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
       }
     }
     return Promise.all(callbacks.map((cb) => cb(res)))
@@ -79,25 +81,31 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   const getQueryParams = () => merge({}, otherParam, searchParam.value)
 
   const pagination = ref<false | Obj>(false)
-  const defPagination = computed(() => option.pagination || (option.attrs as Obj)?.pagination)
   watch(
-    defPagination,
+    () => option.pagination || (option.attrs as Obj)?.pagination,
     (def) => {
       if (def === false) return
+      Object.assign(pageParam, { size: def?.pageSize || 10, current: def?.current || 1 })
       pagination.value = mergeProps(
         {
           onChange: goPage,
           // onShowSizeChange: goPage,
         },
-        { ...def }
+        {
+          ...def,
+          pageSize: pageParam.size,
+          current: pageParam.current,
+        }
       )
-      if (def?.pageSize) pageParam.size = def.pageSize
     },
     {
       immediate: true,
       flush: 'sync',
     }
   )
+  watch(pageParam, (p) => {
+    pagination.value && (pagination.value = { ...pagination.value, pageSize: p.size, current: p.current })
+  })
   const apis = computed(() => {
     return queryApi.value && { ...option.apis, query }
   })

@@ -1,7 +1,6 @@
 <template>
   <Select
     option-filter-prop="label"
-    allow-clear
     :placeholder="'请选择' + option.label"
     :options="optionsRef"
     @change="onChange"

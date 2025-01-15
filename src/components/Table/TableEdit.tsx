@@ -19,7 +19,7 @@ export default function ({ model, orgList, rowKey }) {
         const hash = record[rowKey] || nanoid(12)
         record[rowKey] = hash
         // 原数据已经存在, 此处建立表单绑定
-        const { modelsMap } = cloneModelsFlat(toRaw(childrenMap), record, [...model.propChain, idx])
+        const { modelsMap } = cloneModelsFlat(toRaw(childrenMap), record, [...(model.propChain || []), idx])
 
         return modelsMap
       })

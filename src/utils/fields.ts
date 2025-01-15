@@ -1,4 +1,4 @@
-import { cloneDeep, mergeWith } from 'lodash-es'
+import { cloneDeep } from 'lodash-es'
 
 export function resetFields(origin, data = {}, initial = {}) {
   for (const [key, value] of Object.entries(origin)) {

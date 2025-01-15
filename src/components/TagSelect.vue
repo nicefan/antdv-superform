@@ -1,6 +1,6 @@
 <template>
   <checkable-tag
-    v-bind ="$attrs"
+    v-bind="$attrs"
     class="tag-select"
     v-for="{ label, value } of optionsRef"
     :key="value"
@@ -11,7 +11,7 @@
   </checkable-tag>
 </template>
 <script lang="ts" setup>
-import { computed, effect, ref } from 'vue'
+import { computed } from 'vue'
 import baseComps from './base'
 import { useOptions } from '../utils/useOptions'
 

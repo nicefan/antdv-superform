@@ -49,6 +49,7 @@ export declare interface ButtonItem {
     roleMode?: 'hidden' | 'disable'
     color?: 'success' | 'error' | 'warning' | 'primary'
     validOn?: 'form' | 'detail' | 'both'
+    dropdown?: DefaultOptionType
     tooltip?: string
     icon?: string | Component
     attrs?: Obj & HTMLAttributes
@@ -491,7 +492,7 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
     /** 查询表单配置 */
     searchForm?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean; teleport?: string }
     pagination?: PaginationProps | false
-    attrs?: TableProps | TableScanHight | Obj
+    attrs?: TableProps | (TableProps & TableScanHight) | Obj
 }
 
 declare interface RuleConfig {

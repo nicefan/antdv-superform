@@ -100,7 +100,6 @@ export default defineComponent({
 
     const tableAttrs: Obj = reactive({
       apis,
-      pagination,
       onRegister: register,
       loading,
     })
@@ -138,7 +137,7 @@ export default defineComponent({
         const {
           attrs: { onLoad, ...attrs },
         } = useControl({ option: opt, effectData })
-        Object.assign(tableAttrs, attrs)
+        Object.assign(tableAttrs, attrs, { pagination })
 
         onLoaded((data) => {
           ctx.emit('load', data)
