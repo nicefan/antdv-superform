@@ -208,15 +208,14 @@ interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
   /** 设置tab标签 */
   customTab?: Fn
 }
-type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
-  field?: string
+type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
   /** 应用于表格或编辑表单 */
   hideInTable?: boolean
   /** 表格内容渲染 */
   viewRender?: VSlot
   columnProps?: TableColumnProps
   /**是否可编辑 */
-  editable?: boolean
+  editable?: boolean | Fn<boolean>
 }
 interface ExtTableOption extends ExtBaseOption {
   field: string
@@ -487,7 +486,7 @@ export type UniOption = UniWrapperOption | UniWidgetOption
 
 declare global {
   export type GetOption<T extends keyof OptionType> = OptionType[T] & { type?: T }
-  export type GetBaseOption = ExtBaseOption & ExtRow
+  export type GetBaseOption = Partial<ExtBaseOption> & ExtRow
   export type MixWrapper = {
     [K in keyof WrapperTypes]: (k: Partial<WrapperTypes[K]>) => void
   }[keyof WrapperTypes] extends (k: infer U) => void
@@ -499,7 +498,7 @@ declare global {
     ? U & ExtColumnsItem & Partial<CollapseItem> & { type?: string }
     : never
 
-  export interface ModelData<T = ExtBaseOption> {
+  export interface ModelData<T = GetBaseOption> {
     refData: any
     refName?: string
     parent: Obj
@@ -516,8 +515,8 @@ declare global {
     /** 存储列表配置默认数据 */
     listData: ModelChildren
   }
-  export type ModelsMap<T = ExtBaseOption> = Map<T, ModelData>
-  export interface ModelChildren<T = ExtBaseOption> {
+  export type ModelsMap<T = GetBaseOption> = Map<T, ModelData>
+  export interface ModelChildren<T = GetBaseOption> {
     modelsMap: ModelsMap<T>
     rules: Obj
     initialData: any

@@ -1,7 +1,6 @@
 import buildRule from './buildRule'
 import { reactive, ref, toRef, toValue, watch, markRaw } from 'vue'
 import { cloneDeep } from 'lodash-es'
-import type { ExtBaseOption } from '../exaTypes'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
@@ -105,7 +104,7 @@ export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain
 }
 
 /** 针对表格行生成平铺数据模型 */
-export function cloneModelsFlat<T extends ExtBaseOption>(orgMaps: ModelsMap<T>, data?: Obj, chain?: any[]) {
+export function cloneModelsFlat<T extends GetBaseOption>(orgMaps: ModelsMap<T>, data?: Obj, chain?: any[]) {
   const { modelsMap, rules } = cloneModels(orgMaps, data, chain)
   const newMaps: [T, ModelData][] = []
   ;(function deepCopy(_maps) {

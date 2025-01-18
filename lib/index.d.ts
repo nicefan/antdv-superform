@@ -172,15 +172,14 @@ export declare interface ExtCollapseOption extends ExtBaseOption {
     subItems: CollapseItem[]
 }
 
-export declare type ExtColumnsItem = (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>) & {
-    field?: string
+export declare type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
     /** 应用于表格或编辑表单 */
     hideInTable?: boolean
     /** 表格内容渲染 */
     viewRender?: VSlot
     columnProps?: TableColumnProps
     /**是否可编辑 */
-    editable?: boolean
+    editable?: boolean | Fn<boolean>
 }
 
 declare interface ExtDateRange extends ExtFormItemOption {

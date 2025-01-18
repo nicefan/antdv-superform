@@ -143,11 +143,12 @@ export default defineComponent({
 
 export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
   const { type, render } = option
+  if (!type) return 
+
   const rootSlots = inject<Obj>('rootSlots', {})
-
   const slots = useInnerSlots(option.slots)
-
   const renderSlot = render ? (typeof render === 'function' ? render : rootSlots[render]) : Controls[type]
+
   let node
   if (type === 'Text' || type === 'InfoSlot') {
     node = renderSlot ? () => renderSlot({ props: attrs, ...effectData }) : () => h('span', attrs, model.refData)
