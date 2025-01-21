@@ -82,9 +82,12 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
 
   const pagination = ref<false | Obj>(false)
   watch(
-    () => option.pagination || (option.attrs as Obj)?.pagination,
+    () => option.pagination ?? (option.attrs as Obj)?.pagination,
     (def) => {
-      if (def === false) return
+      if (def === false) {
+        pagination.value = false
+        return
+      }
       Object.assign(pageParam, { size: def?.pageSize || 10, current: def?.current || 1 })
       pagination.value = mergeProps(
         {
