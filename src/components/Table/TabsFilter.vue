@@ -79,6 +79,7 @@ export default defineComponent({
           Tabs,
           {
             ...attrs,
+            style: { marginTop: '-12px' },
             activeKey: activeKey.value,
             'onUpdate:activeKey': updateActiveKey,
           },
