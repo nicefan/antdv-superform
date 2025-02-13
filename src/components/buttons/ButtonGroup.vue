@@ -1,10 +1,12 @@
 <template>
   <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
     <template v-for="({ attrs, icon, label, tooltip, dropdown, menu, onClick }, index) of btns" :key="label">
-      <Dropdown v-if="dropdown">
+      <Dropdown v-if="dropdown" :disabled="attrs.disabled">
         <template #overlay>
           <Menu @click="onClick">
-            <menu-item v-for="item of menu" :key="item.value">{{ item.label }}</menu-item>
+            <menu-item v-for="item of menu" :key="item.value">
+              <component :is="() => toNode(item.label, effectData)" />
+            </menu-item>
           </Menu>
         </template>
         <Button v-bind="attrs">
@@ -33,7 +35,6 @@
           <menu-item v-for="{ attrs, icon, label } of moreBtns" :key="label" :disabled="attrs.disabled">
             <Button block v-bind="attrs" shape="">
               <component v-if="icon" :is="useIcon(icon)" />
-              {{ label }}
             </Button>
           </menu-item>
         </Menu>

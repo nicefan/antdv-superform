@@ -2,7 +2,8 @@
 import { type PropType, defineComponent, h, reactive } from 'vue'
 import baseComps from './base'
 import { useOptions } from '../utils/useOptions'
-
+import { Radio, RadioButton } from 'ant-design-vue'
+import { toNode } from '../utils'
 const { RadioGroup } = baseComps
 
 export default defineComponent({
@@ -24,11 +25,16 @@ export default defineComponent({
   setup(props, { attrs }) {
     const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
-    const allAttrs: Obj = reactive({ name: props.option.field, options: optionsRef })
-    if (attrs.buttonStyle) {
-      allAttrs.optionType = 'button'
-    }
-    return () => h(RadioGroup, allAttrs)
+    const optionType = attrs.optionType || (attrs.buttonStyle && 'button')
+
+    return () =>
+      h(RadioGroup, { name: props.option.field, optionType } as any, () =>
+        optionsRef.value.map((item) =>
+          h(optionType === 'button' ? RadioButton : Radio, { value: item.value, disabled: item.disabled }, () =>
+            toNode(item.label, props.effectData)
+          )
+        )
+      )
   },
 })
 </script>

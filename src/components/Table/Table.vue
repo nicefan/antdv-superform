@@ -1,6 +1,6 @@
 <script lang="ts">
-import { h, ref, reactive, type PropType, defineComponent, toRef, mergeProps, watch } from 'vue'
-import { ButtonGroup, createButtons } from '../buttons'
+import { h, ref, reactive, type PropType, defineComponent, toRef, watch } from 'vue'
+import { createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
 import { Col, Row } from 'ant-design-vue'
