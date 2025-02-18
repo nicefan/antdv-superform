@@ -40,14 +40,15 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     if (Array.isArray(res)) {
       updateSource(res)
       if (pagination.value !== false) {
-        Object.assign(pagination.value, { total: res.length })
-        // pagination.value = { ...pagination.value, total: res.length, current: 1 }
+        pageParam.current = 1
+        pagination.value = { ...pagination.value, total: res.length }
       }
     } else if (res?.records) {
       updateSource(res.records)
       if (pagination.value !== false) {
-        Object.assign(pagination.value, { total: res.total })
-        // pagination.value = { ...pagination.value, total: res.total, pageSize: res.size, current: res.current }
+        pageParam.current = res.current
+        pageParam.size = res.size
+        pagination.value = { ...pagination.value, total: res.total }
       }
     }
     return Promise.all(callbacks.map((cb) => cb(res)))
@@ -88,6 +89,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
         pagination.value = false
         return
       }
+      // 提取可响应属性绑定，
       Object.assign(pageParam, { size: def?.pageSize || 10, current: def?.current || 1 })
       pagination.value = mergeProps(
         {
