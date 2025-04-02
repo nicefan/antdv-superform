@@ -53,6 +53,9 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       /** 异步获取表格引用 */
       getTable,
       tableRef,
+      redoHeight() {
+        asyncCall('redoHeight')
+      },
       setData(data: Obj[]) {
         asyncCall('setPageData', data)
       },

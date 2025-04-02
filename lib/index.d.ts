@@ -692,6 +692,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     /** 异步获取表格引用 */
     readonly getTable: () => Promise<any>;
     readonly tableRef: Ref_2<any>;
+    readonly redoHeight: () => void;
     readonly setData: (data: Obj[]) => void;
     /** 返回当前表格数据 */
     readonly getData: () => any;

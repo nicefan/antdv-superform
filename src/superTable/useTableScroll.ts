@@ -15,24 +15,16 @@ export function useTableScroll(
   // Greater than animation time 280
   const debounceRedoHeight = debounce(redoHeight, 100)
 
-  const {
-    maxHeight,
-    isScanHeight = true,
-    inheritHeight,
-    isFixedHeight,
-    resizeHeightOffset,
-    attrs: { scroll },
-  } = option
+  const getScrollRef = ref<any>({})
 
-  if (isScanHeight || inheritHeight || maxHeight) {
+  const listenResize = () => {
+    getScrollRef.value = option.attrs?.scroll
     watch(
       () => [wrapRef.value, unref(dataRef)?.length],
       () => {
         debounceRedoHeight()
       },
-      {
-        flush: 'post',
-      }
+      { flush: 'post' }
     )
     // onMounted(() => {
     //   redoHeight()
@@ -40,10 +32,23 @@ export function useTableScroll(
     if (abortController) {
       window.addEventListener('resize', debounceRedoHeight, { signal: abortController.signal })
     } else {
-      window.addEventListener('resize', debounceRedoHeight)
-      onUnmounted(() => {
-        window.removeEventListener('resize', debounceRedoHeight)
-      })
+      // onUnmounted(() => {
+      //   window.removeEventListener('resize', debounceRedoHeight)
+      // })
+      const unwatch = watch(
+        wrapRef,
+        (el) => {
+          if (el) {
+            el.addEventListener('redoHeight', debounceRedoHeight)
+            const resizeObserver = new ResizeObserver(() => {
+              debounceRedoHeight()
+            })
+            resizeObserver.observe(el)
+            unwatch()
+          }
+        },
+        { immediate: true, flush: 'post' }
+      )
     }
   }
 
@@ -52,8 +57,6 @@ export function useTableScroll(
       calcTableHeight()
     })
   }
-
-  const getScrollRef = ref(scroll)
 
   function setHeight(height: number | null) {
     scrollHeightRef.value = height
@@ -67,7 +70,7 @@ export function useTableScroll(
   }
 
   async function calcTableHeight() {
-
+    const { maxHeight, inheritHeight, isFixedHeight, resizeHeightOffset } = option
     const wrapEl = unref(wrapRef)
     if (!wrapEl) return
 
@@ -151,9 +154,6 @@ export function useTableScroll(
       }
     }
   }
-  // useResizeObserver(tableEl, (entries) => {
-  //   debounceRedoHeight();
-  // });
 
-  return { getScrollRef, redoHeight, debounceRedoHeight }
+  return { getScrollRef, redoHeight, debounceRedoHeight, listenResize }
 }

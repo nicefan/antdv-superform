@@ -65,12 +65,14 @@ export default defineComponent({
 
     const { loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setQueryParams, getQueryParams } =
       useQuery(option, updateSource)
+    const { getScrollRef, redoHeight, listenResize } = useTableScroll(option, dataRef, wrapRef)
 
     const exposed = {
       setOption,
       setData: (data) => {
         data && updateSource(data)
       },
+      redoHeight,
       goPage,
       reload,
       query,
@@ -104,10 +106,10 @@ export default defineComponent({
       loading,
     })
 
-    const windowResize = new AbortController()
+    // const windowResize = new AbortController()
     onUnmounted(() => {
       // 异步更新option,添加resize事件，需提前配置销毁
-      windowResize.abort()
+      // windowResize.abort()
       ctx.emit('register', null)
     })
     provide('rootSlots', ctx.slots)
@@ -173,7 +175,7 @@ export default defineComponent({
         )
 
         if (isScanHeight || inheritHeight || maxHeight) {
-          const { getScrollRef, redoHeight } = useTableScroll(option, dataRef, wrapRef, windowResize)
+          listenResize()
           tableAttrs.scroll = getScrollRef
           const { onChange, onExpandedRowsChange } = tableAttrs
           tableAttrs.onChange = (...args) => {

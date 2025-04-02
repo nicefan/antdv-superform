@@ -166,4 +166,3 @@ export default {
   },
 }
 </script>
-<style src="./style.module.scss" module></style>

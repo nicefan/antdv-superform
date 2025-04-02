@@ -1,7 +1,6 @@
 import { toRaw, watch, reactive, h, toRef, defineComponent, computed, unref } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep, isFunction } from 'lodash-es'
-import style from '../style.module.scss'
 import Controls from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
 import base from '../base'
@@ -78,9 +77,9 @@ export default function ({ model, orgList, rowKey }) {
           ? h(
               base.FormItem,
               reactive({
+                wrapperCol: {},
                 name: model.propChain,
                 rules,
-                class: style['table-form-item'],
               }),
               inputSlot
             )

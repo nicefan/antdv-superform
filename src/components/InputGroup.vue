@@ -41,7 +41,7 @@ export default defineComponent({
         // 监听子组件数据变化
         watch(
           () => model.refData,
-          () => formItemContext.value.onFieldChange(),
+          () => formItemContext.value?.onFieldChange(),
           { deep: true }
         )
       } else {
@@ -52,7 +52,7 @@ export default defineComponent({
           _propChain = propChain
           watch(
             () => model.refData[refName],
-            () => formItemContext.value.onFieldChange()
+            () => formItemContext.value?.onFieldChange()
           )
         }
       }
@@ -60,7 +60,7 @@ export default defineComponent({
       if (ruleObj) {
         watch(
           () => model.refData,
-          () => formItemContext.value.onFieldChange()
+          () => formItemContext.value?.onFieldChange()
         )
       }
       extProps.style = 'margin: 0'
@@ -69,13 +69,14 @@ export default defineComponent({
     // 生成FormItem
     const rules = computed(() => (props.disabled ? undefined : ruleObj))
     const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps, extProps)
+    const _label = labelSlot || label
 
     return () =>
       h(
         base.FormItem,
         { ...formItemAttrs, rules: rules.value, ref: formItemContext, name: _propChain },
         {
-          label: () => toNode(labelSlot || label, props.effectData),
+          label: _label && (() => toNode(labelSlot || label, props.effectData)),
           default:
             slots?.default ||
             (() =>

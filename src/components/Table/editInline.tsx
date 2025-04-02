@@ -1,12 +1,7 @@
-/**
- * @deprecated: 行内编辑表格
- */
-
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep, merge } from 'lodash-es'
 import {message, Form } from 'ant-design-vue'
-import style from '../style.module.scss'
 import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
 import base from '../base'
@@ -149,7 +144,6 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
           base.FormItem,
           {
             ...form.validateInfos[ruleName],
-            class: style['table-form-item'],
           },
           inputSlot
         )

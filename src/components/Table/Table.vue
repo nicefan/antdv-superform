@@ -170,6 +170,7 @@ export default defineComponent({
           ...attrs,
           rowSelection,
           rowKey,
+          class:'sup-table-wrapper',
         },
         __slots
       ),

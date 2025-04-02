@@ -35,6 +35,7 @@
           <menu-item v-for="{ attrs, icon, label } of moreBtns" :key="label" :disabled="attrs.disabled">
             <Button block v-bind="attrs" shape="">
               <component v-if="icon" :is="useIcon(icon)" />
+              <component :is="() => toNode(label, effectData)" />
             </Button>
           </menu-item>
         </Menu>

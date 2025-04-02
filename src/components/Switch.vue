@@ -18,7 +18,7 @@ export default defineComponent({
       type: Object,
     },
     value: {
-      type: Number,
+      type: [Number, String, Boolean],
     },
   },
   emits: ['update:value'],
