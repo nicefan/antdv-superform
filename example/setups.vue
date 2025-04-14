@@ -7,7 +7,7 @@
       <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
       <div @click="console.log('kk')" roleName="add3">新增3</div>
     </super-buttons>
-    <div style="margin-top: 16px; height: 800px">
+    <div style="margin-top: 16px">
       <super-table @register="registTable" :rowSelection="false" />
     </div>
     <!-- <component :is="FormModalSlot" /> -->
@@ -82,7 +82,7 @@ export default defineComponent({
       ...myTableOption,
       // searchschema: undefined,
       // maxHeight: 500,
-      inheritHeight: true,
+      // inheritHeight: true,
       // resizeHeightOffset: 16,
       isFixedHeight: true,
       pagination: {
@@ -169,7 +169,7 @@ export default defineComponent({
         tooltip: '提示',
         label: '表格赋值',
         onClick: () => {
-          const list = new Array(50).fill({ ...data[0], id: nanoid() })
+          const list = [...new Array(50)].map((_, index) =>({ ...data[0], col2: index, id: nanoid() }))
           setTableData2(list)
         },
       },

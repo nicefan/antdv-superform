@@ -6,6 +6,7 @@ export const myTableOption = defineTable({
   attrs: {
     // bordered: true,
     rowKey: 'id',
+    pagination: false,
   },
   // editMode: 'inline',
   addMode: 'modal',
@@ -31,7 +32,7 @@ export const myTableOption = defineTable({
     return data
   },
   title: 'avc',
-  params: { fieldName: 'abc' },
+  params: { fieldName: 'abc', other: 'abc' },
   modalProps: { width: '500px' },
   rowButtons: {
     columnProps: {

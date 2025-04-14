@@ -17,6 +17,7 @@ import {
   isRef,
   unref,
   Teleport,
+  nextTick,
 } from 'vue'
 import { useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -117,6 +118,7 @@ export default defineComponent({
     const slots = ref({})
     const tableSlot = ref()
 
+    let initQuery = false
     const unWatch = watch(
       option,
       (opt) => {
@@ -149,8 +151,8 @@ export default defineComponent({
         if (searchSchema) {
           searchForm.value = useSearchForm(opt, tableRef, (data) => {
             // 初始化时同步表单数据
-            data && setQueryParams(data, 'form')
-            query()
+            setQueryParams(data, 'form')
+            initQuery && query()
           })
         }
         const tabsField = opt.tabs?.field
@@ -160,7 +162,7 @@ export default defineComponent({
             tabsKey,
             (key) => {
               setQueryParams({ [tabsField]: key })
-              query()
+              initQuery && query()
             },
             { immediate: true }
           )
@@ -169,11 +171,16 @@ export default defineComponent({
           ref(opt.params),
           (p) => {
             setQueryParams(p)
-            query()
+            initQuery && query()
           },
           { deep: true, immediate: true }
         )
-
+        nextTick(() => {
+          initQuery = true
+          if (option.immediate !== false) {
+            query()
+          }
+        })
         if (isScanHeight || inheritHeight || maxHeight) {
           listenResize()
           tableAttrs.scroll = getScrollRef

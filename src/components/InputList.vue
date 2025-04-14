@@ -107,7 +107,7 @@ export default defineComponent({
               itemModel = cloneChild.get(columns[0])
             } else {
               itemOption = { ...groupOption }
-              itemModel = { parent: orgList, refData, children: cloneChild }
+              itemModel = { parent: orgList, refData, children: cloneChild, refName: String(idx), }
               if (!labelIndex) {
                 itemOption = { type: 'Group', span: 'auto' }
               }
@@ -121,7 +121,8 @@ export default defineComponent({
           rowButtonsConfig && children.set(rowButtonsConfig, { parent: orgList })
           return {
             children,
-            effectData: reactive({ ...effectData, current: orgList, field: idx, index: idx, record: refData }),
+            refData
+            // effectData: reactive({ ...effectData, current: orgList, field: idx, index: idx, record: refData }),
           }
         })
       },
@@ -131,8 +132,8 @@ export default defineComponent({
     )
 
     const render = () => {
-      return listItems.value.map(({ children, effectData }, idx) => {
-        return h(Collections, { model: { parent: orgList, children }, option, effectData, key: effectData })
+      return listItems.value.map(({ children, refData }, idx) => {
+        return h(Collections, { model: { parent: orgList, children }, option, effectData, key: refData })
       })
     }
 

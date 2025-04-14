@@ -34,7 +34,7 @@ export default defineComponent({
       const { type, label, align, blocked, span, hideInForm, labelSlot } = option
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
-        ...props.effectData,
+        parent: props.effectData,
         current: parent,
         field: subData.refName,
         value: subData.refName ? refData : undefined,

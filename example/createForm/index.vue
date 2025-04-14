@@ -33,6 +33,7 @@ watch(activeKey, (k) => console.log(k))
 // const myModel = useExampleModal()
 const params = reactive({
   name: undefined,
+  other: 'abc'
 })
 const selectedRowKeys = ref(['121'])
 const dataso = ref<any[]>([])
@@ -52,13 +53,14 @@ const tableSchema = defineTable({
     },
     pagination:{
       pageSize: 2,
+      current: currentPage
     }
   },
   tabs: {
     options: ['湖南', '广东'],
     valueToLabel: true,
     activeKey: toRef(params, 'name'),
-    bordered: true,
+    // bordered: true,
     customTab: ({ item }) => h('span', { style: 'font-size:18px' }, item.tab),
   },
   params,

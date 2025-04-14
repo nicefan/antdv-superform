@@ -1,18 +1,18 @@
 import type { RootTableOption } from '../exaTypes'
-import { computed, reactive, ref, watch, mergeProps, nextTick } from 'vue'
-import { merge, throttle } from 'lodash-es'
+import { computed, reactive, ref, watch, mergeProps } from 'vue'
+import { mergeWith, throttle } from 'lodash-es'
 
-export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
-  let isInit = false
-  nextTick(() => {
-    isInit = true
-    if (option.immediate !== false) {
-      query()
+const merge = (obj, ...source) => {
+  return mergeWith(obj, ...source, (objValue, srcValue, key, origin) => {
+    if (srcValue === undefined) {
+      origin[key] = undefined
     }
   })
+}
 
-  const searchParam = ref()
-  const otherParam = {}
+export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
+  const searchParam = {}
+  // const otherParam = {}
   const pageParam = reactive<Obj>({})
   const loading = ref(false)
 
@@ -26,7 +26,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   const request = (param?: Obj) => {
     if (!queryApi.value) return
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
-    const _params = merge({}, otherParam, searchParam.value, param, pageParam)
+    const _params = merge({}, searchParam, param, pageParam)
     const _data = option.beforeQuery?.(_params) || _params
 
     loading.value = true
@@ -65,21 +65,16 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     if (param === true) {
       // 强制刷新，在新增修改后刷新数据
       return request()
-    }
-    if (isInit) {
+    } else {
       pageParam.current = 1
       return throttleRequest(param)
     }
   }
 
   const setQueryParams = (data?: Obj, target?: string) => {
-    if (target === 'form') {
-      searchParam.value = data
-    } else {
-      merge(otherParam, data)
-    }
+    merge(searchParam, data,)
   }
-  const getQueryParams = () => merge({}, otherParam, searchParam.value)
+  const getQueryParams = () => searchParam
 
   const pagination = ref<false | Obj>(false)
   watch(

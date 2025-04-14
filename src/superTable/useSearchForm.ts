@@ -27,11 +27,11 @@ export function useSearchForm(tableOption, tableRef, onChange) {
 
   const defaultAction = {
     search() {
-      onChange()
+      onChange(dataSource)
     },
     reset(data?: Obj) {
       formRef.value.resetFields(data)
-      // onChange(toRaw(dataSource))
+      // 表单重置后会调用提交
     },
   }
 
@@ -64,7 +64,7 @@ export function useSearchForm(tableOption, tableRef, onChange) {
     onChange(dataSource)
     // 立即查询监听
     if (searchOnChange) {
-      watch(dataSource, () => onChange())
+      watch(dataSource, onChange)
     }
     unWatch()
   })

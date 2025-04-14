@@ -24,7 +24,13 @@ export default defineComponent({
     let _propChain = model.propChain
     const extProps: Obj = {}
     // InputGroup 表单校验
-    if (model.children && compact) {
+    if (ruleObj) {
+      watch(
+        () => model.refData,
+        () => formItemContext.value?.onFieldChange(),
+        { deep: true }
+      )
+    } else if (model.children && compact) {
       if (field) {
         const rule = {
           type: 'object',
@@ -57,12 +63,6 @@ export default defineComponent({
         }
       }
     } else {
-      if (ruleObj) {
-        watch(
-          () => model.refData,
-          () => formItemContext.value?.onFieldChange()
-        )
-      }
       extProps.style = 'margin: 0'
     }
 
@@ -81,7 +81,9 @@ export default defineComponent({
             slots?.default ||
             (() =>
               h(FormItemRest, () =>
-                h(base.InputGroup, mergeProps({ compact, style: compact && {display: 'flex'} }, attrs ), () => h(Collections, { option, model }))
+                h(base.InputGroup, mergeProps({ compact, style: compact && { display: 'flex' } }, attrs), () =>
+                  h(Collections, { option, model, effectData: props.effectData })
+                )
               )),
         }
       )

@@ -98,7 +98,7 @@ export interface RuleConfig {
   /** 最小长度/最小值 */
   min?: number
   /** 自定义验证器 */
-  validator?: (any) => any
+  validator?: (rule: Obj, value: any) => Promise<any>
   /** 提示消息 */
   message?: string
 }

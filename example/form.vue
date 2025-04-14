@@ -57,7 +57,6 @@ const getData = () => {
     array: ['a', 'b'],
     born: '2012-10-02',
     isReg: 1,
-    'table': [{ id: 'dadf', col1: 'dadf', col2: 'col2' }],
     'group': {
       'food': ['1'],
     },
@@ -68,6 +67,10 @@ const getData = () => {
       {
         quarter: '2003-10-01'
       },
+    ],
+    table: [
+      {col1: 'abcd0', group1: 'abcd0', group2: 'abcd0'},
+      {col1: 'abcd1', group1: 'abcd1', group2: 'abcd1'},
     ],
     fileList: [
       {
