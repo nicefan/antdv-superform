@@ -37,7 +37,8 @@ export default defineComponent({
         parent: props.effectData,
         current: parent,
         field: subData.refName,
-        value: subData.refName ? refData : undefined,
+        value: refData,
+        ...('index' in subData && { index: subData.index }),
       })
       if (type === 'Hidden' || hideInForm) {
         useVModel({ option, model: subData, effectData })
@@ -143,7 +144,7 @@ export default defineComponent({
 
 export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
   const { type, render } = option
-  if (!type) return 
+  if (!type) return
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const slots = useInnerSlots(option.slots)

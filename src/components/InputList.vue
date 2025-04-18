@@ -97,6 +97,7 @@ export default defineComponent({
             itemModel = {
               ...childrenMap.get(columns[0]),
               refName: String(idx),
+              index: idx,
               parent: orgList,
               refData,
               propChain: [...propChain, idx],
@@ -107,7 +108,7 @@ export default defineComponent({
               itemModel = cloneChild.get(columns[0])
             } else {
               itemOption = { ...groupOption }
-              itemModel = { parent: orgList, refData, children: cloneChild, refName: String(idx), }
+              itemModel = { parent: orgList, refData, children: cloneChild, refName: String(idx), index: idx }
               if (!labelIndex) {
                 itemOption = { type: 'Group', span: 'auto' }
               }
@@ -118,11 +119,11 @@ export default defineComponent({
             itemOption.labelSlot ??= (label || itemOption.label) + String(idx + 1)
           }
           const children = new Map([[itemOption, reactive(itemModel)]])
-          rowButtonsConfig && children.set(rowButtonsConfig, { parent: orgList })
+          rowButtonsConfig && children.set(rowButtonsConfig, { parent: orgList, index: idx })
           return {
             children,
-            refData
-            // effectData: reactive({ ...effectData, current: orgList, field: idx, index: idx, record: refData }),
+            refData,
+            // effectData: reactive({ parent: effectData, current: orgList, index: idx, record: refData }),
           }
         })
       },
@@ -133,7 +134,7 @@ export default defineComponent({
 
     const render = () => {
       return listItems.value.map(({ children, refData }, idx) => {
-        return h(Collections, { model: { parent: orgList, children }, option, effectData, key: refData })
+        return h(Collections, { model: { parent: orgList, children }, option, effectData, key: toRaw(refData) })
       })
     }
 

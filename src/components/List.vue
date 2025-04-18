@@ -60,8 +60,8 @@ export default defineComponent({
           // currentRules[idx] = listModel.rules
           return {
             hash,
-            model: { refData: ref(record), children: modelsMap },
-            effectData: reactive({ ...effectData, current: toRef(model, 'refData'), index: idx, record }),
+            model: { refData: ref(record), children: modelsMap, refName: String(idx), index: idx },
+            effectData: reactive({ parent: effectData, current: toRef(model, 'refData'), index: idx, record }),
           }
         })
         // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])

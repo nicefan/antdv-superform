@@ -502,6 +502,7 @@ declare global {
     refData: any
     refName?: string
     parent: Obj
+    index?: number,
     initialValue: any
     fieldName?: string
     propChain: string[]

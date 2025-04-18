@@ -23,7 +23,7 @@
   },
   "peerDependencies": {
     "ant-design-vue": ">=3.2.20",
-    "vue": ">=3.3.2"
+    "vue": ">=3.3.13"
   },
   "devDependencies": {
     "@ant-design/icons-svg": "^4.3.1",
@@ -36,8 +36,8 @@
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-vue": "^4.4.0",
     "@vitejs/plugin-vue-jsx": "^3.0.2",
-    "@vue/compiler-sfc": "^3.3.6",
-    "@vue/runtime-core": "^3.3.6",
+    "@vue/compiler-sfc": "~3.3.13",
+    "@vue/runtime-core": "~3.3.13",
     "@vueuse/core": "^10.5.0",
     "ant-design-vue": "^3.2.20",
     "dayjs": "^1.11.11",
@@ -60,7 +60,7 @@
     "vite-plugin-dts": "^3.6.0",
     "vite-svg-symbol-loader": "^1.0.0",
     "vitest": "^0.29.8",
-    "vue": "^3.3.6",
+    "vue": "~3.3.13",
     "vue-tsc": "^1.8.20"
   }
 }

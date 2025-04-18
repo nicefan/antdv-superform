@@ -294,11 +294,18 @@ export default function exampleForm() {
               span: 24,
               column: 2,
             },
-            label: '付款日期',
+            // label: '付款日期',
             rules: { min: 2 },
             rowButtons: ['add', 'delete'],
             attrs: {
-              // labelIndex: true,
+              labelIndex: true,
+            },
+            labelSlot:(data)=> {
+              // labelIndex为true时，可以为每行生成一个label
+              return '付款日期' + data.index
+            },
+            hidden:(data) => {
+              return false
             },
             // viewRender(data) {
             //   return JSON.stringify(data.value)
@@ -310,6 +317,7 @@ export default function exampleForm() {
                 field: 'index2',
                 onChange: (...args) => {
                   console.log(args)
+                  // 要获取到当前行时，需要取parent.index
                 },
                 // span: 8,
               },
@@ -405,7 +413,7 @@ export default function exampleForm() {
       {
         type: 'ListGroup',
         field: 'listGroup',
-        title: '列表表单',
+        // title: '列表表单',
         // descriptionsProps: {
         //   column: 3,
         //   mode: 'table',
@@ -414,8 +422,14 @@ export default function exampleForm() {
         attrs: {
           labelIndex: true,
         },
+        hidden:(data) =>{
+          return false
+        },
         rowButtons: {
           align: 'left',
+        },
+        title:(data) => {
+          return '列表' + data.index
         },
         columns: [
           {
@@ -439,11 +453,11 @@ export default function exampleForm() {
             attrs: {
               readonly: true,
             },
-            computed(_, { formData, current, index }) {
+            computed(_, { formData, current, parent }) {
               let total = 0
               formData.listGroup.some((item, i) => {
                 total += item.money || 0
-                return i === index
+                return i === parent.index
               })
               // current.total = total
               return total
@@ -456,7 +470,7 @@ export default function exampleForm() {
             attrs: {
               readonly: true,
             },
-            computed(_, { formData, current, index }) {
+            computed(_, { formData, current, parent }) {
               return current.total + 1
             },
           },
@@ -508,19 +522,24 @@ export default function exampleForm() {
             type: 'InputList',
             field: 'nameList',
             // subSpan: 20,
-            // label: '客户',
             rules: { required: true, min: 2 },
+            label: '客户', // 唯一子元素有定义label时，此处无效
             attrs: {
-              labelIndex: true,
+              labelIndex: true, // 自动给标签加序号
             },
+            // labelSlot: (data) =>{
+            //   return '姓名' + '一二三四'[data.index] 
+            // }, 
             // rowButtons: ['add', 'delete'],
             columns: [
               {
                 type: 'Input',
-                field: 'index',
-                label: '姓名',
-                // labelSlot: ({ index }) => '姓名' + '一二三四'[index],
-                rules: { required: true },
+                field: '$index', // 只有一个控件并绑定$index时，直接存为数组值。
+                // label: '姓名',
+                // labelSlot: (data) =>{
+                //   return '姓名' + '一二三四'[data.index] //只有一个元素时，可获取到index
+                // }, 
+                // rules: { required: true },
               },
             ],
           },

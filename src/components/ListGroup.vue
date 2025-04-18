@@ -83,8 +83,8 @@ export default defineComponent({
 
           return {
             key: keyMap.get(raw),
-            model: { refData: ref(record), children: modelsMap },
-            effectData: reactive({ ...effectData, current: orgList, index: idx, record }),
+            model: { refData: ref(record), children: modelsMap, refName: String(idx), index: idx },
+            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
           }
         })
       },
