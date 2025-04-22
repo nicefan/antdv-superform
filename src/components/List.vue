@@ -57,11 +57,11 @@ export default defineComponent({
           record[rowKey] = hash
           // 原数据已经存在, 此处建立表单绑定
           const { modelsMap } = cloneModels(childrenMap, record, [...propChain, idx])
-          // currentRules[idx] = listModel.rules
+          modelsMap.forEach((value) => Object.assign(value, { index: idx }))
           return {
             hash,
-            model: { refData: ref(record), children: modelsMap, refName: String(idx), index: idx },
-            effectData: reactive({ parent: effectData, current: toRef(model, 'refData'), index: idx, record }),
+            model: { refData: ref(record), children: modelsMap, index: idx },
+            effectData: reactive({ parent: effectData, current: orgList, index: idx, field: String(idx), value: record }),
           }
         })
         // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
@@ -109,8 +109,8 @@ export default defineComponent({
         {
           default: () => [
             isView
-              ? h(DetailLayout, { option, modelsMap: item.model.children })
-              : h(Collections, { model: item.model, option, class: 'ant-list-item-meta' }),
+              ? h(DetailLayout, { option, modelsMap: item.model.children, effectData: item.effectData })
+              : h(Collections, { model: item.model, option, class: 'ant-list-item-meta', effectData: item.effectData }),
             rowButtonsConfig &&
               createButtons({
                 config: rowButtonsConfig,

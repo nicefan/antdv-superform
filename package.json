@@ -55,7 +55,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-vue-jsx-compat": "^0.0.6",
     "sass": "^1.69.4",
-    "typescript": "^5.2.2",
+    "typescript": "~5.3.3",
     "vite": "^4.5.0",
     "vite-plugin-dts": "^3.6.0",
     "vite-svg-symbol-loader": "^1.0.0",

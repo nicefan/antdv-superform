@@ -39,7 +39,7 @@ export default function exampleForm() {
       key: '0-1',
     },
   ]
-  const acKey = ref()
+  const acKey = ref<string>()
   watchEffect(() => {
     console.log(acKey.value)
   })
@@ -153,7 +153,7 @@ export default function exampleForm() {
               style: 'width: 100%',
               placeholder: '自定义组件加Ext前缀',
             },
-            viewRender: ({ text }) => text,
+            viewRender: ({ value }) => value,
           },
           {
             type: 'InputSlot',
@@ -297,13 +297,13 @@ export default function exampleForm() {
             // label: '付款日期',
             rules: { min: 2 },
             rowButtons: ['add', 'delete'],
-            attrs: {
-              labelIndex: true,
-            },
-            labelSlot:(data)=> {
-              // labelIndex为true时，可以为每行生成一个label
-              return '付款日期' + data.index
-            },
+            // attrs: {
+            //   labelIndex: true,
+            // },
+            // labelSlot:(data)=> {
+            //   // labelIndex为true时，可以为每行生成一个label
+            //   return '付款日期' + data.index
+            // },
             hidden:(data) => {
               return false
             },
@@ -312,26 +312,36 @@ export default function exampleForm() {
             // },
             columns: [
               {
-                type: 'DatePicker',
-                label: '日期b',
-                field: 'index2',
-                onChange: (...args) => {
-                  console.log(args)
-                  // 要获取到当前行时，需要取parent.index
+                type: 'InputGroup',
+                labelSlot:(data)=> {
+                  // labelIndex为true时，可以为每行生成一个label
+                  return '付款日期' + data.index
                 },
-                // span: 8,
+                subItems: [
+                  {
+                    type: 'DatePicker',
+                    label: '日期b',
+                    field: 'index2',
+                    onChange: (...args) => {
+                      console.log(args)
+                      // 要获取到当前行时，需要取parent.index
+                    },
+                    // span: 8,
+                  },
+
+                  {
+                    type: 'DatePicker',
+                    label: '日期c',
+                    field: 'index3',
+                    attrs: {
+                      picker: 'quarter',
+                    },
+                    // rules: {required: true}
+                    // span: 12,
+                  },                  
+                ]
               },
 
-              {
-                type: 'DatePicker',
-                label: '日期c',
-                field: 'index3',
-                attrs: {
-                  picker: 'quarter',
-                },
-                // rules: {required: true}
-                // span: 12,
-              },
 
               // {
               //   type: 'DatePicker',
@@ -527,9 +537,9 @@ export default function exampleForm() {
             attrs: {
               labelIndex: true, // 自动给标签加序号
             },
-            // labelSlot: (data) =>{
-            //   return '姓名' + '一二三四'[data.index] 
-            // }, 
+            labelSlot: (data) =>{
+              return '姓名' + '一二三四'[data.index] 
+            }, 
             // rowButtons: ['add', 'delete'],
             columns: [
               {
@@ -667,6 +677,9 @@ export default function exampleForm() {
             label: '第一页',
             icon: AppleOutlined,
             field: 'tab1',
+            disabled: (data) => {
+              return false
+            },
             subItems: [
               {
                 type: 'List',
@@ -705,6 +718,9 @@ export default function exampleForm() {
                     field: 'field1',
                     initialValue: 'init',
                     rules: { required: true },
+                    disabled: (data) => {
+                      return false
+                    },
                   },
                   {
                     type: 'Input',
@@ -724,7 +740,9 @@ export default function exampleForm() {
             key: 'tab2',
             label: '第二页',
             field: 'tab2',
-            hidden: ({ formData }) => formData.forever === 3,
+            hidden: ({ formData, ...args }) =>{
+              return formData.forever === 3
+            },
             // disabled: true,
             subItems: [
               {
@@ -749,7 +767,7 @@ export default function exampleForm() {
             key: 'tab3',
             label: '第三页',
             field: 'tab3',
-            disabled: ({ formData }) => {
+            disabled: ({ formData, ...args }) => {
               console.log(formData)
               return !formData.isReg
             },

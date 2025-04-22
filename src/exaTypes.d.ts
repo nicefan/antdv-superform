@@ -309,7 +309,7 @@ interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
 //   subItems: UniOption[]
 // }
 interface ExtTabsOption extends ExtBaseOption {
-  activeKey?: Ref<string>
+  activeKey?: Ref<string | undefined>
   forceRender?: boolean
   buttons?: ExtButtons<'add' | 'refresh'>
   subItems: ExtTabItem[]

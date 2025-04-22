@@ -42,6 +42,7 @@ export function useTableScroll(
       wrapRef,
       (el) => {
         if (el) {
+          el.style.overflow = 'hidden'
           const resizeObserver = new ResizeObserver(() => {
             debounceRedoHeight()
           })

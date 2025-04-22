@@ -104,8 +104,16 @@ export default defineComponent({
             }
           } else {
             const cloneChild = cloneModels(childrenMap, record, [...propChain, idx]).modelsMap
-            if (cloneChild.size === 1) {
-              itemModel = cloneChild.get(columns[0])
+            cloneChild.forEach((value) => {
+              Object.assign(value, { index: idx })
+            })
+            if (cloneChild.size === 1 && !columns[0].field) {
+              itemModel = {
+                ...cloneChild.get(columns[0]),
+                refName: String(idx),
+                parent: orgList,
+                refData,
+              }
             } else {
               itemOption = { ...groupOption }
               itemModel = { parent: orgList, refData, children: cloneChild, refName: String(idx), index: idx }
@@ -116,7 +124,7 @@ export default defineComponent({
           }
           if (labelIndex) {
             itemOption.label ??= label
-            itemOption.labelSlot ??= (label || itemOption.label) + String(idx + 1)
+            itemOption.labelSlot ??= labelSlot || itemOption.label + String(idx + 1)
           }
           const children = new Map([[itemOption, reactive(itemModel)]])
           rowButtonsConfig && children.set(rowButtonsConfig, { parent: orgList, index: idx })
@@ -146,13 +154,13 @@ export default defineComponent({
           const { wrapping, label, labelSlot = label } = columns[0]
           return () =>
             h(Space, { direction: wrapping ? 'vertical' : 'horizontal' }, () =>
-              listItems.value.map(({ children, effectData }) => {
+              listItems.value.map(({ children }) => {
                 return h('span', [toNode(labelSlot, effectData), labelSlot ? ': ' : '', effectData.record])
               })
             )
         } else {
           return () =>
-            listItems.value.map(({ children, effectData }) => {
+            listItems.value.map(({ children }) => {
               // const [_option, model] = [...children][0]
               // const option = _option.descriptionsProps
               //   ? _option
@@ -166,7 +174,8 @@ export default defineComponent({
         return new Map(listItems.value.flatMap(({ children }) => [...children])) as ModelsMap
       })
 
-      return () => h(DetailLayout, { option: groupOption, modelsMap: children.value, key: Date(), ...attrs })
+      return () =>
+        h(DetailLayout, { option: groupOption, modelsMap: children.value, effectData, key: Date(), ...attrs })
     } else if (isFormItem) {
       const children = new Map([[{ ...groupOption, slots: { default: render } }, model]])
       return () => h(Collections, { model: { children }, option, effectData })

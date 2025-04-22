@@ -1,6 +1,6 @@
-import { type PropType, defineComponent, h, inject, toRef, unref, toValue, toRefs, reactive } from 'vue'
+import { type PropType, defineComponent, h, inject, toRef, unref, toValue, toRefs, reactive, toRaw } from 'vue'
 import { Col, Row, Space } from 'ant-design-vue'
-import { getEffectData, getViewNode, toNode, useControl, useInnerSlots} from '../../utils'
+import { getEffectData, getViewNode, toNode, useControl, useInnerSlots } from '../../utils'
 import Controls, { containers } from '../index'
 import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
@@ -16,8 +16,9 @@ const DetailLayouts = defineComponent({
       required: true,
     },
     isRoot: Boolean,
+    effectData: Object,
   },
-  setup({ option, modelsMap, isRoot }, ctx) {
+  setup({ option, modelsMap, isRoot, effectData }, ctx) {
     const formAttrs = inject<any>('exaProvider', {}).attrs
     const gridConfig: Obj = inject('gridConfig', formAttrs)
 
@@ -41,7 +42,7 @@ const DetailLayouts = defineComponent({
 
     const presetSpan = (provideData.subSpan ??= globalProps.Col?.span ?? 12)
 
-    const nodes = buildNodes(modelsMap, option, config)
+    const nodes = buildNodes(modelsMap, option, effectData)
 
     const nodeGroup: any[] = []
     let rowGroup: any[] | undefined
@@ -113,7 +114,7 @@ const DetailLayouts = defineComponent({
   },
 })
 
-function buildNodes(modelsMap: ModelsMap, preOption, config) {
+function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
   const nodes: any[] = []
   let currentGroup: any[] | undefined
   const rootSlots = inject<Obj>('rootSlots', {})
@@ -121,12 +122,14 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
   ;[...modelsMap].forEach(([option, model], idx) => {
     const { type = '', label, field, labelSlot = label, hideInDescription, viewRender } = option
     if (type === 'Hidden' || hideInDescription) return
+    const { parent, refData } = toRefs(model)
     const effectData = getEffectData({
-      current: toRef(model, 'parent'),
-      index: idx,
-      field,
-      value: toRef(model, 'refData'),
-      text: toRef(model, 'refData'),
+      parent: parentEffect,
+      current: parent,
+      field: model.refName,
+      text: refData,
+      ...('index' in model && { index: model.index }),
+      ...(model.refName && { value: refData }),
     })
     const { attrs, hidden } = useControl({ option, effectData })
     const slots = useInnerSlots(option.slots)
@@ -145,7 +148,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
           const contents = [...modelsMap].map(([opt, model]) => {
             const labelSlot = opt.labelSlot || opt.label
             const showLabel = attrs?.compact === false && labelSlot
-            const content = getContent(opt, model)
+            const content = getContent(opt, model, effectData)
             isBreak = opt.wrapping || isBreak
             return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
           })
@@ -179,7 +182,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
         }
       }
     } else {
-      const content = getContent(option, model)
+      const content = getContent(option, model, effectData)
       node = content && {
         option,
         label: __label,
@@ -214,11 +217,13 @@ function buildNodes(modelsMap: ModelsMap, preOption, config) {
   return nodes
 }
 
-function getContent(option, model: ModelData) {
+function getContent(option, model: ModelData, parentEffect) {
   const { parent, refData } = toRefs(model)
-
   const value = model.refName ? refData : undefined
-  const effectData = getEffectData({ current: parent, text: value, value, field: model.refName })
+  const effectData =
+    toRaw(parent.value) === toRaw(parentEffect.current)
+      ? parentEffect
+      : getEffectData({parent:parentEffect, current: parent, text: value, value, field: model.refName })
 
   const content = getViewNode(option, effectData)
   return content === false ? undefined : () => (content ? content() : String(model.refData ?? ''))

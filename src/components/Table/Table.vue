@@ -56,10 +56,11 @@ export default defineComponent({
 
     const listener = {
       async onSave(data) {
-        orgList.value.push(data)
         if (apis.save) {
           await apis.save(data)
           return apis.query(true)
+        } else {
+          orgList.value.push(data)
         }
       },
       async onUpdate(newData, oldData) {

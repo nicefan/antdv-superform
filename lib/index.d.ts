@@ -368,7 +368,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
 }
 
 export declare interface ExtTabsOption extends ExtBaseOption {
-    activeKey?: Ref_2<string>
+    activeKey?: Ref_2<string | undefined>
     forceRender?: boolean
     buttons?: ExtButtons<'add' | 'refresh'>
     subItems: ExtTabItem[]

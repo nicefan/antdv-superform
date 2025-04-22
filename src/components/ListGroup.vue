@@ -2,7 +2,6 @@
 import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw, computed } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { cloneModels } from '../utils/buildModel'
-import { DetailLayout } from './Detail'
 import Controls from '.'
 import { nanoid } from 'nanoid'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
@@ -80,11 +79,11 @@ export default defineComponent({
           }
           // 原数据已经存在, 此处建立表单绑定
           const { modelsMap } = cloneModels(childrenMap, record, [...propChain, idx])
-
+          modelsMap.forEach((value) => Object.assign(value, { index: idx }))
           return {
             key: keyMap.get(raw),
-            model: { refData: ref(record), children: modelsMap, refName: String(idx), index: idx },
-            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
+            model: { refData: ref(record), children: modelsMap, index: idx },
+            effectData: reactive({ parent: effectData, current: orgList, index: idx, field: String(idx), value: record }),
           }
         })
       },

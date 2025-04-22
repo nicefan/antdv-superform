@@ -20,7 +20,12 @@ const props = defineProps<{
 
 const title = props.option.title || props.option.label
 const panels = [...props.model.children].map(([option, model], idx) => {
-  const effectData = getEffectData({ current: toRef(props.model, 'refData') })
+  const effectData = getEffectData({
+    parent: props.effectData,
+    current: toRef(props.model, 'parent'),
+    field: model.refName,
+    value: model.refData,
+  })
   const {
     hidden,
     attrs: { disabled, ...attrs },
@@ -57,7 +62,7 @@ const acKey = ref(props.option.activeKey || panels[0].key)
           <ButtonGroup v-if="option.buttons" :option="option.buttons" :effectData="effectData" />
         </template>
 
-        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" />
+        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" :effectData="effectData" />
         <Collections v-else :option="option" :model="model" :effectData="effectData" />
       </CollapsePanel>
     </template>

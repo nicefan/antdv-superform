@@ -16,7 +16,12 @@ import { ButtonGroup } from './buttons'
 
 const { Tabs, TabPane } = base
 
-const { option, model, isView } = defineProps<{
+const {
+  option,
+  model,
+  isView,
+  effectData: parentEffect,
+} = defineProps<{
   option: GetOption<'Tabs'>
   model: ModelDataGroup<ExtTabItem>
   effectData: Obj
@@ -36,7 +41,12 @@ onMounted(() => {
 })
 const panes = [...model.children].map(([option, model], idx) => {
   const { key, field, label, icon } = option
-  const effectData = getEffectData({ current: toRef(model, 'refData') })
+  const effectData = getEffectData({
+    parent: parentEffect,
+    current: toRef(model, 'parent'),
+    field: model.refName,
+    value: model.refData,
+  })
 
   const { hidden, attrs } = useControl({ option, effectData })
   const tabKey = key || field || String(idx)
@@ -53,6 +63,7 @@ const panes = [...model.children].map(([option, model], idx) => {
     hidden,
     option: { ...option, type: 'TabPane' },
     model,
+    effectData,
   }
 })
 </script>
@@ -62,10 +73,10 @@ const panes = [...model.children].map(([option, model], idx) => {
       <ButtonGroup v-if="!isView && option.buttons" :option="option.buttons"></ButtonGroup>
     </template>
 
-    <template v-for="{ attrs, hidden, option, model } of panes" :key="attrs.key">
+    <template v-for="{ attrs, hidden, option, model, effectData } of panes" :key="attrs.key">
       <TabPane v-bind="attrs" v-if="!hidden.value">
-        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" />
-        <Collections v-else :option="option" :model="model" />
+        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" :effectData="effectData" />
+        <Collections v-else :option="option" :model="model" :effectData="effectData" />
       </TabPane>
     </template>
   </Tabs>

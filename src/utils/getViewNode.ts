@@ -31,7 +31,25 @@ export function getViewNode(option, effectData: Obj = {}) {
   } = option as any
 
   const rootSlots = inject<Obj>('rootSlots', {})
+  const __render = viewRender || (colType === 'InfoSlot' && render)
+  const colRender = typeof __render === 'string' ? rootSlots[__render] : __render
+  if (__render && !colRender) return false
+  if (colRender) {
+    return (param: Obj = effectData) => {
+      const vModels = getVModelProps(option, param.current)
+      const {
+        attrs: { disabled, ...attrs },
+      } = useControl({ option, effectData: param })
 
+      const props: Obj = reactive({
+        props: { ...attrs, ...vModels },
+        ...param,
+        // ...(content && { text: computed(() => content(param)) }),
+        isView: true,
+      })
+      return colRender(props)
+    }
+  }
   const content = (() => {
     if (labelField) {
       return ({ current } = effectData) => current[labelField as string]
@@ -67,10 +85,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     }
   })() as false | undefined | ((param?: Obj) => VNode)
 
-  const __render = viewRender || (colType === 'InfoSlot' && render)
-  const colRender = typeof __render === 'string' ? rootSlots[__render] : __render
-  if (__render && !colRender) return false
-  if (colRender || colType === 'Upload' || colType.startsWith('Ext')) {
+  if (colType === 'Upload' || colType.startsWith('Ext')) {
     const slots = useInnerSlots(option.slots)
 
     return (param: Obj = effectData) => {
@@ -79,19 +94,11 @@ export function getViewNode(option, effectData: Obj = {}) {
         attrs: { disabled, ...attrs },
       } = useControl({ option, effectData: param })
 
-      const props: Obj = reactive({
-        props: { ...attrs, ...vModels },
-        ...param,
-        ...(content && { text: computed(() => content(param)) }),
-        isView: true
-      })
-      return colRender
-        ? colRender(props)
-        : h(
-            Controls[colType],
-            reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true }),
-            slots
-          )
+      return h(
+        Controls[colType],
+        reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true, disabled }),
+        slots
+      )
     }
   } else if (colType === 'Buttons') {
     const buttonsSlot = createButtons({ config: option, isView: true })
@@ -100,9 +107,9 @@ export function getViewNode(option, effectData: Obj = {}) {
     return (data = effectData) => {
       const dynamicAttrs = getComputedAttr(option.dynamicAttrs, data)
       const attrs = mergeProps(dynamicAttrs, option.attrs, {
-        ...(colType === 'HTML' && { innerHTML: data.text }),
+        ...(colType === 'HTML' && { innerHTML: data.value }),
       })
-      return h('span', attrs, attrs.innerHTML ? undefined : data.text)
+      return h('span', attrs, attrs.innerHTML ? undefined : data.value)
     }
   } else {
     return content

@@ -31,7 +31,12 @@ export default defineComponent({
       default:
         ctx.slots.innerContent ||
         (_isView
-          ? () => h(DetailLayout, { option: { descriptionsProps: option.attrs, ...option }, modelsMap: model.children })
+          ? () =>
+              h(DetailLayout, {
+                option: { descriptionsProps: option.attrs, ...option },
+                modelsMap: model.children,
+                effectData,
+              })
           : () => h(Collections, { option, model, effectData })),
     }
 

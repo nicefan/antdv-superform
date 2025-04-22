@@ -37,8 +37,8 @@ export default defineComponent({
         parent: props.effectData,
         current: parent,
         field: subData.refName,
-        value: refData,
         ...('index' in subData && { index: subData.index }),
+        ...(subData.refName && { value: refData }),
       })
       if (type === 'Hidden' || hideInForm) {
         useVModel({ option, model: subData, effectData })
