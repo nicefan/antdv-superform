@@ -14,8 +14,8 @@ export function useOptions(option, attrOptions, effectData) {
     })
   } else if (orgOptions) {
     watch(
-      () => option.options,
-      (data) => (list.value = unref(data as any)),
+      () => unref(orgOptions),
+      (data) => (list.value = data),
       { immediate: true }
     )
   } else if (dictName && globalConfig.dictApi) {

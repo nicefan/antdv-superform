@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref } from 'vue'
+import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRef } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults } from 'lodash-es'
 import Controls, { containers } from './index'
@@ -36,9 +36,11 @@ export default defineComponent({
       const effectData = getEffectData({
         parent: props.effectData,
         current: parent,
-        field: subData.refName,
-        ...('index' in subData && { index: subData.index }),
-        ...(subData.refName && { value: refData }),
+        ...('index' in subData && {
+          index: subData.index,
+          record: !subData.refName ? refData : parent,
+        }),
+        ...(subData.refName && { field: subData.refName, value: refData }),
       })
       if (type === 'Hidden' || hideInForm) {
         useVModel({ option, model: subData, effectData })

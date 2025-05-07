@@ -1,4 +1,4 @@
-import { toRaw, watch, reactive, h, toRef, defineComponent, computed, unref } from 'vue'
+import { toRaw, watch, reactive, h, toRef, defineComponent, computed, unref, markRaw, toRefs } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep, isFunction } from 'lodash-es'
 import Controls from '../index'
@@ -19,17 +19,26 @@ export default function ({ model, orgList, rowKey }) {
         const hash = record[rowKey] || nanoid(12)
         record[rowKey] = hash
         const listItem = listMap[hash] || reactive({})
-        listItem.dataRef = record
+        listItem.record = record
 
-        if (listItem.modelsMap) return
-
-        listMap[hash] = listItem
-
-        const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(toRaw(childrenMap), toRef(listItem, 'dataRef'), [
-          ...(model.propChain || []),
-          idx,
-        ])
-        listItem.modelsMap = modelsMap
+        if (listItem.modelsMap) {
+          if (listItem.index !== idx) {
+            listItem.modelsMap.forEach((model) => {
+              model.index = idx
+            })
+            listItem.index = idx
+          }
+        } else {
+          listItem.index = idx
+          listMap[hash] = listItem
+          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(
+            toRaw(childrenMap),
+            toRef(listItem, 'record'),
+            model.propChain,
+            idx
+          )
+          listItem.modelsMap = markRaw(modelsMap)
+        }
       })
     },
     {
@@ -57,20 +66,22 @@ export default function ({ model, orgList, rowKey }) {
       option: { type: Object, required: true },
     },
     setup({ option }, ctx) {
-      const { record, index } = ctx.attrs as Obj
-      const rowMap = listMap[record[rowKey]].modelsMap
-      const model = rowMap.get(option)
+      const { record } = ctx.attrs as Obj
+      const row = listMap[record[rowKey]]
+      const model = row.modelsMap.get(option)
+      const { index, parent, refData } = toRefs(model)
       const effectData = getEffectData({
-        current: toRef(model, 'parent'),
-        value: toRef(model, 'refData'),
+        current: parent,
+        value: refData,
         list: orgList,
+        record: toRef(row, 'record'),
         index,
       })
       const { editable = true } = option
       const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
       const { attrs } = useControl({ option, effectData })
       const inputSlot = buildInnerNode(option, model, effectData, attrs)
-      const viewNode = getViewNode(option, effectData)
+      const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
       const rules = computed(() => (unref(attrs.disabled) ? undefined : model.rules))
       return () =>
         editableRef.value

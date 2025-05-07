@@ -8,7 +8,7 @@ import { toNode, useInnerSlots } from '../../utils'
 export default defineComponent({
   props: {
     effectData: Object,
-    options: [Array, Object],
+    options: null as any,
     bordered: Boolean,
     /** 字典名称 */
     dictName: String,

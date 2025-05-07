@@ -63,7 +63,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
 
   let __getEditRender
   let __editButtonsSlot
-  if (edit) {
+  if (!isView && edit) {
     const { methods, getEditRender } = useTableEdit({ model, orgList, rowKey })
     Object.assign(context.methods, methods)
     __getEditRender = getEditRender

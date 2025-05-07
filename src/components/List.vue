@@ -56,12 +56,12 @@ export default defineComponent({
           const hash = record[rowKey] || nanoid(12)
           record[rowKey] = hash
           // 原数据已经存在, 此处建立表单绑定
-          const { modelsMap } = cloneModels(childrenMap, record, [...propChain, idx])
-          modelsMap.forEach((value) => Object.assign(value, { index: idx }))
+          const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
+
           return {
             hash,
             model: { refData: ref(record), children: modelsMap, index: idx },
-            effectData: reactive({ parent: effectData, current: orgList, index: idx, field: String(idx), value: record }),
+            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
           }
         })
         // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])

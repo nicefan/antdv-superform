@@ -480,8 +480,8 @@ export default function exampleForm() {
             attrs: {
               readonly: true,
             },
-            computed(_, { formData, current, parent }) {
-              return current.total + 1
+            computed(_, data) {
+              return data.current.total + 1
             },
           },
         ],
@@ -535,7 +535,7 @@ export default function exampleForm() {
             rules: { required: true, min: 2 },
             label: '客户', // 唯一子元素有定义label时，此处无效
             attrs: {
-              labelIndex: true, // 自动给标签加序号
+              // labelIndex: true, // 自动给标签加序号
             },
             labelSlot: (data) =>{
               return '姓名' + '一二三四'[data.index] 
@@ -696,6 +696,10 @@ export default function exampleForm() {
                 },
                 rowButtons: {
                   buttonType: 'link',
+                  disabled: (data) => {
+                    console.log(data)
+                    return false
+                  },
                   actions: [
                     {
                       name: 'delete',

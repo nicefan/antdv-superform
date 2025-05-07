@@ -80,15 +80,19 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
   }
 }
 
-export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain: any[] = []) {
+export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain: any[] = [], index?: number) {
   const currentData = toRef(data || {})
   const newRules = {}
   const models = [...orgModels].map(([option, model]) => {
-    const { children, propChain = [], rules, listData } = model
-    const newModel: ModelData = buildModelData(option, currentData, parentChain)
+    const { children, rules, listData } = model
+    const chain = index !== undefined ? [...parentChain, index] : parentChain
+    const newModel: ModelData = buildModelData(option, currentData, chain)
+    if (index !== undefined) {
+      newModel.index = index
+    }
     newModel.rules = rules as any
-    if (propChain.length && rules) {
-      newRules[propChain.join('.')] = rules
+    if (newModel.propChain.length && rules) {
+      newRules[newModel.propChain.join('.')] = rules
     }
     if (children) {
       const { modelsMap, rules: childrenRules } = cloneModels(children, toRef(newModel, 'refData'), newModel.propChain)
@@ -104,8 +108,13 @@ export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain
 }
 
 /** 针对表格行生成平铺数据模型 */
-export function cloneModelsFlat<T extends GetBaseOption>(orgMaps: ModelsMap<T>, data?: Obj, chain?: any[]) {
-  const { modelsMap, rules } = cloneModels(orgMaps, data, chain)
+export function cloneModelsFlat<T extends GetBaseOption>(
+  orgMaps: ModelsMap<T>,
+  data?: Obj,
+  chain?: any[],
+  index?: number
+) {
+  const { modelsMap, rules } = cloneModels(orgMaps, data, chain, index)
   const newMaps: [T, ModelData][] = []
   ;(function deepCopy(_maps) {
     for (const [option, model] of _maps) {

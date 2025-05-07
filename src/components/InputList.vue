@@ -96,27 +96,23 @@ export default defineComponent({
           if (isSingle) {
             itemModel = {
               ...childrenMap.get(columns[0]),
-              refName: String(idx),
               index: idx,
               parent: orgList,
               refData,
               propChain: [...propChain, idx],
             }
           } else {
-            const cloneChild = cloneModels(childrenMap, record, [...propChain, idx]).modelsMap
-            cloneChild.forEach((value) => {
-              Object.assign(value, { index: idx })
-            })
+            const cloneChild = cloneModels(childrenMap, record, propChain, idx).modelsMap
+
             if (cloneChild.size === 1 && !columns[0].field) {
               itemModel = {
                 ...cloneChild.get(columns[0]),
-                refName: String(idx),
                 parent: orgList,
                 refData,
               }
             } else {
               itemOption = { ...groupOption }
-              itemModel = { parent: orgList, refData, children: cloneChild, refName: String(idx), index: idx }
+              itemModel = { parent: orgList, refData, children: cloneChild, index: idx }
               if (!labelIndex) {
                 itemOption = { type: 'Group', span: 'auto' }
               }
@@ -155,7 +151,7 @@ export default defineComponent({
           return () =>
             h(Space, { direction: wrapping ? 'vertical' : 'horizontal' }, () =>
               listItems.value.map(({ children }) => {
-                return h('span', [toNode(labelSlot, effectData), labelSlot ? ': ' : '', effectData.record])
+                return h('span', [toNode(labelSlot, effectData), labelSlot ? ': ' : '', effectData.value])
               })
             )
         } else {

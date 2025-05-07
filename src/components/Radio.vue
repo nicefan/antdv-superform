@@ -20,7 +20,7 @@ export default defineComponent({
       required: true,
       type: Object,
     },
-    options: Array,
+    options: null as any,
   },
   setup(props, { attrs }) {
     const { optionsRef } = useOptions(props.option, props.options, props.effectData)

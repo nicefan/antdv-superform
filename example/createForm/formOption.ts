@@ -84,7 +84,7 @@ export const myTableOption = defineTable({
       rules: { required: true },
     },
     {
-      // type: 'Textarea',
+      type: 'Textarea',
       label: '说明',
       field: 'tip',
       span: 24,

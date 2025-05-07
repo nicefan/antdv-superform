@@ -19,7 +19,7 @@ export default defineComponent({
       required: true,
       type: Object,
     },
-    options: Array,
+    options: null as any,
     onChange: Function,
   },
   setup(props) {

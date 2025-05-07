@@ -126,10 +126,9 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
     const effectData = getEffectData({
       parent: parentEffect,
       current: parent,
-      field: model.refName,
-      text: refData,
-      ...('index' in model && { index: model.index }),
-      ...(model.refName && { value: refData }),
+      isView: true,
+      ...('index' in model && { index: model.index, record: !model.refName ? refData : parent }),
+      ...(model.refName && { field: model.refName, value: refData, text: refData }),
     })
     const { attrs, hidden } = useControl({ option, effectData })
     const slots = useInnerSlots(option.slots)
@@ -223,7 +222,7 @@ function getContent(option, model: ModelData, parentEffect) {
   const effectData =
     toRaw(parent.value) === toRaw(parentEffect.current)
       ? parentEffect
-      : getEffectData({parent:parentEffect, current: parent, text: value, value, field: model.refName })
+      : getEffectData({ parent: parentEffect, current: parent, text: value, value, field: model.refName, isView: true })
 
   const content = getViewNode(option, effectData)
   return content === false ? undefined : () => (content ? content() : String(model.refData ?? ''))

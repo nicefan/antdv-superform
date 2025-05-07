@@ -78,12 +78,12 @@ export default defineComponent({
             keyMap.set(raw, record[rowKey] || nanoid(12))
           }
           // 原数据已经存在, 此处建立表单绑定
-          const { modelsMap } = cloneModels(childrenMap, record, [...propChain, idx])
-          modelsMap.forEach((value) => Object.assign(value, { index: idx }))
+          const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
+
           return {
             key: keyMap.get(raw),
             model: { refData: ref(record), children: modelsMap, index: idx },
-            effectData: reactive({ parent: effectData, current: orgList, index: idx, field: String(idx), value: record }),
+            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
           }
         })
       },

@@ -84,8 +84,8 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
         ...(col.columnProps as Obj),
         customRender:
           render &&
-          ((...args) => {
-            const val = render(...args)
+          ((param) => {
+            const val = render({ ...param, isview: true })
             if (typeof val === 'string') {
               return h('span', { title: val }, val)
             } else {
