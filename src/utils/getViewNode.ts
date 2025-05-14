@@ -70,7 +70,7 @@ export function getViewNode(option, effectData: Obj = {}) {
           getOptions(option, param, optionsArr)
         }
         const text = param.text || param.value
-        if (!text) return ''
+        if (text === undefined) return ''
         const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
         const values = arr.map((val) => {
           const item = unref(optionsArr)?.find(({ value }) => (valueToNumber ? Number(value) : value) === val)

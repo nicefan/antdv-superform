@@ -745,7 +745,7 @@ declare type VSlot = string | Fn
 
 declare type WidgetTypes = {
     Buttons: ExtBaseOption & ExtButtonGroup
-    Hidden: ExtBaseOption
+    Hidden: ExtFormItemOption
     InputSlot: ExtInputSlotOption
     InfoSlot: ExtInfoSlotOption
     Text: ExtFormItemOption
