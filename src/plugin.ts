@@ -53,10 +53,14 @@ interface GlobalConfig {
   buttonRoles?: () => string[]
   /** 内置默认按钮配置 */
   defaultButtons?: Obj<ButtonItem>
+  /**tag显示时默认颜色组 */
+  tagColors?: Obj | string[]
   /** 全局按钮权限过滤 */
   // buttonsAuth?: (actions: ButtonItem[]) => ButtonItem[]
 }
-const globalConfig: GlobalConfig = {}
+const globalConfig: GlobalConfig = {
+  tagColors: ['pink', 'red', 'orange', 'green', 'cyan', 'blue', 'purple'],
+}
 
 const globalProps: Obj = {
   FormItem: {

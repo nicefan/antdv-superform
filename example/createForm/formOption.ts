@@ -106,12 +106,16 @@ export const myTableOption = defineTable({
           { label: '数字', value: 'number' },
         ]),
       // viewRender:({text}) => text.replaceAll(',', ' /')
+      // tagViewer: (value, data) => value==='text'? 'green': 'blue'
+      tagViewer: {text:'green', }
     },
     {
-      type: 'Switch',
+      type: 'Select',
       label: '是否必填',
       field: 'isRequire',
-      valueLabels: ['否', '是'],
+      options: [{value: 0, label:'否'}, {value:1, label:'是'}],
+      /** 可配置为数组或对象，指定value，color, 如果值为字典序值，只需要设为true,即可读取全局颜色配置 */
+      tagViewer: true
     },
     { type: 'Input', field: 'col2', label: 'col2' },
     {

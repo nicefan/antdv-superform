@@ -193,9 +193,9 @@ export default function exampleForm() {
             /** 异步请求更新 */
             // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
             /** 传递响应式数组，本地进行更新 */
-            // options: list
+            options: list
             /** 静态固定数组 */
-            options: selectList,
+            // options: selectList,
             // disabled: (data) => data.age > 20,
           },
           {
@@ -430,7 +430,7 @@ export default function exampleForm() {
         // },
         subSpan: 6,
         attrs: {
-          labelIndex: true,
+          // labelIndex: true,
         },
         hidden:(data) =>{
           return false
@@ -537,9 +537,9 @@ export default function exampleForm() {
             attrs: {
               // labelIndex: true, // 自动给标签加序号
             },
-            labelSlot: (data) =>{
-              return '姓名' + '一二三四'[data.index] 
-            }, 
+            // labelSlot: (data) =>{
+            //   return '姓名' + '一二三四'[data.index] 
+            // }, 
             // rowButtons: ['add', 'delete'],
             columns: [
               {
@@ -661,7 +661,7 @@ export default function exampleForm() {
             span: 24,
             subItems: [
               { type: 'Input', field: 'group1', label: '分组1', rules: { required: true }, },
-              { type: 'Input', field: 'group2', label: '分组2' },
+              { type: 'Select', field: 'group2', label: '分组2', options: list },
             ],
           },
           { type: 'Switch', field: 'okable', label: '开关' },

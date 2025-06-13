@@ -57,7 +57,7 @@ export default defineComponent({
     const listener = {
       async onSave(data) {
         if (apis.save) {
-          await apis.save(data)
+          await apis.save({ ...data, [rowKey]: undefined })
           return apis.query(true)
         } else {
           orgList.value.push(data)
@@ -93,8 +93,19 @@ export default defineComponent({
     }
 
     const { list, columns, methods, modalSlot } = buildData({ option, model, orgList, rowKey, listener, isView })
-    const tableRef = ref()
 
+    if (option.indexColumn ?? globalProps.Table?.indexColumn) {
+      columns.unshift({
+        dataIndex: 'INDEX',
+        title: '序号',
+        width: 60,
+        align: 'center',
+        customRender: ({ index }) => {
+          return ((attrs.pagination?.current || 1) - 1) * (attrs.pagination?.pageSize || 10) + index + 1
+        },
+        ...(typeof option.indexColumn === 'object' && option.indexColumn),
+      })
+    }
     // TODO: 补充TS
     const actions = {
       selectedRowKeys,
@@ -112,6 +123,7 @@ export default defineComponent({
     }
     const exposed = reactive({ ...actions })
 
+    const tableRef = ref()
     watch(
       tableRef,
       (table) => {
@@ -171,7 +183,7 @@ export default defineComponent({
           ...attrs,
           rowSelection,
           rowKey,
-          class:'sup-table-wrapper',
+          class: 'sup-table-wrapper',
         },
         __slots
       ),

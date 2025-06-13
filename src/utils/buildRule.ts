@@ -102,6 +102,7 @@ export interface RuleConfig {
   /** 提示消息 */
   message?: string
 }
+
 function buildRule(item: RuleConfig, label = '') {
   const { trigger, required, type = 'string', len, max, min, pattern, validator, message } = item || {}
   const rules: any[] = []

@@ -15,6 +15,9 @@ const app = createApp(App)
 superForm.registComponent('InNumber', InputNumber)
 
 const defaultProps = {
+  Table: {
+    indexColumn: true,
+  },
   Form: {
     layout: 'vertical',
   },

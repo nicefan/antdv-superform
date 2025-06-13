@@ -86,7 +86,6 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
           .then(() => {
             const raw = toRaw(editInfo.form.modelRef)
             if (editInfo.isNew) {
-              newItems.value.splice(newItems.value.indexOf(record), 1)
               Object.assign(record, raw)
               listener.onSave(record).then(() => {
                 newItems.value.splice(newItems.value.indexOf(record), 1)
@@ -97,7 +96,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
               listener.onUpdate(raw, record).then(() => {
                 editInfo.isEdit = false
               })
-            }
+            } 
           })
           .catch((err) => {
             console.log('error', err)

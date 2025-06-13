@@ -1,6 +1,6 @@
 import buildRule from './buildRule'
 import { reactive, ref, toRef, toValue, watch, markRaw } from 'vue'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, get as objGet, set as objSet } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
@@ -34,7 +34,7 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
           model.parent[refName] ??= toValue(value) ?? toValue(initialValue)
         }
         model.refData = toRef(model.parent, refName, value)
-        if (keepField) model.parent[keepField] ??= undefined
+        if (keepField) objGet(model.parent, keepField) ?? objSet(model.parent, keepField, undefined)
       } else {
         model.refData = data
       }

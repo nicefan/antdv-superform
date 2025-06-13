@@ -219,6 +219,7 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     value?: any
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
+    tagViewer?: boolean | Obj<string> | string[] | { label?: string; value: string; color: string; icon?: Fn }[] | Fn<string>
     formItemProps?: FormItemProps
     descriptionsProps?: ExtDescriptionsProps
 }
@@ -355,16 +356,18 @@ export declare interface ExtTableOption extends ExtBaseOption {
     tabs?: TabsHeader | false
     /** 公共列配置 */
     columnProps?: TableColumnProps
+    /**序号列*/
+    indexColumn?: boolean | TableColumnProps
     buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
     /** 列表元素右边按钮 */
     rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnProps })
     /** 弹窗属性 */
     modalProps?: ModalFuncProps | Obj
-    descriptionsProps?: ExtDescriptionsProps
+    descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
     /** @deprecated 改为editForm */
     formSchema?: void
     /** 弹窗表单配置 */
-    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
+    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[], modalProps?: ModalFuncProps | Obj }
 }
 
 export declare interface ExtTabsOption extends ExtBaseOption {
@@ -394,7 +397,7 @@ export declare interface ExtTreeOption extends ExtFormItemOption {
      * @deprecated 使用`treeData`
      */
     data?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
-    treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
+    treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>> | Fn<TreeSelectProps['treeData']>
 }
 
 declare interface ExtUpload extends ExtFormItemOption {
@@ -439,6 +442,8 @@ declare interface GlobalConfig {
     buttonRoles?: () => string[];
     /** 内置默认按钮配置 */
     defaultButtons?: Obj<ButtonItem>;
+    /**tag显示时默认颜色组 */
+    tagColors?: Obj | string[];
 }
 
 declare interface HelpMessage {
@@ -485,7 +490,7 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
     /** 查询请求后可对返回结果进行处理 */
     afterQuery?: (data: Obj) => Obj
     /**
-     * @deprecated 改为searchForm 
+     * @deprecated 改为searchForm
      */
     searchSchema?: void
     /** 查询表单配置 */
@@ -496,23 +501,61 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
 
 declare interface RuleConfig {
     /** 验证类型 */
-    type?: 'email' | 'integer' | 'number' | 'idcard' | 'phone' | 'mobile' | 'word' | string
+    type?: 'string' | keyof typeof ruleTypeMap;
     /** 触发方式 */
-    trigger?: 'blur' | 'change'
+    trigger?: 'blur' | 'change';
     /** 是否必填 */
-    required?: boolean
-    pattern?: RegExp
+    required?: boolean;
+    pattern?: RegExp;
     /** 长度 */
-    len?: number
+    len?: number;
     /** 最大长度/最大值 */
-    max?: number
+    max?: number;
     /** 最小长度/最小值 */
-    min?: number
+    min?: number;
     /** 自定义验证器 */
-    validator?: (any) => any
+    validator?: (rule: Obj, value: any) => Promise<any>;
     /** 提示消息 */
-    message?: string
+    message?: string;
 }
+
+declare const ruleTypeMap: {
+    email: {
+        type: string;
+        message: string;
+    };
+    integer: {
+        type: string;
+        message: string;
+        pattern: RegExp;
+        transform: (value: any) => number;
+    };
+    number: {
+        type: string;
+        message: string;
+        transform: (value: any) => number;
+    };
+    idcard: {
+        pattern: RegExp;
+        message: string;
+    };
+    phone: {
+        pattern: RegExp;
+        message: string;
+    };
+    mobile: {
+        pattern: RegExp;
+        message: string;
+    };
+    twoDecimal: {
+        pattern: RegExp;
+        message: string;
+    };
+    word: {
+        pattern: RegExp;
+        message: string;
+    };
+};
 
 declare type SelectOptions =
 | DefaultOptionsType

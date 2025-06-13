@@ -25,25 +25,7 @@ import type {
   SpaceProps,
 } from 'ant-design-vue'
 
-interface RuleConfig {
-  /** 验证类型 */
-  type?: 'email' | 'integer' | 'number' | 'idcard' | 'phone' | 'mobile' | 'word' | string
-  /** 触发方式 */
-  trigger?: 'blur' | 'change'
-  /** 是否必填 */
-  required?: boolean
-  pattern?: RegExp
-  /** 长度 */
-  len?: number
-  /** 最大长度/最大值 */
-  max?: number
-  /** 最小长度/最小值 */
-  min?: number
-  /** 自定义验证器 */
-  validator?: (any) => any
-  /** 提示消息 */
-  message?: string
-}
+import { RuleConfig } from './utils/buildRule'
 
 // type VNode = VNodeChild
 // type Readonly<T = any> = Vue.DeepReadonly<T>
@@ -229,16 +211,18 @@ interface ExtTableOption extends ExtBaseOption {
   tabs?: TabsHeader | false
   /** 公共列配置 */
   columnProps?: TableColumnProps
+  /**序号列*/
+  indexColumn?: boolean | TableColumnProps
   buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
   /** 列表元素右边按钮 */
   rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnProps })
   /** 弹窗属性 */
   modalProps?: ModalFuncProps | Obj
-  descriptionsProps?: ExtDescriptionsProps
+  descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
   /** @deprecated 改为editForm */
   formSchema?: void
   /** 弹窗表单配置 */
-  editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
+  editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[], modalProps?: ModalFuncProps | Obj }
 }
 
 interface TableScanHight {
@@ -264,8 +248,8 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
   /** 查询请求后可对返回结果进行处理 */
   afterQuery?: (data: Obj) => Obj
   /**
-  * @deprecated 改为searchForm 
-  */
+   * @deprecated 改为searchForm
+   */
   searchSchema?: void
   /** 查询表单配置 */
   searchForm?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean; teleport?: string }
@@ -339,6 +323,7 @@ interface ExtFormItemOption extends ExtBaseOption {
   value?: any
   /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
   computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
+  tagViewer?: boolean | Obj<string> | string[] | { label?: string; value: string; color: string; icon?: Fn }[] | Fn<string>
   formItemProps?: FormItemProps
   descriptionsProps?: ExtDescriptionsProps
 }
@@ -390,7 +375,7 @@ interface ExtTreeOption extends ExtFormItemOption {
    * @deprecated 使用`treeData`
    */
   data?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
-  treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
+  treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>> | Fn<TreeSelectProps['treeData']>
 }
 interface ExtSwitchOption extends ExtFormItemOption {
   valueLabels?: [string, string]
@@ -502,7 +487,7 @@ declare global {
     refData: any
     refName?: string
     parent: Obj
-    index?: number,
+    index?: number
     initialValue: any
     fieldName?: string
     propChain: string[]

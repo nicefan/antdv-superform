@@ -66,7 +66,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
       // 强制刷新，在新增修改后刷新数据
       return request()
     } else {
-      pageParam.current = 1
+       if (pagination.value) pageParam.current = 1
       return throttleRequest(param)
     }
   }

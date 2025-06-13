@@ -51,13 +51,23 @@ export function useColumns({ childrenMap, effectData, getEditRender, actionColum
 
   // const renderProduce = createProducer(effectData)
 
-  ;[...colsMap].forEach(([col, column]) => {
-    const textRender = column.customRender
-    const colEditRender = getEditRender?.(col)
-    if (colEditRender || textRender) {
-      const __render = (param) => colEditRender?.(param) || textRender?.(param) || param.text
+  ;[...colsMap].forEach(([col, column]) => { 
+    const viewRender = column.customRender || getViewNode(col) || undefined
+
+    const __editRender = getEditRender?.(col)
+    const colEditRender = __editRender
+    if (colEditRender || viewRender) {
+      const __render = (param) => {
+        const result = colEditRender?.(param) || viewRender?.(param) || param.text
+        if (typeof result === 'string' && column.ellipsis) {
+          return h('span', { title: result }, result)
+        }
+        return result
+      }
       // column.customRender = (param) => renderProduce(param, __render)
       column.customRender = (param) => h(__render, { ...effectData, ...param, current: param.record })
+    } else {
+      column.customRender = ({text}) => text && String(text)
     }
   })
 
@@ -76,22 +86,11 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
         children: sub.columns,
       })
     } else {
-      const render = getViewNode(col)
       const column = {
         title,
         dataIndex: model.propChain.join('.'),
         // ...globalProps.Column,
         ...(col.columnProps as Obj),
-        customRender:
-          render &&
-          ((param) => {
-            const val = render({ ...param, isview: true })
-            if (typeof val === 'string') {
-              return h('span', { title: val }, val)
-            } else {
-              return val
-            }
-          }),
       }
       columns.push(column)
       colsMap.set(col, column)

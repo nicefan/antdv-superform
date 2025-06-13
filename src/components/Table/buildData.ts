@@ -18,6 +18,7 @@ function buildDetail(option, modelsMap, rowKey) {
   const { openModal, closeModal } = useModal(detail, {
     ...globalProps.Modal,
     ...modalProps,
+    ..._option.modalProps,
     title: `${title ? title + ' - ' : ''}详情`,
     footer: null,
   })

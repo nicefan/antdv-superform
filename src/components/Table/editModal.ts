@@ -9,7 +9,7 @@ export default function editModal({ initialData, rowKey, option, listener }) {
   const source = ref({})
   const formRef = ref()
 
-  const formOption: GetOption<'Form'> = { ...(option.editForm || option.formSchema) }
+  const { modalProps: formModal, ...formOption } = option.editForm || option.formSchema || {}
   // buttons: { actions: ['submit', 'reset'] },
   formOption.subItems = formOption.subItems || option.columns.filter((item) => !item.hideInForm)
 
@@ -25,6 +25,7 @@ export default function editModal({ initialData, rowKey, option, listener }) {
     ...globalProps.Modal,
     maskClosable: false,
     ...option.modalProps,
+    ...formModal,
   })
 
   const methods = {
