@@ -27,9 +27,9 @@ export default defineComponent({
   },
   emits: ['register'],
   setup({ option, model, apis = {} as TableApis, effectData, isView }, ctx) {
-    const editInline = option.editMode === 'inline'
+    const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
-    const rowKey = attrs.rowKey || 'id'
+    const rowKey = (record, index?:number) => record[attrs.rowKey] || record['_ID_'] || index
     const orgList = toRef(model, 'refData')
     const __rowSelection = option.attrs?.rowSelection // === true ? {} : attrs.rowSelection
     const selectedRowKeys = ref<string[]>(__rowSelection?.selectedRowKeys || [])
@@ -57,7 +57,8 @@ export default defineComponent({
     const listener = {
       async onSave(data) {
         if (apis.save) {
-          await apis.save({ ...data, [rowKey]: undefined })
+          const { _ID_, ...rest } = data
+          await apis.save(rest)
           return apis.query(true)
         } else {
           orgList.value.push(data)
@@ -82,8 +83,8 @@ export default defineComponent({
         }
         if (rowSelection) {
           if (items.length === 1) {
-            selectedRowKeys.value = selectedRowKeys.value.filter((key) => key !== items[0][rowKey])
-            selectedRows.value = selectedRows.value.filter((item) => item[rowKey] !== items[0][rowKey])
+            selectedRowKeys.value = selectedRowKeys.value.filter((key) => key !== rowKey(items[0]))
+            selectedRows.value = selectedRows.value.filter((item) => rowKey(item) !== rowKey(items[0]))
           } else {
             selectedRowKeys.value = []
             selectedRows.value = []
@@ -112,7 +113,7 @@ export default defineComponent({
       selectedRows,
       setSelectedRows: (arr: any[]) => {
         selectedRows.value = arr
-        selectedRowKeys.value = arr.map((item) => item[rowKey])
+        selectedRowKeys.value = arr.map((item) => rowKey(item))
         // selectedRows.value = []
       },
       reload: () => apis.query?.(true),

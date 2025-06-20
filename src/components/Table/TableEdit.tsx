@@ -16,8 +16,8 @@ export default function ({ model, orgList, rowKey }) {
     () => [...orgList.value],
     (org) => {
       org.forEach((record, idx) => {
-        const hash = record[rowKey] || nanoid(12)
-        record[rowKey] = hash
+        const hash = rowKey(record) || nanoid(12)
+        record['_ID_'] = hash
         const listItem = listMap[hash] || reactive({})
         listItem.record = record
 
@@ -67,7 +67,7 @@ export default function ({ model, orgList, rowKey }) {
     },
     setup({ option }, ctx) {
       const { record } = ctx.attrs as Obj
-      const row = listMap[record[rowKey]]
+      const row = listMap[rowKey(record)]
       const model = row.modelsMap.get(option)
       const { index, parent, refData } = toRefs(model)
       const effectData = getEffectData({

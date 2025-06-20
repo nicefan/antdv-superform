@@ -1,8 +1,11 @@
-import { computed, h, inject, reactive, toRaw } from 'vue'
+import { computed, defineComponent, effect, h, inject, reactive, toRaw, toRef } from 'vue'
 import type { TableColumnProps } from 'ant-design-vue'
-import { globalProps } from '../../plugin'
 import { createButtons } from '../buttons'
-import { getViewNode } from '../../utils'
+import { getViewNode, useControl, getEffectData } from '../../utils'
+import Controls from '../index'
+import { buildInnerNode } from '../Collections'
+import { get as objGet, set as objSet } from 'lodash-es'
+import { globalConfig } from '../../plugin'
 
 export function createProducer(effectData) {
   const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
@@ -27,6 +30,37 @@ export function createProducer(effectData) {
   }
   return renderProduce
 }
+const InputNode = defineComponent({
+  props: {
+    option: { type: Object, required: true },
+    effectData: { type: Object as any, required: true },
+  },
+  setup({ option, effectData }) {
+    const path = option.field.split('.').slice(0, -1)
+    const parent = computed(() => objGet(effectData.record, path))
+    const refData = computed({
+      get: () => objGet(effectData.record, option.field),
+      set: (val) => objSet(effectData.record, option.field, val),
+    })
+    const model: any = { parent, refData }
+    const { attrs, hidden } = useControl({ option, effectData })
+    const inputSlot = buildInnerNode(option, model, effectData, attrs)
+    return () => !hidden.value && inputSlot()
+  },
+})
+
+const getEditNode = (option) => {
+  if (!option.editable) return
+  const roles = (globalConfig.buttonRoles && globalConfig.buttonRoles()) || []
+  const isFree = !option.roleName || roles.includes(option.roleName)
+
+  const component = Controls[option.type]
+  if (isFree && (component || option.type === 'InputSlot')) {
+    return (param) => {
+      return h(InputNode, { option, effectData: param })
+    }
+  }
+}
 
 interface BuildColumnsParam {
   childrenMap: ModelsMap
@@ -48,18 +82,15 @@ export function useColumns({ childrenMap, effectData, getEditRender, actionColum
       colsMap.set('action', column)
     }
   }
-
   // const renderProduce = createProducer(effectData)
-
-  ;[...colsMap].forEach(([col, column]) => { 
+  ;[...colsMap].forEach(([col, column]) => {
     const viewRender = column.customRender || getViewNode(col) || undefined
+    const colEditRender = getEditRender ? getEditRender(col) : getEditNode(col)
 
-    const __editRender = getEditRender?.(col)
-    const colEditRender = __editRender
     if (colEditRender || viewRender) {
       const __render = (param) => {
-        const result = colEditRender?.(param) || viewRender?.(param) || param.text
-        if (typeof result === 'string' && column.ellipsis) {
+        const result = colEditRender?.(param) ?? viewRender?.(param) ?? String(param.text ?? '')
+        if (result && typeof result === 'string' && column.ellipsis) {
           return h('span', { title: result }, result)
         }
         return result
@@ -67,7 +98,7 @@ export function useColumns({ childrenMap, effectData, getEditRender, actionColum
       // column.customRender = (param) => renderProduce(param, __render)
       column.customRender = (param) => h(__render, { ...effectData, ...param, current: param.record })
     } else {
-      column.customRender = ({text}) => text && String(text)
+      column.customRender = ({ text }) => String(text ?? '')
     }
   })
 
@@ -88,7 +119,7 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
     } else {
       const column = {
         title,
-        dataIndex: model.propChain.join('.'),
+        dataIndex: model.propChain.join('.') || title,
         // ...globalProps.Column,
         ...(col.columnProps as Obj),
       }
@@ -99,11 +130,12 @@ function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
   return { columns, colsMap }
 }
 
-type BuildActionSlotParams = { buttons; methods; editSlot?: Fn; isView?: boolean }
-export function buildActionSlot({ buttons, methods, editSlot, isView }: BuildActionSlotParams) {
+type BuildActionSlotParams = { buttons; methods; editSlot?: Fn; isView?: boolean; defAttrs?: Obj }
+export function buildActionSlot({ buttons, methods, editSlot, isView, defAttrs }: BuildActionSlotParams) {
   const buttonsConfig: Obj = {
     buttonType: 'link',
     size: 'small',
+    ...defAttrs,
     ...(Array.isArray(buttons) ? { actions: buttons } : buttons),
   }
   const { columnProps, forSlot, ...config } = buttonsConfig

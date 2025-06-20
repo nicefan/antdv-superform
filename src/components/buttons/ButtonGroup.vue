@@ -16,12 +16,12 @@
       </Dropdown>
       <Tooltip v-else-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
-          ><component v-if="icon" :is="useIcon(icon)" />
+          ><component v-if="icon || !labelOnly" :is="useIcon(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
         /></Button>
       </Tooltip>
       <Button v-else v-bind="attrs">
-        <component v-if="icon" :is="useIcon(icon)" /> <component :is="() => toNode(label, effectData)" />
+        <component v-if="icon || !labelOnly" :is="useIcon(icon)" /> <component :is="() => toNode(label, effectData)" />
       </Button>
       <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
@@ -61,14 +61,17 @@ const props = defineProps<{
 const { option, methods, effectData } = props
 
 const __config = Array.isArray(option) ? { actions: option } : option
-const { attrs, moreLabel, iconOnly, divider, buttonType } = __config
+const { attrs, moreLabel, divider, buttonType } = __config
+const iconOnly = __config.labelMode === 'icon'
+const labelOnly = __config.labelMode === 'label'
 const { btns, moreBtns, defaultAttrs } = useButton(__config, reactive(effectData || {}), methods || __config.methods)
 const isDivider = divider ?? (attrs?.direction !== 'vertical' && ['link', 'text'].includes(buttonType || ''))
 </script>
 
 <script lang="ts">
 function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
-  const { size, buttonShape, buttonType, roleMode, limit, hidden, disabled, actions, iconOnly } = config
+  const { size, buttonShape, buttonType, roleMode, limit, hidden, disabled, actions } = config
+  const iconOnly = config.labelMode === 'icon'
   const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)
   const isHide = getComputedStatus(hidden, param)

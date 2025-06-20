@@ -55,7 +55,7 @@ export default function exampleForm() {
     },
     buttons: {
       attrs: {
-        size:40,
+        size: 40,
       },
       actions: ['submit', 'reset'],
     },
@@ -193,7 +193,7 @@ export default function exampleForm() {
             /** 异步请求更新 */
             // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
             /** 传递响应式数组，本地进行更新 */
-            options: list
+            options: list,
             /** 静态固定数组 */
             // options: selectList,
             // disabled: (data) => data.age > 20,
@@ -230,6 +230,19 @@ export default function exampleForm() {
             label: '是否注册',
             field: 'isReg',
             valueLabels: ['否', '是'],
+            options: () =>
+              new Promise((resolve) => {
+                setTimeout(() => {
+                  resolve([
+                    { value: 'a', label: 'A' },
+                    { value: 'b', label: 'B' },
+                  ])
+                }, 1000)
+              }),
+            attrs: {
+              firstIsTrue: true,
+              defaultChecked: true,
+            },
           },
           {
             type: 'InputGroup',
@@ -304,7 +317,7 @@ export default function exampleForm() {
             //   // labelIndex为true时，可以为每行生成一个label
             //   return '付款日期' + data.index
             // },
-            hidden:(data) => {
+            hidden: (data) => {
               return false
             },
             // viewRender(data) {
@@ -313,7 +326,7 @@ export default function exampleForm() {
             columns: [
               {
                 type: 'InputGroup',
-                labelSlot:(data)=> {
+                labelSlot: (data) => {
                   // labelIndex为true时，可以为每行生成一个label
                   return '付款日期' + data.index
                 },
@@ -338,10 +351,9 @@ export default function exampleForm() {
                     },
                     // rules: {required: true}
                     // span: 12,
-                  },                  
-                ]
+                  },
+                ],
               },
-
 
               // {
               //   type: 'DatePicker',
@@ -432,13 +444,13 @@ export default function exampleForm() {
         attrs: {
           // labelIndex: true,
         },
-        hidden:(data) =>{
+        hidden: (data) => {
           return false
         },
         rowButtons: {
           align: 'left',
         },
-        title:(data) => {
+        title: (data) => {
           return '列表' + data.index
         },
         columns: [
@@ -500,7 +512,7 @@ export default function exampleForm() {
           limit: 3,
           size: 'small',
           buttonType: 'primary',
-          iconOnly: true,
+          labelMode: 'icon',
           actions: [
             {
               disabled: (data) => {
@@ -538,8 +550,8 @@ export default function exampleForm() {
               // labelIndex: true, // 自动给标签加序号
             },
             // labelSlot: (data) =>{
-            //   return '姓名' + '一二三四'[data.index] 
-            // }, 
+            //   return '姓名' + '一二三四'[data.index]
+            // },
             // rowButtons: ['add', 'delete'],
             columns: [
               {
@@ -548,7 +560,7 @@ export default function exampleForm() {
                 // label: '姓名',
                 // labelSlot: (data) =>{
                 //   return '姓名' + '一二三四'[data.index] //只有一个元素时，可获取到index
-                // }, 
+                // },
                 // rules: { required: true },
               },
             ],
@@ -630,15 +642,27 @@ export default function exampleForm() {
         field: 'table',
         label: '表格',
         // attrs: { bordered: true },
-        edit: true,
-        // editMode: 'inline',
+        // edit: true,
+        editMode: 'inline',
         // addMode: 'modal',
         buttons: {
           actions: ['add', 'edit', 'delete'],
         },
         rowButtons: {
           buttonType: 'link',
-          actions: ['add', 'delete'],
+          labelMode: 'icon',
+          actions: [
+            {
+              name: 'add',
+              meta: {
+                onOk: (...args) => {
+                  console.log(args)
+                },
+              },
+            },
+            'edit',
+            'delete',
+          ],
         },
         editForm: {
           subSpan: 12,
@@ -660,12 +684,18 @@ export default function exampleForm() {
             label: '分组',
             span: 24,
             subItems: [
-              { type: 'Input', field: 'group1', label: '分组1', rules: { required: true }, },
+              { type: 'Input', field: 'group1', label: '分组1', rules: { required: true } },
               { type: 'Select', field: 'group2', label: '分组2', options: list },
             ],
           },
           { type: 'Switch', field: 'okable', label: '开关' },
-          { type: 'Input', field: 'col2', label: 'col2', hideInTable: true },
+          {
+            type: 'Input',
+            field: 'col2',
+            label: 'col2',
+            rules: { required: true },
+            hidden: ({ current }) => !current.okable,
+          },
         ],
       },
       {
@@ -744,7 +774,7 @@ export default function exampleForm() {
             key: 'tab2',
             label: '第二页',
             field: 'tab2',
-            hidden: ({ formData, ...args }) =>{
+            hidden: ({ formData, ...args }) => {
               return formData.forever === 3
             },
             // disabled: true,

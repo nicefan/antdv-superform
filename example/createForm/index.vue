@@ -35,7 +35,7 @@ const params = reactive({
   name: undefined,
   other: 'abc'
 })
-const selectedRowKeys = ref(['121'])
+const selectedRowKeys = ref([])
 const dataso = ref<any[]>([])
 const currentPage = ref(1)
 const tableSchema = defineTable({
@@ -48,8 +48,13 @@ const tableSchema = defineTable({
   //     }),
   // },
   attrs: {
+    rowKey: 'id',
     rowSelection: {
       selectedRowKeys,
+      onChange: (keys, rows) => {
+        // selectedRowKeys.value = keys
+        console.log('选中行：', rows)
+      },
     },
     pagination:{
       pageSize: 2,

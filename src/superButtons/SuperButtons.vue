@@ -10,8 +10,8 @@ export default defineComponent({
     buttonType: String as PropType<'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'>,
     buttonShape: String as PropType<'circle' | 'round' | 'default'>,
     size: String as PropType<'large' | 'middle' | 'small'>,
-    /** 是否只显示图标 */
-    iconOnly: Boolean,
+    /** 按钮显示方式icon/label */
+    labelMode: String as PropType<'icon' | 'label' | 'both'>,
     hidden: Boolean || Function,
     disabled: Boolean || (Function as PropType<Fn<boolean>>),
     actions: Array as PropType<ButtonItem[]>,

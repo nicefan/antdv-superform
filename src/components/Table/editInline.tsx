@@ -1,4 +1,4 @@
-import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent } from 'vue'
+import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent, unref, computed } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep, merge } from 'lodash-es'
 import {message, Form } from 'ant-design-vue'
@@ -36,7 +36,7 @@ function createEditCache(childrenMap) {
   return { getEditInfo, setEditInfo }
 }
 
-export default function ({ childrenMap, orgList, rowKey, listener }) {
+export default function ({ childrenMap, orgList, listener, rowEditor }) {
   // 数据监听
   const newItems = ref<Obj[]>([])
   const list = ref<Obj[]>([])
@@ -59,7 +59,7 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
 
   const methods = {
     add() {
-      const item = { [rowKey]: nanoid(12) }
+      const item = { '_ID_': nanoid(12) }
       newItems.value.push(item)
       setEditInfo(item, {
         isEdit: true,
@@ -79,9 +79,13 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
   const editActions = [
     {
       label: '保存',
-      onClick: ({ record }) => {
+      loading: true,
+      onClick: async (args) => {
+        const {record} = args
         const editInfo = getEditInfo(record)
-        editInfo.form
+        const custom = await rowEditor?.onSave?.({ ...args, isNew: editInfo.isNew }) 
+        if (custom === false) return
+        return editInfo.form
           .validate()
           .then(() => {
             const raw = toRaw(editInfo.form.modelRef)
@@ -106,10 +110,12 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     },
     {
       label: '取消',
-      onClick: ({ record }) => {
-        const editInfo = getEditInfo(record)
+      onClick: async (args) => {
+        const editInfo = getEditInfo(args.record)
+        const custom = await rowEditor?.onCancel?.({ ...args, isNew: editInfo.isNew }) 
+        if (custom === false) return
         if (editInfo.isNew) {
-          newItems.value.splice(newItems.value.indexOf(record), 1)
+          newItems.value.splice(newItems.value.indexOf(args.record), 1)
         } else {
           // editInfo.isEdit = false
           // editInfo.form.resetFields(record)
@@ -129,16 +135,20 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
   const InputNode = defineComponent({
     props: {
       option: { type: Object, required: true },
-      record: { type: Object as any, required: true },
+      editInfo: { type: Object as any, required: true },
     },
-    setup({ option, record }) {
-      const { modelsMap, form } = getEditInfo(record)
+    setup({ option, editInfo }) {
+      const { modelsMap, form } = editInfo
       const model = modelsMap.get(toRaw(option))
       const ruleName = model.propChain.join('.')
       const effectData = getEffectData({ current: model.parent, value: toRef(model, 'refData') })
-      const { attrs } = useControl({ option, effectData })
+      const { attrs, hidden } = useControl({ option, effectData })
       const inputSlot = buildInnerNode(option, model, effectData, attrs)
-      return () =>
+      const rules = model.rules
+      if (rules) {
+        form.rulesRef.value[ruleName] = computed(() => unref(attrs.disabled) || unref(hidden) ? [] : rules)
+      }
+      return () => !hidden.value &&
         h(
           base.FormItem,
           {
@@ -153,9 +163,9 @@ export default function ({ childrenMap, orgList, rowKey, listener }) {
     const component = Controls[option.type]
     if (component || option.type === 'InputSlot') {
       return ({ record }) => {
-        const { isEdit } = getEditInfo(record)
-        if (isEdit) {
-          return h(InputNode, { option, record })
+        const editInfo = getEditInfo(record)
+        if (editInfo.isEdit) {
+          return h(InputNode, { option, editInfo })
         }
       }
     }

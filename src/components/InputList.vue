@@ -9,6 +9,7 @@ import base from './base'
 import { getViewNode, toNode } from '../utils'
 import { Space } from 'ant-design-vue'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { globalProps } from '../plugin'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -47,12 +48,12 @@ export default defineComponent({
           orgList.value.splice(index + 1, 0, cloneDeep(__initialData))
           orgList.value = [...toRaw(orgList.value)]
         },
-        label: () => h(PlusOutlined),
+        icon: () => h(PlusOutlined),
       },
       delete: {
         disabled: () => orgList.value.length === 1,
         confirmText: '',
-        label: () => h(MinusOutlined),
+        icon: () => h(MinusOutlined),
         onClick({ index }) {
           orgList.value = toRaw(orgList.value).filter((_, idx) => idx !== index)
         },
@@ -65,6 +66,8 @@ export default defineComponent({
         buttonType: 'link',
         size: 'small',
         colProps: { flex: '0' },
+        labelMode: 'icon',
+        ...globalProps.rowButtons,
         methods,
         actions: ['add', 'delete'],
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),

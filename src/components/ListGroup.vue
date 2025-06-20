@@ -5,6 +5,7 @@ import { cloneModels } from '../utils/buildModel'
 import Controls from '.'
 import { nanoid } from 'nanoid'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { globalProps } from '../plugin'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -35,7 +36,7 @@ export default defineComponent({
 
     const methods = {
       add: {
-        label: () => h(PlusOutlined),
+        icon: () => h(PlusOutlined),
         onClick({ index }) {
           orgList.value.splice(index + 1, 0, cloneDeep(initialData))
           orgList.value = [...toRaw(orgList.value)]
@@ -45,7 +46,7 @@ export default defineComponent({
         hidden: () => orgList.value.length === 1,
         disabled: false,
         confirmText: '',
-        label: () => h(MinusOutlined),
+        icon: () => h(MinusOutlined),
         onClick({ index }) {
           orgList.value = orgList.value.filter((_, idx) => idx !== index)
         },
@@ -57,6 +58,8 @@ export default defineComponent({
         type: 'Buttons',
         buttonType: 'link',
         size: 'small',
+        labelMode: 'icon',
+        ...globalProps.rowButtons,
         methods,
         actions: ['add', 'delete'],
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),

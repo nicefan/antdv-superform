@@ -9,6 +9,7 @@ import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { Row, Col } from 'ant-design-vue'
 import { toNode } from '../utils'
+import { globalProps } from '../plugin'
 
 export default defineComponent({
   props: {
@@ -99,6 +100,7 @@ export default defineComponent({
     const rowButtonsConfig: any = rowButtons && {
       buttonType: 'link',
       size: 'small',
+      ...globalProps.rowButtons,
       ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
     }
 

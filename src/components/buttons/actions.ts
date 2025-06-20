@@ -20,15 +20,15 @@ const getDefault = () => {
           danger: true,
         },
         confirmText: '确定要删除吗？',
-        disabled: (param) => !param.record && !(param.selectedRowKeys?.length > 0),
+        disabled: (param) => !param.record && !(param.selectedRows?.length > 0),
       },
       edit: {
         label: '修改',
-        disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
+        disabled: (param) => !param.record && !(param.selectedRows?.length === 1),
       },
       detail: {
         label: '查看',
-        disabled: (param) => !param.record && !(param.selectedRowKeys?.length === 1),
+        disabled: (param) => !param.record && !(param.selectedRows?.length === 1),
       },
       submit: {
         label: '提交',

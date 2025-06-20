@@ -102,20 +102,24 @@ export const myTableOption = defineTable({
       },
       options: () =>
         Promise.resolve([
-          { label: '文本', value: 'text' },
-          { label: '数字', value: 'number' },
+          { label: '文本', value: 'text', color: 'green' },
+          { label: '数字', value: 'number', color: 'blue' },
         ]),
+      /** 带有options或字典的自动标签化显示，tagViewer配置为数组或对象，指定value，color, 如果值为字典序值，,即可读取全局颜色配置 */
       // viewRender:({text}) => text.replaceAll(',', ' /')
       // tagViewer: (value, data) => value==='text'? 'green': 'blue'
-      tagViewer: {text:'green', }
+      // tagViewer: {text:'green', }
     },
     {
-      type: 'Select',
+      type: 'Switch',
       label: '是否必填',
       field: 'isRequire',
-      options: [{value: 0, label:'否'}, {value:1, label:'是'}],
-      /** 可配置为数组或对象，指定value，color, 如果值为字典序值，只需要设为true,即可读取全局颜色配置 */
-      tagViewer: true
+      options: [{ value: true, label: '是' }, { value: false, label: '否' }],
+      editable: true,
+      attrs: {
+        firstIsTrue: true,
+        defaultChecked: true,
+      }
     },
     { type: 'Input', field: 'col2', label: 'col2' },
     {

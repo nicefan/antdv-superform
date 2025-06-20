@@ -11,6 +11,9 @@
 6、表格行按钮竖排 ✅
 7、useForm 添加onSubmit事件✅
 table增加index列✅
+字段Tag标签显示✅
+Switch 可使用options选项✅
 全局增加分页属性名配置
-table行编辑保存和取消事件
+table行编辑保存和取消事件✅
+行内可指定元素为编辑状态一般用于switch操作✅
 行编辑开启限制只能一行

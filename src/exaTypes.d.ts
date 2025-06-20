@@ -3,7 +3,6 @@
 /* eslint-disable no-use-before-define */
 import Vue from 'vue'
 
-import { DefaultOptionType } from 'ant-design-vue/es/select'
 import type { Component, HTMLAttributes, VNode, VNodeChild, VNodeTypes, Ref } from 'vue'
 import type {
   SelectProps,
@@ -23,6 +22,7 @@ import type {
   TabsProps,
   TreeSelectProps,
   SpaceProps,
+  SwitchProps,
 } from 'ant-design-vue'
 
 import { RuleConfig } from './utils/buildRule'
@@ -34,6 +34,15 @@ type VSlot = string | Fn
 interface HelpMessage {
   color: 'success' | 'info' | 'warning' | 'error'
 }
+
+export interface DefaultOptionType {
+  label?: any
+  value?: string | number | boolean | null
+  children?: Omit<DefaultOptionType, 'children'>[]
+  disabled?: boolean
+  [name: string]: any
+}
+
 interface ExtBaseOption {
   type: string
   field?: string
@@ -159,8 +168,8 @@ interface ExtButtonGroup<T extends string = string> {
   placement?: 'top' | 'bottom'
   /** 分隔符， type为'link'/'text'时默认true */
   divider?: boolean
-  /** 是否只显示图标 */
-  iconOnly?: boolean
+  /** 按钮图标文字显示模式 */
+  labelMode?: 'icon' | 'label' | 'both'
   /** 更多按钮slot */
   moreLabel?: VSlot
   /** 权限模式 */
@@ -203,9 +212,21 @@ interface ExtTableOption extends ExtBaseOption {
   field: string
   title?: VSlot
   attrs?: TableProps | Obj
-  /** 表格全部为编辑状态，开启后editMode无效 */
-  edit?: boolean
+  /** @deprecated 更名为editable */
+  edit?:boolean
+  /** 表格全部为编辑状态，开启后rowEdit无效 */
+  editable?: boolean
+  rowEditor?: {
+    editMode?: 'inline' | 'modal'
+    addMode?: 'inline' | 'modal'
+    form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; }
+    modalProps?: ModalFuncProps | Obj
+    onSave?: Fn
+    onCancel?:Fn
+  }
+  /** @deprecated  移至rowEditor */
   editMode?: 'inline' | 'modal'
+  /** @deprecated  移至rowEditor */
   addMode?: 'inline' | 'modal'
   columns: ExtColumnsItem[]
   tabs?: TabsHeader | false
@@ -219,10 +240,8 @@ interface ExtTableOption extends ExtBaseOption {
   /** 弹窗属性 */
   modalProps?: ModalFuncProps | Obj
   descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
-  /** @deprecated 改为editForm */
-  formSchema?: void
-  /** 弹窗表单配置 */
-  editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[], modalProps?: ModalFuncProps | Obj }
+  /** @deprecated  弹窗表单配置,移至rowEditor */
+  editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ModalFuncProps | Obj }
 }
 
 interface TableScanHight {
@@ -323,7 +342,12 @@ interface ExtFormItemOption extends ExtBaseOption {
   value?: any
   /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
   computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
-  tagViewer?: boolean | Obj<string> | string[] | { label?: string; value: string; color: string; icon?: Fn }[] | Fn<string>
+  tagViewer?:
+    | boolean
+    | Obj<string>
+    | string[]
+    | { label?: string; value: string; color: string; icon?: Fn }[]
+    | Fn<string>
   formItemProps?: FormItemProps
   descriptionsProps?: ExtDescriptionsProps
 }
@@ -338,7 +362,7 @@ interface ExtInputOption extends ExtFormItemOption {
   onSearch?: (effectData: Obj, value: string) => void
   attrs?: InputProps & HTMLAttributes
 }
-type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: string | number }
+type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
 type SelectOptions =
   | DefaultOptionsType
   | Readonly<DefaultOptionsType>
@@ -377,8 +401,15 @@ interface ExtTreeOption extends ExtFormItemOption {
   data?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
   treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>> | Fn<TreeSelectProps['treeData']>
 }
-interface ExtSwitchOption extends ExtFormItemOption {
+interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
   valueLabels?: [string, string]
+  attrs?: {
+    /** 第一个选项为选中值 */
+    firstIsTrue?: boolean
+    /** 默认是否选中 */
+    defaultChecked?: boolean
+  } & SwitchProps &
+    HTMLAttributes
 }
 
 interface ExtDateRange extends ExtFormItemOption {

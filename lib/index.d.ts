@@ -7,7 +7,6 @@ import type { Component } from 'vue';
 import { ComponentCustomProps } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComputedRef } from 'vue';
-import { DefaultOptionType } from 'ant-design-vue/es/select';
 import { DefineComponent } from 'vue';
 import type { DescriptionsProps } from 'ant-design-vue';
 import { ExtractPropTypes } from 'vue';
@@ -28,6 +27,7 @@ import { RendererNode } from 'vue';
 import type { RowProps } from 'ant-design-vue';
 import type { SelectProps } from 'ant-design-vue';
 import type { SpaceProps } from 'ant-design-vue';
+import type { SwitchProps } from 'ant-design-vue';
 import type { TableColumnProps } from 'ant-design-vue';
 import type { TableProps } from 'ant-design-vue';
 import type { TabsProps } from 'ant-design-vue';
@@ -85,7 +85,15 @@ declare const _default: {
 };
 export default _default;
 
-declare type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: string | number }
+declare type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
+
+export declare interface DefaultOptionType {
+    label?: any
+    value?: string | number | boolean | null
+    children?: Omit<DefaultOptionType, 'children'>[]
+    disabled?: boolean
+    [name: string]: any
+}
 
 export declare function defineDetail(option: ExtDescriptionsOption): ExtDescriptionsOption;
 
@@ -147,8 +155,8 @@ export declare interface ExtButtonGroup<T extends string = string> {
     placement?: 'top' | 'bottom'
     /** 分隔符， type为'link'/'text'时默认true */
     divider?: boolean
-    /** 是否只显示图标 */
-    iconOnly?: boolean
+    /** 按钮图标文字显示模式 */
+    labelMode?: 'icon' | 'label' | 'both'
     /** 更多按钮slot */
     moreLabel?: VSlot
     /** 权限模式 */
@@ -219,7 +227,12 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     value?: any
     /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
     computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
-    tagViewer?: boolean | Obj<string> | string[] | { label?: string; value: string; color: string; icon?: Fn }[] | Fn<string>
+    tagViewer?:
+    | boolean
+    | Obj<string>
+    | string[]
+    | { label?: string; value: string; color: string; icon?: Fn }[]
+    | Fn<string>
     formItemProps?: FormItemProps
     descriptionsProps?: ExtDescriptionsProps
 }
@@ -333,8 +346,15 @@ declare interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
 
 declare type ExtSlotOption = { render: VSlot }
 
-declare interface ExtSwitchOption extends ExtFormItemOption {
+declare interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
     valueLabels?: [string, string]
+    attrs?: {
+        /** 第一个选项为选中值 */
+        firstIsTrue?: boolean
+        /** 默认是否选中 */
+        defaultChecked?: boolean
+    } & SwitchProps &
+    HTMLAttributes
 }
 
 export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
@@ -348,9 +368,21 @@ export declare interface ExtTableOption extends ExtBaseOption {
     field: string
     title?: VSlot
     attrs?: TableProps | Obj
-    /** 表格全部为编辑状态，开启后editMode无效 */
-    edit?: boolean
+    /** @deprecated 更名为editable */
+    edit?:boolean
+    /** 表格全部为编辑状态，开启后rowEdit无效 */
+    editable?: boolean
+    rowEditor?: {
+        editMode?: 'inline' | 'modal'
+        addMode?: 'inline' | 'modal'
+        form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; }
+        modalProps?: ModalFuncProps | Obj
+        onSave?: Fn
+        onCancel?:Fn
+    }
+    /** @deprecated  移至rowEditor */
     editMode?: 'inline' | 'modal'
+    /** @deprecated  移至rowEditor */
     addMode?: 'inline' | 'modal'
     columns: ExtColumnsItem[]
     tabs?: TabsHeader | false
@@ -364,10 +396,8 @@ export declare interface ExtTableOption extends ExtBaseOption {
     /** 弹窗属性 */
     modalProps?: ModalFuncProps | Obj
     descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
-    /** @deprecated 改为editForm */
-    formSchema?: void
-    /** 弹窗表单配置 */
-    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[], modalProps?: ModalFuncProps | Obj }
+    /** @deprecated  弹窗表单配置,移至rowEditor */
+    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ModalFuncProps | Obj }
 }
 
 export declare interface ExtTabsOption extends ExtBaseOption {
@@ -570,8 +600,8 @@ export declare const SuperButtons: DefineComponent<{
     buttonType: PropType<"default" | "text" | "primary" | "link" | "dashed" | "ghost">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "middle" | "large">;
-    /** 是否只显示图标 */
-    iconOnly: BooleanConstructor;
+    /** 按钮显示方式icon/label */
+    labelMode: PropType<"label" | "both" | "icon">;
     hidden: BooleanConstructor;
     disabled: BooleanConstructor;
     actions: PropType<ButtonItem[]>;
@@ -583,8 +613,8 @@ export declare const SuperButtons: DefineComponent<{
     buttonType: PropType<"default" | "text" | "primary" | "link" | "dashed" | "ghost">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "middle" | "large">;
-    /** 是否只显示图标 */
-    iconOnly: BooleanConstructor;
+    /** 按钮显示方式icon/label */
+    labelMode: PropType<"label" | "both" | "icon">;
     hidden: BooleanConstructor;
     disabled: BooleanConstructor;
     actions: PropType<ButtonItem[]>;
@@ -592,7 +622,6 @@ export declare const SuperButtons: DefineComponent<{
 }>>, {
     hidden: boolean;
     disabled: boolean;
-    iconOnly: boolean;
 }, {}>;
 
 export declare const SuperDetail: DefineComponent<{

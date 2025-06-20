@@ -37,7 +37,7 @@ type BuildDataParam = {
   option: RootTableOption
   model: ModelDataGroup
   orgList: Ref<Obj[]>
-  rowKey: string
+  rowKey: Fn<string>
   listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
   isView?: boolean
 }
@@ -60,16 +60,17 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     },
   }
 
-  const { edit, editMode, addMode, rowButtons } = option
+  const { edit, editable = edit, rowButtons, rowEditor } = option
+  const { editMode, addMode } = rowEditor || option // 兼容旧版
 
   let __getEditRender
   let __editButtonsSlot
-  if (!isView && edit) {
+  if (!isView && editable) {
     const { methods, getEditRender } = useTableEdit({ model, orgList, rowKey })
     Object.assign(context.methods, methods)
     __getEditRender = getEditRender
   } else if (editMode === 'inline') {
-    const { list, methods, editButtonsSlot, getEditRender } = inlineRender({ childrenMap, orgList, rowKey, listener })
+    const { list, methods, editButtonsSlot, getEditRender } = inlineRender({ childrenMap, orgList, listener, rowEditor })
     context.list = list
     Object.assign(context.methods, methods)
     __editButtonsSlot = editButtonsSlot
@@ -87,6 +88,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
   }
   const effectData = getEffectData({ list: context.list })
   const actionColumn = buildActionSlot({
+    defAttrs: globalProps.rowButtons,
     buttons: rowButtons,
     methods: context.methods,
     editSlot: __editButtonsSlot,
