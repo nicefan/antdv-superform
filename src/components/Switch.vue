@@ -30,7 +30,7 @@ export default defineComponent({
     /** 选项中的value使用label */
     valueToLabel: Boolean,
     /** 第一个选项为选中值 */
-    firstIsTrue: Boolean,
+    firstIsChecked: Boolean,
     /** 默认是否选中 */
     defaultChecked: Boolean,
   },
@@ -43,7 +43,7 @@ export default defineComponent({
     const defFalseValue = props.valueToNumber ? 0 : false
     const attrs = computed(() => {
       const [first, scond] = optionsRef.value
-      if (props.firstIsTrue) {
+      if (props.firstIsChecked) {
         return {
           checkedChildren: first?.label ?? trueName,
           unCheckedChildren: scond?.label ?? falseName,
@@ -61,10 +61,10 @@ export default defineComponent({
     })
 
     watch(
-      () => [props.value, attrs.value] as const,
-      ([val, _attrs]) => {
-        if (val !== _attrs.checkedValue && val !== _attrs.unCheckedValue) {
-          ctx.emit('update:value', props.defaultChecked ? _attrs.checkedValue : _attrs.unCheckedValue)
+      () => [props.value, optionsRef.value] as const,
+      ([val, options]) => {
+        if (val === undefined && options.length) {
+          ctx.emit('update:value', props.defaultChecked ? attrs.value.checkedValue : attrs.value.unCheckedValue)
         }
       },
       { immediate: true }

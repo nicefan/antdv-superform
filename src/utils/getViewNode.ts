@@ -35,7 +35,7 @@ const getOptions = (option, _effectData, optionsArr) => {
   } else if (isPlainObject(__options)) {
     optionsArr.value = Object.entries(__options).map(([key, label]) => ({ value: key, label }))
   } else if (Array.isArray(__options) && typeof __options[0] === 'string') {
-    optionsArr.value = __options.map((label, index) => ({ value: index, label }))
+    optionsArr.value = __options.map((label, index) => ({ value: String(index), label }))
   } else {
     optionsArr.value = __options
   }
@@ -44,7 +44,7 @@ const getOptions = (option, _effectData, optionsArr) => {
 const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) => {
   const item: Obj = { color, label, icon }
   if (tagViewer !== true || !color) {
-    const tagOption = tagViewer === true ? globalConfig.tagColors : tagViewer
+    const tagOption = tagViewer === true ? globalConfig.tagViewer : tagViewer
     if (typeof tagOption === 'function') {
       item.color = tagOption(value)
     } else if (Array.isArray(tagOption) && isPlainObject(tagOption[0])) {
@@ -85,14 +85,14 @@ export function getViewNode(option, effectData: Obj = {}) {
       // 绑定值为Label时直接返回原值
       if (valueToLabel) return
       const optionsArr = ref<any[]>()
-      autoTag = tagViewer !== false
+      autoTag = !!tagViewer || globalConfig.tagViewer !== false
       return (param = effectData, inner?: boolean) => {
         const tags: any[] = []
         if (!optionsArr.value) {
           getOptions(option, param, optionsArr)
         }
-        const text = param.text || param.value
-        if (text === undefined) return ''
+        const text = (param.text || param.value) ?? ''
+        if (text === '') return ''
         const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
         const values = arr.map((val) => {
           const item = unref(optionsArr)?.find(({ value }) => (valueToNumber ? Number(value) : value) === val)

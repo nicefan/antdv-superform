@@ -350,7 +350,7 @@ declare interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
     valueLabels?: [string, string]
     attrs?: {
         /** 第一个选项为选中值 */
-        firstIsTrue?: boolean
+        firstIsChecked?: boolean
         /** 默认是否选中 */
         defaultChecked?: boolean
     } & SwitchProps &
@@ -473,7 +473,7 @@ declare interface GlobalConfig {
     /** 内置默认按钮配置 */
     defaultButtons?: Obj<ButtonItem>;
     /**tag显示时默认颜色组 */
-    tagColors?: Obj | string[];
+    tagViewer?: Obj<string> | string[] | false | Fn<string>;
 }
 
 declare interface HelpMessage {

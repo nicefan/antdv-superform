@@ -29,7 +29,7 @@ export default defineComponent({
   setup({ option, model, apis = {} as TableApis, effectData, isView }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
-    const rowKey = (record, index?:number) => record[attrs.rowKey] || record['_ID_'] || index
+    const rowKey = (record) => record[attrs.rowKey] || record['_ID_']
     const orgList = toRef(model, 'refData')
     const __rowSelection = option.attrs?.rowSelection // === true ? {} : attrs.rowSelection
     const selectedRowKeys = ref<string[]>(__rowSelection?.selectedRowKeys || [])

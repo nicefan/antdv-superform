@@ -240,7 +240,7 @@ export default function exampleForm() {
                 }, 1000)
               }),
             attrs: {
-              firstIsTrue: true,
+              firstIsChecked: true,
               defaultChecked: true,
             },
           },

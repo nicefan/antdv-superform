@@ -405,7 +405,7 @@ interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
   valueLabels?: [string, string]
   attrs?: {
     /** 第一个选项为选中值 */
-    firstIsTrue?: boolean
+    firstIsChecked?: boolean
     /** 默认是否选中 */
     defaultChecked?: boolean
   } & SwitchProps &

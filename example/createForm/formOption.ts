@@ -117,7 +117,7 @@ export const myTableOption = defineTable({
       options: [{ value: true, label: '是' }, { value: false, label: '否' }],
       editable: true,
       attrs: {
-        firstIsTrue: true,
+        firstIsChecked: true,
         defaultChecked: true,
       }
     },

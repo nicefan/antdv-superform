@@ -43,7 +43,7 @@ const InputNode = defineComponent({
       set: (val) => objSet(effectData.record, option.field, val),
     })
     const model: any = { parent, refData }
-    const { attrs, hidden } = useControl({ option, effectData })
+    const { attrs, hidden } = useControl({ option, effectData: { ...effectData, inTable: true } })
     const inputSlot = buildInnerNode(option, model, effectData, attrs)
     return () => !hidden.value && inputSlot()
   },
@@ -107,26 +107,26 @@ export function useColumns({ childrenMap, effectData, getEditRender, actionColum
 
 function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
   const columns: any[] = []
-  ;[..._models].forEach(([col, model]) => {
-    if (col.type === 'Hidden' || col.hideInTable || col.hidden === true) return
-    const title = col.labelSlot || col.label
-    if (model.children) {
-      const sub = buildColumns(model.children, colsMap)
-      columns.push({
-        title,
-        children: sub.columns,
-      })
-    } else {
-      const column = {
-        title,
-        dataIndex: model.propChain.join('.') || title,
-        // ...globalProps.Column,
-        ...(col.columnProps as Obj),
+    ;[..._models].forEach(([col, model]) => {
+      if (col.type === 'Hidden' || col.hideInTable || col.hidden === true) return
+      const title = col.labelSlot || col.label
+      if (model.children) {
+        const sub = buildColumns(model.children, colsMap)
+        columns.push({
+          title,
+          children: sub.columns,
+        })
+      } else {
+        const column = {
+          title,
+          dataIndex: model.propChain.join('.') || title,
+          // ...globalProps.Column,
+          ...(col.columnProps as Obj),
+        }
+        columns.push(column)
+        colsMap.set(col, column)
       }
-      columns.push(column)
-      colsMap.set(col, column)
-    }
-  })
+    })
   return { columns, colsMap }
 }
 
