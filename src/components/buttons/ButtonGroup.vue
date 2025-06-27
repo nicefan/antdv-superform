@@ -16,12 +16,12 @@
       </Dropdown>
       <Tooltip v-else-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
-          ><component v-if="icon || !labelOnly" :is="useIcon(icon)" />
+          ><component v-if="icon && !labelOnly" :is="useIcon(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
         /></Button>
       </Tooltip>
       <Button v-else v-bind="attrs">
-        <component v-if="icon || !labelOnly" :is="useIcon(icon)" /> <component :is="() => toNode(label, effectData)" />
+        <component v-if="icon && !labelOnly" :is="useIcon(icon)" /> <component :is="() => toNode(label, effectData)" />
       </Button>
       <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
