@@ -828,7 +828,7 @@ export default function exampleForm() {
               limit: 1,
               size: 'small',
               buttonType: 'primary',
-              iconOnly: true,
+              labelMode: 'icon',
               actions: [
                 {
                   label: '新增',

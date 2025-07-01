@@ -38,7 +38,7 @@ export default defineComponent({
   emits: ['register', 'load', 'update:dataSource'],
   setup(props, ctx) {
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
-    const option: Obj = shallowReactive({ attrs: ctxAttrs })
+    const option = shallowReactive({ attrs: ctxAttrs }) as RootTableOption
     const dataRef = ref([])
     const wrapRef = ref()
 
@@ -57,7 +57,7 @@ export default defineComponent({
       const { isScanHeight, inheritHeight, isFixedHeight, isContainer, ...attrs } = mergeProps(
         globalProps.Table,
         { ..._option.attrs },
-        option.attrs
+        { ...option.attrs }
       )
       Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
     }
@@ -128,7 +128,8 @@ export default defineComponent({
           return
         }
         slots.value = useInnerSlots(option.slots, ctx.slots)
-        const { columns, searchSchema = opt.searchForm, maxHeight, isScanHeight = true, inheritHeight } = opt
+        const { columns, maxHeight, isScanHeight = true, inheritHeight } = opt
+        const searchSchema = opt.searchForm || opt.searchSchema
 
         // 列表控件子表单模型
         const model = reactive({
@@ -155,8 +156,8 @@ export default defineComponent({
             initQuery && query()
           })
         }
-        const tabsField = opt.tabs?.field
-        if (tabsField) {
+        const tabsField = opt.tabs && opt.tabs.field
+        if (opt.tabs && tabsField) {
           const tabsKey = (opt.tabs.activeKey ??= ref(opt.tabs.defaultActiveKey))
           watch(
             tabsKey,
@@ -205,19 +206,8 @@ export default defineComponent({
     return () =>
       tableSlot.value &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
-        searchForm.value && !option.searchForm?.teleport
+        !searchForm.value || option.searchForm?.teleport
           ? h(
-              'div',
-              mergeProps(
-                { ref: wrapRef, class: [option.isContainer && 'sup-container', 'sup-table'] },
-                { class: ctxClass, style }
-              ),
-              [
-                h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode()),
-                h('div', { class: 'sup-form-section section-last' }, tableSlot.value()),
-              ]
-            )
-          : h(
               'div',
               mergeProps(
                 {
@@ -230,13 +220,24 @@ export default defineComponent({
                 }
               ),
               [
-                searchForm.value &&
+                option.searchForm?.teleport &&
                   h(
                     Teleport,
                     { to: option.searchForm.teleport },
-                    h('div', { class: 'sup-form-section sup-table-search' }, searchForm.value.formNode())
+                    h('div', { class: 'sup-form-section sup-table-search' }, h(searchForm.value.formNode))
                   ),
                 tableSlot.value(),
+              ]
+            )
+          : h(
+              'div',
+              mergeProps(
+                { ref: wrapRef, class: [option.isContainer && 'sup-container', 'sup-table'] },
+                { class: ctxClass, style }
+              ),
+              [
+                h('div', { class: 'sup-form-section sup-table-search' }, h(searchForm.value.formNode)),
+                h('div', { class: 'sup-form-section section-last' }, h(tableSlot.value)),
               ]
             )
       )

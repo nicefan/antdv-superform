@@ -184,7 +184,9 @@ interface ExtButtonGroup<T extends string = string> {
   actions?: (T | ({ name?: T } & ButtonItem))[]
   // subItems?: ButtonItem[]
 }
-type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
+type ExtButtons<T extends string = string> =
+  | ExtButtonGroup<T | string>
+  | NonNullable<ExtButtonGroup<T | string>['actions']>
 interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
   field?: string
   initialValue?: any
@@ -213,16 +215,16 @@ interface ExtTableOption extends ExtBaseOption {
   title?: VSlot
   attrs?: TableProps | Obj
   /** @deprecated 更名为editable */
-  edit?:boolean
+  edit?: boolean
   /** 表格全部为编辑状态，开启后rowEdit无效 */
   editable?: boolean
   rowEditor?: {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
-    form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; }
+    form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
     modalProps?: ModalFuncProps | Obj
     onSave?: Fn
-    onCancel?:Fn
+    onCancel?: Fn
   }
   /** @deprecated  移至rowEditor */
   editMode?: 'inline' | 'modal'
@@ -271,7 +273,15 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
    */
   searchSchema?: void
   /** 查询表单配置 */
-  searchForm?: ExtFormOption | { subItems: (UniOption | string)[]; searchOnChange?: boolean; teleport?: string }
+  searchForm?: Omit<ExtFormOption, 'subItems'> & {
+    subItems: (UniOption | string)[]
+    searchOnChange?: boolean
+    teleport?: string
+    /** 超出限制显示展开 */
+    limit?: number
+    /** 开启高级查询 */
+    advanced?: boolean
+  }
   pagination?: PaginationProps | false
   attrs?: TableProps | (TableProps & TableScanHight) | Obj
 }
