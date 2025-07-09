@@ -45,22 +45,17 @@
 .sup-detail .sup-title {
   font-weight: bold;
 }
+.sup-detail .ant-descriptions {
+  width: 100%;
+}
 .sup-detail .ant-descriptions-bordered + .ant-descriptions-bordered {
   margin-top: -1px;
 }
-.sup-detail .ant-descriptions-bordered .ant-descriptions-bordered {
+.sup-detail .ant-descriptions-bordered .ant-descriptions-bordered .ant-descriptions-view {
   border: none;
 }
-.sup-detail .ant-descriptions-view.ant-descriptions-bordered table {
-  border-collapse: collapse;
-}
-.sup-detail .ant-descriptions-view.ant-descriptions-bordered table,
-.sup-detail .ant-descriptions-view.ant-descriptions-bordered th,
-.sup-detail .ant-descriptions-view.ant-descriptions-bordered td {
-  border: 1px solid var(--descriptions-border-color);
-}
-.sup-detail .ant-descriptions-view.ant-descriptions-bordered .ant-descriptions-item-label {
-  background-color: var(--descriptions-bg-color);
+.sup-detail .ant-descriptions-bordered .ant-descriptions-view {
+  overflow: hidden;
 }
 .sup-detail .ant-descriptions-item-container {
   padding: 8px 0;

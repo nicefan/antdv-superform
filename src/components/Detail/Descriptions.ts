@@ -187,13 +187,9 @@ export default defineComponent({
           'div',
           {
             style: colorStyle,
-            class: [
-              'ant-descriptions-view',
-              'ant-descriptions-bordered',
-              size !== 'default' && 'ant-descriptions-' + size,
-            ],
+            class: ['ant-descriptions', 'ant-descriptions-bordered', size !== 'default' && 'ant-descriptions-' + size],
           },
-          h('table', {}, rows())
+          h('div', { class: 'ant-descriptions-view' }, h('table', {}, rows()))
         )
     } else {
       const render = () =>
@@ -229,14 +225,14 @@ export default defineComponent({
           'div',
           {
             class: [
-              'ant-descriptions-view',
+              'ant-descriptions',
               layout === 'vertical' && 'ant-descriptions-vertical',
               mode === 'form' ? 'sup-descriptions-mode-form' : 'sup-descriptions-default',
               colon === false && 'ant-descriptions-item-no-colon',
               size && size !== 'default' && 'ant-descriptions-' + size,
             ],
           },
-          render()
+          h('div', { class: 'ant-descriptions-view' }, render())
         )
     }
   },

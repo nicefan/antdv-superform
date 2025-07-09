@@ -58,10 +58,13 @@
   .sup-title {
     font-weight: bold;
   }
+  .ant-descriptions {
+    width: 100%;
+  }
   .ant-descriptions-bordered + .ant-descriptions-bordered {
     margin-top: -1px;
   }
-  .ant-descriptions-bordered .ant-descriptions-bordered {
+  .ant-descriptions-bordered .ant-descriptions-bordered .ant-descriptions-view{
     border: none;
   }
   // .ant-descriptions-bordered .ant-descriptions-item {
@@ -70,18 +73,9 @@
   //     height: 100%;
   //   }
   // }
-  .ant-descriptions-view.ant-descriptions-bordered {
-    table {
-      border-collapse: collapse;
-    }
-    table,
-    th,
-    td {
-      border: 1px solid var(--descriptions-border-color);
-    }
-    .ant-descriptions-item-label {
-      background-color: var(--descriptions-bg-color);
-    }
+  .ant-descriptions-bordered .ant-descriptions-view{
+    // 阻止圆角底色溢出
+    overflow: hidden;
   }
   .ant-descriptions-item-container {
     padding: 8px 0;
