@@ -85,7 +85,7 @@ export function getViewNode(option, effectData: Obj = {}) {
       // 绑定值为Label时直接返回原值
       if (valueToLabel) return
       const optionsArr = ref<any[]>()
-      autoTag = !!tagViewer || globalConfig.tagViewer !== false
+      autoTag = !(tagViewer === false || (!tagViewer && globalConfig.tagViewer === false))
       return (param = effectData, inner?: boolean) => {
         const tags: any[] = []
         if (!optionsArr.value) {

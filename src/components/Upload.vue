@@ -155,7 +155,7 @@ export default defineComponent({
       name: 'name',
       ...infoNames,
     }
-    if (mode === 'custom') __names.originFileObj = ''
+    if (mode === 'custom') __names.originFileObj = 'originFileObj'
 
     const convertInfo = (info) => {
       const __info = { status: 'done', ...info }
