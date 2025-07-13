@@ -213,7 +213,10 @@ type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
 interface ExtTableOption extends ExtBaseOption {
   field: string
   title?: VSlot
-  attrs?: TableProps | Obj
+  attrs?: TableProps & {
+    /**数据初始化后默认展开的行 */
+    defaultExpandLevel?: number | 'all'
+  }
   /** @deprecated 更名为editable */
   edit?: boolean
   /** 表格全部为编辑状态，开启后rowEdit无效 */
@@ -223,6 +226,7 @@ interface ExtTableOption extends ExtBaseOption {
     addMode?: 'inline' | 'modal'
     form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
     modalProps?: ModalFuncProps | Obj
+    /**提交保存前 */
     onSave?: Fn
     onCancel?: Fn
   }
@@ -283,7 +287,7 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
     advanced?: boolean
   }
   pagination?: PaginationProps | false
-  attrs?: TableProps | (TableProps & TableScanHight) | Obj
+  attrs?: ExtTableOption['attrs'] | (TableProps & TableScanHight) | Obj
 }
 interface ExtListOption extends ExtBaseOption, ExtRow {
   field: string

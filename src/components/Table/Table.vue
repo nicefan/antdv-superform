@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, ref, reactive, type PropType, defineComponent, toRef, watch } from 'vue'
+import { h, ref, reactive, unref, type PropType, defineComponent, toRef, watch } from 'vue'
 import { createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
@@ -8,6 +8,7 @@ import type { TableApis } from '../../exaTypes'
 import { toNode } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
+import { isPlainObject } from 'lodash-es'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -24,15 +25,18 @@ export default defineComponent({
     isView: Boolean,
     effectData: Object,
     apis: Object as PropType<TableApis>,
+    indexColumn: [Boolean, Object],
+    expandedRowKeys: Array,
+    defaultExpandLevel: null as unknown  as PropType<number | 'all'>
   },
-  emits: ['register'],
-  setup({ option, model, apis = {} as TableApis, effectData, isView }, ctx) {
+  emits: ['register', 'expandedRowChange'],
+  setup({ option, model, apis = {} as TableApis, effectData, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const rowKey = (record) => record[attrs.rowKey] || record['_ID_']
     const orgList = toRef(model, 'refData')
     const __rowSelection = option.attrs?.rowSelection // === true ? {} : attrs.rowSelection
-    const selectedRowKeys = ref<string[]>(__rowSelection?.selectedRowKeys || [])
+    const selectedRowKeys = ref<any[]>(__rowSelection?.selectedRowKeys || [])
     const selectedRows = ref<Obj[]>([])
     const rowSelection =
       __rowSelection || (__rowSelection === undefined && editInline)
@@ -54,11 +58,39 @@ export default defineComponent({
           }
         : undefined
 
+    const getExpandKeys = (list, deep=0, level =1) => {
+      const arr: any[] = []
+      const isEnd = deep === level
+      list.forEach(item => {
+        if (item.children) {
+          arr.push(rowKey(item))
+          if (!isEnd) {
+            arr.push(...getExpandKeys(item.children, deep, level+1))
+          }
+        }
+      })
+      return arr
+    }
+    const expandedRowKeys = ref(option.attrs?.expandedRowKeys || []);
+    const updateExpand = (val) => {
+      expandedRowKeys.value = val
+      ctx.emit('expandedRowChange', val)
+    }
+    if (props.defaultExpandLevel || attrs.defaultExpandAllRows) {
+      watch(orgList, (list, old) => {
+        if (!old.length) {
+          updateExpand(getExpandKeys(list, Number(props.defaultExpandLevel)))
+        }
+      })
+    }
     const listener = {
       async onSave(data) {
         if (apis.save) {
           const { _ID_, ...rest } = data
           await apis.save(rest)
+          if (rest.parentId) {
+            expandedRowKeys.value = [...expandedRowKeys.value, rest.parentId]
+          }
           return apis.query(true)
         } else {
           orgList.value.push(data)
@@ -94,8 +126,8 @@ export default defineComponent({
     }
 
     const { list, columns, methods, modalSlot } = buildData({ option, model, orgList, rowKey, listener, isView })
-
-    if (option.indexColumn ?? globalProps.Table?.indexColumn) {
+    const indexColumn = props.indexColumn ?? globalProps.Table?.indexColumn
+    if (indexColumn) {
       columns.unshift({
         dataIndex: 'INDEX',
         title: '序号',
@@ -104,7 +136,7 @@ export default defineComponent({
         customRender: ({ index }) => {
           return ((attrs.pagination?.current || 1) - 1) * (attrs.pagination?.pageSize || 10) + index + 1
         },
-        ...(typeof option.indexColumn === 'object' && option.indexColumn),
+        ...(isPlainObject(indexColumn) && indexColumn),
       })
     }
     // TODO: 补充TS
@@ -115,6 +147,11 @@ export default defineComponent({
         selectedRows.value = arr
         selectedRowKeys.value = arr.map((item) => rowKey(item))
         // selectedRows.value = []
+      },
+      expandedRowKeys,
+      setExpandedRowKeys:updateExpand,
+      expandAll:() => {
+         updateExpand(getExpandKeys(orgList.value))
       },
       reload: () => apis.query?.(true),
       add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
@@ -184,6 +221,8 @@ export default defineComponent({
           ...attrs,
           rowSelection,
           rowKey,
+          expandedRowKeys: expandedRowKeys.value,
+          'onUpdate:expandedRowKeys':updateExpand,
           class: 'sup-table-wrapper',
         },
         __slots
