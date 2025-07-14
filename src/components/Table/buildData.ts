@@ -1,15 +1,11 @@
 import { ref, h } from 'vue'
-import { defaults } from 'lodash-es'
 import { useModal } from '../../superModal'
 import inlineRender from './editInline'
 import modalRender from './editModal'
 import useTableEdit from './TableEdit'
-import { getEffectData } from '../../utils'
 import { globalProps } from '../../plugin'
 import View from '../Detail'
-import { buildActionSlot, useColumns } from './buildColumns'
 import type { RootTableOption } from '../../exaTypes'
-
 
 function buildDetail(option, modelsMap, rowKey) {
   const source = ref({})
@@ -46,12 +42,12 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
   const { modelsMap: childrenMap, initialData } = model.listData
   const context: {
     list: Ref
-    columns: Obj[]
     methods: Obj
     modalSlot?: Fn
+    getEditRender?: Fn
+    editButtonsSlot?: Fn
   } = {
     list: orgList,
-    columns: [],
     methods: {
       delete({ record, selectedRows }) {
         const items = record ? [record] : selectedRows
@@ -60,21 +56,23 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     },
   }
 
-  const { edit, editable = edit, rowButtons, rowEditor } = option
+  const { edit, editable = edit, rowEditor } = option
   const { editMode, addMode } = rowEditor || option // 兼容旧版
 
-  let __getEditRender
-  let __editButtonsSlot
   if (!isView && editable) {
     const { methods, getEditRender } = useTableEdit({ model, orgList, rowKey })
     Object.assign(context.methods, methods)
-    __getEditRender = getEditRender
+    context.getEditRender = getEditRender
   } else if (editMode === 'inline') {
-    const { list, methods, editButtonsSlot, getEditRender } = inlineRender({ childrenMap, orgList, listener, rowEditor })
+    const { list, methods, editButtonsSlot, getEditRender } = inlineRender({
+      childrenMap,
+      orgList,
+      listener,
+      rowEditor,
+    })
     context.list = list
     Object.assign(context.methods, methods)
-    __editButtonsSlot = editButtonsSlot
-    __getEditRender = getEditRender
+    Object.assign(context, { editButtonsSlot, getEditRender }) 
   }
   if (editMode === 'modal' || addMode === 'modal') {
     const { modalSlot, methods } = modalRender({ initialData, rowKey, option, listener })
@@ -86,23 +84,6 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     }
     context.modalSlot = modalSlot
   }
-  const effectData = getEffectData({ list: context.list })
-  const actionColumn = buildActionSlot({
-    defAttrs: globalProps.rowButtons,
-    buttons: rowButtons,
-    methods: context.methods,
-    editSlot: __editButtonsSlot,
-    isView,
-  })
-
-  context.columns = useColumns({ childrenMap, effectData, getEditRender: __getEditRender, actionColumn })
-  ;(function mergeOption(columns = context.columns) {
-    columns.forEach((item) => {
-      defaults(item, option.columnProps, globalProps.Column)
-      if (item.children) mergeOption(item.children)
-    })
-  })()
-
   context.methods.detail = buildDetail(option, childrenMap, rowKey)
 
   return context

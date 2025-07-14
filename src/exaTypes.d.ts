@@ -226,6 +226,8 @@ interface ExtTableOption extends ExtBaseOption {
     addMode?: 'inline' | 'modal'
     form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
     modalProps?: ModalFuncProps | Obj
+    /** 行内编辑时同时只能编辑一行 */
+    singleEdit?: boolean
     /**提交保存前 */
     onSave?: Fn
     onCancel?: Fn

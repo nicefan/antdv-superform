@@ -1,35 +1,12 @@
-import { computed, defineComponent, effect, h, inject, reactive, toRaw, toRef } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 import type { TableColumnProps } from 'ant-design-vue'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
 import Controls from '../index'
 import { buildInnerNode } from '../Collections'
-import { get as objGet, set as objSet } from 'lodash-es'
-import { globalConfig } from '../../plugin'
+import { defaults, isPlainObject, get as objGet, set as objSet } from 'lodash-es'
+import { globalConfig, globalProps } from '../../plugin'
 
-export function createProducer(effectData) {
-  const renderMap = new WeakMap<Obj, Map<Obj, Obj>>()
-  // const keyMap = new WeakMap()
-  /** 阻止表格customRender无效的渲染 */
-  const renderProduce = (param, render) => {
-    const record = toRaw(param.record)
-    const row = renderMap.get(record) || new Map()
-    renderMap.set(record, row)
-    // const key = keyMap.get(record) || Symbol()
-    // keyMap.set(record, key)
-    if (!row.has(param.column)) {
-      const activeParam = reactive({ ...effectData, ...param, current: param.record })
-      const node = computed(() => render(activeParam))
-      row.set(param.column, { activeParam, node })
-      return node.value
-    } else {
-      const { activeParam, node } = row.get(param.column)
-      Object.assign(activeParam, param)
-      return node.value
-    }
-  }
-  return renderProduce
-}
 const InputNode = defineComponent({
   props: {
     option: { type: Object, required: true },
@@ -63,99 +40,114 @@ const getEditNode = (option) => {
 }
 
 interface BuildColumnsParam {
-  childrenMap: ModelsMap
-  methods?: Obj // 按钮组件绑定方法
-  effectData?: Obj // 按钮组件绑定传参
-  actionColumn?: Obj // 行操作按钮
-  getEditRender?: Fn // 行内编辑render方法
-}
-
-export function useColumns({ childrenMap, effectData, getEditRender, actionColumn }: BuildColumnsParam) {
-  const rootSlots = { ...inject('rootSlots', {}) }
-  const { columns, colsMap } = buildColumns(childrenMap)
-  if (actionColumn) {
-    const { forSlot, render, column } = actionColumn
-    if (forSlot) {
-      rootSlots[forSlot] = render
-    } else {
-      columns.push(column)
-      colsMap.set('action', column)
-    }
+  childrenMap: ModelsMap<MixOption>
+  context: {
+    list: Ref
+    methods?: Obj // 按钮组件绑定方法
+    getEditRender?: Fn // 行内编辑render方法
+    editButtonsSlot?: Fn
   }
-  // const renderProduce = createProducer(effectData)
-  ;[...colsMap].forEach(([col, column]) => {
-    const viewRender = column.customRender || getViewNode(col) || undefined
-    const colEditRender = getEditRender ? getEditRender(col) : getEditNode(col)
-
-    if (colEditRender || viewRender) {
-      const __render = (param) => {
-        const result = colEditRender?.(param) ?? viewRender?.(param) ?? String(param.text ?? '')
-        if (result && typeof result === 'string' && column.ellipsis) {
-          return h('span', { title: result }, result)
-        }
-        return result
-      }
-      // column.customRender = (param) => renderProduce(param, __render)
-      column.customRender = (param) => h(__render, { ...effectData, ...param, current: param.record })
-    } else {
-      column.customRender = ({ text }) => String(text ?? '')
-    }
-  })
-
-  return columns as TableColumnProps[]
+  attrs: Obj
+  option: Obj // 表格配置
+  isView: boolean
 }
 
-function buildColumns(_models: ModelsMap<MixOption>, colsMap = new Map()) {
-  const columns: any[] = []
+export function buildColumns({ childrenMap, context, option, attrs, isView }: BuildColumnsParam) {
+  const { list, methods, getEditRender, editButtonsSlot } = context
+  const effectData = getEffectData({ list })
+
+  const columns = (function getColumns(_models = childrenMap) {
+    const _columns: any[] = []
     ;[..._models].forEach(([col, model]) => {
       if (col.type === 'Hidden' || col.hideInTable || col.hidden === true) return
       const title = col.labelSlot || col.label
       if (model.children) {
-        const sub = buildColumns(model.children, colsMap)
-        columns.push({
+        const subColumns = getColumns(model.children)
+        _columns.push({
           title,
-          children: sub.columns,
+          children: subColumns,
         })
       } else {
-        const column = {
+        const column: Obj = {
           title,
           dataIndex: model.propChain.join('.') || title,
-          // ...globalProps.Column,
-          ...(col.columnProps as Obj),
         }
-        columns.push(column)
-        colsMap.set(col, column)
+        if (col.options || col.dictName || col.type === 'Switch' || col.type?.includes('Picker')) {
+          column.align = 'center'
+        } else if (col.type === 'InputNumber') {
+          column.align = 'right'
+        }
+        Object.assign(column, col.columnProps)
+        defaults(column, option.columnProps, globalProps.Column)
+
+        const viewRender = column.customRender || getViewNode(col) || undefined
+        const editRender = getEditRender ? getEditRender(col) : getEditNode(col)
+        column.customRender = parseRender(viewRender, editRender, effectData)
+        _columns.push(column)
       }
     })
-  return { columns, colsMap }
+    return _columns
+  })()
+  const indexColumn = buildIndexColumn(option, attrs)
+  if (indexColumn) columns.unshift(indexColumn)
+
+  const actionColumn = buildActionSlot({ buttons: option.rowButtons, methods, editButtonsSlot, isView, effectData })
+  if (actionColumn) columns.push(actionColumn)
+
+  return columns as TableColumnProps[]
 }
 
-type BuildActionSlotParams = { buttons; methods; editSlot?: Fn; isView?: boolean; defAttrs?: Obj }
-export function buildActionSlot({ buttons, methods, editSlot, isView, defAttrs }: BuildActionSlotParams) {
+function parseRender(viewRender, editRender, effectData) {
+  if (editRender || viewRender) {
+    const __render = (param) => {
+      const result = editRender?.(param) ?? viewRender?.(param) ?? String(param.text ?? '')
+      if (result && typeof result === 'string' && param.column.ellipsis) {
+        return h('span', { title: result }, result)
+      }
+      return result
+    }
+    return (param) => h(__render, { ...effectData, ...param, current: param.record })
+  } else {
+    return ({ text }) => String(text ?? '')
+  }
+}
+
+export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, effectData }) {
   const buttonsConfig: Obj = {
     buttonType: 'link',
     size: 'small',
-    ...defAttrs,
+    ...globalProps.rowButtons,
     ...(Array.isArray(buttons) ? { actions: buttons } : buttons),
   }
-  const { columnProps, forSlot, ...config } = buttonsConfig
+  const { columnProps, ...config } = buttonsConfig
   const buttonsSlot = createButtons({ config, methods, isView })
   if (!buttonsSlot) return
   const render = (param) => {
-    return editSlot?.(param, config) || buttonsSlot({ key: param.record, effectData: param })
+    return editButtonsSlot?.(param, config) || buttonsSlot({ key: param.record, effectData: param })
   }
   return {
-    forSlot,
-    render,
-    column: {
-      title: '操作',
-      dataIndex: 'action',
-      fixed: 'right',
-      minWidth: 100,
-      align: 'center',
-      resizable: false,
-      ...columnProps,
-      customRender: render,
+    title: '操作',
+    dataIndex: 'action',
+    fixed: 'right',
+    minWidth: 100,
+    align: 'center',
+    resizable: false,
+    ...columnProps,
+    customRender: (param) => h(render, { ...effectData, ...param, current: param.record }),
+  }
+}
+
+export const buildIndexColumn = (option, attrs) => {
+  const indexColumn = option.indexColumn ?? globalProps.Table?.indexColumn
+  if (!indexColumn) return
+  return {
+    dataIndex: 'INDEX',
+    title: '序号',
+    width: 60,
+    align: 'center',
+    customRender: ({ index }) => {
+      return ((attrs.pagination?.current || 1) - 1) * (attrs.pagination?.pageSize || 10) + index + 1
     },
+    ...(isPlainObject(indexColumn) && indexColumn),
   }
 }

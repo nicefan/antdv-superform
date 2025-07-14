@@ -30,13 +30,17 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     if (!queryApi.value) return
 
     loading.value = true
-    return Promise.resolve(queryApi.value?.(_data).then(setPageData)).finally(() => {
+    return Promise.resolve(
+      queryApi.value?.(_data).then((res) => {
+        const _res = option.afterQuery?.(res) || res
+        return setPageData(_res)
+      })
+    ).finally(() => {
       loading.value = false
     })
   }
 
-  const setPageData = (data) => {
-    const res = option.afterQuery?.(data) || data
+  const setPageData = (res) => {
     if (Array.isArray(res)) {
       updateSource(res)
       if (pagination.value !== false) {
@@ -66,13 +70,13 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
       // 强制刷新，在新增修改后刷新数据
       return request()
     } else {
-       if (pagination.value) pageParam.current = 1
+      if (pagination.value) pageParam.current = 1
       return throttleRequest(param)
     }
   }
 
   const setQueryParams = (data?: Obj, target?: string) => {
-    merge(searchParam, data,)
+    merge(searchParam, data)
   }
   const getQueryParams = () => searchParam
 

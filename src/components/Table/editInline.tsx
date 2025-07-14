@@ -1,7 +1,7 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent, unref, computed } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep, merge } from 'lodash-es'
-import {message, Form } from 'ant-design-vue'
+import { message, Form } from 'ant-design-vue'
 import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
 import base from '../base'
@@ -56,19 +56,32 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
   )
 
   const { getEditInfo, setEditInfo } = createEditCache(childrenMap)
-
+  const hasEditor = ref(false)
+  const banEdit = computed(() => rowEditor.singleEdit && hasEditor.value)
+  const checkEdit = () => {
+    if (banEdit.value) {
+      message.error('只能同时编辑一行！')
+      return false
+    } else {
+      return (hasEditor.value = true)
+    }
+  }
   const methods = {
     add() {
+      if (!checkEdit()) return
       const item = { '_ID_': nanoid(12) }
       newItems.value.push(item)
       setEditInfo(item, {
         isEdit: true,
         isNew: true,
       })
+      hasEditor.value = true
     },
     edit({ record, selectedRows }) {
+      if (!checkEdit()) return
       const data = record || selectedRows[0]
       setEditInfo(toRaw(data), { isEdit: true })
+      hasEditor.value = true
     },
     delete({ record, selectedRows }) {
       const items = record ? [record] : selectedRows
@@ -81,14 +94,14 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       label: '保存',
       loading: true,
       onClick: async (args) => {
-        const {record} = args
+        const { record } = args
         const editInfo = getEditInfo(record)
-        const custom = await rowEditor?.onSave?.({ ...args, isNew: editInfo.isNew }) 
-        if (custom === false) return
         return editInfo.form
           .validate()
-          .then(() => {
+          .then(async () => {
             const raw = toRaw(editInfo.form.modelRef)
+            const custom = await rowEditor?.onSave?.({ ...args, isNew: editInfo.isNew })
+            if (custom === false) return false
             if (editInfo.isNew) {
               Object.assign(record, raw)
               listener.onSave(record).then(() => {
@@ -100,11 +113,12 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
               listener.onUpdate(raw, record).then(() => {
                 editInfo.isEdit = false
               })
-            } 
+            }
+            hasEditor.value = false
           })
           .catch((err) => {
             console.log('error', err)
-            message.error(err.errorFields[0].errors[0])
+            err?.errorFields && message.error(err.errorFields[0].errors[0])
           })
       },
     },
@@ -112,7 +126,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       label: '取消',
       onClick: async (args) => {
         const editInfo = getEditInfo(args.record)
-        const custom = await rowEditor?.onCancel?.({ ...args, isNew: editInfo.isNew }) 
+        const custom = await rowEditor?.onCancel?.({ ...args, isNew: editInfo.isNew })
         if (custom === false) return
         if (editInfo.isNew) {
           newItems.value.splice(newItems.value.indexOf(args.record), 1)
@@ -121,6 +135,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
           // editInfo.form.resetFields(record)
         }
         editInfo.isEdit = false
+        hasEditor.value = false
       },
     },
   ]
@@ -146,9 +161,10 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       const inputSlot = buildInnerNode(option, model, effectData, attrs)
       const rules = model.rules
       if (rules) {
-        form.rulesRef.value[ruleName] = computed(() => unref(attrs.disabled) || unref(hidden) ? [] : rules)
+        form.rulesRef.value[ruleName] = computed(() => (unref(attrs.disabled) || unref(hidden) ? [] : rules))
       }
-      return () => !hidden.value &&
+      return () =>
+        !hidden.value &&
         h(
           base.FormItem,
           {

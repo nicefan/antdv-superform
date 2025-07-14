@@ -121,7 +121,7 @@ export const myTableOption = defineTable({
         defaultChecked: true,
       }
     },
-    { type: 'Input', field: 'col2', label: 'col2' },
+    { type: 'InputNumber', field: 'col2', label: '数量' },
     {
       type: 'Upload',
       attrs: {

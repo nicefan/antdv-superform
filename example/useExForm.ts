@@ -50,7 +50,7 @@ export default function exampleForm() {
       wrapperCol: { style: 'margin-right: 20px' },
     },
     descriptionsProps: {
-      mode: 'form',
+      mode: 'table',
       column: 2,
     },
     buttons: {
@@ -643,8 +643,11 @@ export default function exampleForm() {
         label: '表格',
         // attrs: { bordered: true },
         // edit: true,
-        editMode: 'inline',
+        rowEditor: {
+          editMode: 'inline',
         // addMode: 'modal',
+          singleEdit: true,
+        },
         buttons: {
           actions: ['add', 'edit', 'delete'],
         },

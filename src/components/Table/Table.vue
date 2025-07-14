@@ -9,6 +9,7 @@ import { toNode } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
 import { isPlainObject } from 'lodash-es'
+import { buildColumns } from './buildColumns'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -25,9 +26,8 @@ export default defineComponent({
     isView: Boolean,
     effectData: Object,
     apis: Object as PropType<TableApis>,
-    indexColumn: [Boolean, Object],
     expandedRowKeys: Array,
-    defaultExpandLevel: null as unknown  as PropType<number | 'all'>
+    defaultExpandLevel: null as unknown as PropType<number | 'all'>,
   },
   emits: ['register', 'expandedRowChange'],
   setup({ option, model, apis = {} as TableApis, effectData, isView, ...props }, ctx) {
@@ -58,20 +58,20 @@ export default defineComponent({
           }
         : undefined
 
-    const getExpandKeys = (list, deep=0, level =1) => {
+    const getExpandKeys = (list, deep = 0, level = 1) => {
       const arr: any[] = []
       const isEnd = deep === level
-      list.forEach(item => {
+      list.forEach((item) => {
         if (item.children) {
           arr.push(rowKey(item))
           if (!isEnd) {
-            arr.push(...getExpandKeys(item.children, deep, level+1))
+            arr.push(...getExpandKeys(item.children, deep, level + 1))
           }
         }
       })
       return arr
     }
-    const expandedRowKeys = ref(option.attrs?.expandedRowKeys || []);
+    const expandedRowKeys = ref(option.attrs?.expandedRowKeys || [])
     const updateExpand = (val) => {
       expandedRowKeys.value = val
       ctx.emit('expandedRowChange', val)
@@ -125,20 +125,10 @@ export default defineComponent({
       },
     }
 
-    const { list, columns, methods, modalSlot } = buildData({ option, model, orgList, rowKey, listener, isView })
-    const indexColumn = props.indexColumn ?? globalProps.Table?.indexColumn
-    if (indexColumn) {
-      columns.unshift({
-        dataIndex: 'INDEX',
-        title: '序号',
-        width: 60,
-        align: 'center',
-        customRender: ({ index }) => {
-          return ((attrs.pagination?.current || 1) - 1) * (attrs.pagination?.pageSize || 10) + index + 1
-        },
-        ...(isPlainObject(indexColumn) && indexColumn),
-      })
-    }
+    const context = buildData({ option, model, orgList, rowKey, listener, isView })
+    const columns = buildColumns({ childrenMap: model.listData.modelsMap, context, option, attrs, isView })
+
+    const { list, methods, modalSlot } = context
     // TODO: 补充TS
     const actions = {
       selectedRowKeys,
@@ -149,9 +139,9 @@ export default defineComponent({
         // selectedRows.value = []
       },
       expandedRowKeys,
-      setExpandedRowKeys:updateExpand,
-      expandAll:() => {
-         updateExpand(getExpandKeys(orgList.value))
+      setExpandedRowKeys: updateExpand,
+      expandAll: () => {
+        updateExpand(getExpandKeys(orgList.value))
       },
       reload: () => apis.query?.(true),
       add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
@@ -222,7 +212,7 @@ export default defineComponent({
           rowSelection,
           rowKey,
           expandedRowKeys: expandedRowKeys.value,
-          'onUpdate:expandedRowKeys':updateExpand,
+          'onUpdate:expandedRowKeys': updateExpand,
           class: 'sup-table-wrapper',
         },
         __slots
