@@ -70,7 +70,7 @@ const isDivider = divider ?? (attrs?.direction !== 'vertical' && ['link', 'text'
 
 <script lang="ts">
 function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
-  const { size, buttonShape, buttonType, roleMode, limit, hidden, disabled, actions } = config
+  const { size, buttonShape, buttonType, roleMode, limit, hidden, disabled, actions, invalidDisabled } = config
   const iconOnly = config.labelMode === 'icon'
   const defaultAttrs = { size, type: buttonType, shape: buttonShape }
   const dis = useDisabled(disabled, param)
@@ -82,7 +82,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
     actionBtns = actionBtns.filter((item) => {
       const isFree = !item.roleName || roles.includes(item.roleName)
       if (!isFree) {
-        if ((item.roleMode || roleMode) === 'disable') {
+        if (item.invalidDisabled || invalidDisabled || (item.roleMode || roleMode) === 'disable') {
           item.disabled = true
         } else {
           return false

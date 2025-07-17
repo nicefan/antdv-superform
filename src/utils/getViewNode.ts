@@ -52,7 +52,7 @@ const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) =>
       Object.assign(item, tag)
     }
     item.color ??=
-      color || tagOption[value] || (value === true && 'success') || (value === false && 'error') || 'default'
+      color || tagOption[Number(value)] || (value === true && 'success') || (value === false && 'error') || 'default'
   }
   return h(Tag, { color: item.color }, { default: () => item.label, icon: item.icon || (() => useIcon(item.icon)) })
 }

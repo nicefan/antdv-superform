@@ -57,7 +57,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
 
   const { getEditInfo, setEditInfo } = createEditCache(childrenMap)
   const hasEditor = ref(false)
-  const banEdit = computed(() => rowEditor.singleEdit && hasEditor.value)
+  const banEdit = computed(() => rowEditor?.singleEdit && hasEditor.value)
   const checkEdit = () => {
     if (banEdit.value) {
       message.error('只能同时编辑一行！')

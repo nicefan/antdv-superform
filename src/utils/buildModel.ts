@@ -1,5 +1,5 @@
 import buildRule from './buildRule'
-import { reactive, ref, toRef, toValue, watch, markRaw } from 'vue'
+import { reactive, ref, toRef, toValue, watch, markRaw, computed } from 'vue'
 import { cloneDeep, get as objGet, set as objSet } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */
@@ -10,37 +10,34 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]
 
+  const refData = !refName
+    ? parentData
+    : computed({
+        get: () => objGet(parentData.value, field),
+        set: (val) => objSet(parentData.value, field, val),
+      })
   const model = reactive({
     refName,
     initialValue,
     fieldName: field,
-    parent: ref(),
-    refData: ref(),
+    parent: parentData,
+    refData,
     propChain,
   })
-
-  watch(
-    parentData,
-    (data) => {
-      model.parent = data
-      if (refName) {
-        nameArr.forEach((name) => {
-          model.parent[name] ??= {}
-          model.parent = toRef(model.parent, name)
-        })
+  if (refName) {
+    watch(
+      parentData,
+      (data) => {
         if (columns || subItems) {
-          model.parent[refName] ??= toValue(initialValue) ?? (columns ? [] : {})
+          refData.value ??= toValue(initialValue) ?? (columns ? [] : {})
         } else {
-          model.parent[refName] ??= toValue(value) ?? toValue(initialValue)
+          refData.value ??= toValue(value) ?? toValue(initialValue)
         }
-        model.refData = toRef(model.parent, refName, value)
-        if (keepField) objGet(model.parent, keepField) ?? objSet(model.parent, keepField, undefined)
-      } else {
-        model.refData = data
-      }
-    },
-    { immediate: true, flush: 'sync' }
-  )
+        if (keepField) objGet(data, keepField) ?? objSet(data, keepField, undefined)
+      },
+      { immediate: true, flush: 'sync' }
+    )
+  }
 
   return model
 }

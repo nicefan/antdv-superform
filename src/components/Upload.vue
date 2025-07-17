@@ -112,7 +112,7 @@ export default defineComponent({
     tip: String,
     title: [String, Function],
     /** 超出最大数量隐藏上传 */
-    outHide: Boolean,
+    hideOnMax: Boolean,
     repeatable: Boolean,
     isView: Boolean,
     disabled: Boolean,
@@ -140,7 +140,7 @@ export default defineComponent({
       onPreview,
       onDownload,
       isImageUrl = fileIsImage,
-      outHide,
+      hideOnMax,
       valueKey,
     } = props
     const { accept, listType } = ctx.attrs as Obj
@@ -529,7 +529,7 @@ export default defineComponent({
       ]
     }
     const isView = computed(() => props.disabled || props.isView)
-    const hideBody = computed(() => outHide && maxCount && innerFileList.value.length >= maxCount)
+    const hideBody = computed(() => hideOnMax && maxCount && innerFileList.value.length >= maxCount)
     return () =>
       isView.value && innerFileList.value.length === 0
         ? h('div', { class: 'sup-upload-tip' }, '暂无附件')

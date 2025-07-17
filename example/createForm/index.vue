@@ -35,7 +35,7 @@ const params = reactive({
   name: undefined,
   other: 'abc'
 })
-const selectedRowKeys = ref([])
+const selectedRowKeys = ref<string[]>([])
 const dataso = ref<any[]>([])
 const currentPage = ref(1)
 const tableSchema = defineTable({

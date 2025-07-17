@@ -31,7 +31,7 @@ export default defineComponent({
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
-      const { type, label, align, blocked, span, hideInForm, labelSlot } = option
+      const { type, label, align, blocked, span, hideInForm, exclude, labelSlot } = option
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
         parent: props.effectData,
@@ -42,7 +42,7 @@ export default defineComponent({
         }),
         ...(subData.refName && { field: subData.refName, value: refData }),
       })
-      if (type === 'Hidden' || hideInForm) {
+      if (type === 'Hidden' || hideInForm || exclude?.includes('form')) {
         useVModel({ option, model: subData, effectData })
         return
       }

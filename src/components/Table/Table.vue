@@ -91,7 +91,7 @@ export default defineComponent({
           if (rest.parentId) {
             expandedRowKeys.value = [...expandedRowKeys.value, rest.parentId]
           }
-          return apis.query(true)
+          return apis.query?.(true)
         } else {
           orgList.value.push(data)
         }
@@ -99,7 +99,7 @@ export default defineComponent({
       async onUpdate(newData, oldData) {
         if (apis.update) {
           await apis.update(newData)
-          return apis.query(true)
+          return apis.query?.(true)
         } else {
           Object.assign(oldData, newData)
         }
@@ -107,7 +107,7 @@ export default defineComponent({
       async onDelete(items) {
         if (apis.delete) {
           await apis.delete(items)
-          return apis.query(true)
+          return apis.query?.(true)
         } else {
           items.forEach((item) => {
             orgList.value.splice(orgList.value.indexOf(item), 1)

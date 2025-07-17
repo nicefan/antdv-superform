@@ -1,5 +1,6 @@
-import { ref } from 'vue'
+import { h, ref } from 'vue'
 import { defineTable } from '../../src'
+import { EditOutlined } from '@ant-design/icons-vue'
 
 const key = ref()
 export const myTableOption = defineTable({
@@ -8,30 +9,43 @@ export const myTableOption = defineTable({
     rowKey: 'id',
     pagination: false,
   },
-  // editMode: 'inline',
-  addMode: 'modal',
   buttons: {
     // forSlot: 'tabBarExtraContent',
     actions: ['add', 'edit', 'delete'],
   },
-  editForm: {
-    attrs: { layout: 'vertical' },
-    subSpan: 24,
+  rowEditor: {
+    // editMode: 'inline',
+    addMode: 'modal',
+    form: {
+      attrs: { layout: 'vertical' },
+      subSpan: 24,
+    },
+    modalProps: {
+      title: ({ isNew }) => {
+        return h('div', [h(EditOutlined), ' 数据' + (isNew ? '新增' : '修改')])
+      },
+    },
   },
+
   descriptionsProps: { column: 1, size: 'default', mode: 'table' },
   searchForm: {
     attrs: {
       wrapperCol: { style: 'width:100px' },
     },
-    buttons: ['search', 'reset', { label: '新增', onClick: ({ table }) => table.add() }],
-    subSpan: 8,
-    subItems: ['date', 'title', { type: 'Input', label: '其它', field: 'other' }],
+    buttons: ['search', 'reset', { name: 'add', label: '新增', onClick: ({ table }) => table.add() }],
+    subSpan: 6,
+    limit: 3,
+    subItems: ['date', 'title', 'dataType', { type: 'Input', label: '其它', field: 'other' }],
+    onSubmit: (data) => {
+      console.log('查询条件', data)
+      return data
+    },
   },
   beforeQuery(data) {
     console.log(data)
     return data
   },
-  title: 'avc',
+  // title: 'avc',
   params: { fieldName: 'abc', other: 'abc' },
   modalProps: { width: '500px' },
   rowButtons: {
@@ -114,19 +128,22 @@ export const myTableOption = defineTable({
       type: 'Switch',
       label: '是否必填',
       field: 'isRequire',
-      options: [{ value: true, label: '是' }, { value: false, label: '否' }],
+      options: [
+        { value: true, label: '是' },
+        { value: false, label: '否' },
+      ],
       editable: true,
       attrs: {
         firstIsChecked: true,
         defaultChecked: true,
-      }
+      },
     },
     { type: 'InputNumber', field: 'col2', label: '数量' },
     {
       type: 'Upload',
       attrs: {
-        apis:{
-          download: () => new Promise((resolve,reject) => setTimeout(reject, 2000))
+        apis: {
+          download: () => new Promise((resolve, reject) => setTimeout(reject, 2000)),
         },
       },
       // hideInDescription: true,

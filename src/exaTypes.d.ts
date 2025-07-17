@@ -35,6 +35,10 @@ interface HelpMessage {
   color: 'success' | 'info' | 'warning' | 'error'
 }
 
+type VColumnProps = TableColumnProps & {
+  /** 是否隐藏 */
+  defaultHidden?: boolean
+}
 export interface DefaultOptionType {
   label?: any
   value?: string | number | boolean | null
@@ -59,6 +63,8 @@ interface ExtBaseOption {
   dynamicAttrs?: Fn<Obj>
   /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
   hidden?: boolean | ((data: Readonly<Obj>) => boolean)
+  /** 排除指定场景 */
+  exclude?: ('table' | 'form' | 'description')[]
   hideInForm?: boolean
   hideInDescription?: boolean
   /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
@@ -136,8 +142,12 @@ interface ButtonItem {
   confirmText?: string | Fn<string>
   /** 权限标识 */
   roleName?: string
+  /** 无效禁用，默认隐藏 */
+  invalidDisabled?: boolean
+  /**@deprecated 改用invlidDisabled开关 */
   roleMode?: 'hidden' | 'disable'
   color?: 'success' | 'error' | 'warning' | 'primary'
+  /** 待改动 */
   validOn?: 'form' | 'detail' | 'both'
   dropdown?: DefaultOptionType
   tooltip?: string
@@ -150,7 +160,7 @@ interface ButtonItem {
   onClick?: Fn
 }
 type TableApis = {
-  query: Fn<Promise<any>>
+  query?: Fn<Promise<any>>
   info?: Fn<Promise<Obj>>
   save?: Fn<Promise<any>>
   update?: Fn<Promise<any>>
@@ -172,7 +182,9 @@ interface ExtButtonGroup<T extends string = string> {
   labelMode?: 'icon' | 'label' | 'both'
   /** 更多按钮slot */
   moreLabel?: VSlot
-  /** 权限模式 */
+  /** 无效禁用，默认隐藏 */
+  invalidDisabled?: boolean
+  /**@deprecated 改用invlidDisabled开关 */
   roleMode?: 'hidden' | 'disable'
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
@@ -202,7 +214,10 @@ interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
   customTab?: Fn
 }
 type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
-  /** 应用于表格或编辑表单 */
+  /** 
+   *  应用于表格或编辑表单 
+   *  @deprecated 该属性已废弃，使用exclude替代
+   * */
   hideInTable?: boolean
   /** 表格内容渲染 */
   viewRender?: VSlot
@@ -455,8 +470,8 @@ interface ExtUpload extends ExtFormItemOption {
     maxSize?: number
     /** 单文件上传, 绑定值为字符串或文件对象 */
     isSingle?: boolean
-    /** 超出文件数量时，隐藏上传主体 */
-    outHide?: boolean
+    /** 达到最大文件数量时，隐藏上传主体 */
+    hideOnMax?: boolean
     /** 上传模式，默认auto,选择文件后自动上传，submit:提交时上传，custom通过绑定fileList中的文件对象手动上传 */
     uploadMode?: 'auto' | 'submit' | 'custom' | 'base64'
     tip?: string

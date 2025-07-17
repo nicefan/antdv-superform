@@ -54,12 +54,12 @@ interface BuildColumnsParam {
 
 export function buildColumns({ childrenMap, context, option, attrs, isView }: BuildColumnsParam) {
   const { list, methods, getEditRender, editButtonsSlot } = context
-  const effectData = getEffectData({ list })
+  const effectData = getEffectData({ list, isView })
 
   const columns = (function getColumns(_models = childrenMap) {
     const _columns: any[] = []
     ;[..._models].forEach(([col, model]) => {
-      if (col.type === 'Hidden' || col.hideInTable || col.hidden === true) return
+      if (col.type === 'Hidden' || col.hideInTable || col.hidden === true || col.exclude?.includes('table')) return
       const title = col.labelSlot || col.label
       if (model.children) {
         const subColumns = getColumns(model.children)
@@ -100,7 +100,7 @@ export function buildColumns({ childrenMap, context, option, attrs, isView }: Bu
 function parseRender(viewRender, editRender, effectData) {
   if (editRender || viewRender) {
     const __render = (param) => {
-      const result = editRender?.(param) ?? viewRender?.(param) ?? String(param.text ?? '')
+      const result = editRender?.(param) ?? viewRender?.({ ...param, isView: true }) ?? String(param.text ?? '')
       if (result && typeof result === 'string' && param.column.ellipsis) {
         return h('span', { title: result }, result)
       }

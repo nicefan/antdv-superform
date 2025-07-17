@@ -120,8 +120,8 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
   const rootSlots = inject<Obj>('rootSlots', {})
 
   ;[...modelsMap].forEach(([option, model], idx) => {
-    const { type = '', label, field, labelSlot = label, hideInDescription, viewRender } = option
-    if (type === 'Hidden' || hideInDescription) return
+    const { type = '', label, field, labelSlot = label, hideInDescription, viewRender, exclude } = option
+    if (type === 'Hidden' || hideInDescription || exclude?.includes('description')) return
     const { parent, refData } = toRefs(model)
     const effectData = getEffectData({
       parent: parentEffect,

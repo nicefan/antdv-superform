@@ -13,6 +13,8 @@ export default defineComponent({
     /** 按钮显示方式icon/label */
     labelMode: String as PropType<'icon' | 'label' | 'both'>,
     hidden: Boolean || Function,
+    /** 无效禁用，默认隐藏 */
+    invalidDisabled: Boolean,
     disabled: Boolean || (Function as PropType<Fn<boolean>>),
     actions: Array as PropType<ButtonItem[]>,
     effectData: Object,
@@ -23,15 +25,12 @@ export default defineComponent({
     const __actions = !slotsNode
       ? props.actions
       : slotsNode.flatMap(({ children, props = {} }: any) => {
-          const { roleName, roleMode, onClick, confirmText, tooltip, icon, ...attrs } = mapKeys(props, (_, key) =>
-            camelCase(key)
-          )
+          const { roleName, onClick, confirmText, tooltip, icon, ...attrs } = mapKeys(props, (_, key) => camelCase(key))
           if (!onClick || !children) return []
           return {
             label: children.default || children,
             icon,
             tooltip,
-            roleMode,
             roleName,
             onClick,
             confirmText,
