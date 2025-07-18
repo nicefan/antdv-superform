@@ -113,25 +113,44 @@ declare type Dict = {
     [k: string]: string | number;
 };
 
+declare type EffectData =
+| {
+    /**整个表单数据 */
+    formData: Vue.DeepReadonly<Obj>
+    /**当前属性所在对象 */
+    current: Obj
+    /** 上一级数据 */
+    parent: EffectData
+    value: any
+    /** 数组对象序列号 */
+    index: number
+    /** 当前属性名 */
+    field: string
+    /** 是否为查看模式 */
+    isView: boolean
+}
+| Obj
+
 export declare interface ExtBaseOption {
     type: string
     field?: string
     vModelFields?: Obj<string>
+    /** 双向绑定外部变量 */
     value?: Ref_2
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
     help?: HelpMessage
     rules?: RuleConfig | RuleConfig[]
-    /** 配置复用合并时方便插入 */
-    // sort?: number
     attrs?: Obj
     dynamicAttrs?: Fn<Obj>
     /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
     hidden?: boolean | ((data: Readonly<Obj>) => boolean)
     /** 排除指定场景 */
     exclude?: ('table' | 'form' | 'description')[]
+    /**@deprecated 改用`exclude: ['form']`*/
     hideInForm?: boolean
+    /**@deprecated 改用`exclude: ['description']`*/
     hideInDescription?: boolean
     /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
     disabled?: boolean | Fn
@@ -147,7 +166,10 @@ export declare interface ExtBaseOption {
     align?: 'left' | 'right' | 'center'
     slots?: Obj<VSlot>
     viewRender?: VSlot
-    [key: `on${Capitalize<string>}${string}`]: Fn | undefined
+    /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
+    computed?: (value, effectData: EffectData) => any
+    onUpdate?: (effectData: EffectData) => void
+    [key: `on${Capitalize<string>}${string}`]: ((effectData: EffectData, ...args: any[]) => any) | undefined
 }
 
 export declare interface ExtButtonGroup<T extends string = string> {
@@ -191,8 +213,8 @@ export declare interface ExtCollapseOption extends ExtBaseOption {
 }
 
 export declare type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
-    /** 
-     *  应用于表格或编辑表单 
+    /**
+     *  应用于表格或编辑表单
      *  @deprecated 该属性已废弃，使用exclude替代
      * */
     hideInTable?: boolean
@@ -238,8 +260,6 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     field: string
     /** 指定ref对象时，同步变化 */
     value?: any
-    /** 数据联动 提供一个监听方法，根据数据变化自动计算变更绑定值 */
-    computed?: (value, formData: Vue.DeepReadonly<Obj>) => any
     tagViewer?:
     | boolean
     | Obj<string>

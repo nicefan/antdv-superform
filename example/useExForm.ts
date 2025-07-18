@@ -219,11 +219,14 @@ export default function exampleForm() {
             label: '备注',
             wrapping: true,
             disabled(data) {
-              return !!data.formData.foreverName
+              return !data.formData.foreverName
             },
             computed(val, data) {
               return data.formData.foreverName
             },
+            onUpdate: (args) => {
+              console.log('memo:update', args.value)
+            }
           },
           {
             type: 'Switch',

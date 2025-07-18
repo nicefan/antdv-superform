@@ -95,7 +95,7 @@ export default {
         formRef.value?.clearValidate()
         const cloneData = cloneDeep(modelData.value)
         emit('reset', cloneData)
-        return onReset ? onReset(cloneData) : cloneData
+        return cloneData
       },
     }
 

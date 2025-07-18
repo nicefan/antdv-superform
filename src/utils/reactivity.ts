@@ -35,6 +35,7 @@ export function getListener(option: Obj<Fn> = {}, effectData) {
   const listener: Obj<Fn> = {}
   // 查找on开头的属性进行事件绑定
   Object.keys(option).forEach((key) => {
+    if (key === 'onUpdate') return
     if (key.match(/^on[A-Z]/)) {
       listener[key] = (...args) => option[key](effectData, ...args)
     } else if (key === 'on') {

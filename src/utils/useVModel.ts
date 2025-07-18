@@ -8,7 +8,7 @@ type Param = {
 }
 
 export default function useVModel({ option, model, effectData }: Param, defaultValue?: any) {
-  const { type, field, keepField, computed: __computed, vModelFields, value }: MixOption = option
+  const { type, field, keepField, computed: __computed, vModelFields, value, onUpdate }: MixOption = option
   if (!field) return
   if (defaultValue !== undefined) model.refData ??= toValue(defaultValue)
   // 实际存储变量
@@ -64,13 +64,17 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   }
   // 表单数据变化同步源数据
   watch(tempData, effect, { flush: 'sync' })
+  
+  if (onUpdate) {
+    watch(refValue, () => onUpdate(effectData))
+  }
 
   if (__computed) {
     watch(
       // 使用ref让计算结果即使一样也会进行后面的赋值
       () => ref(__computed(raw, effectData)),
       (val) => effect(unref(val)),
-      { immediate: true, flush: 'post' }
+      { immediate: true, flush: 'sync' }
     )
   }
 
