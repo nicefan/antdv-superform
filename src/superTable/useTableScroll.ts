@@ -9,7 +9,7 @@ export function useTableScroll(
   wrapRef: Ref<HTMLElement | null>,
   abortController?: AbortController
 ) {
-  const scrollHeightRef: Ref<number | null> = ref(null)
+  // const scrollHeightRef: Ref<number | null> = ref(null)
   // const modalFn = useModalContext();
 
   // Greater than animation time 280
@@ -61,13 +61,12 @@ export function useTableScroll(
   }
 
   function setHeight(height: number | null) {
-    scrollHeightRef.value = height
+    // scrollHeightRef.value = height
     // modalFn?.redoModalHeight?.();
     getScrollRef.value = {
       y: height,
-      // x: 'auto',
-      scrollToFirstRowOnChange: true,
-      ...scroll,
+      x: '100%',
+      // scrollToFirstRowOnChange: true,
     }
   }
 
