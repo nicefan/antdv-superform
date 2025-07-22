@@ -135,10 +135,9 @@ export function getViewNode(option, effectData: Obj = {}) {
       return tags
     }
   } else if (colType === 'Upload' || colType.startsWith('Ext')) {
-    const slots = useInnerSlots(option.slots)
-
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)
+      const slots = useInnerSlots(option.slots, param, rootSlots)
       const {
         attrs: { disabled, ...attrs },
       } = useControl({ option, effectData: param })

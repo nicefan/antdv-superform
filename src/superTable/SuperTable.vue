@@ -127,10 +127,7 @@ export default defineComponent({
           unWatch()
           return
         }
-        slots.value = useInnerSlots(option.slots, ctx.slots)
         const { columns, maxHeight, isScanHeight = true, inheritHeight } = opt
-        const searchSchema = opt.searchForm || opt.searchSchema
-
         // 列表控件子表单模型
         const model = reactive({
           refData: dataRef,
@@ -138,6 +135,10 @@ export default defineComponent({
         })
 
         const effectData = reactive({ formData: dataRef, current: dataRef })
+
+        slots.value = useInnerSlots(option.slots, effectData, ctx.slots)
+
+        const searchSchema = opt.searchForm || opt.searchSchema
 
         const {
           attrs: { onLoad, ...attrs },

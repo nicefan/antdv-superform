@@ -131,10 +131,15 @@ export default function exampleForm() {
             field: 'name',
             label: '姓名',
             rules: { required: true },
-            prefix: UserOutlined,
             attrs: {
               // 可改变查询按钮标签
               addonAfter: '查询',
+              suffix: 'a',
+            },
+            slots: {
+              prefix: (...args) => {
+                return  h(UserOutlined)
+              },
             },
             // 可个性化查询按钮
             // enterButton: () => h(Button, () => 'abc'),

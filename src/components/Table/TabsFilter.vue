@@ -38,7 +38,7 @@ export default defineComponent({
       titleBar,
       ..._slots
     } = slots
-    const innerSlots = useInnerSlots(props.slots)
+    const innerSlots = useInnerSlots(props.slots, props.effectData)
     const tabBarExtraSlot = tabBarExtra || rightExtra || tabBarExtraContent
     const tabList = computed(() => {
       const list = optionsRef.value.map(({ value, label, ...item }) => ({

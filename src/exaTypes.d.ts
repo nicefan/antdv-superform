@@ -404,11 +404,6 @@ interface ExtFormItemOption extends ExtBaseOption {
 }
 
 interface ExtInputOption extends ExtFormItemOption {
-  addonAfter?: VSlot
-  addonBefore?: VSlot
-  prefix?: VSlot
-  suffix?: VSlot
-  suffixTips?: string
   enterButton?: (effectData: Obj) => Component
   onSearch?: (effectData: Obj, value: string) => void
   attrs?: InputProps & HTMLAttributes

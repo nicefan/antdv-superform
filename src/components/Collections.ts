@@ -149,7 +149,7 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
   if (!type) return
 
   const rootSlots = inject<Obj>('rootSlots', {})
-  const slots = useInnerSlots(option.slots)
+  const slots = useInnerSlots(option.slots, effectData)
   const renderSlot = render ? (typeof render === 'function' ? render : rootSlots[render]) : Controls[type]
 
   let node

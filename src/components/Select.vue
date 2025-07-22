@@ -6,8 +6,8 @@
     @change="onChange"
     @search="onSearch"
   >
-    <template v-for="(slot, name) of $slots" #[name]="data">
-      <slot :name="name" v-bind="data"></slot>
+    <template v-for="(_, name) of $slots" #[name]="data">
+      <slot :name="name" v-bind="data || {}"></slot>
     </template>
   </Select>
 </template>

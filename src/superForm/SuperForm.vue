@@ -5,7 +5,7 @@ import Controls from '../components'
 import { globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
 import type { FormProps } from 'ant-design-vue'
-import { useInnerSlots } from '../utils'
+import { getEffectData, useInnerSlots } from '../utils'
 
 type SuperFormProps = FormProps & {
   /** 是否为容器包装 */
@@ -81,7 +81,7 @@ export default defineComponent<SuperFormProps, any, unknown>({
           onRegister: register,
           class: { 'sup-container': isContainer.value },
         },
-        useInnerSlots(formOption.slots, ctx.slots)
+        useInnerSlots(formOption.slots, getEffectData(), ctx.slots)
       )
 
     return formNode

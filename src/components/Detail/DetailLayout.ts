@@ -131,7 +131,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
       ...(model.refName && { field: model.refName, value: refData, text: refData }),
     })
     const { attrs, hidden } = useControl({ option, effectData })
-    const slots = useInnerSlots(option.slots)
+    const slots = useInnerSlots(option.slots, effectData)
 
     const __label = labelSlot && (() => toNode(labelSlot, effectData))
     let isBlock = option.blocked
