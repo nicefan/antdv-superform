@@ -114,7 +114,7 @@ declare type Dict = {
 };
 
 declare type EffectData =
-| {
+| (Obj & {
     /**整个表单数据 */
     formData: Vue.DeepReadonly<Obj>
     /**当前属性所在对象 */
@@ -128,7 +128,7 @@ declare type EffectData =
     field: string
     /** 是否为查看模式 */
     isView: boolean
-}
+})
 | Obj
 
 export declare interface ExtBaseOption {

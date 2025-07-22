@@ -74,6 +74,7 @@ export default defineComponent({
     const expandedRowKeys = ref(option.attrs?.expandedRowKeys || [])
     const updateExpand = (val) => {
       expandedRowKeys.value = val
+      document.dispatchEvent(new Event('redoHeight'));
       ctx.emit('expandedRowChange', val)
     }
     if (props.defaultExpandLevel || attrs.defaultExpandAllRows) {

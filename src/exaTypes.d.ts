@@ -40,7 +40,7 @@ type VColumnProps = TableColumnProps & {
   defaultHidden?: boolean
 }
 type EffectData =
-  | {
+  | (Obj & {
       /**整个表单数据 */
       formData: Vue.DeepReadonly<Obj>
       /**当前属性所在对象 */
@@ -54,7 +54,7 @@ type EffectData =
       field: string
       /** 是否为查看模式 */
       isView: boolean
-    }
+    })
   | Obj
 export interface DefaultOptionType {
   label?: any
