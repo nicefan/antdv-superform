@@ -8,7 +8,6 @@ import type { TableApis } from '../../exaTypes'
 import { toNode } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
-import { isPlainObject } from 'lodash-es'
 import { buildColumns } from './buildColumns'
 
 export default defineComponent({
@@ -58,14 +57,15 @@ export default defineComponent({
           }
         : undefined
 
+    const childrenField = attrs.childrenColumnName || 'children'
     const getExpandKeys = (list, deep = 0, level = 1) => {
       const arr: any[] = []
       const isEnd = deep === level
       list.forEach((item) => {
-        if (item.children) {
+        if (item[childrenField]) {
           arr.push(rowKey(item))
           if (!isEnd) {
-            arr.push(...getExpandKeys(item.children, deep, level + 1))
+            arr.push(...getExpandKeys(item[childrenField], deep, level + 1))
           }
         }
       })
@@ -77,11 +77,15 @@ export default defineComponent({
       ctx.emit('expandedRowChange', val)
     }
     if (props.defaultExpandLevel || attrs.defaultExpandAllRows) {
-      watch(orgList, (list, old) => {
-        if (!old.length) {
-          updateExpand(getExpandKeys(list, Number(props.defaultExpandLevel)))
-        }
-      })
+      watch(
+        orgList,
+        (list, old) => {
+          if (list.length && !old?.length) {
+            updateExpand(getExpandKeys(list, Number(props.defaultExpandLevel)))
+          }
+        },
+        { immediate: true }
+      )
     }
     const listener = {
       async onSave(data) {
