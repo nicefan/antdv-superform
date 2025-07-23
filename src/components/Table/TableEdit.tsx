@@ -95,8 +95,8 @@ export default function ({ model, orgList, rowKey }) {
               inputSlot
             )
           : viewNode
-          ? viewNode(attrs)
-          : attrs.text
+          ? viewNode()
+          : refData.value
     },
   })
 

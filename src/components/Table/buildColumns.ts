@@ -1,10 +1,10 @@
-import { computed, defineComponent, h } from 'vue'
+import { computed, defineComponent, h, unref } from 'vue'
 import type { TableColumnProps } from 'ant-design-vue'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
 import Controls from '../index'
 import { buildInnerNode } from '../Collections'
-import { defaults, isPlainObject, get as objGet, set as objSet } from 'lodash-es'
+import { defaults, isFunction, isPlainObject, get as objGet, set as objSet } from 'lodash-es'
 import { globalConfig, globalProps } from '../../plugin'
 
 const InputNode = defineComponent({
@@ -13,16 +13,26 @@ const InputNode = defineComponent({
     effectData: { type: Object as any, required: true },
   },
   setup({ option, effectData }) {
-    const path = option.field.split('.').slice(0, -1)
+    const { field, editable } = option
+    const path = field.split('.').slice(0, -1)
     const parent = computed(() => objGet(effectData.record, path))
     const refData = computed({
-      get: () => objGet(effectData.record, option.field),
-      set: (val) => objSet(effectData.record, option.field, val),
+      get: () => objGet(effectData.record, field),
+      set: (val) => objSet(effectData.record, field, val),
     })
     const model: any = { parent, refData }
     const { attrs, hidden } = useControl({ option, effectData: { ...effectData, inTable: true } })
     const inputSlot = buildInnerNode(option, model, effectData, attrs)
-    return () => !hidden.value && inputSlot()
+    const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : unref(editable)))
+    const viewNode = getViewNode(option, effectData)
+
+    return () => {
+      if (hidden.value) return ''
+      if (editableRef.value) {
+        return inputSlot()
+      }
+      return viewNode ? viewNode() : refData.value
+    }
   },
 })
 
