@@ -108,6 +108,10 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       /** 查看详情，须判断是否已有选中行 */
       detail: (param?: ModalMeta) => tableRef.value?.detail(param),
       asyncCall,
+      /** `editable`模式下进行表单校验 */
+      validate() {
+        return asyncCall('validate')
+      }
     },
   ] as const
 }

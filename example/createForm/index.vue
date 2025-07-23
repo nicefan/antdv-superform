@@ -5,7 +5,7 @@
         <h3>表格footer插槽</h3>
       </template>
     </MyTable> -->
-    <SuperTable :schema="tableSchema">
+    <SuperTable @register="register">
       <template #tableFooter>
         <h3>表格footer插槽</h3>
       </template>
@@ -15,6 +15,7 @@
       <Button @click="setValue">赋值</Button>
       <Button @click="nextPage">下一页</Button>
       <Button @click="setSelected">选中</Button>
+      <Button @click="tablevalidate()" title="editable模式下有效">校验</Button>
     </Row>
   </div>
 </template>
@@ -38,9 +39,10 @@ const params = reactive({
 const selectedRowKeys = ref<string[]>([])
 const dataso = ref<any[]>([])
 const currentPage = ref(1)
-const tableSchema = defineTable({
+const [register, tableAction] = useTable({
   ...myTableOption,
   dataSource: dataso,
+  // editable: true,
   // apis: {
   //   query: () =>
   //     new Promise((resolve) => {
@@ -71,6 +73,11 @@ const tableSchema = defineTable({
   params,
 })
 
+const tablevalidate = () => {
+  tableAction.validate().then((...args) => {
+    console.log('表格数据校验', args)
+  })
+}
 // const MyTable = register()
 const setSelected = () => {
   selectedRowKeys.value = ['122']

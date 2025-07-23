@@ -859,6 +859,8 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         title?: string | undefined;
     } | undefined) => any;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
+    /** `editable`模式下进行表单校验 */
+    readonly validate: () => Promise<any>;
 }];
 
 declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);

@@ -18,6 +18,7 @@ import {
   unref,
   Teleport,
   nextTick,
+  shallowRef,
 } from 'vue'
 import { useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -27,6 +28,7 @@ import { DataProvider } from '../dataProvider'
 import Controls from '../components'
 import { globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
+import base from '../components/base'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -68,6 +70,8 @@ export default defineComponent({
       useQuery(option, updateSource)
     const { getScrollRef, redoHeight, listenResize } = useTableScroll(option, dataRef, wrapRef)
 
+    // editable模式下，表格表单校验
+    const tableFormRef = shallowRef()
     const exposed = {
       setOption,
       setData: (data) => {
@@ -90,6 +94,7 @@ export default defineComponent({
       getData: () => dataRef.value,
       dataRef,
       searchForm: computed(() => searchForm.value?.formRef),
+      validate: async () => tableFormRef.value?.validate(),
     }
 
     const tableRef = ref({ ...exposed })
@@ -197,7 +202,12 @@ export default defineComponent({
           }
           watch(dataRef, redoHeight)
         }
-        tableSlot.value = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
+        const table = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
+        if (option.editable) {
+          tableSlot.value = () => h(base.Form, { model: dataRef.value, ref: tableFormRef }, table)
+        } else {
+          tableSlot.value = table
+        }
       },
       {
         immediate: true,
