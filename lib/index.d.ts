@@ -395,7 +395,8 @@ export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
 export declare interface ExtTableOption extends ExtBaseOption {
     field: string
     title?: VSlot
-    attrs?: TableProps & {
+    attrs?: Obj &
+    TableProps & {
         /**数据初始化后默认展开的行 */
         defaultExpandLevel?: number | 'all'
     }
@@ -775,7 +776,7 @@ export declare function useForm(option: UseFormOption, data?: Obj): readonly [(a
 
 declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>);
 
-export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps): {
+export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps, global?: Obj): {
     modalRef: Ref_2<any>;
     openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
     modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {

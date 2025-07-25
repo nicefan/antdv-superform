@@ -67,17 +67,18 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
     openModal,
   }
 }
+
 type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & { buttons?: ExtButtons; [k: string]: any })
-export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
+export function useModal(content?: () => VNodeTypes, config?: ExtModalProps, global?: Obj) {
   const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
   const wrap: any = document.createDocumentFragment()
   let vm
-  const global = inject('configProvider', {} as any)
+  const _global = global || inject('configProvider', {} as any)
   const Wrapper = (props) => {
-    const rootPrefixCls = global.getPrefixCls()
+    const rootPrefixCls = _global.getPrefixCls()
     const prefixCls = props.prefixCls || ''.concat(rootPrefixCls, '-modal')
-    return h(ConfigProvider, { ...global, 'notUpdateGlobalConfig': true, 'prefixCls': rootPrefixCls }, () =>
+    return h(ConfigProvider, { ..._global, 'notUpdateGlobalConfig': true, 'prefixCls': rootPrefixCls }, () =>
       modalSlot({ ...props, rootPrefixCls, prefixCls },{})
     )
   }
@@ -86,9 +87,11 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
     render(null, wrap)
     vm = null
   }
-  onUnmounted(() => {
-    vm && destroy()
-  })
+  if (!global) {
+    onUnmounted(() => {
+      vm && destroy()
+    })
+  }
 
   const open = (option?: ModalFuncProps | Obj) => {
     if (modalRef.value) {

@@ -1,9 +1,5 @@
 import { type PropType, defineComponent, h, inject, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
-import base from '../base'
-import { toNode } from '../../utils'
-import { defaults } from 'lodash-es'
-import { globalProps } from '../../plugin'
 
 export default defineComponent({
   props: {

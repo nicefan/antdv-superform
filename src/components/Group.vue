@@ -1,11 +1,12 @@
 <script lang="ts">
-import { h, defineComponent, toRaw } from 'vue'
+import { h, defineComponent, toRaw, mergeProps } from 'vue'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { toNode } from '../utils'
 import { createButtons } from './buttons'
 import { Row, Col } from 'ant-design-vue'
 export default defineComponent({
+  inheritAttrs: false,
   props: {
     option: { type: Object, required: true },
     model: { type: Object as any, required: true },
@@ -24,20 +25,26 @@ export default defineComponent({
       buttonsSlot = createButtons({ config: _buttons, effectData, isView: _isView })
     }
 
+    const { style, class: _class, ...attrs } = ctx.attrs
     const slots = {
       ...ctx.slots,
       title: title ? () => toNode(title, effectData) : undefined,
       actions: buttonsSlot,
-      default:
-        ctx.slots.innerContent ||
-        (_isView
-          ? () =>
-              h(DetailLayout, {
-                option: { descriptionsProps: option.attrs, ...option },
+      default: () =>
+        h(
+          'div',
+          { style, class: _class },
+          ctx.slots.innerContent
+            ? ctx.slots.innerContent(attrs)
+            : _isView
+            ? h(DetailLayout, {
+                option: { descriptionsProps: attrs, ...option },
                 modelsMap: model.children,
                 effectData,
+                ...attrs,
               })
-          : () => h(Collections, { option, model, effectData })),
+            : h(Collections, { option, model, effectData, ...attrs })
+        ),
     }
 
     const CustomComponent = option.component && toRaw(option.component)
@@ -60,8 +67,7 @@ export default defineComponent({
     if (CustomComponent) {
       return () => h(CustomComponent, {}, slots)
     } else if (title || buttonsSlot) {
-      return () =>
-        h('div', {}, [
+      return () => [
           (title || titleButton) &&
             h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
               title && h(Col, { class: 'sup-title' }, slots.title),
@@ -69,9 +75,9 @@ export default defineComponent({
             ]),
           slots.default(),
           bottomButton && bottomButton(),
-        ])
-    } else if (ctx.slots.innerContent) {
-      return () => h('div', slots.default())
+        ]
+      // } else if (ctx.slots.innerContent) {
+      //   return () => h('div', slots.default())
     } else {
       return slots.default
     }

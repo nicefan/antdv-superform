@@ -250,10 +250,11 @@ type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
 interface ExtTableOption extends ExtBaseOption {
   field: string
   title?: VSlot
-  attrs?: TableProps & {
-    /**数据初始化后默认展开的行 */
-    defaultExpandLevel?: number | 'all'
-  }
+  attrs?: Obj &
+    TableProps & {
+      /**数据初始化后默认展开的行 */
+      defaultExpandLevel?: number | 'all'
+    }
   /** @deprecated 更名为editable */
   edit?: boolean
   /** 表格全部为编辑状态，开启后rowEdit无效 */

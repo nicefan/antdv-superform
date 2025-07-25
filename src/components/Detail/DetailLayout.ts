@@ -95,18 +95,21 @@ const DetailLayouts = defineComponent({
         })
       )
 
-    if (isRoot && nodeGroup.length === 1) {
+    if (isRoot) {
       return () =>
         h(
-          Controls.Group,
-          {
-            class: 'sup-form-section',
-            option,
-            model: {},
-            effectData: getEffectData({}),
-            isView: true,
-          },
-          { innerContent: content }
+          'div',
+          { class: 'sup-form-section' },
+          h(
+            Controls.Group,
+            {
+              option,
+              model: {},
+              effectData: getEffectData({}),
+              isView: true,
+            },
+            { innerContent: content }
+          )
         )
     } else {
       return content

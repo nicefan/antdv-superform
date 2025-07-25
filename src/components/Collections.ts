@@ -72,7 +72,7 @@ export default defineComponent({
       /** 容器组件 */
       const independent = [...containers, 'InputList', 'InputGroup'].includes(type)
       // const isListFormItem = type === 'InputList' && (labelSlot || label) && !option.attrs?.labelIndex
-      if (!independent && (option.field || !blocked)) {
+      if (!independent && (!blocked || (option.field && option.label))) {
         // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
         const rules = computed(() => (unref(attrs.disabled) ? undefined : subData.rules))
         const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)

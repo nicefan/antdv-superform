@@ -27,7 +27,7 @@ export default defineComponent({
     return () =>
       h(
         'div',
-        { class: ['sup-form sup-detail', ctx.attrs?.isContainer && 'sup-container'] },
+        { class: ['sup-form-section sup-detail', ctx.attrs?.isContainer && 'sup-container'] },
         h(Controls.Descriptions, {
           option: props.option,
           model: { children: modelsMap },

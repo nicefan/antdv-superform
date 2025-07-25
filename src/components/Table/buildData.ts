@@ -1,4 +1,4 @@
-import { ref, h } from 'vue'
+import { ref, h, inject } from 'vue'
 import { useModal } from '../../superModal'
 import inlineRender from './editInline'
 import modalRender from './editModal'
@@ -6,26 +6,31 @@ import useTableEdit from './TableEdit'
 import { globalProps } from '../../plugin'
 import View from '../Detail'
 import type { RootTableOption } from '../../exaTypes'
+import { toNode } from '../../utils'
 
-function buildDetail(option, modelsMap, rowKey) {
+function buildDetail(option, modelsMap, rowKey, provideData) {
   const source = ref({})
-  const { title, modalProps, apis, ..._option } = option
-  const detail = () => h(View, { option: _option, modelsMap, source })
-  const { openModal, closeModal } = useModal(detail, {
+  const { title, apis } = option
+  const { modalProps, ...descriptionsProps } = option.descriptionsProps || {}
+  const detail = () => h(View, { option: { descriptionsProps }, modelsMap, source })
+  const modalConfig = {
     ...globalProps.Modal,
-    ...modalProps,
-    ..._option.modalProps,
-    title: `${title ? title + ' - ' : ''}详情`,
     footer: null,
-  })
-  return async ({ record, selectedRows, meta }) => {
+    ...option.modalProps,
+    ...modalProps,
+  }
+  const getTitle = (param) => {
+    return toNode(modalConfig.title, { target: 'detail', ...param }) || `${title ? title + ' - ' : ''}详情`
+  }
+  const { openModal, closeModal } = useModal(detail, modalConfig, provideData)
+  return async ({ record, selectedRows, meta, ...params }) => {
     const data = record || selectedRows[0]
     if (apis?.info) {
       source.value = await apis.info(record[rowKey], record)
     } else {
       source.value = data
     }
-    openModal({ ...meta })
+    openModal({ ...meta, title: getTitle({ ...params, source: source.value }) })
   }
 }
 
@@ -72,7 +77,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     })
     context.list = list
     Object.assign(context.methods, methods)
-    Object.assign(context, { editButtonsSlot, getEditRender }) 
+    Object.assign(context, { editButtonsSlot, getEditRender })
   }
   if (editMode === 'modal' || addMode === 'modal') {
     const { modalSlot, methods } = modalRender({ initialData, rowKey, option, listener })
@@ -84,7 +89,12 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     }
     context.modalSlot = modalSlot
   }
-  context.methods.detail = buildDetail(option, childrenMap, rowKey)
+  let detailMethod
+  const provideData = inject('configProvider', {} as any)
+  context.methods.detail = (param) => {
+    detailMethod ??= buildDetail(option, childrenMap, rowKey, provideData)
+    return detailMethod(param)
+  }
 
   return context
 }

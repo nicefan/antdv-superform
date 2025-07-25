@@ -108,22 +108,24 @@ export default function exampleForm() {
       },
       {
         type: 'Group',
-        title: () => h('h1', {}, '基本信息'),
+        title: () => h('span', {}, '详细信息'),
         descriptionsProps: {
-          title: '基本信息',
           mode: 'form',
           column: 3,
+        },
+        attrs: {
+          style: 'border:1px solid #eee; padding:12px'
         },
         subItems: [
           {
             type: 'InfoSlot',
-            field: 'array',
+            // field: 'array',
             // label: 'render',
             // span: 24,
             blocked: true,
-            initialValue: ['自定义消息'],
-            render: (props) => {
-              return h('h2', { style: 'border-bottom:1px solid' }, props.value?.[0])
+            // initialValue: ['自定义消息'],
+            render: ({current}) => {
+              return h('h2', { style: 'border-bottom:1px solid #eee' }, '自定' + (current.name || ''))
             },
           },
           {
@@ -161,10 +163,10 @@ export default function exampleForm() {
             viewRender: ({ value }) => value,
           },
           {
-            type: 'InputSlot',
+            type: 'InfoSlot',
             // field: 'test',
             label: '模板插槽',
-            labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name || ''}`),
+            // labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name || ''}`),
             render: 'test',
           },
           {
@@ -650,11 +652,17 @@ export default function exampleForm() {
         field: 'table',
         label: '表格',
         // attrs: { bordered: true },
-        // edit: true,
+        editable: true,
         rowEditor: {
           editMode: 'inline',
         // addMode: 'modal',
           singleEdit: true,
+          form: {
+            subSpan: 12,
+            attrs: {
+              layout: 'vertical',
+            },
+          },
         },
         buttons: {
           actions: ['add', 'edit', 'delete'],
@@ -674,12 +682,6 @@ export default function exampleForm() {
             'edit',
             'delete',
           ],
-        },
-        editForm: {
-          subSpan: 12,
-          attrs: {
-            layout: 'vertical',
-          },
         },
         columns: [
           {
