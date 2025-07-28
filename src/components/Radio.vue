@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive } from 'vue'
+import { type PropType, defineComponent, h } from 'vue'
 import baseComps from './base'
 import { useOptions } from '../utils/useOptions'
 import { Radio, RadioButton } from 'ant-design-vue'
@@ -21,14 +21,24 @@ export default defineComponent({
       type: Object,
     },
     options: null as any,
+    onChange: Function,
   },
-  setup(props, { attrs }) {
+  emits: ['update:labelField'],
+  setup(props, { attrs, emit }) {
     const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
     const optionType = attrs.optionType || (attrs.buttonStyle && 'button')
+    let onChange = props.onChange
+    if (props.option.labelField) {
+      onChange = (e) => {
+        const labels = optionsRef.value.find((item) => item.value === e.target.value)?.label
+        emit('update:labelField', labels)
+        props.onChange?.(e)
+      }
+    }
 
     return () =>
-      h(RadioGroup, { name: props.option.field, optionType } as any, () =>
+      h(RadioGroup, { name: props.option.field, optionType, onChange } as any, () =>
         optionsRef.value.map((item) =>
           h(optionType === 'button' ? RadioButton : Radio, { value: item.value, disabled: item.disabled }, () =>
             toNode(item.label, props.effectData)

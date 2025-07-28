@@ -1,6 +1,6 @@
 
 <script lang="ts">
-import { ref, watchPostEffect, watch, defineComponent, h } from 'vue'
+import { ref, watchPostEffect, watch, defineComponent, h, toRef } from 'vue'
 import base from './base'
 export default defineComponent({
   props: {
@@ -9,6 +9,7 @@ export default defineComponent({
     model: Object,
     onChange: Function,
   },
+  emits: ['update:labelField'],
   setup(props, ctx) {
     const dataRef = ref<any[]>([])
     const { data, treeData = data, labelField, label } = props.option
@@ -27,10 +28,9 @@ export default defineComponent({
     }
     let onChange = props.onChange as any
     if (labelField) {
-      const current = props.effectData.current
       onChange = (...args) => {
         const [val, labels] = args
-        current[labelField] = Array.isArray(val) ? labels : labels[0]
+        ctx.emit('update:labelField', Array.isArray(val) ? labels : labels[0])
         props.onChange?.(...args)
       }
     }

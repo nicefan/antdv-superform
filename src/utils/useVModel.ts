@@ -8,7 +8,7 @@ type Param = {
 }
 
 export default function useVModel({ option, model, effectData }: Param, defaultValue?: any) {
-  const { type, field, keepField, computed: __computed, vModelFields, value, onUpdate }: MixOption = option
+  const { type, field, keepField, labelField, computed: __computed, vModelFields, value, onUpdate }: MixOption = option
   if (!field) return
   if (defaultValue !== undefined) model.refData ??= toValue(defaultValue)
   // 实际存储变量
@@ -40,6 +40,11 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
         model.parent[field] = val
       }
     })
+  }
+  if (labelField) {
+    vModels['onUpdate:labelField'] = (val) => {
+      model.parent[labelField] = val
+    }
   }
 
   let raw = toValue(tempData) // 阻止监听自身数据变化

@@ -78,7 +78,7 @@ export function getViewNode(option, effectData: Obj = {}) {
   let autoTag = false
   const content = (() => {
     if (labelField) {
-      return ({ current } = effectData) => objectGet(current, labelField)
+      return ({ current } = effectData) => String(objectGet(current, labelField))
     } else if (keepField) {
       return ({ current, text } = effectData) => (text || '') + ' - ' + (objectGet(current, keepField) || '')
     } else if (colOptions || dictName) {

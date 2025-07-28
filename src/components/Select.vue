@@ -19,6 +19,7 @@ import { throttle } from 'lodash-es'
 import { useOptions } from '../utils/useOptions'
 const { Select } = baseComps
 
+const emit = defineEmits(['update:labelField'])
 const props = defineProps<{
   option: GetOption<'Select'>
   model: ModelData
@@ -44,10 +45,9 @@ const { optionsRef, setOptions } = useOptions(props.option, props.options, props
 // 同步保存label字段
 let onChange = props.onChange
 if (labelField) {
-  const model = toRef(props, 'model')
   onChange = (...args) => {
     const [_, item] = args
-    model.value.parent[labelField] = Array.isArray(item) ? item.map(({ lable }) => lable) : item?.label
+    emit('update:labelField', Array.isArray(item) ? item.map(({ lable }) => lable) : item?.label)
     props.onChange?.(...args)
   }
 }

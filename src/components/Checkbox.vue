@@ -22,16 +22,16 @@ export default defineComponent({
     options: null as any,
     onChange: Function,
   },
-  setup(props) {
+  emits: ['update:labelField'],
+  setup(props, ctx) {
     const { optionsRef } = useOptions(props.option, props.options, props.effectData)
     // 同步保存label字段
     let onChange = props.onChange as Fn
     const labelField = props.option.labelField
     if (labelField) {
-      const model = toRef(props, 'model')
       onChange = (items) => {
         const labels = items.map((key) => optionsRef.value.find(({ value }) => value == key)?.label)
-        model.value.parent[labelField] = labels
+        ctx.emit('update:labelField', labels)
         props.onChange?.(items)
       }
     }

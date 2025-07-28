@@ -160,6 +160,8 @@ interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
 
 interface ButtonItem {
   label?: VSlot
+  /** 全局默认配置指定的名称 */
+  name?: string
   /** 确认提示文本 */
   confirmText?: string | Fn<string>
   /** 权限标识 */
@@ -215,12 +217,10 @@ interface ExtButtonGroup<T extends string = string> {
   methods?: Obj<Fn>
   /** 传递到事件方法中可响应数据 */
   effectData?: Obj
-  actions?: (T | ({ name?: T } & ButtonItem))[]
+  actions?: T[] | (string | ButtonItem)[]
   // subItems?: ButtonItem[]
 }
-type ExtButtons<T extends string = string> =
-  | ExtButtonGroup<T | string>
-  | NonNullable<ExtButtonGroup<T | string>['actions']>
+type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
   field?: string
   initialValue?: any
