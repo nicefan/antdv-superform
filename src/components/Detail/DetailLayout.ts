@@ -1,4 +1,4 @@
-import { type PropType, defineComponent, h, inject, toRef, unref, toValue, toRefs, reactive, toRaw } from 'vue'
+import { type PropType, defineComponent, h, inject, unref, toRefs, reactive, toRaw, mergeProps } from 'vue'
 import { Col, Row, Space } from 'ant-design-vue'
 import { getEffectData, getViewNode, toNode, useControl, useInnerSlots } from '../../utils'
 import Controls, { containers } from '../index'
@@ -33,12 +33,14 @@ const DetailLayouts = defineComponent({
     const attrs = { subSpan: option.subSpan, ...option.descriptionsProps, ...ctx.attrs }
 
     /** 向下继承信息 */
-    const provideData = {
-      ...config,
-      subSpan: option.subSpan ?? config.subSpan,
-      rowProps,
-      ...attrs,
-    }
+    const provideData = defaults(
+      {
+        subSpan: option.subSpan ?? config.subSpan,
+        rowProps,
+        ...attrs,
+      },
+      config
+    )
 
     const presetSpan = (provideData.subSpan ??= globalProps.Col?.span ?? 12)
 
@@ -98,18 +100,18 @@ const DetailLayouts = defineComponent({
     if (isRoot) {
       return () =>
         h(
-          'div',
-          { class: 'sup-form-section' },
-          h(
-            Controls.Group,
+          Controls.Group,
+          mergeProps(
+            { class: 'sup-form-section' },
             {
               option,
               model: {},
               effectData: getEffectData({}),
               isView: true,
-            },
-            { innerContent: content }
-          )
+              ...attrs,
+            }
+          ),
+          { innerContent: content }
         )
     } else {
       return content

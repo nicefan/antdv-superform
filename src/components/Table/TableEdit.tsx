@@ -54,10 +54,10 @@ export default function ({ model, orgList, rowKey }) {
         orgList.value.push(cloneDeep(initialData))
       }
     },
-    delete({ record }) {
-      const orgIdx = orgList.value.indexOf(record)
-      orgList.value.splice(orgIdx, 1)
-    },
+    // delete({ record }) {
+    //   const orgIdx = orgList.value.indexOf(record)
+    //   orgList.value.splice(orgIdx, 1)
+    // },
   }
 
   const InputNode = defineComponent({

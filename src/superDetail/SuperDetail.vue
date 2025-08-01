@@ -51,8 +51,9 @@ export default defineComponent({
           option: {
             type: 'Descriptions',
             ...option.value,
-            descriptionsProps: { ...option.value.attrs, ...option.value.descriptionsProps },
           } as any,
+          ...option.value.attrs,
+          ...option.value.descriptionsProps,
           modelsMap: modelsMap.value,
           isRoot: true,
         })

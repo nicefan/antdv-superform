@@ -57,6 +57,9 @@
 .sup-detail .ant-descriptions-bordered .ant-descriptions-view {
   overflow: hidden;
 }
+.sup-detail .ant-descriptions-bordered .ant-descriptions-view > table {
+  table-layout: fixed;
+}
 .sup-detail .ant-descriptions-item-container {
   padding: 8px 0;
 }

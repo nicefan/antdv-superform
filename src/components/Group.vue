@@ -14,7 +14,7 @@ export default defineComponent({
     isView: Boolean,
   },
   setup({ option, model, effectData, isView }, ctx) {
-    const { type, label, title = label, buttons } = option
+    const { type, label, title = label, buttons, contentAttrs } = option
     const _isView = type === 'Descriptions' || isView
     let buttonsSlot
     if (buttons) {
@@ -33,7 +33,7 @@ export default defineComponent({
       default: () =>
         h(
           'div',
-          { style, class: _class },
+          contentAttrs,
           ctx.slots.innerContent
             ? ctx.slots.innerContent(attrs)
             : _isView
@@ -66,8 +66,9 @@ export default defineComponent({
     }
     if (CustomComponent) {
       return () => h(CustomComponent, {}, slots)
-    } else if (title || buttonsSlot) {
-      return () => [
+    } else {
+      return () =>
+        h('div', { class: _class, style }, [
           (title || titleButton) &&
             h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
               title && h(Col, { class: 'sup-title' }, slots.title),
@@ -75,11 +76,9 @@ export default defineComponent({
             ]),
           slots.default(),
           bottomButton && bottomButton(),
-        ]
+        ])
       // } else if (ctx.slots.innerContent) {
       //   return () => h('div', slots.default())
-    } else {
-      return slots.default
     }
   },
 })

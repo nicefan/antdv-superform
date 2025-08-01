@@ -73,10 +73,14 @@ export function buildColumns({ childrenMap, context, option, attrs, isView }: Bu
       const title = col.labelSlot || col.label
       if (model.children) {
         const subColumns = getColumns(model.children)
-        _columns.push({
-          title,
-          children: subColumns,
-        })
+        if (col.ignoreTableTitle) {
+          _columns.push(...subColumns)
+        } else {
+          _columns.push({
+            title,
+            children: subColumns,
+          })
+        }
       } else {
         const column: Obj = {
           title,

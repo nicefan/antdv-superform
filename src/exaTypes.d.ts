@@ -133,6 +133,9 @@ interface ExtGroupBaseOption extends ExtBaseOption, ExtRow {
 }
 interface ExtGroupOption extends ExtGroupBaseOption {
   component?: Component
+  /** 忽略表格表头分组 */
+  ignoreTableTitle?: boolean
+  contentAttrs?: HTMLAttributes
 }
 interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
   title?: VSlot

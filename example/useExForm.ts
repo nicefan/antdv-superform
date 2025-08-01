@@ -57,6 +57,7 @@ export default function exampleForm() {
       attrs: {
         size: 40,
       },
+      validOn: 'form',
       actions: ['submit', 'reset'],
     },
     onSubmit: (data) => {
@@ -113,8 +114,8 @@ export default function exampleForm() {
           mode: 'form',
           column: 3,
         },
-        attrs: {
-          style: 'border:1px solid #eee; padding:12px'
+        contentAttrs: {
+          style: 'border:1px solid #eee; padding:12px',
         },
         subItems: [
           {
@@ -124,7 +125,7 @@ export default function exampleForm() {
             // span: 24,
             blocked: true,
             // initialValue: ['自定义消息'],
-            render: ({current}) => {
+            render: ({ current }) => {
               return h('h2', { style: 'border-bottom:1px solid #eee' }, '自定' + (current.name || ''))
             },
           },
@@ -140,7 +141,7 @@ export default function exampleForm() {
             },
             slots: {
               prefix: (...args) => {
-                return  h(UserOutlined)
+                return h(UserOutlined)
               },
             },
             // 可个性化查询按钮
@@ -233,7 +234,7 @@ export default function exampleForm() {
             },
             onUpdate: (args) => {
               console.log('memo:update', args.value)
-            }
+            },
           },
           {
             type: 'Switch',
@@ -652,10 +653,10 @@ export default function exampleForm() {
         field: 'table',
         label: '表格',
         // attrs: { bordered: true },
-        editable: true,
+        // editable: true,
         rowEditor: {
-          editMode: 'inline',
-        // addMode: 'modal',
+          // editMode: 'inline',
+          addMode: 'modal',
           singleEdit: true,
           form: {
             subSpan: 12,
@@ -698,7 +699,14 @@ export default function exampleForm() {
             span: 24,
             subItems: [
               { type: 'Input', field: 'group1', label: '分组1', rules: { required: true } },
-              { type: 'Select', field: 'group2', label: '分组2', options: list },
+              {
+                type: 'TreeSelect',
+                field: 'selectIds',
+                labelField: 'selectNames',
+                label: '分组2',
+                data: treeData,
+                attrs: { multiple: true },
+              },
             ],
           },
           { type: 'Switch', field: 'okable', label: '开关' },

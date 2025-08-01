@@ -61,7 +61,7 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
       attrs: { type: 'link' },
       onClick: () => (expanded.value = !expanded.value),
       hidden: !limit || subItems.length <= limit,
-    })
+    } as any)
     subItems.push({
       type: 'InfoSlot',
       align: 'right',

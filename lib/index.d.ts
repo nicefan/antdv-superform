@@ -42,6 +42,8 @@ declare type BaseComps = 'Divider' | 'InputGroup' | 'FormItem' | 'Tooltip' | 'Bu
 
 export declare interface ButtonItem {
     label?: VSlot
+    /** 全局默认配置指定的名称 */
+    name?: string
     /** 确认提示文本 */
     confirmText?: string | Fn<string>
     /** 权限标识 */
@@ -198,13 +200,11 @@ export declare interface ExtButtonGroup<T extends string = string> {
     methods?: Obj<Fn>
     /** 传递到事件方法中可响应数据 */
     effectData?: Obj
-    actions?: (T | ({ name?: T } & ButtonItem))[]
+    actions?: T[] | (string | ButtonItem)[]
     // subItems?: ButtonItem[]
 }
 
-export declare type ExtButtons<T extends string = string> =
-| ExtButtonGroup<T | string>
-| NonNullable<ExtButtonGroup<T | string>['actions']>
+export declare type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 
 export declare interface ExtCollapseOption extends ExtBaseOption {
     title?: VSlot
@@ -293,6 +293,9 @@ export declare interface ExtGroupBaseOption extends ExtBaseOption, ExtRow {
 
 export declare interface ExtGroupOption extends ExtGroupBaseOption {
     component?: Component
+    /** 忽略表格表头分组 */
+    ignoreTableTitle?: boolean
+    contentAttrs?: HTMLAttributes
 }
 
 declare type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption
