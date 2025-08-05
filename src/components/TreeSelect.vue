@@ -9,7 +9,7 @@ export default defineComponent({
     model: Object,
     onChange: Function,
   },
-  emits: ['update:labelField'],
+  emits: ['update:labelValue'],
   setup(props, ctx) {
     const dataRef = ref<any[]>([])
     const { data, treeData = data, labelField, label } = props.option
@@ -30,7 +30,7 @@ export default defineComponent({
     if (labelField) {
       onChange = (...args) => {
         const [val, labels] = args
-        ctx.emit('update:labelField', Array.isArray(val) ? labels : labels[0])
+        ctx.emit('update:labelValue', Array.isArray(val) ? labels : labels[0])
         props.onChange?.(...args)
       }
     }

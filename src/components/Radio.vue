@@ -23,7 +23,7 @@ export default defineComponent({
     options: null as any,
     onChange: Function,
   },
-  emits: ['update:labelField'],
+  emits: ['update:labelValue'],
   setup(props, { attrs, emit }) {
     const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
@@ -32,7 +32,7 @@ export default defineComponent({
     if (props.option.labelField) {
       onChange = (e) => {
         const labels = optionsRef.value.find((item) => item.value === e.target.value)?.label
-        emit('update:labelField', labels)
+        emit('update:labelValue', labels)
         props.onChange?.(e)
       }
     }

@@ -128,7 +128,7 @@ type ExtDescriptionsProps = {
 interface ExtGroupBaseOption extends ExtBaseOption, ExtRow {
   title?: VSlot
   buttons?: ExtButtons
-  subItems?: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
+  subItems?: (UniOption | Omit<ExtFormItemOption, 'type'>)[]
   descriptionsProps?: ExtDescriptionsProps
 }
 interface ExtGroupOption extends ExtGroupBaseOption {
@@ -144,7 +144,7 @@ interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
   mode?: 'table' | 'form' | 'default'
   attrs?: ExtDescriptionsProps
   isContainer?: boolean
-  subItems: (UniOption | Omit<ExtFormItemOption, 'type' | 'field'>)[]
+  subItems: (UniOption | Omit<ExtFormItemOption, 'type'>)[]
 }
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
@@ -394,7 +394,6 @@ interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
 }
 /** 表单元素属性 */
 interface ExtFormItemOption extends ExtBaseOption {
-  field: string
   /** 指定ref对象时，同步变化 */
   value?: any
   tagViewer?:
@@ -546,7 +545,7 @@ export type OptionType = WrapperTypes & WidgetTypes
 export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
 export type UniWidgetOption =
   | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
-  | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
+  | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}`; labelField?: string })
 
 export type UniOption = UniWrapperOption | UniWidgetOption
 

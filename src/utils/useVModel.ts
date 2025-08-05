@@ -8,8 +8,31 @@ type Param = {
 }
 
 export default function useVModel({ option, model, effectData }: Param, defaultValue?: any) {
-  const { type, field, keepField, labelField, computed: __computed, vModelFields, value, onUpdate }: MixOption = option
-  if (!field) return
+  const { type, field, keepField, labelField, computed: __computed, value, onUpdate }: MixOption = option
+  const vModels: Obj = {}
+
+  const vModelFields: Obj = option.vModelFields || {}
+  if (labelField) {
+    vModelFields['labelValue'] = labelField
+  }
+  Object.entries(vModelFields).forEach(([name, field]) => {
+    model.parent[field] ??= undefined
+    vModels[name] = computed(() => model.parent[field])
+    vModels[`onUpdate:${name}`] = (val) => {
+      model.parent[field] = val
+    }
+  })
+
+  if (!field) {
+    if (isRef(value)) {
+      Object.assign(vModels, {
+        value,
+        'onUpdate:value': (val) => (value.value = val),
+      })
+    }
+    return vModels
+  }
+
   if (defaultValue !== undefined) model.refData ??= toValue(defaultValue)
   // 实际存储变量
   const refValue = toRef(model, 'refData')
@@ -21,30 +44,15 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
     // 数据重置时还原为默认值
     if (refValue.value !== val && defaultValue !== undefined) refValue.value = val
   }
-  const vModels = {
+  Object.assign(vModels, {
     value: tempData,
     'onUpdate:value': updateValue,
-  }
+  })
 
   // 同步外部引用值
   if (isRef(value)) {
     watch(refValue, (val) => (value.value = val))
     watch(value, updateValue)
-  }
-
-  if (vModelFields) {
-    Object.entries(vModelFields).forEach(([name, field]) => {
-      model.parent[field] ??= undefined
-      vModels[name] = computed(() => model.parent[field])
-      vModels[`onUpdate:${name}`] = (val) => {
-        model.parent[field] = val
-      }
-    })
-  }
-  if (labelField) {
-    vModels['onUpdate:labelField'] = (val) => {
-      model.parent[labelField] = val
-    }
   }
 
   let raw = toValue(tempData) // 阻止监听自身数据变化
@@ -69,7 +77,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   }
   // 表单数据变化同步源数据
   watch(tempData, effect, { flush: 'sync' })
-  
+
   if (onUpdate) {
     watch(refValue, () => onUpdate(effectData))
   }

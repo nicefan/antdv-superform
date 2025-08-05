@@ -130,6 +130,9 @@ export function getViewNode(option, effectData: Obj = {}) {
   } else if (tagViewer && !autoTag) {
     return (param: Obj = effectData) => {
       const text = param.text
+      if (typeof text === 'boolean' && tagViewer === true) {
+        return buildTagRender({ label: text ? '是' : '否', color: text ? 'success' : 'error' })
+      }
       const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
       const tags = arr.map((value) => buildTagRender({ value, tagViewer }))
       return tags

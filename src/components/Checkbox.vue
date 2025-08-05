@@ -22,7 +22,7 @@ export default defineComponent({
     options: null as any,
     onChange: Function,
   },
-  emits: ['update:labelField'],
+  emits: ['update:labelValue'],
   setup(props, ctx) {
     const { optionsRef } = useOptions(props.option, props.options, props.effectData)
     // 同步保存label字段
@@ -31,7 +31,7 @@ export default defineComponent({
     if (labelField) {
       onChange = (items) => {
         const labels = items.map((key) => optionsRef.value.find(({ value }) => value == key)?.label)
-        ctx.emit('update:labelField', labels)
+        ctx.emit('update:labelValue', labels)
         props.onChange?.(items)
       }
     }
