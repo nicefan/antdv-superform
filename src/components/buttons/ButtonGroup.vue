@@ -10,18 +10,18 @@
           </Menu>
         </template>
         <Button v-bind="attrs">
-          <component v-if="icon" :is="useIcon(icon)" />
+          <component v-if="icon" :is="getIconNode(icon)" />
           <component :is="() => toNode(label, effectData)" /><DownOutlined />
         </Button>
       </Dropdown>
       <Tooltip v-else-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
         <Button v-bind="attrs"
-          ><component v-if="icon && !labelOnly" :is="useIcon(icon)" />
+          ><component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
         /></Button>
       </Tooltip>
       <Button v-else v-bind="attrs">
-        <component v-if="icon && !labelOnly" :is="useIcon(icon)" /> <component :is="() => toNode(label, effectData)" />
+        <component v-if="icon && !labelOnly" :is="getIconNode(icon)" /> <component :is="() => toNode(label, effectData)" />
       </Button>
       <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
@@ -34,7 +34,7 @@
         <Menu>
           <menu-item v-for="{ attrs, icon, label } of moreBtns" :key="label" :disabled="attrs.disabled">
             <Button block v-bind="attrs" shape="">
-              <component v-if="icon" :is="useIcon(icon)" />
+              <component v-if="icon" :is="getIconNode(icon)" />
               <component :is="() => toNode(label, effectData)" />
             </Button>
           </menu-item>
@@ -47,7 +47,7 @@
 import { ref, watchEffect, reactive, toValue } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
 import { EllipsisOutlined, DownOutlined } from '@ant-design/icons-vue'
-import { getComputedStatus, useDisabled, useIcon, toNode } from '../../utils'
+import { getComputedStatus, useDisabled, getIconNode, toNode } from '../../utils'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'

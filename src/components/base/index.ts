@@ -19,4 +19,4 @@ export function getOverride<T extends Obj | Obj[]>(comp: T): T {
   }
 }
 // @ts-ignore
-export default base
+export default base as typeOf<_base>

@@ -3,8 +3,6 @@ import { h, type PropType, defineComponent, toRef } from 'vue'
 import base from './base'
 import { useOptions } from '../utils/useOptions'
 
-const { CheckboxGroup } = base
-
 export default defineComponent({
   props: {
     option: {
@@ -36,7 +34,7 @@ export default defineComponent({
       }
     }
 
-    return () => h(CheckboxGroup, { options: optionsRef.value, name: props.option.field, onChange })
+    return () => h(base.CheckboxGroup, { options: optionsRef.value, name: props.option.field, onChange })
   },
 })
 </script>

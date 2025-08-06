@@ -1,6 +1,6 @@
 import { createApp, defineComponent, h } from 'vue'
 import App from './App.vue'
-import superForm from '../src'
+import superForm, { ButtonItem } from '../src'
 import 'ant-design-vue/dist/antd.css'
 import { Button, InputNumber, Table, Textarea } from 'ant-design-vue'
 import {
@@ -23,7 +23,7 @@ const app = createApp(App)
 // })
 superForm.registComponent('InNumber', InputNumber)
 
-const defaultButtons = {
+const defaultButtons:Obj<ButtonItem> = {
   add: {
     label: '新增',
     icon: PlusOutlined,

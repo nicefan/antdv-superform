@@ -1,47 +1,65 @@
-<template>
-  <Input
-    :placeholder="'请输入' + (option.label || '')"
-    max-length="100"
-    :disabled="disabled"
-    :class="onSearch || enterButton ? 'ant-input-search ant-input-search-enter-button' : ''"
-    :addon-before="addonBefore"
-    :suffix="suffix"
-    :prefix="prefix"
-  >
-    <template v-for="name in Object.keys($slots)" #[name]="data" :key="name">
-      <slot :name="name" v-bind="data || {}"></slot>
-    </template>
-    <template #addonAfter v-if="!$slots.addonAfter">
-      <component v-if="addonAfter && !enterButton && !onSearch" :is="toNode(addonAfter, effectData.value)" />
-      <component
-        v-if="!disabled && enterButton"
-        :is="toNode(enterButton, effectData)"
-        @click="() => onSearch?.(effectData.value)"
-      />
-      <Button v-else-if="!disabled && onSearch" @click="() => onSearch?.(effectData.value)">
-        <component v-if="addonAfter" :is="toNode(addonAfter, effectData.value)" />
-        <SearchOutlined v-else />
-      </Button>
-    </template>
-  </Input>
-</template>
+<script lang="ts">
+import base from './base'
+import { toNode, getIconNode } from '../utils'
+import { defineComponent, h, reactive, ref, toRef, type PropType } from 'vue'
+import { isFunction, isObject, isString } from 'lodash-es'
 
-<script setup lang="ts">
-import { SearchOutlined } from '@ant-design/icons-vue'
-import baseComps from './base'
-import { toNode } from '../utils'
+// const { InputSearch, Button } = baseComps
 
-const { Input, Button } = baseComps
+export default defineComponent({
+  props: {
+    option: {
+      required: true,
+      type: Object as PropType<GetOption<'Input'>>,
+    },
+    model: Object,
+    effectData: Object,
+    addonAfter: undefined as any,
+    enterButton: undefined as any,
+    onSearch: Function as PropType<Fn>,
+    disabled: Boolean,
+  },
+  setup(props, { slots }) {
+    const { option, effectData, addonAfter, enterButton, onSearch } = props
 
-const props = defineProps<{
-  option: GetOption<'Input'>
-  model: ModelData
-  effectData: Obj
-  addonAfter?: string | Fn
-  onSearch?: Fn
-  disabled?: boolean
-}>()
+    const attrs: Obj = reactive({
+      placeholder: '请输入' + (isString(option.label) ? option.label : ''),
+      disabled: toRef(props, 'disabled'),
+    })
+    if (onSearch) {
+      const loading = ref(false)
+      const { addonAfter: addonAfterSlot, ...slotsRest } = slots
+      let enterButtonSlot = (slots.enterButton || (enterButton ? undefined : addonAfterSlot)) as Fn | undefined
 
-const option = props.option
-const { addonAfter = props.addonAfter, addonBefore, suffix, prefix, enterButton } = props.option as any
+      const enterButtonProp = enterButton || addonAfter
+      if (!enterButtonSlot) {
+        if (isObject(enterButtonProp)) {
+          const { label, icon, ...rest } = enterButton as any
+          enterButtonSlot = () =>
+            h(
+              base.Button,
+              { loading: loading.value, ...rest },
+              { icon: () => getIconNode(icon), default: () => toNode(label) }
+            )
+        } else if (isFunction(enterButtonProp)) {
+          enterButtonSlot = () => h(base.Button, { type: 'primary', loading: loading.value }, enterButtonProp)
+        }
+      }
+      attrs.onSearch = async (...args) => {
+        loading.value = true
+        try {
+          await onSearch?.(...args)
+        } finally {
+          loading.value = false
+        }
+      }
+      if (enterButtonSlot) {
+        return () => h(base.InputSearch, attrs, { ...slotsRest, enterButton: enterButtonSlot })
+      }
+      return () => h(base.InputSearch, { ...attrs, enterButton: enterButtonProp }, slotsRest)
+    } else {
+      return () => h(base.Input, { ...attrs, addonAfter }, slots)
+    }
+  },
+})
 </script>

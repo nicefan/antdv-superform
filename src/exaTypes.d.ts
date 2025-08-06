@@ -23,6 +23,7 @@ import type {
   TreeSelectProps,
   SpaceProps,
   SwitchProps,
+  ButtonProps
 } from 'ant-design-vue'
 
 import { RuleConfig } from './utils/buildRule'
@@ -179,7 +180,7 @@ interface ButtonItem {
   dropdown?: DefaultOptionType
   tooltip?: string
   icon?: string | Component
-  attrs?: Obj & HTMLAttributes
+  attrs?: ButtonProps & HTMLAttributes
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
   /** 传递到内置方法时的所需参数 */
@@ -395,7 +396,9 @@ interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
 /** 表单元素属性 */
 interface ExtFormItemOption extends ExtBaseOption {
   /** 指定ref对象时，同步变化 */
-  value?: any
+  value?: Ref<any>
+  /** 指定查看时显示的字段 */
+  labelField?: string
   tagViewer?:
     | boolean
     | Obj<string>
@@ -407,9 +410,9 @@ interface ExtFormItemOption extends ExtBaseOption {
 }
 
 interface ExtInputOption extends ExtFormItemOption {
-  enterButton?: (effectData: Obj) => Component
+  // enterButton?: (effectData: Obj) => Component
   onSearch?: (effectData: Obj, value: string) => void
-  attrs?: InputProps & HTMLAttributes
+  attrs?: InputProps & { enterButton?: any } & HTMLAttributes
 }
 type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
 type SelectOptions =
@@ -418,7 +421,6 @@ type SelectOptions =
   | Ref<DefaultOptionsType>
   | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
 interface ExtSelect {
-  labelField?: string
   options?: SelectOptions
   /** 字典名称 */
   dictName?: string
@@ -545,7 +547,7 @@ export type OptionType = WrapperTypes & WidgetTypes
 export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
 export type UniWidgetOption =
   | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
-  | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}`; labelField?: string })
+  | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
 
 export type UniOption = UniWrapperOption | UniWidgetOption
 

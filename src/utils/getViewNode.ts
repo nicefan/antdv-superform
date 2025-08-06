@@ -7,7 +7,7 @@ import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
 import { Tag } from 'ant-design-vue'
-import { useIcon } from './useIcon'
+import { getIconNode } from './'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -54,7 +54,7 @@ const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) =>
     item.color ??=
       color || tagOption[Number(value)] || (value === true && 'success') || (value === false && 'error') || 'default'
   }
-  return h(Tag, { color: item.color }, { default: () => item.label, icon: item.icon || (() => useIcon(item.icon)) })
+  return h(Tag, { color: item.color }, { default: () => item.label, icon: item.icon || (() => getIconNode(item.icon)) })
 }
 
 export function getViewNode(option, effectData: Obj = {}) {

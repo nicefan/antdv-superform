@@ -1,9 +1,8 @@
 <script lang="ts">
-import { type PropType, computed, defineComponent, h, reactive, ref, toRefs, watch } from 'vue'
-import baseComps from './base'
+import { type PropType, computed, defineComponent, h, reactive, watch } from 'vue'
+import base from './base'
 import { useOptions } from '../utils/useOptions'
 
-const { Switch } = baseComps
 export default defineComponent({
   props: {
     option: {
@@ -71,7 +70,7 @@ export default defineComponent({
     )
     return () =>
       h(
-        Switch,
+        base.Switch,
         reactive({
           ...attrs.value,
           checked: props.value,

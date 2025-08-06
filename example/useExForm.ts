@@ -1,6 +1,6 @@
 import { h, ref, toRaw, watchEffect } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
-import { AppleOutlined, AndroidOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { AppleOutlined, AndroidOutlined, UserOutlined, SearchOutlined } from '@ant-design/icons-vue'
 import { Button, Modal } from 'ant-design-vue'
 import { uniq } from 'lodash-es'
 import CustomGroup from './CustomGroup.vue'
@@ -15,6 +15,7 @@ export default function exampleForm() {
     destroyOnClose: false,
   })
   const selectList = ['游戏', '唱歌', '跑步', '打牌']
+  const valname = ref('云')
   const treeData = [
     {
       title: 'Node1',
@@ -131,13 +132,18 @@ export default function exampleForm() {
           },
           {
             type: 'Input',
-            field: 'name',
+            // field: 'name',
+            value: valname,
             label: '姓名',
             rules: { required: true },
             attrs: {
               // 可改变查询按钮标签
               addonAfter: '查询',
               suffix: 'a',
+              enterButton: {
+                icon: SearchOutlined,
+                type: 'primary'
+              }
             },
             slots: {
               prefix: (...args) => {
@@ -150,6 +156,7 @@ export default function exampleForm() {
             onSearch(...args) {
               console.log('change:', args)
               acKey.value = 'tab1'
+              return new Promise((resolve) => setTimeout(resolve, 1000))
             },
           },
 

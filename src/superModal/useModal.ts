@@ -8,7 +8,7 @@ import { ConfigProvider } from 'ant-design-vue'
 
 import type { ExtButtons, ExtFormOption } from '../exaTypes'
 import { useForm } from '../superForm'
-import { toNode, useIcon } from '../utils'
+import { toNode, getIconNode } from '../utils'
 
 export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }: Obj = {}) {
   const visible = ref(false)
@@ -27,7 +27,7 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
       .finally(() => (confirmLoading.value = false))
   }
 
-  const titleSlot = () => (config.icon ? [useIcon(config.icon), toNode(config.title)] : toNode(config.title))
+  const titleSlot = () => (config.icon ? [getIconNode(config.icon), toNode(config.title)] : toNode(config.title))
 
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>

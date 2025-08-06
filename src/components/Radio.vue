@@ -1,10 +1,9 @@
 <script lang="ts">
 import { type PropType, defineComponent, h } from 'vue'
-import baseComps from './base'
+import base from './base'
 import { useOptions } from '../utils/useOptions'
 import { Radio, RadioButton } from 'ant-design-vue'
 import { toNode } from '../utils'
-const { RadioGroup } = baseComps
 
 export default defineComponent({
   props: {
@@ -38,7 +37,7 @@ export default defineComponent({
     }
 
     return () =>
-      h(RadioGroup, { name: props.option.field, optionType, onChange } as any, () =>
+      h(base.RadioGroup, { name: props.option.field, optionType, onChange } as any, () =>
         optionsRef.value.map((item) =>
           h(optionType === 'button' ? RadioButton : Radio, { value: item.value, disabled: item.disabled }, () =>
             toNode(item.label, props.effectData)

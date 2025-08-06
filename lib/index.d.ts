@@ -2,6 +2,7 @@
 
 import { AllowedComponentProps } from 'vue';
 import type { App } from 'vue';
+import type { ButtonProps } from 'ant-design-vue';
 import type { ColProps } from 'ant-design-vue';
 import type { Component } from 'vue';
 import { ComponentCustomProps } from 'vue';
@@ -58,7 +59,7 @@ export declare interface ButtonItem {
     dropdown?: DefaultOptionType
     tooltip?: string
     icon?: string | Component
-    attrs?: Obj & HTMLAttributes
+    attrs?: ButtonProps & HTMLAttributes
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     /** 传递到内置方法时的所需参数 */
@@ -258,7 +259,9 @@ HTMLAttributes
 /** 表单元素属性 */
 export declare interface ExtFormItemOption extends ExtBaseOption {
     /** 指定ref对象时，同步变化 */
-    value?: any
+    value?: Ref_2<any>
+    /** 指定查看时显示的字段 */
+    labelField?: string
     tagViewer?:
     | boolean
     | Obj<string>
@@ -314,9 +317,9 @@ declare interface ExtInputList extends ExtFormItemOption, ExtRow {
 }
 
 export declare interface ExtInputOption extends ExtFormItemOption {
-    enterButton?: (effectData: Obj) => Component
+    // enterButton?: (effectData: Obj) => Component
     onSearch?: (effectData: Obj, value: string) => void
-    attrs?: InputProps & HTMLAttributes
+    attrs?: InputProps & { enterButton?: any } & HTMLAttributes
 }
 
 declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
@@ -360,7 +363,6 @@ declare interface ExtRow {
 }
 
 declare interface ExtSelect {
-    labelField?: string
     options?: SelectOptions
     /** 字典名称 */
     dictName?: string
@@ -750,7 +752,7 @@ export declare type UniOption = UniWrapperOption | UniWidgetOption
 
 export declare type UniWidgetOption =
 | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
-| (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}`; labelField?: string })
+| (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
 
 export declare type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
 
