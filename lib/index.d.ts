@@ -513,6 +513,20 @@ declare interface GlobalConfig {
     defaultButtons?: Obj<ButtonItem>;
     /**tag显示时默认颜色组 */
     tagViewer?: Obj<string> | string[] | false | Fn<string>;
+    /** 接口返回数据结构处理 */
+    tableApiSetting?: {
+        /** 当前页请求参数名 */
+        currentField?: string;
+        /** 当前每页数量请求参数名 */
+        sizeField?: string;
+        /** 返回结果格式转换，无分页时直接返回数组 */
+        resultTransform?: (result: any) => any[] | {
+            current: number;
+            size: number;
+            total: number;
+            records: any[];
+        };
+    };
 }
 
 declare interface HelpMessage {
@@ -537,14 +551,13 @@ declare type RegisterMethod = {
     (actions?: Obj, _tableRef?: Obj): void;
 };
 
+/** 绑定到组件上的动态属性 */
 declare interface RegistPram {
-    /** 绑定到组件上的动态属性 */
-    attrs: Obj;
-    formData: Obj;
-    /** 当前对象 */
-    current: any;
+    option: Obj;
+    effectData: Obj;
     /** 当前值 */
     value?: any;
+    [K: string]: any;
 }
 
 export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
@@ -780,7 +793,7 @@ export declare function useForm(option: UseFormOption, data?: Obj): readonly [(a
 
 declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>);
 
-export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps, global?: Obj): {
+export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any>;
     openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
     modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {

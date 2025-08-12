@@ -1,4 +1,4 @@
-import { ref, h, inject } from 'vue'
+import { ref, h } from 'vue'
 import { useModal } from '../../superModal'
 import inlineRender from './editInline'
 import modalRender from './editModal'
@@ -8,7 +8,7 @@ import View from '../Detail'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode } from '../../utils'
 
-function buildDetail(option, modelsMap, rowKey, provideData) {
+function buildDetail(option, modelsMap, rowKey) {
   const source = ref({})
   const { title, apis } = option
   const { modalProps, ...descriptionsProps } = option.descriptionsProps || {}
@@ -22,7 +22,7 @@ function buildDetail(option, modelsMap, rowKey, provideData) {
   const getTitle = (param) => {
     return toNode(modalConfig.title, { target: 'detail', ...param }) || `${title ? title + ' - ' : ''}详情`
   }
-  const { openModal, closeModal } = useModal(detail, modalConfig, provideData)
+  const { openModal, closeModal } = useModal(detail, modalConfig)
   return async ({ record, selectedRows, meta, ...params }) => {
     const data = record || selectedRows[0]
     if (apis?.info) {
@@ -89,12 +89,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     }
     context.modalSlot = modalSlot
   }
-  let detailMethod
-  const provideData = inject('configProvider', {} as any)
-  context.methods.detail = (param) => {
-    detailMethod ??= buildDetail(option, childrenMap, rowKey, provideData)
-    return detailMethod(param)
-  }
+  context.methods.detail = buildDetail(option, childrenMap, rowKey)
 
   return context
 }

@@ -1,6 +1,7 @@
 import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, watch, mergeProps } from 'vue'
 import { mergeWith, throttle } from 'lodash-es'
+import { globalConfig } from '../plugin'
 
 const merge = (obj, ...source) => {
   return mergeWith(obj, ...source, (objValue, srcValue, key, origin) => {
@@ -9,7 +10,19 @@ const merge = (obj, ...source) => {
     }
   })
 }
-
+const resultTransform = (res) => {
+  return globalConfig.tableApiSetting?.resultTransform?.(res) || res
+}
+const pageTransform = (param) => {
+  const { currentField, sizeField } = globalConfig.tableApiSetting || {}
+  if (currentField || sizeField) {
+    return {
+      [currentField || 'current']: param.current,
+      [sizeField || 'size']: param.size,
+    }
+  }
+  return param
+}
 export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   const searchParam = {}
   // const otherParam = {}
@@ -25,7 +38,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
 
   const request = (param?: Obj) => {
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
-    const _params = merge({}, searchParam, param, pageParam)
+    const _params = merge({}, searchParam, param, pageTransform(pageParam))
     const _data = option.beforeQuery?.(_params) || _params
     if (!queryApi.value) return
 
@@ -33,7 +46,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     return Promise.resolve(
       queryApi.value?.(_data).then((res) => {
         const _res = option.afterQuery?.(res) || res
-        return setPageData(_res)
+        return setPageData(resultTransform(_res))
       })
     ).finally(() => {
       loading.value = false
