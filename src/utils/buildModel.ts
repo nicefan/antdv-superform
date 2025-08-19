@@ -10,17 +10,25 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]
 
-  const refData = !refName
-    ? parentData
-    : computed({
-        get: () => objGet(parentData.value, field),
-        set: (val) => objSet(parentData.value, field, val),
-      })
+  let parent = parentData
+  let refData = parentData
+  if (nameArr.length) {
+    parent = computed(() => objGet(parentData.value, nameArr))
+    refData = computed({
+      get: () => objGet(parentData.value, field),
+      set: (val) => objSet(parentData.value, field, val),
+    })
+  } else if (refName) {
+    refData = toRef(parentData.value, refName)
+  } else if (value) {
+    refData = value
+  }
+
   const model = reactive({
     refName,
     initialValue,
     fieldName: field,
-    parent: parentData,
+    parent,
     refData,
     propChain,
   })
@@ -38,7 +46,6 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
       { immediate: true, flush: 'sync' }
     )
   }
-
   return model
 }
 
