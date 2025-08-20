@@ -75,6 +75,7 @@ interface ExtBaseOption {
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
   help?: HelpMessage
+  /** 校验规则，指定value而没指定field时无效 */
   rules?: RuleConfig | RuleConfig[]
   attrs?: Obj
   dynamicAttrs?: Fn<Obj>

@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, unref } from 'vue'
+import { computed, defineComponent, h, mergeProps, unref } from 'vue'
 import type { TableColumnProps } from 'ant-design-vue'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
@@ -22,7 +22,7 @@ const InputNode = defineComponent({
     })
     const model: any = { parent, refData }
     const { attrs, hidden } = useControl({ option, effectData: { ...effectData, inTable: true } })
-    const inputSlot = buildInnerNode(option, model, effectData, attrs)
+    const inputSlot = buildInnerNode(option, model, effectData, mergeProps(attrs, { style: { maxWidth: '100%' }}))
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : unref(editable)))
     const viewNode = getViewNode(option, effectData)
 

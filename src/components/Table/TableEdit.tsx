@@ -1,4 +1,4 @@
-import { toRaw, watch, reactive, h, toRef, defineComponent, computed, unref, markRaw, toRefs } from 'vue'
+import { toRaw, watch, reactive, h, toRef, defineComponent, computed, unref, toRefs, shallowReactive } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneDeep, isFunction } from 'lodash-es'
 import Controls from '../index'
@@ -10,36 +10,27 @@ import type { ExtColumnsItem } from 'src/exaTypes'
 export default function ({ model, orgList, rowKey }) {
   const { modelsMap: childrenMap, initialData } = model.listData
 
-  const listMap: Obj = reactive({})
+  let listMap: Obj = {}
   // 监听数据变化
   watch(
     () => [...orgList.value],
     (org) => {
-      org.forEach((record, idx) => {
+      const tempMap = {}
+      // 避免外部非同一响应式引用
+      orgList.value.forEach((record, idx) => {
         const hash = rowKey(record) || nanoid(12)
         record['_ID_'] = hash
-        const listItem = listMap[hash] || reactive({})
+        const listItem = listMap[hash] || shallowReactive({})
         listItem.record = record
 
-        if (listItem.modelsMap) {
-          if (listItem.index !== idx) {
-            listItem.modelsMap.forEach((model) => {
-              model.index = idx
-            })
-            listItem.index = idx
-          }
-        } else {
+        if (listItem.index !== idx) {
           listItem.index = idx
-          listMap[hash] = listItem
-          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(
-            toRaw(childrenMap),
-            toRef(listItem, 'record'),
-            model.propChain,
-            idx
-          )
-          listItem.modelsMap = markRaw(modelsMap)
+          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(toRaw(childrenMap), record, model.propChain, idx)
+          listItem.modelsMap = modelsMap
         }
+        tempMap[hash] = listItem
       })
+      listMap = tempMap
     },
     {
       immediate: true,
@@ -67,29 +58,31 @@ export default function ({ model, orgList, rowKey }) {
     },
     setup({ option }, ctx) {
       const { record } = ctx.attrs as Obj
-      const row = listMap[rowKey(record)]
-      const model = row.modelsMap.get(option)
-      const { index, parent, refData } = toRefs(model)
+      const model = computed(() => {
+        const row = listMap[rowKey(record)]
+        return row.modelsMap.get(option)
+      }) 
+      const { index, parent, refData } = toRefs(model.value)
       const effectData = getEffectData({
         current: parent,
         value: refData,
         list: orgList,
-        record: toRef(row, 'record'),
+        record,
         index,
       })
       const { editable = true } = option
-      const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
-      const { attrs } = useControl({ option, effectData })
-      const inputSlot = buildInnerNode(option, model, effectData, attrs)
+      const { attrs, hidden } = useControl({ option, effectData })
+      const editableRef = computed(() => !hidden.value && (isFunction(editable) ? editable(effectData) : editable))
+      const inputSlot = buildInnerNode(option, model.value, effectData, attrs)
       const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
-      const rules = computed(() => (unref(attrs.disabled) ? undefined : model.rules))
+      const rules = computed(() => (unref(attrs.disabled) ? undefined : model.value.rules))
       return () =>
         editableRef.value
           ? h(
               base.FormItem,
               reactive({
                 wrapperCol: {},
-                name: model.propChain,
+                name: model.value.propChain,
                 rules,
               }),
               inputSlot

@@ -1,5 +1,5 @@
 import buildRule from './buildRule'
-import { reactive, ref, toRef, toValue, watch, markRaw, computed } from 'vue'
+import { reactive, ref, toRef, toValue, watch, markRaw, isRef } from 'vue'
 import { cloneDeep, get as objGet, set as objSet } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */
@@ -10,42 +10,41 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]
 
-  let parent = parentData
-  let refData = parentData
-  if (nameArr.length) {
-    parent = computed(() => objGet(parentData.value, nameArr))
-    refData = computed({
-      get: () => objGet(parentData.value, field),
-      set: (val) => objSet(parentData.value, field, val),
-    })
-  } else if (refName) {
-    refData = toRef(parentData.value, refName)
-  } else if (value) {
-    refData = value
-  }
-
   const model = reactive({
     refName,
     initialValue,
     fieldName: field,
-    parent,
-    refData,
+    parent: ref(),
+    refData: ref(),
     propChain,
   })
-  if (refName) {
-    watch(
-      parentData,
-      (data) => {
+
+  watch(
+    parentData,
+    (data) => {
+      model.parent = data
+      if (refName) {
+        nameArr.forEach((name) => {
+          model.parent[name] ??= {}
+          model.parent = toRef(model.parent, name)
+        })
         if (columns || subItems) {
-          refData.value ??= toValue(initialValue) ?? (columns ? [] : {})
+          model.parent[refName] ??= toValue(initialValue) ?? (columns ? [] : {})
         } else {
-          refData.value ??= toValue(value) ?? toValue(initialValue)
+          model.parent[refName] ??= toValue(value) ?? toValue(initialValue)
         }
+        model.refData = toRef(model.parent, refName)
         if (keepField) objGet(data, keepField) ?? objSet(data, keepField, undefined)
-      },
-      { immediate: true, flush: 'sync' }
-    )
-  }
+      } else if (isRef(value)) {
+        model.refData = value
+        model.propChain=[]
+      } else {
+        model.refData = data
+      }
+    },
+    { immediate: true, flush: 'sync' }
+  )
+
   return model
 }
 
@@ -58,7 +57,7 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
     if (typeof child !== 'object') return
     const subModel: ModelData = buildModelData(child, currentData, propChain)
     const { rules: _rules, label, subItems, columns } = child
-    if (_rules) {
+    if (_rules && subModel.propChain.length) {
       const _r = Array.isArray(_rules) ? _rules : [_rules]
       let ruleType = 'string'
       if (subModel.refData) {
