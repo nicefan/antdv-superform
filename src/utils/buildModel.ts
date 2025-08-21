@@ -1,10 +1,10 @@
 import buildRule from './buildRule'
-import { reactive, ref, toRef, toValue, watch, markRaw, isRef } from 'vue'
-import { cloneDeep, get as objGet, set as objSet } from 'lodash-es'
+import { reactive, toRef, toValue, watch, markRaw, isRef, computed } from 'vue'
+import { cloneDeep, update, get as objectGet, set as objectSet } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
-function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
+function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
   const { field, keepField = option.labelField, columns, subItems, initialValue, value } = option
   const nameArr = field ? field.split('.') : []
   const propChain = __chain.concat(nameArr)
@@ -14,37 +14,30 @@ function buildModelData(option: Obj, parentData: Ref<Obj>, __chain: string[]) {
     refName,
     initialValue,
     fieldName: field,
-    parent: ref(),
-    refData: ref(),
+    origin,
+    parent: origin,
+    refData: origin,
     propChain,
   })
 
-  watch(
-    parentData,
-    (data) => {
-      model.parent = data
-      if (refName) {
-        nameArr.forEach((name) => {
-          model.parent[name] ??= {}
-          model.parent = toRef(model.parent, name)
-        })
-        if (columns || subItems) {
-          model.parent[refName] ??= toValue(initialValue) ?? (columns ? [] : {})
-        } else {
-          model.parent[refName] ??= toValue(value) ?? toValue(initialValue)
-        }
-        model.refData = toRef(model.parent, refName)
-        if (keepField) objGet(data, keepField) ?? objSet(data, keepField, undefined)
-      } else if (isRef(value)) {
-        model.refData = value
-        model.propChain=[]
-      } else {
-        model.refData = data
-      }
-    },
-    { immediate: true, flush: 'sync' }
-  )
-
+  if (refName) {
+    if (nameArr.length)  model.parent = computed(() => objectGet(origin.value, nameArr))
+    model.refData = computed({
+      get: () => objectGet(origin.value, field),
+      set: (val) => objectSet(origin.value, field, val),
+    })
+    watch(
+      origin,
+      (data) => {
+        model.refData ??= toValue(value) ?? toValue(initialValue) ?? ((columns && []) || (subItems && {}))
+        if (keepField) update(model.parent, keepField, (v) => v)
+      },
+      { immediate: true, flush: 'sync' }
+    )
+  } else if (isRef(value)) {
+    model.refData = value
+    model.propChain = []
+  }
   return model
 }
 

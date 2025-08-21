@@ -84,7 +84,7 @@ export function buildColumns({ childrenMap, context, option, attrs, isView }: Bu
       } else {
         const column: Obj = {
           title,
-          dataIndex: model.propChain.join('.') || title,
+          dataIndex: model.propChain || title,
         }
         if (col.options || col.dictName || col.type === 'Switch' || col.type?.includes('Picker')) {
           column.align = 'center'
