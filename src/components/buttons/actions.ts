@@ -115,7 +115,7 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
           // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
           _action(
             config.confirmText,
-            () => _onClick(metaParam, async (__param) => innerMethod({ ...__param, ...metaParam })),
+            () => _onClick(metaParam, async (__param) => innerMethod({ ...metaParam, ...__param })),
             param
           )
         } else {
