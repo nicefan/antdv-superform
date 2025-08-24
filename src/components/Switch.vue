@@ -62,7 +62,7 @@ export default defineComponent({
     watch(
       () => [props.value, optionsRef.value] as const,
       ([val, options]) => {
-        if (val === undefined && options.length) {
+        if (val === undefined && (!props.options || options.length)) {
           ctx.emit('update:value', props.defaultChecked ? attrs.value.checkedValue : attrs.value.unCheckedValue)
         }
       },

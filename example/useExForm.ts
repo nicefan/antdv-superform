@@ -1,7 +1,7 @@
 import { h, ref, toRaw, watchEffect } from 'vue'
 import { useForm, defineForm, useModal } from '../src'
 import { AppleOutlined, AndroidOutlined, UserOutlined, SearchOutlined } from '@ant-design/icons-vue'
-import { Button, Modal } from 'ant-design-vue'
+import { Button, message, Modal } from 'ant-design-vue'
 import { uniq } from 'lodash-es'
 import CustomGroup from './CustomGroup.vue'
 
@@ -16,6 +16,7 @@ export default function exampleForm() {
   })
   const selectList = ['游戏', '唱歌', '跑步', '打牌']
   const valname = ref('云')
+  const areaList = ['湖南', '广东']
   const treeData = [
     {
       title: 'Node1',
@@ -76,16 +77,24 @@ export default function exampleForm() {
         type: 'Descriptions',
         title: '基本信息',
         attrs: {
-          // 边框及标签底色
-          // borderColor: '#faf2f2',
-          // labelBgColor: '#faf2f2',
           bordered: true,
+          labelStyle: { width: '140px' },
+          // labelCol: {style: 'width:140px'}
         },
+        subSpan: 8,
         buttons: {
           // vaildIn:'detail',
           actions: [
             {
               label: '开始',
+              dropdown: [
+                { label: '按钮一', value: 'start1', icon: AndroidOutlined },
+                { label: '按钮二', value: 'start2', icon: AndroidOutlined },
+              ],
+              onClick(data) {
+                console.log(data)
+                message.info(data.e.key)
+              },
             },
           ],
         },
@@ -93,18 +102,33 @@ export default function exampleForm() {
         subItems: [
           {
             type: 'Input',
-            field: 'company',
-            initialValue: '阿里巴巴',
-            label: '公司名称',
+            label: '标题',
+            value: valname,
+            span: 16,
           },
           {
             type: 'HTML',
             label: '编号',
-            field: 'ser',
             // attrs: {
             //   innerHTML: '<a>avc</a>'
             // },
-            initialValue: '<a>123456</a>',
+            value: '<a>123456</a>',
+          },
+          {
+            type: 'Text',
+            field: 'text',
+            label: '文本一',
+            initialValue: '文本一',
+          },
+          {
+            type: 'Text',
+            label: '文本二',
+            value: '文本二',
+          },
+          {
+            type: 'Text',
+            label: '文本二',
+            value: '文本二',
           },
         ],
       },
@@ -142,8 +166,8 @@ export default function exampleForm() {
               suffix: 'a',
               enterButton: {
                 icon: SearchOutlined,
-                type: 'primary'
-              }
+                type: 'primary',
+              },
             },
             slots: {
               prefix: (...args) => {
@@ -161,23 +185,6 @@ export default function exampleForm() {
           },
 
           {
-            type: 'ExtInNumber',
-            label: '自定义组件',
-            field: 'de',
-            attrs: {
-              style: 'width: 100%',
-              placeholder: '自定义组件加Ext前缀',
-            },
-            viewRender: ({ value }) => value,
-          },
-          {
-            type: 'InfoSlot',
-            // field: 'test',
-            label: '模板插槽',
-            // labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name || ''}`),
-            render: 'test',
-          },
-          {
             type: 'TagInput',
             label: '标签',
             field: 'tags',
@@ -188,11 +195,32 @@ export default function exampleForm() {
             },
           },
           {
+            type: 'Switch',
+            label: '是否注册',
+            field: 'isReg',
+            valueLabels: ['否', '是'],
+            // options: () =>
+            //   new Promise((resolve) => {
+            //     setTimeout(() => {
+            //       resolve([
+            //         { value: 'a', label: 'A' },
+            //         { value: 'b', label: 'B' },
+            //       ])
+            //     }, 1000)
+            //   }),
+            attrs: {
+              // defaultChecked: true,
+            },
+          },
+          {
             type: 'DatePicker',
             field: 'born',
             initialValue: '2020-09-01',
             label: '生日',
             rules: { required: true, trigger: 'change' },
+            disabled: ({ current }) => {
+              return !current.isReg
+            },
           },
           {
             type: 'Select',
@@ -208,7 +236,7 @@ export default function exampleForm() {
             /** 异步请求更新 */
             // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
             /** 传递响应式数组，本地进行更新 */
-            options: list,
+            options: selectList,
             /** 静态固定数组 */
             // options: selectList,
             // disabled: (data) => data.age > 20,
@@ -216,7 +244,7 @@ export default function exampleForm() {
           {
             type: 'TagSelect',
             field: 'other',
-            label: '其它',
+            label: '特长',
             // options: () => Promise.resolve(list.value),
             options: selectList,
             // valueToNumber: true,
@@ -227,6 +255,81 @@ export default function exampleForm() {
             // computed(val, data) {
             //   return data.formData.forever !== null && 1
             // },
+          },
+          {
+            type: 'InputNumber',
+            field: 'width',
+            label: '体重',
+            // initialValue: 120,
+            // disabled: (data) => !!data.formData.name,
+            computed: (val, data) => {
+              console.log(data.current)
+              return data.formData.forever === 1 ? 110 : val
+            },
+            attrs: { max: 200, min: 110 },
+            rules: { required: true, type: 'number', min: 110 },
+          },
+          {
+            type: 'Input',
+            field: 'height',
+            label: '身高',
+            disabled: (data) => data.formData.forever === 2,
+            initialValue: 170,
+            attrs: { type: 'number' },
+            rules: { type: 'number', min: 150 },
+          },
+          {
+            type: 'DateRange',
+            label: '起止日期',
+            field: 'startDate',
+            keepField: 'endDate',
+          },
+          {
+            type: 'InputGroup',
+            label: '地址',
+            // field: 'address',
+            // span: 16,
+            gutter: 0,
+            subItems: [
+              {
+                type: 'Select',
+                field: 'street',
+                label: '省份',
+                // hidden: true,
+                span: 8,
+                attrs: {
+                  placeholder: '可输入动态添加选项',
+                  showSearch: true,
+                },
+                /** value将使用label保存 */
+                valueToLabel: true,
+                /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
+                options: (data, searchText) => {
+                  if (searchText) {
+                    return uniq([...areaList, searchText])
+                  }
+                  if (data.value && !areaList.includes(data.value)) {
+                    areaList.push(data.value)
+                  }
+                  return areaList
+                },
+              },
+              {
+                type: 'Input',
+                field: 'addr',
+                label: '地址',
+                span: 'auto',
+                rules: { required: true },
+                attrs: {
+                  allowClear: true,
+                },
+              },
+              {
+                type: 'InfoSlot',
+                colProps: { style: { width: '80px' } },
+                render: () => h(Button, () => '选择'),
+              },
+            ],
           },
           {
             type: 'Textarea',
@@ -242,145 +345,6 @@ export default function exampleForm() {
             onUpdate: (args) => {
               console.log('memo:update', args.value)
             },
-          },
-          {
-            type: 'Switch',
-            label: '是否注册',
-            field: 'isReg',
-            valueLabels: ['否', '是'],
-            options: () =>
-              new Promise((resolve) => {
-                setTimeout(() => {
-                  resolve([
-                    { value: 'a', label: 'A' },
-                    { value: 'b', label: 'B' },
-                  ])
-                }, 1000)
-              }),
-            attrs: {
-              firstIsChecked: true,
-              defaultChecked: true,
-            },
-          },
-          {
-            type: 'InputGroup',
-            label: '详细地址',
-            // field: 'address',
-            // span: 16,
-            gutter: 0,
-            subItems: [
-              {
-                type: 'Input',
-                field: 'addr',
-                label: '地址',
-                span: 14,
-                rules: { required: true },
-                attrs: {
-                  allowClear: true,
-                },
-              },
-              {
-                type: 'Select',
-                field: 'street',
-                label: '街道',
-                // hidden: true,
-                span: 'auto',
-                attrs: {
-                  placeholder: '可输入动态添加选项',
-                  showSearch: true,
-                },
-                /** value将使用label保存 */
-                valueToLabel: true,
-                /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
-                options: (data, searchText) => {
-                  if (searchText) {
-                    return uniq([...selectList, searchText])
-                  }
-                  if (data.value && !selectList.includes(data.value)) {
-                    selectList.push(data.value)
-                  }
-                  return selectList
-                },
-              },
-
-              // {
-              //   type: 'InfoSlot',
-              //   span:2,
-              //   render: () => h(Button, ()=>'选择')
-              // },
-            ],
-          },
-          {
-            type: 'DateRange',
-            label: '有效期',
-            field: 'startDate',
-            keepField: 'endDate',
-            hidden: ({ current }) => !current.isReg,
-          },
-          {
-            type: 'InputList',
-            field: 'datelist',
-            // subSpan: 12,
-            descriptionsProps: {
-              span: 24,
-              column: 2,
-            },
-            // label: '付款日期',
-            rules: { min: 2 },
-            rowButtons: ['add', 'delete'],
-            // attrs: {
-            //   labelIndex: true,
-            // },
-            // labelSlot:(data)=> {
-            //   // labelIndex为true时，可以为每行生成一个label
-            //   return '付款日期' + data.index
-            // },
-            hidden: (data) => {
-              return false
-            },
-            // viewRender(data) {
-            //   return JSON.stringify(data.value)
-            // },
-            columns: [
-              {
-                type: 'InputGroup',
-                labelSlot: (data) => {
-                  // labelIndex为true时，可以为每行生成一个label
-                  return '付款日期' + data.index
-                },
-                subItems: [
-                  {
-                    type: 'DatePicker',
-                    label: '日期b',
-                    field: 'index2',
-                    onChange: (...args) => {
-                      console.log(args)
-                      // 要获取到当前行时，需要取parent.index
-                    },
-                    // span: 8,
-                  },
-
-                  {
-                    type: 'DatePicker',
-                    label: '日期c',
-                    field: 'index3',
-                    attrs: {
-                      picker: 'quarter',
-                    },
-                    // rules: {required: true}
-                    // span: 12,
-                  },
-                ],
-              },
-
-              // {
-              //   type: 'DatePicker',
-              //   label: ({index}) =>'日期a' + (index+1),
-              //   field: 'index1',
-              //   rules: {required: true}
-              //   // span: 12,
-              // },
-            ],
           },
           {
             type: 'Upload',
@@ -468,8 +432,14 @@ export default function exampleForm() {
         rowButtons: {
           align: 'left',
         },
+        descriptionsProps: {
+          tableLayout: 'fixed',
+        },
+        contentAttrs: {
+          style: 'border-top:1px solid #eee; padding-top: 12px',
+        },
         title: (data) => {
-          return '列表' + data.index
+          return '列表' + (data.index + 1)
         },
         columns: [
           {
@@ -522,10 +492,9 @@ export default function exampleForm() {
         title: () => h('b', '分格线'),
         // hidden:({current}) => current.isReg,
         // disabled: ({ formData }) => !!formData.isReg,
-        // descriptionsProps: {
-        //   column: 3,
-        //   labelCol: {},
-        // },
+        descriptionsProps: {
+          tableLayout: 'fixed'
+        },
         buttons: {
           limit: 3,
           size: 'small',
@@ -559,57 +528,21 @@ export default function exampleForm() {
         },
         subItems: [
           {
-            type: 'InputList',
-            field: 'nameList',
-            // subSpan: 20,
-            rules: { required: true, min: 2 },
-            label: '客户', // 唯一子元素有定义label时，此处无效
+            type: 'ExtInNumber',
+            label: '自定义组件',
+            field: 'de',
             attrs: {
-              // labelIndex: true, // 自动给标签加序号
+              style: 'width: 100%',
+              placeholder: '自定义组件加Ext前缀',
             },
-            // labelSlot: (data) =>{
-            //   return '姓名' + '一二三四'[data.index]
-            // },
-            // rowButtons: ['add', 'delete'],
-            columns: [
-              {
-                type: 'Input',
-                field: '$index', // 只有一个控件并绑定$index时，直接存为数组值。
-                // label: '姓名',
-                // labelSlot: (data) =>{
-                //   return '姓名' + '一二三四'[data.index] //只有一个元素时，可获取到index
-                // },
-                // rules: { required: true },
-              },
-            ],
+            viewRender: ({ value }) => value,
           },
           {
-            type: 'DateRange',
-            label: '有效期',
-            field: 'born',
-            keepField: 'end',
-          },
-          {
-            type: 'InputNumber',
-            field: 'width',
-            label: '体重',
-            // initialValue: 120,
-            // disabled: (data) => !!data.formData.name,
-            computed: (val, data) => {
-              console.log(data.current)
-              return data.formData.forever === 1 ? 110 : val
-            },
-            attrs: { max: 200, min: 110 },
-            rules: { required: true, type: 'number', min: 110 },
-          },
-          {
-            type: 'Input',
-            field: 'height',
-            label: '身高',
-            disabled: (data) => data.formData.forever === 2,
-            initialValue: 170,
-            attrs: { type: 'number' },
-            rules: { type: 'number', min: 150 },
+            type: 'InfoSlot',
+            // field: 'test',
+            label: '模板插槽',
+            // labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name || ''}`),
+            render: 'test',
           },
           {
             type: 'Radio',
@@ -653,6 +586,96 @@ export default function exampleForm() {
               title: (data) => h('span', {}, `${data.title}[${data.value}]`),
             },
           },
+          {
+            type: 'InputList',
+            field: 'nameList',
+            // subSpan: 20,
+            rules: { required: true, min: 2 },
+            label: '客户', // 唯一子元素有定义label时，此处无效
+            attrs: {
+              // labelIndex: true, // 自动给标签加序号
+            },
+            // labelSlot: (data) =>{
+            //   return '姓名' + '一二三四'[data.index]
+            // },
+            // rowButtons: ['add', 'delete'],
+            columns: [
+              {
+                type: 'Input',
+                field: '$index', // 只有一个控件并绑定$index时，直接存为数组值。
+                // label: '姓名',
+                // labelSlot: (data) =>{
+                //   return '姓名' + '一二三四'[data.index] //只有一个元素时，可获取到index
+                // },
+                // rules: { required: true },
+              },
+            ],
+          },
+          {
+            type: 'InputList',
+            field: 'datelist',
+            // subSpan: 12,
+            descriptionsProps: {
+              span: 24,
+              column: 2,
+            },
+            // label: '付款日期',
+            rules: { min: 2 },
+            rowButtons: ['add', 'delete'],
+            // attrs: {
+            //   labelIndex: true,
+            // },
+            // labelSlot:(data)=> {
+            //   // labelIndex为true时，可以为每行生成一个label
+            //   return '付款日期' + data.index
+            // },
+            hidden: (data) => {
+              return false
+            },
+            // viewRender(data) {
+            //   return JSON.stringify(data.value)
+            // },
+            columns: [
+              {
+                type: 'InputGroup',
+                labelSlot: (data) => {
+                  // labelIndex为true时，可以为每行生成一个label
+                  return '付款日期' + (data.index + 1)
+                },
+                subItems: [
+                  {
+                    type: 'DatePicker',
+                    label: '日期b',
+                    field: 'index2',
+                    onChange: (...args) => {
+                      console.log(args)
+                      // 要获取到当前行时，需要取parent.index
+                    },
+                    // span: 8,
+                  },
+
+                  {
+                    type: 'DatePicker',
+                    label: '日期c',
+                    field: 'index3',
+                    attrs: {
+                      picker: 'quarter',
+                    },
+                    // rules: {required: true}
+                    // span: 12,
+                  },
+                ],
+              },
+
+              // {
+              //   type: 'DatePicker',
+              //   label: ({index}) =>'日期a' + (index+1),
+              //   field: 'index1',
+              //   rules: {required: true}
+              //   // span: 12,
+              // },
+            ],
+          },
         ],
       },
       {
@@ -660,22 +683,23 @@ export default function exampleForm() {
         field: 'table',
         label: '表格',
         // attrs: { bordered: true },
-        // editable: true,
-        rowEditor: {
-          // editMode: 'inline',
-          addMode: 'modal',
-          singleEdit: true,
-          form: {
-            subSpan: 12,
-            attrs: {
-              layout: 'vertical',
-            },
-          },
-        },
+        editable: true,
+        // rowEditor: {
+        //   // editMode: 'inline',
+        //   addMode: 'modal',
+        //   singleEdit: true,
+        //   form: {
+        //     subSpan: 12,
+        //     attrs: {
+        //       layout: 'vertical',
+        //     },
+        //   },
+        // },
         buttons: {
           actions: ['add', 'edit', 'delete'],
         },
         rowButtons: {
+          columnProps: { width: 120 },
           buttonType: 'link',
           labelMode: 'icon',
           actions: [
@@ -722,7 +746,9 @@ export default function exampleForm() {
             field: 'col2',
             label: 'col2',
             rules: { required: true },
-            hidden: ({ current }) => !current.okable,
+            hidden: ({ current }) => {
+              return !current.okable
+            },
           },
         ],
       },
@@ -829,11 +855,11 @@ export default function exampleForm() {
             key: 'tab3',
             label: '第三页',
             field: 'tab3',
-            disabled: ({ formData, ...args }) => {
-              console.log(formData)
-              return !formData.isReg
-            },
-            // disabled: true,
+            // disabled: ({ formData, ...args }) => {
+            //   console.log(formData)
+            //   return !formData.isReg
+            // },
+            disabled: true,
             subItems: [
               {
                 type: 'Input',

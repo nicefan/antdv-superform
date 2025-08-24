@@ -1,9 +1,8 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, inject, reactive, ref, toRef, useAttrs, watch } from 'vue'
-import { cloneDeep } from 'lodash-es'
+import { type PropType, defineComponent, h, reactive, ref, toRef, useAttrs, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../utils/buildModel'
-import { ButtonGroup, createButtons } from './buttons'
+import { createButtons } from './buttons'
 import base from './base'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -30,7 +29,7 @@ export default defineComponent({
   setup({ model, option, isView, effectData }, ctx) {
     const { buttons: buttonsConfig, rowButtons, label, title = label } = option
     // 先构建一个数据结构
-    const { modelsMap: childrenMap, initialData, rules } = model.listData
+    const { modelsMap: childrenMap, rules } = model.listData
 
     const { propChain } = model
     const orgList = toRef(model, 'refData')
@@ -40,7 +39,7 @@ export default defineComponent({
 
     const methods = {
       add() {
-        orgList.value.push(cloneDeep(initialData))
+        orgList.value.push({})
       },
       delete({ record }) {
         const orgIdx = orgList.value.indexOf(record)

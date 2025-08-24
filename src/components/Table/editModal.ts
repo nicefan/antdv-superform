@@ -1,4 +1,4 @@
-import { merge, cloneDeep } from 'lodash-es'
+import { cloneDeep } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { globalProps } from '../../plugin'
 import { createModal } from '../../superModal'
@@ -6,7 +6,7 @@ import { ref, h, nextTick } from 'vue'
 import Controls from '../index'
 import { toNode } from '../../utils'
 
-export default function editModal({ initialData, rowKey, option, listener }) {
+export default function editModal({ rowKey, option, listener }) {
   const source = ref({})
   const formRef = ref()
   const rowEditor = option.rowEditor
@@ -39,7 +39,7 @@ export default function editModal({ initialData, rowKey, option, listener }) {
   const methods = {
     add(args: Obj = {}) {
       const { meta = {}, resetData } = args
-      source.value = merge({}, initialData, { '_ID_': nanoid(12), ...resetData })
+      source.value = { '_ID_': nanoid(12), ...resetData }
       nextTick(() => {
         formRef.value?.clearValidate()
       })

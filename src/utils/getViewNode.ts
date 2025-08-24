@@ -54,7 +54,11 @@ const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) =>
     item.color ??=
       color || tagOption[Number(value)] || (value === true && 'success') || (value === false && 'error') || 'default'
   }
-  return h(Tag, { color: item.color }, { default: () => item.label, icon: item.icon || (() => getIconNode(item.icon)) })
+  return h(
+    Tag,
+    { color: item.color },
+    { default: () => item.label || item.value, icon: item.icon || (() => getIconNode(item.icon)) }
+  )
 }
 
 export function getViewNode(option, effectData: Obj = {}) {

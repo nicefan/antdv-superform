@@ -25,6 +25,7 @@ export default defineComponent({
       rowProps,
       colon,
       size = 'middle',
+      tableLayout,
       ...descriptionsProps
     } = gridConfig
 
@@ -39,9 +40,9 @@ export default defineComponent({
         let ceil = Number(span) ? Math.ceil(span / (24 / colNum)) : 1
         ceil = ceil > colNum ? colNum : ceil
         const attrs = { ...descriptionsProps, ...option.formItemProps, ...option.descriptionsProps }
-        const labelStyle = mergeProps(attrs.labelAlign ? { textAlign: attrs.labelAlign } : {}, attrs.labelStyle)
+        const labelStyle = { ...(attrs.labelAlign && { textAlign: attrs.labelAlign }), ...attrs.labelStyle }
         const item: Obj = {
-          labelCol: mergeProps({ style: labelStyle, class: { 'sup-label-no-colon': attrs.noColon } }, attrs.labelCol),
+          labelCol: mergeProps(attrs.labelCol, { style: labelStyle, class: { 'sup-label-no-colon': attrs.noColon } }),
           wrapperCol: mergeProps(
             { style: layout === 'vertical' && { textAlign: attrs.labelAlign } },
             { style: attrs.contentStyle },
@@ -185,7 +186,7 @@ export default defineComponent({
             style: colorStyle,
             class: ['ant-descriptions', 'ant-descriptions-bordered', size !== 'default' && 'ant-descriptions-' + size],
           },
-          h('div', { class: 'ant-descriptions-view' }, h('table', {}, rows()))
+          h('div', { class: 'ant-descriptions-view' }, h('table', { style: { tableLayout } }, rows()))
         )
     } else {
       const render = () =>

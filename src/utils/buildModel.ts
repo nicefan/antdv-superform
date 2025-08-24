@@ -1,6 +1,6 @@
 import buildRule from './buildRule'
-import { reactive, toRef, toValue, watch, markRaw, isRef, computed } from 'vue'
-import { cloneDeep, update, get as objectGet, set as objectSet } from 'lodash-es'
+import { reactive, toRef, toValue, watch, markRaw, isRef, computed, ref } from 'vue'
+import { update, get as objectGet, set as objectSet } from 'lodash-es'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
@@ -34,8 +34,8 @@ function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
       },
       { immediate: true, flush: 'sync' }
     )
-  } else if (isRef(value)) {
-    model.refData = value
+  } else if (value) {
+    model.refData = ref(value)
     model.propChain = []
   }
   return model
@@ -72,7 +72,6 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
   return {
     rules,
     modelsMap,
-    initialData: cloneDeep(currentData.value),
   }
 }
 

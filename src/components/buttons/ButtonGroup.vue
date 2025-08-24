@@ -5,6 +5,7 @@
         <template #overlay>
           <Menu @click="onClick">
             <menu-item v-for="item of menu" :key="item.value">
+              <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
               <component :is="() => toNode(item.label, effectData)" />
             </menu-item>
           </Menu>

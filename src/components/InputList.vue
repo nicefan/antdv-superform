@@ -1,12 +1,9 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw, computed, unref, toRefs } from 'vue'
-import { cloneDeep } from 'lodash-es'
+import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw, computed } from 'vue'
 import { cloneModels } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { containers } from '.'
-import base from './base'
-import { getViewNode, toNode } from '../utils'
+import { toNode } from '../utils'
 import { Space } from 'ant-design-vue'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { globalProps } from '../plugin'
@@ -32,10 +29,9 @@ export default defineComponent({
   setup(props, ctx) {
     const { model, option, isView, effectData, labelIndex } = props
     const { columns, rowButtons, label, labelSlot, slots: optionSlots, ..._option } = option
-    const { modelsMap: childrenMap, initialData } = model.listData
+    const { modelsMap: childrenMap } = model.listData
 
     const isSingle = columns.length === 1 && columns[0].field === '$index'
-    const __initialData = isSingle ? initialData.$index : toRaw(initialData)
 
     const isFormItem = !labelIndex && (label || labelSlot)
 
@@ -45,7 +41,7 @@ export default defineComponent({
     const methods = {
       add: {
         onClick({ index }) {
-          orgList.value.splice(index + 1, 0, cloneDeep(__initialData))
+          orgList.value.splice(index + 1, 0, isSingle ? undefined : {})
           orgList.value = [...toRaw(orgList.value)]
         },
         icon: () => h(PlusOutlined),
@@ -89,7 +85,7 @@ export default defineComponent({
       orgList,
       (list) => {
         if (list.length === 0) {
-          list.push(cloneDeep(__initialData))
+          list.push(isSingle ? undefined : {})
         }
         listItems.value = list.map((record, idx) => {
           const refData = toRef(orgList.value, idx)

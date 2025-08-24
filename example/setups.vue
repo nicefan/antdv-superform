@@ -19,7 +19,7 @@ import exampleForm from './useExForm'
 import { useTable, SuperTable, useForm, type ButtonItem } from '../src'
 import { SuperButtons } from '../src/superButtons'
 import { useModal, useModalForm } from '../src'
-import { myTableOption } from './createForm/formOption'
+import { getTableOption } from './fristTable/formOption'
 import { nanoid } from 'nanoid'
 import { SyncOutlined } from '@ant-design/icons-vue'
 
@@ -47,7 +47,7 @@ export default defineComponent({
       },
     ]
 
-    const [tableRegister, myTable] = useTable(myTableOption)
+    const [tableRegister, myTable] = useTable(getTableOption())
     const myTableModal = useModal(tableRegister(), {
       title: '弹窗表格',
       icon: () => h(SyncOutlined),
@@ -79,7 +79,7 @@ export default defineComponent({
     const [registTable, { setData: setTableData2 }] = useTable({
       dataSource: ref([...data]),
       isContainer: true,
-      ...myTableOption,
+      ...getTableOption(),
       // searchschema: undefined,
       // maxHeight: 500,
       // inheritHeight: true,
@@ -130,7 +130,7 @@ export default defineComponent({
       list: [{ tab1: 'tab1' }],
     })
     /** 弹窗表单 */
-    const formModal = useModalForm(exampleForm().options, {width: 1400})
+    const formModal = useModalForm(exampleForm().options, {title: '弹窗表单', width: 1400})
     // const dataSource = ref({})
     // const [exampleFormReg, form] = useForm(exampleForm().options)
     // const formModal = useModal(exampleFormReg(), {

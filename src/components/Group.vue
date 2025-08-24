@@ -68,7 +68,7 @@ export default defineComponent({
       return () => h(CustomComponent, {}, slots)
     } else {
       return () =>
-        h('div', { class: _class, style }, [
+        h('div', mergeProps({ class: _class, style }, { class: 'sup-group' }), [
           (title || titleButton) &&
             h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
               title && h(Col, { class: 'sup-title' }, slots.title),

@@ -44,7 +44,7 @@ type BuildDataParam = {
 }
 
 function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDataParam) {
-  const { modelsMap: childrenMap, initialData } = model.listData
+  const { modelsMap: childrenMap } = model.listData
   const context: {
     list: Ref
     methods: Obj
@@ -80,7 +80,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     Object.assign(context, { editButtonsSlot, getEditRender })
   }
   if (editMode === 'modal' || addMode === 'modal') {
-    const { modalSlot, methods } = modalRender({ initialData, rowKey, option, listener })
+    const { modalSlot, methods } = modalRender({ rowKey, option, listener })
     if (context.methods.edit) {
       // 编辑模式为行内编辑时，新增按钮使用弹窗模式
       context.methods.add = methods.add

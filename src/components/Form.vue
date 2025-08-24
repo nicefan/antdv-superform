@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, h, provide, inject, reactive, readonly, ref, watch, toRef } from 'vue'
+import { type PropType, h, provide, reactive, readonly, ref, toRef } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -69,6 +69,7 @@ export default {
     if (ignoreRules) {
       Object.assign(attrs, { hideRequiredMark: true, validateTrigger: 'none' })
     }
+
     const actions = {
       dataSource: modelData,
       submit: () => {
@@ -110,7 +111,6 @@ export default {
     // )
 
     const buttonsConfig: any = Array.isArray(buttons) ? { actions: buttons } : buttons
-
     if (buttonsConfig?.actions?.length) {
       option.subItems = [
         ...option.subItems,
@@ -128,7 +128,9 @@ export default {
         },
       ]
     }
-    const { modelsMap, initialData } = buildModelsMap(option.subItems, modelData)
+
+    const { modelsMap } = buildModelsMap(option.subItems, modelData)
+    const initialData = cloneDeep(modelData.value)
 
     const exposeData = reactive({ ...actions })
     const getForm = (form) => {

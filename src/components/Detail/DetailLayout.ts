@@ -132,8 +132,10 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
       parent: parentEffect,
       current: parent,
       isView: true,
-      ...('index' in model && { index: model.index, record: !model.refName ? refData : parent }),
-      ...(model.refName && { field: model.refName, value: refData, text: refData }),
+      field: model.refName,
+      value: refData,
+      text: refData,
+      ...('index' in model && { index: model.index, record: field ? refData : parent }),
     })
     const { attrs, hidden } = useControl({ option, effectData })
     const slots = useInnerSlots(option.slots, effectData)

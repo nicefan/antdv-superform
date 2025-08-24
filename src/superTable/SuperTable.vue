@@ -139,7 +139,7 @@ export default defineComponent({
           listData: buildModelsMap(columns),
         })
 
-        const effectData = reactive({ formData: dataRef, current: dataRef })
+        const effectData = reactive({ formData: dataRef, current: dataRef, queryParams: computed(getQueryParams) })
 
         slots.value = useInnerSlots(option.slots, effectData, ctx.slots)
 

@@ -36,11 +36,12 @@ export default defineComponent({
       const effectData = getEffectData({
         parent: props.effectData,
         current: parent,
+        field: subData.refName,
+        value: refData,
         ...('index' in subData && {
           index: subData.index,
           record: !subData.refName ? refData : parent,
         }),
-        ...(subData.refName && { field: subData.refName, value: refData }),
       })
       if (type === 'Hidden' || hideInForm || exclude?.includes('form')) {
         useVModel({ option, model: subData, effectData })
@@ -64,7 +65,7 @@ export default defineComponent({
       if (parentType === 'InputGroup' && parentAttrs?.compact !== false) {
         const width = Number(colProps.span) && (100 / (24 / colProps.span)).toFixed(2) + '%'
         // const _class = colProps.span && 'ant-col-' + colProps.span
-        nodes.push(() => !hidden.value && h(innerNode, { style: { width } }))
+        nodes.push(() => !hidden.value && h(innerNode, mergeProps({ style: { width } }, colProps)))
         return
       }
 
@@ -153,8 +154,10 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
   const renderSlot = render ? (typeof render === 'function' ? render : rootSlots[render]) : Controls[type]
 
   let node
-  if (type === 'Text' || type === 'InfoSlot') {
-    node = renderSlot ? () => renderSlot({ props: attrs, ...effectData }) : () => h('span', attrs, model.refData)
+  if (type === 'InfoSlot') {
+    node = renderSlot && (() => renderSlot({ props: attrs, ...effectData }))
+  } else if (type === 'Text') {
+    node = () => h('span', attrs, model.refData)
   } else if (type === 'HTML') {
     node = () => h('span', { ...attrs, innerHTML: model.refData })
   } else if (type === 'Buttons') {

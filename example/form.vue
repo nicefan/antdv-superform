@@ -56,13 +56,13 @@ const getData = () => {
     text: 'text',
     array: ['a', 'b'],
     born: '2012-10-02',
-    isReg: 1,
+    isReg: true,
     'group': {
       'food': ['1'],
+      datelist: [{ index2: '2002-02-02', index3: undefined }],
     },
     tab3: { input: 'input' },
     list: [{ tab1: 'tab1' }],
-    datelist: [{ index2: '2002-02-02', index3: undefined }],
     listGroup: [
       {
         quarter: '2003-10-01'

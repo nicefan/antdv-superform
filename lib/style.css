@@ -8,6 +8,9 @@
 .sup-table-wrapper .ant-table-cell > .ant-form-item .ant-form-item-label {
   display: none;
 }
+.sup-group + .sup-group {
+  margin-top: 16px;
+}
 .sup-form .ant-picker {
   width: 100%;
 }
@@ -56,9 +59,6 @@
 }
 .sup-detail .ant-descriptions-bordered .ant-descriptions-view {
   overflow: hidden;
-}
-.sup-detail .ant-descriptions-bordered .ant-descriptions-view > table {
-  table-layout: fixed;
 }
 .sup-detail .ant-descriptions-item-container {
   padding: 8px 0;

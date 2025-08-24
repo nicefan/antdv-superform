@@ -69,8 +69,6 @@ interface ExtBaseOption {
   type: string
   field?: string
   vModelFields?: Obj<string>
-  /** 双向绑定外部变量 */
-  value?: Ref
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
@@ -120,8 +118,13 @@ type ExtDescriptionsProps = {
   /** 标题列属性，置为空对象将清空继承属性 */
   labelCol?: ColProps & HTMLAttributes
   labelAlign?: 'left' | 'center' | 'right'
+  /**分组数据表格模式展示时，设为fixed,让列宽一致 */
+  tableLayout?: 'fixed' | 'auto'
+  /**@deprecated */
   labelBgColor?: string
+  /**@deprecated */
   borderColor?: string
+  /**mode为form模式时，该元素不用input风格包裹 */
   noInput?: boolean
   span?: number
 } & DescriptionsProps &
@@ -397,7 +400,7 @@ interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
 /** 表单元素属性 */
 interface ExtFormItemOption extends ExtBaseOption {
   /** 指定ref对象时，同步变化 */
-  value?: Ref<any>
+  value?: any
   /** 指定查看时显示的字段 */
   labelField?: string
   tagViewer?:
@@ -588,7 +591,6 @@ declare global {
   export interface ModelChildren<T = GetBaseOption> {
     modelsMap: ModelsMap<T>
     rules: Obj
-    initialData: any
   }
 }
 

@@ -10,19 +10,19 @@
         <h3>表格footer插槽</h3>
       </template>
     </SuperTable>
-    <Row :gutter="10">
+    <Space style="margin-top: 12px">
       <!-- <a-button @click="changeSelect">切换选项</a-button> -->
       <Button @click="setValue">赋值</Button>
       <Button @click="nextPage">下一页</Button>
       <Button @click="setSelected">选中</Button>
       <Button @click="tablevalidate()" title="editable模式下有效">校验</Button>
-    </Row>
+    </Space>
   </div>
 </template>
 <script setup lang="ts">
 import { watch, reactive, ref, toRef, h } from 'vue'
-import { Row, Button } from 'ant-design-vue'
-import { myTableOption } from './formOption'
+import { Button, Space } from 'ant-design-vue'
+import { getTableOption } from './formOption'
 import { useForm, useTable, SuperTable, defineTable } from '../../src'
 
 const props = defineProps<{
@@ -40,7 +40,7 @@ const selectedRowKeys = ref<string[]>([])
 const dataso = ref<any[]>([])
 const currentPage = ref(1)
 const [register, tableAction] = useTable({
-  ...myTableOption,
+  ...getTableOption(),
   dataSource: dataso,
   // editable: true,
   // apis: {
@@ -62,13 +62,6 @@ const [register, tableAction] = useTable({
       pageSize: 2,
       current: currentPage
     }
-  },
-  tabs: {
-    options: ['湖南', '广东'],
-    valueToLabel: true,
-    activeKey: toRef(params, 'name'),
-    // bordered: true,
-    customTab: ({ item }) => h('span', { style: 'font-size:18px' }, item.tab),
   },
   params,
 })
@@ -96,11 +89,10 @@ const getData = () => {
       id: '121',
       fieldName: 'la',
       title: '大因',
-      dataType: ['text'],
+      dataType: 'text',
+      area: ['湖南', '广东'],
       isRequire: 1,
       tip: '正则表达式是用于匹配字符串中字符组合的模式',
-      col2: '12',
-      // fileIds: ['a'],
       files: [
         {
           uid: 'a',
@@ -112,10 +104,8 @@ const getData = () => {
       id: '122',
       fieldName: 'la2',
       title: '大因2',
-      dataType: ['text'],
+      dataType: 'number',
       isRequire: 1,
-      col2: '122',
-      // fileIds: ['a2'],
       files: [
         {
           uid: 'a2',
@@ -127,10 +117,8 @@ const getData = () => {
       id: '123',
       fieldName: 'la3',
       title: '大因3',
-      dataType: ['text'],
+      dataType: 'text',
       isRequire: 1,
-      col2: '123',
-      // fileIds: ['a2'],
       files: [
         {
           uid: 'a2',

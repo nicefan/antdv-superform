@@ -1,6 +1,6 @@
-import { toRaw, watch, reactive, h, toRef, defineComponent, computed, unref, toRefs, shallowReactive } from 'vue'
+import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneDeep, isFunction } from 'lodash-es'
+import { isFunction } from 'lodash-es'
 import Controls from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
 import base from '../base'
@@ -8,7 +8,7 @@ import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
 
 export default function ({ model, orgList, rowKey }) {
-  const { modelsMap: childrenMap, initialData } = model.listData
+  const { modelsMap: childrenMap } = model.listData
 
   let listMap: Obj = {}
   // 监听数据变化
@@ -40,9 +40,9 @@ export default function ({ model, orgList, rowKey }) {
   const methods = {
     add({ index }) {
       if (index !== undefined) {
-        orgList.value.splice(index + 1, 0, cloneDeep(initialData))
+        orgList.value.splice(index + 1, 0, {})
       } else {
-        orgList.value.push(cloneDeep(initialData))
+        orgList.value.push({})
       }
     },
     // delete({ record }) {

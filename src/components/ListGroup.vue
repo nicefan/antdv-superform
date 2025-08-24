@@ -1,6 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw, computed } from 'vue'
-import { cloneDeep } from 'lodash-es'
+import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw } from 'vue'
 import { cloneModels } from '../utils/buildModel'
 import Controls from '.'
 import { nanoid } from 'nanoid'
@@ -29,7 +28,7 @@ export default defineComponent({
   setup(props, ctx) {
     const { model, isView, effectData, labelIndex, rowKey = '' } = props
     const { columns, rowButtons, slots: optionSlots, ...option } = props.option
-    const { modelsMap: childrenMap, initialData, rules } = model.listData
+    const { modelsMap: childrenMap, rules } = model.listData
 
     const { propChain } = model
     const orgList = toRef(model, 'refData')
@@ -38,7 +37,7 @@ export default defineComponent({
       add: {
         icon: () => h(PlusOutlined),
         onClick({ index }) {
-          orgList.value.splice(index + 1, 0, cloneDeep(initialData))
+          orgList.value.splice(index + 1, 0, {})
           orgList.value = [...toRaw(orgList.value)]
         },
       },
@@ -72,7 +71,7 @@ export default defineComponent({
       orgList,
       (list) => {
         if (list.length === 0) {
-          list.push(cloneDeep(initialData))
+          list.push({})
         }
 
         listItems.value = list.map((record, idx) => {
