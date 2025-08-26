@@ -84,7 +84,8 @@ export function buildColumns({ childrenMap, context, option, attrs, isView }: Bu
       } else {
         const column: Obj = {
           title,
-          dataIndex: model.propChain || title,
+          key: col.field || title,
+          dataIndex: model.propChain.length > 1 ? model.propChain : model.propChain[0],
         }
         if (col.options || col.dictName || col.type === 'Switch' || col.type?.includes('Picker')) {
           column.align = 'center'
@@ -141,7 +142,7 @@ export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, eff
   }
   return {
     title: '操作',
-    dataIndex: 'action',
+    key: 'action',
     fixed: 'right',
     minWidth: 100,
     width: 100,
@@ -156,7 +157,7 @@ export const buildIndexColumn = (option, attrs) => {
   const indexColumn = option.indexColumn ?? globalProps.Table?.indexColumn
   if (!indexColumn) return
   return {
-    dataIndex: 'INDEX',
+    key: 'INDEX',
     title: '序号',
     width: 60,
     align: 'center',
