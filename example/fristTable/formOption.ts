@@ -121,9 +121,11 @@ export const getTableOption = () => {
         field: 'area',
         label: '区域',
         options: ['湖南', '广东', '江西'],
+        editable: true,
         valueToNumber: true,
         attrs: {
           mode: 'multiple',
+          style: 'width:100%'
         },
       },
       {

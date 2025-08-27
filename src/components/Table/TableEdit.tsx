@@ -1,4 +1,4 @@
-import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive } from 'vue'
+import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive, toRef } from 'vue'
 import { nanoid } from 'nanoid'
 import { isFunction } from 'lodash-es'
 import Controls from '../index'
@@ -16,7 +16,7 @@ export default function ({ model, orgList, rowKey }) {
     () => [...orgList.value],
     (org) => {
       const tempMap = {}
-      // 避免外部非同一响应式引用
+      // 使用原响应列表拿到的子集才是同一引用
       orgList.value.forEach((record, idx) => {
         const hash = rowKey(record) || nanoid(12)
         record['_ID_'] = hash
@@ -25,7 +25,12 @@ export default function ({ model, orgList, rowKey }) {
 
         if (listItem.index !== idx) {
           listItem.index = idx
-          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(toRaw(childrenMap), record, model.propChain, idx)
+          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(
+            toRaw(childrenMap),
+            toRef(listItem, 'record'),
+            model.propChain,
+            idx
+          )
           listItem.modelsMap = modelsMap
         }
         tempMap[hash] = listItem
@@ -61,7 +66,7 @@ export default function ({ model, orgList, rowKey }) {
       const model = computed(() => {
         const row = listMap[rowKey(record)]
         return row.modelsMap.get(option)
-      }) 
+      })
       const { index, parent, refData } = toRefs(model.value)
       const effectData = getEffectData({
         current: parent,

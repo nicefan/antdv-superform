@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, mergeProps, unref } from 'vue'
+import { computed, defineComponent, h, mergeProps, reactive, unref, watch } from 'vue'
 import type { TableColumnProps } from 'ant-design-vue'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
@@ -12,8 +12,15 @@ const InputNode = defineComponent({
     option: { type: Object, required: true },
     effectData: { type: Object as any, required: true },
   },
-  setup({ option, effectData }) {
-    const { field, editable } = option
+  setup(props) {
+    const option = props.option
+    const { field, editable } = props.option
+    const effectData: Obj = reactive({})
+    watch(
+      () => props.effectData,
+      (data) => Object.assign(effectData, data),
+      { immediate: true }
+    )
     const path = field.split('.').slice(0, -1)
     const parent = computed(() => objGet(effectData.record, path))
     const refData = computed({
@@ -22,7 +29,7 @@ const InputNode = defineComponent({
     })
     const model: any = { parent, refData }
     const { attrs, hidden } = useControl({ option, effectData: { ...effectData, inTable: true } })
-    const inputSlot = buildInnerNode(option, model, effectData, mergeProps(attrs, { style: { maxWidth: '100%' }}))
+    const inputSlot = buildInnerNode(option, model, effectData, mergeProps(attrs, { style: { maxWidth: '100%' } }))
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : unref(editable)))
     const viewNode = getViewNode(option, effectData)
 
@@ -44,7 +51,8 @@ const getEditNode = (option) => {
   const component = Controls[option.type]
   if (isFree && (component || option.type === 'InputSlot')) {
     return (param) => {
-      return h(InputNode, { option, effectData: param })
+      // param为函数组件props对象，所以需要解构响应内部变化
+      return h(InputNode, { option, effectData: { ...param } })
     }
   }
 }

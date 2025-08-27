@@ -1,8 +1,8 @@
 <template>
   <ConfigProvider :locale="zhCN">
     <h1>关于</h1>
-    <Tabs :default-active-key="tab">
-      <Tabs.TabPane v-for="(item, index) of tabs" :key="index" :tab="item.label">
+    <Tabs v-model:active-key="tab">
+      <Tabs.TabPane v-for="(item, index) of tabs" :key="String(index)" :tab="item.label">
         <component :is="item.comp" msg="about" />
       </Tabs.TabPane>
     </Tabs>
@@ -14,7 +14,7 @@ import { ConfigProvider } from 'ant-design-vue'
 import 'dayjs/locale/zh-cn'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 
-import { ref, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { Tabs } from 'ant-design-vue'
 import Setups from './setups.vue'
 import FirstForm from './form.vue'
@@ -28,7 +28,10 @@ const tabs = [
   { comp: Detail, label: '详情描述' },
 ]
 
-const tab = ref(1)
+const tab = ref((location.hash || '#1').substring(1))
+watch(tab, (key) => {
+  location.hash = String(key)
+})
 </script>
 
 <style>
