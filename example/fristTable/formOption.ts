@@ -105,6 +105,8 @@ export const getTableOption = () => {
         type: 'Select',
         label: '数据类型',
         field: 'dataType',
+        // editable: true,
+        rules: { required: true },
         options: () =>
           Promise.resolve([
             { label: '文本', value: 'text', color: 'green' },
@@ -121,8 +123,8 @@ export const getTableOption = () => {
         field: 'area',
         label: '区域',
         options: ['湖南', '广东', '江西'],
-        editable: true,
-        valueToNumber: true,
+        // valueToNumber: true,
+        valueToString: true,
         attrs: {
           mode: 'multiple',
           style: 'width:100%'
@@ -132,16 +134,17 @@ export const getTableOption = () => {
         type: 'Switch',
         label: '是否必填',
         field: 'isRequire',
-        // options: [
-        //   { value: 1, label: '是' },
-        //   { value: 2, label: '否' },
-        // ],
-        options: ['否', '是'],
+        options: [
+          { value: 0, label: '否' },
+          { value: 1, label: '是' },
+        ],
+        // options: ['否', '是'],
         valueToNumber: true,
         editable: true,
+        initialValue: 1,
         attrs: {
           // firstIsChecked: true,
-          defaultChecked: true,
+          // defaultChecked: true,
         },
         onChange: ({ current, inTable, value }, e) => {
           if (inTable) {
@@ -166,7 +169,6 @@ export const getTableOption = () => {
         label: '说明',
         field: 'tip',
         span: 24,
-        rules: { required: true },
         exclude: ['table'],
         // viewRender: (data) => {
         //   return data.text

@@ -682,7 +682,7 @@ export default function exampleForm() {
         type: 'Table',
         field: 'table',
         label: '表格',
-        // attrs: { bordered: true },
+        attrs: { bordered: true },
         editable: true,
         // rowEditor: {
         //   // editMode: 'inline',

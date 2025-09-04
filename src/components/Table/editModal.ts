@@ -67,7 +67,7 @@ export default function editModal({ rowKey, option, listener }) {
         return Promise.reject(new Error('未选择记录'))
       }
       if (option.apis?.info) {
-        source.value = await option.apis.info(rowKey(record), record)
+        source.value = await option.apis.info(rowKey(data) ?? data)
       } else {
         source.value = cloneDeep(data)
       }

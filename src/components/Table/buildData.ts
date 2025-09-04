@@ -26,7 +26,7 @@ function buildDetail(option, modelsMap, rowKey) {
   return async ({ record, selectedRows, meta, ...params }) => {
     const data = record || selectedRows[0]
     if (apis?.info) {
-      source.value = await apis.info(record[rowKey], record)
+      source.value = await apis.info(rowKey(data) ?? data)
     } else {
       source.value = data
     }

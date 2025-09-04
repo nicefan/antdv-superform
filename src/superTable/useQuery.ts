@@ -38,7 +38,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
 
   const request = (param?: Obj) => {
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
-    const _params = merge({}, searchParam, param, pageTransform(pageParam))
+    const _params = merge({}, pageTransform(pageParam), searchParam, param)
     const _data = option.beforeQuery?.(_params) || _params
     if (!queryApi.value) return
 

@@ -60,7 +60,7 @@ function fileIsImage(file) {
     } else {
       const type = file.type || file.url?.match(/^data:(\S*?);/)?.[1]
       return type?.startsWith('image')
-    } 
+    }
   }
 }
 
@@ -133,7 +133,6 @@ export default defineComponent({
       isSingle,
       minSize,
       maxSize,
-      maxCount = isSingle ? 1 : 0,
       infoNames,
       repeatable,
       showUploadList,
@@ -143,6 +142,7 @@ export default defineComponent({
       hideOnMax,
       valueKey,
     } = props
+    const maxCount = (isSingle ? 1 : props.maxCount) || Infinity
     const { accept, listType } = ctx.attrs as Obj
 
     const preview = usePreview()
@@ -296,7 +296,7 @@ export default defineComponent({
             return '文件数量最多' + maxCount
           }
         }
-        if (accept && !acceptValidtor(file, accept )) {
+        if (accept && !acceptValidtor(file, accept)) {
           return '请选择正确的文件类型！'
         }
         if (minSize || maxSize) {

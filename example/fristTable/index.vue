@@ -90,7 +90,7 @@ const getData = () => {
       fieldName: 'la',
       title: '大因',
       dataType: 'text',
-      area: ['湖南', '广东'],
+      area: '0,1',
       isRequire: 1,
       tip: '正则表达式是用于匹配字符串中字符组合的模式',
       files: [

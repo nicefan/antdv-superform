@@ -137,7 +137,7 @@ declare type EffectData =
 export declare interface ExtBaseOption {
     type: string
     field?: string
-    vModelFields?: Obj<string>
+    vModelFields?: Obj<string | Obj>
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
@@ -374,6 +374,8 @@ declare interface ExtSelect {
     valueToNumber?: boolean
     /** 选项中的value使用label */
     valueToLabel?: boolean
+    /** 多选时保存为逗号分隔字符串 */
+    valueToString?: boolean
 }
 
 declare interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
@@ -475,7 +477,7 @@ export declare interface ExtTreeOption extends ExtFormItemOption {
 
 declare interface ExtUpload extends ExtFormItemOption {
     vModelFields?: {
-        fileList?: string
+        fileList?: string | Obj
     }
     attrs?: UploadProps & {
         apis?: {
