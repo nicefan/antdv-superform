@@ -109,9 +109,10 @@ export default defineComponent({
           Object.assign(oldData, newData)
         }
       },
-      async onDelete(items) {
+      async onDelete(items:any[]) {
+        const keys = items.map((item) => rowKey(item))
         if (apis.delete) {
-          await apis.delete(items)
+          await apis.delete(keys, items)
           return apis.query?.(true)
         } else {
           items.forEach((item) => {
@@ -119,13 +120,8 @@ export default defineComponent({
           })
         }
         if (rowSelection) {
-          if (items.length === 1) {
-            selectedRowKeys.value = selectedRowKeys.value.filter((key) => key !== rowKey(items[0]))
-            selectedRows.value = selectedRows.value.filter((item) => rowKey(item) !== rowKey(items[0]))
-          } else {
-            selectedRowKeys.value = []
-            selectedRows.value = []
-          }
+          selectedRowKeys.value = selectedRowKeys.value.filter((key) => !keys.includes(key))
+          selectedRows.value = selectedRows.value.filter((item) => !keys.includes(rowKey(item)))
         }
       },
     }
