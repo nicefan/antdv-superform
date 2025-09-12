@@ -141,7 +141,20 @@ export function getViewNode(option, effectData: Obj = {}) {
       const tags = arr.map((value) => buildTagRender({ value, tagViewer }))
       return tags
     }
-  } else if (colType === 'Upload' || colType.startsWith('Ext')) {
+  } else if (colType === 'Text' && (option.attrs || option.dynamicAttrs)) {
+    return (param: Obj = effectData) => {
+      const text = content?.(param) || param.value
+      const dynamicAttrs = getComputedAttr(option.dynamicAttrs, param)
+      const attrs = mergeProps({ ...option.attrs, title: text }, dynamicAttrs)
+      return h('span', attrs, text)
+    }
+  } else if (colType === 'HTML') {
+    return (param = effectData) => {
+      const dynamicAttrs = getComputedAttr(option.dynamicAttrs, param)
+      const attrs = mergeProps({ ...option.attrs, innerHTML: param.value }, dynamicAttrs)
+      return h('span', attrs)
+    }
+  } else if (!content && (colType === 'Upload' || colType.startsWith('Ext'))) {
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)
       const slots = useInnerSlots(option.slots, param, rootSlots)
@@ -158,19 +171,6 @@ export function getViewNode(option, effectData: Obj = {}) {
   } else if (colType === 'Buttons') {
     const buttonsSlot = createButtons({ config: option, isView: true })
     return !!buttonsSlot && ((param = effectData) => buttonsSlot({ param }))
-  } else if (colType === 'HTML') {
-    return (param = effectData) => {
-      const dynamicAttrs = getComputedAttr(option.dynamicAttrs, param)
-      const attrs = mergeProps({ ...option.attrs, innerHTML: param.value }, dynamicAttrs)
-      return h('span', attrs)
-    }
-  } else if (colType === 'Text' && (option.attrs || option.dynamicAttrs)) {
-    return (param: Obj = effectData) => {
-      const text = content?.(param) || param.value
-      const dynamicAttrs = getComputedAttr(option.dynamicAttrs, param)
-      const attrs = mergeProps({ ...option.attrs, title: text }, dynamicAttrs)
-      return h('span', attrs, text)
-    }
   } else {
     return content
   }

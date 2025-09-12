@@ -499,7 +499,7 @@ interface ExtUpload extends ExtFormItemOption {
     /** 达到最大文件数量时，隐藏上传主体 */
     hideOnMax?: boolean
     /** 上传模式，默认auto,选择文件后自动上传，submit:提交时上传，custom通过绑定fileList中的文件对象手动上传 */
-    uploadMode?: 'auto' | 'submit' | 'custom' | 'base64'
+    uploadMode?: 'auto' | 'submit' | 'custom' | 'base64' | 'text'
     tip?: string
     /** 上传按钮标题 */
     title?: VSlot

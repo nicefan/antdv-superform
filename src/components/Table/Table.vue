@@ -107,6 +107,14 @@ export default defineComponent({
           return apis.query?.(true)
         } else {
           Object.assign(oldData, newData)
+          const key = rowKey(oldData)
+          if (key) {
+            // 原始对象是解构对象时，更新记录
+            const idx = orgList.value.findIndex((item) => rowKey(item) === key)
+            if (idx > -1) {
+              orgList.value.splice(idx, 1, oldData)
+            }
+          }
         }
       },
       async onDelete(items:any[]) {

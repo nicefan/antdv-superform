@@ -108,7 +108,7 @@ export default defineComponent({
     maxSize: Number,
     isSingle: Boolean,
     maxCount: Number,
-    uploadMode: String as PropType<'auto' | 'submit' | 'custom' | 'base64'>,
+    uploadMode: String as PropType<'auto' | 'submit' | 'custom' | 'base64' | 'text'>,
     tip: String,
     title: [String, Function],
     /** 超出最大数量隐藏上传 */
@@ -198,7 +198,7 @@ export default defineComponent({
     const updateValue = () => {
       if (props.isSingle) {
         const frist = toRaw(outFileList.value[0])
-        outValues.value = !valueKey ? frist : frist?.[valueKey] ?? frist?.[__names.uid] // 指定key无值时用uid替代，满足表单校验
+        outValues.value = !valueKey ? frist : frist?.[valueKey] ?? frist?.[__names.uid] // 指定key无值时用uid替代，满足表单校验，建议表单中绑定列表，通过计算属性生成提交值
       } else if (valueKey) {
         outValues.value = outFileList.value.map((item) => item[valueKey] ?? item[__names.uid])
       } else {
@@ -361,8 +361,8 @@ export default defineComponent({
         return promise
       } else if (mode === 'submit') {
         waitingTasks.set(file.uid, () => upload(args))
-      } else if (mode === 'base64') {
-        return getBase64WithFile(file).then(({ result }) => successHandler({ url: result }, file))
+      } else if (mode === 'base64' || mode === 'text') {
+        return getBase64WithFile(file, mode).then(({ result }) => successHandler({ url: result }, file))
       }
     }
 

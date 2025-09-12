@@ -1,10 +1,14 @@
-export function getBase64WithFile(file: File) {
+export function getBase64WithFile(file: File, mode?: 'base64' | 'text') {
   return new Promise<{
     result: string;
     file: File;
   }>((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
+    if (mode === 'text') {
+      reader.readAsText(file)
+    } else {
+      reader.readAsDataURL(file);
+    }
     reader.onload = () => resolve({ result: reader.result as string, file });
     reader.onerror = (error) => reject(error);
   });
