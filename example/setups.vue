@@ -4,8 +4,8 @@
     <super-buttons>
       <a-button @click="console.log('kk')" roleName="add" tooltip="提示" confirm-text="新增提示">新增</a-button>
 
-      <a-button @click="console.log('kk')" roleName="add2">新增2</a-button>
-      <div @click="console.log('kk')" roleName="add3">新增3</div>
+      <a-button @click="rename('新增2')" roleName="add2">新增2</a-button>
+      <div @click="rename('新增3')" roleName="add3">新增3</div>
     </super-buttons>
     <div style="margin-top: 16px">
       <super-table @register="registTable" :rowSelection="false" />
@@ -74,7 +74,7 @@ export default defineComponent({
       table.setData([...data])
       console.log(table)
     }
-    const abc = reactive({fieldName:'aaa'})
+    const abc = reactive({ fieldName: 'aaa' })
     /** 页面组件注册表格 */
     const [registTable, { setData: setTableData2 }] = useTable({
       dataSource: ref([...data]),
@@ -130,7 +130,7 @@ export default defineComponent({
       list: [{ tab1: 'tab1' }],
     })
     /** 弹窗表单 */
-    const formModal = useModalForm(exampleForm().options, {title: '弹窗表单', width: 1400})
+    const formModal = useModalForm(exampleForm().options, { title: '弹窗表单', width: 1400 })
     // const dataSource = ref({})
     // const [exampleFormReg, form] = useForm(exampleForm().options)
     // const formModal = useModal(exampleFormReg(), {
@@ -146,15 +146,38 @@ export default defineComponent({
     const openForm = () => {
       // setModalFormValue()
       // dataSource.value = getData()
-      formModal.openModal({
-        data: getData()
-      }).then((form) => {
-        console.log(form)
-      })
+      formModal
+        .openModal({
+          data: getData(),
+        })
+        .then((form) => {
+          console.log(form)
+        })
     }
     // const setModalFormValue = () => {
     //   form.setData(getData())
     // }
+    const renameModal = useModalForm(
+      {
+        subSpan: 24,
+        subItems: [{ type: 'Input', field: 'name', label: '任务名称' }],
+      },
+      {
+        // 动态标题
+        title: () => '修改任务名称' + _title.value,
+        onOk(data) {
+          console.log(data)
+        },
+      }
+    )
+    const _title = ref('')
+    const rename = (title) => {
+      _title.value = title
+      renameModal.openModal({
+        // 指定当前标题
+        title
+      })
+    }
     const btnActions: ButtonItem[] = [
       {
         label: '弹窗表单',
@@ -169,7 +192,7 @@ export default defineComponent({
         tooltip: '提示',
         label: '表格赋值',
         onClick: () => {
-          const list = [...new Array(50)].map((_, index) =>({ ...data[0], col2: index, id: nanoid() }))
+          const list = [...new Array(50)].map((_, index) => ({ ...data[0], col2: index, id: nanoid() }))
           setTableData2(list)
         },
       },
@@ -185,6 +208,7 @@ export default defineComponent({
       // FormModalSlot: formModal.modalSlot,
       btnActions,
       registTable,
+      rename,
     }
   },
 })

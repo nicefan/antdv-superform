@@ -97,7 +97,7 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
     if (modalRef.value) {
       return openModal(option)
     } else {
-      vm = createVNode(Wrapper, option as any)
+      vm = createVNode(Wrapper)
       vm.appContext = ins?.appContext // 这句很关键，关联起了数据
 
       render(vm, wrap)

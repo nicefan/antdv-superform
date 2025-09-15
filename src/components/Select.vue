@@ -38,16 +38,17 @@ const props = defineProps<{
 }>()
 
 const { options: orgOptions, labelField } = props.option
-const attrs = useAttrs()
+const attrs:Obj = useAttrs()
 
 const { optionsRef, setOptions } = useOptions(props.option, props.options, props.effectData)
 
 // 同步保存label字段
 let onChange = props.onChange
 if (labelField) {
+  const labelName = attrs.fieldNames?.label || 'label'
   onChange = (...args) => {
     const [_, item] = args
-    emit('update:labelValue', Array.isArray(item) ? item.map(({ lable }) => lable) : item?.label)
+    emit('update:labelValue', Array.isArray(item) ? item.map(item => item[labelName]) : item?.[labelName])
     props.onChange?.(...args)
   }
 }
