@@ -104,7 +104,7 @@ export function buildColumns({ childrenMap, context, option, attrs, isView }: Bu
         defaults(column, option.columnProps, globalProps.Column)
 
         const viewRender = column.customRender || getViewNode(col) || undefined
-        const editRender = getEditRender ? getEditRender(col) : getEditNode(col)
+        const editRender = getEditRender ? getEditRender(col, viewRender) : getEditNode(col)
         column.customRender = parseRender(viewRender, editRender, effectData)
         _columns.push(column)
       }

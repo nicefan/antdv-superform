@@ -4,9 +4,11 @@ import { mergeWith, throttle } from 'lodash-es'
 import { globalConfig } from '../plugin'
 
 const merge = (obj, ...source) => {
-  return mergeWith(obj, ...source, (objValue, srcValue, key, origin) => {
+  return mergeWith(obj, ...source, (objValue, srcValue, key, current) => {
     if (srcValue === undefined) {
-      origin[key] = undefined
+      current[key] = undefined
+    } else if (Array.isArray(objValue)) {
+      return srcValue
     }
   })
 }

@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, merge } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { globalProps } from '../../plugin'
 import { createModal } from '../../superModal'
@@ -61,7 +61,7 @@ export default function editModal({ rowKey, option, listener }) {
       })
     },
     async edit(args) {
-      const { record, selectedRows, meta } = args
+      const { record, selectedRows, resetData, meta } = args
       const data = record || selectedRows[0]
       if (!data) {
         return Promise.reject(new Error('未选择记录'))
@@ -71,6 +71,7 @@ export default function editModal({ rowKey, option, listener }) {
       } else {
         source.value = cloneDeep(data)
       }
+      merge(source.value, resetData)
       formRef.value?.clearValidate()
       return openModal({
         ...meta,

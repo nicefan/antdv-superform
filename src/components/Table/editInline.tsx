@@ -1,6 +1,6 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent, unref, computed } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneDeep, merge } from 'lodash-es'
+import { cloneDeep, isFunction, merge } from 'lodash-es'
 import { message, Form } from 'ant-design-vue'
 import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
@@ -151,37 +151,47 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
     props: {
       option: { type: Object, required: true },
       editInfo: { type: Object as any, required: true },
+      viewRender: { type: Function },
     },
-    setup({ option, editInfo }) {
+
+    setup({ option, editInfo, viewRender }) {
+      const { editable = true } = option
       const { modelsMap, form } = editInfo
       const model = modelsMap.get(toRaw(option))
+      const { index, parent, refData } = toRefs(model)
+
       const ruleName = model.propChain.join('.')
-      const effectData = getEffectData({ current: model.parent, value: toRef(model, 'refData') })
+      const effectData = getEffectData({ current: parent, value: refData, index })
       const { attrs, hidden } = useControl({ option, effectData })
+      const editableRef = computed(() => !hidden.value && (isFunction(editable) ? editable(effectData) : editable))
+
       const inputSlot = buildInnerNode(option, model, effectData, attrs)
       const rules = model.rules
       if (rules) {
         form.rulesRef.value[ruleName] = computed(() => (unref(attrs.disabled) || unref(hidden) ? [] : rules))
       }
       return () =>
-        !hidden.value &&
-        h(
-          base.FormItem,
-          {
-            ...form.validateInfos[ruleName],
-          },
-          inputSlot
-        )
+        editableRef.value
+          ? h(
+              base.FormItem,
+              {
+                ...form.validateInfos[ruleName],
+              },
+              inputSlot
+            )
+          : viewRender
+          ? viewRender({ ...effectData, isView: true })
+          : refData.value
     },
   })
 
-  const getEditRender = (option) => {
+  const getEditRender = (option, viewRender) => {
     const component = Controls[option.type]
     if (component || option.type === 'InputSlot') {
       return ({ record }) => {
         const editInfo = getEditInfo(record)
         if (editInfo.isEdit) {
-          return h(InputNode, { option, editInfo })
+          return h(InputNode, { option, editInfo, viewRender })
         }
       }
     }
