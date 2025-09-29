@@ -5,6 +5,7 @@ import Collections from './Collections'
 import { computed, defineComponent, h, mergeProps, ref, watch } from 'vue'
 import { globalProps } from '../plugin'
 import { toNode } from '../utils'
+import { formatRule } from '../utils/buildModel'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -20,7 +21,7 @@ export default defineComponent({
     const { field, label, labelSlot, slots } = option
 
     const formItemContext = ref()
-    let ruleObj = model.rules
+    let ruleObj = formatRule(model.rules, props.effectData)
     let _propChain = model.propChain
     const extProps: Obj = {}
     // InputGroup 表单校验

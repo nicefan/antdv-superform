@@ -7,6 +7,7 @@ import base from './base'
 import { getEffectData, toNode, useControl, useInnerSlots, useVModel } from '../utils'
 import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
+import { formatRule } from '../utils/buildModel'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -75,7 +76,8 @@ export default defineComponent({
       // const isListFormItem = type === 'InputList' && (labelSlot || label) && !option.attrs?.labelIndex
       if (!independent && (!blocked || (option.field && option.label))) {
         // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
-        const rules = computed(() => (unref(attrs.disabled) ? undefined : subData.rules))
+        const __rules = formatRule(subData.rules, effectData)
+        const rules = computed(() => (unref(attrs.disabled) ? undefined : __rules))
         const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
         const _label = labelSlot || label
         const _slots: Obj = { default: innerNode }

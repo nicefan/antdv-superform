@@ -6,6 +6,7 @@ import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
 import base from '../base'
 import { buildInnerNode } from '../Collections'
+import { formatRule } from '../../utils/buildModel'
 
 function createEditCache(childrenMap) {
   const editMap = new WeakMap()
@@ -166,7 +167,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       const editableRef = computed(() => !hidden.value && (isFunction(editable) ? editable(effectData) : editable))
 
       const inputSlot = buildInnerNode(option, model, effectData, attrs)
-      const rules = model.rules
+      const rules = formatRule(model.rules, effectData)
       if (rules) {
         form.rulesRef.value[ruleName] = computed(() => (unref(attrs.disabled) || unref(hidden) ? [] : rules))
       }

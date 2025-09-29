@@ -6,6 +6,7 @@ import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../u
 import base from '../base'
 import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
+import { formatRule } from '../../utils/buildModel'
 
 export default function ({ model, orgList, rowKey }) {
   const { modelsMap: childrenMap } = model.listData
@@ -80,7 +81,8 @@ export default function ({ model, orgList, rowKey }) {
       const editableRef = computed(() => !hidden.value && (isFunction(editable) ? editable(effectData) : editable))
       const inputSlot = buildInnerNode(option, model.value, effectData, attrs)
       const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
-      const rules = computed(() => (unref(attrs.disabled) ? undefined : model.value.rules))
+      const __rules = formatRule(model.value.rules, effectData)
+      const rules = __rules && computed(() => (unref(attrs.disabled) ? undefined : __rules))
       return () =>
         editableRef.value
           ? h(

@@ -97,8 +97,8 @@ export interface RuleConfig {
   max?: number
   /** 最小长度/最小值 */
   min?: number
-  /** 自定义验证器 */
-  validator?: (rule: Obj, value: any) => Promise<any>
+  /** 自定义验证器, 返回true验证通过，返回Error,提示Error中消息 */
+  validator?: (effectData: Obj, value: any) => boolean | Error | Promise<any>
   /** 提示消息 */
   message?: string
 }
@@ -115,10 +115,10 @@ function buildRule(item: RuleConfig, label = '') {
         pattern: /^[\s\S]*.*[^\s][\s\S]*$/,
         // transform: (value) => value + '',
         // whitespace: true,
-        message: message || `请输入${label}！`,
+        message: message || `${label}不能为空！`,
       })
     } else {
-      rules.push({ required, trigger, message: message || `请添加${label}` })
+      rules.push({ required, trigger, message: message || `${label}不能为空！` })
     }
   }
 

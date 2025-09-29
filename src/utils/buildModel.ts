@@ -21,7 +21,7 @@ function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
   })
 
   if (refName) {
-    if (nameArr.length)  model.parent = computed(() => objectGet(origin.value, nameArr))
+    if (nameArr.length) model.parent = computed(() => objectGet(origin.value, nameArr))
     model.refData = computed({
       get: () => objectGet(origin.value, field),
       set: (val) => objectSet(origin.value, field, val),
@@ -39,6 +39,19 @@ function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
     model.propChain = []
   }
   return model
+}
+
+export const formatRule = (rules, effectData) => {
+  return rules?.map((item) => {
+    if (!item.validator) return item
+    const validator = async (data, ...args) => {
+      const re = await item.validator({ ...data, ...effectData }, ...args)
+      if (re === false || re instanceof Error) {
+        throw re
+      }
+    }
+    return { ...item, validator }
+  })
 }
 
 export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: string[] = []) {
