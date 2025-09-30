@@ -32,6 +32,7 @@ import type { SwitchProps } from 'ant-design-vue';
 import type { TableColumnProps } from 'ant-design-vue';
 import type { TableProps } from 'ant-design-vue';
 import type { TabsProps } from 'ant-design-vue';
+import type { TooltipProps } from 'ant-design-vue';
 import type { TreeSelectProps } from 'ant-design-vue';
 import type { UploadProps } from 'ant-design-vue';
 import { VNode } from 'vue';
@@ -141,7 +142,8 @@ export declare interface ExtBaseOption {
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
-    help?: HelpMessage
+    tooltip?: VSlot | (TooltipProps & { title: VSlot; icon?: VSlot })
+    // help?: HelpMessage
     /** 校验规则，指定value而没指定field时无效 */
     rules?: RuleConfig | RuleConfig[]
     attrs?: Obj
@@ -533,10 +535,6 @@ declare interface GlobalConfig {
             records: any[];
         };
     };
-}
-
-declare interface HelpMessage {
-    color: 'success' | 'info' | 'warning' | 'error'
 }
 
 declare interface InstallConfig extends GlobalConfig {

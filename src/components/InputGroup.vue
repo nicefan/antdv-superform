@@ -4,8 +4,8 @@ import base from './base'
 import Collections from './Collections'
 import { computed, defineComponent, h, mergeProps, ref, watch } from 'vue'
 import { globalProps } from '../plugin'
-import { toNode } from '../utils'
 import { formatRule } from '../utils/buildModel'
+import { createLabelNode } from '../utils/labelNode'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -18,7 +18,7 @@ export default defineComponent({
   },
   setup(props, { attrs }) {
     const { option, model, compact } = props
-    const { field, label, labelSlot, slots } = option
+    const { field, slots } = option
 
     const formItemContext = ref()
     let ruleObj = formatRule(model.rules, props.effectData)
@@ -70,14 +70,14 @@ export default defineComponent({
     // 生成FormItem
     const rules = computed(() => (props.disabled ? undefined : ruleObj))
     const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps, extProps)
-    const _label = labelSlot || label
+    const _label = createLabelNode(option, props.effectData)
 
     return () =>
       h(
         base.FormItem,
         { ...formItemAttrs, rules: rules.value, ref: formItemContext, name: _propChain },
         {
-          label: _label && (() => toNode(labelSlot || label, props.effectData)),
+          label: _label,
           default:
             slots?.default ||
             (() =>

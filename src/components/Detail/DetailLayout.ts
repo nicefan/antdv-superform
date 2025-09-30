@@ -6,6 +6,7 @@ import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
 import { DataProvider } from '../../dataProvider'
 import { defaults } from 'lodash-es'
+import { createLabelNode } from '../../utils/labelNode'
 
 const DetailLayouts = defineComponent({
   inheritAttrs: false,
@@ -125,7 +126,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
   const rootSlots = inject<Obj>('rootSlots', {})
 
   ;[...modelsMap].forEach(([option, model], idx) => {
-    const { type = '', label, field, labelSlot = label, hideInDescription, viewRender, exclude } = option
+    const { type = '', field, hideInDescription, viewRender, exclude } = option
     if (type === 'Hidden' || hideInDescription || exclude?.includes('description')) return
     const { parent, refData } = toRefs(model)
     const effectData = getEffectData({
@@ -140,7 +141,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
     const { attrs, hidden } = useControl({ option, effectData })
     const slots = useInnerSlots(option.slots, effectData)
 
-    const __label = labelSlot && (() => toNode(labelSlot, effectData))
+    const __label = createLabelNode(option, effectData)
     let isBlock = option.blocked
     let wrapNode
     let node
@@ -175,7 +176,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
           h(Control, reactive({ option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }), slots)
         wrapNode ??= defRender
         if (type === 'InputList') {
-          if (!isBlock || (labelSlot && !attrs?.labelIndex)) {
+          if (!isBlock || (__label && !attrs?.labelIndex)) {
             node = {
               option: { ...option },
               label: __label,

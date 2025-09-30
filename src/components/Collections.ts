@@ -4,10 +4,11 @@ import { defaults } from 'lodash-es'
 import Controls, { containers } from './index'
 import { ButtonGroup } from './buttons'
 import base from './base'
-import { getEffectData, toNode, useControl, useInnerSlots, useVModel } from '../utils'
+import { getEffectData, useControl, useInnerSlots, useVModel } from '../utils'
 import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
 import { formatRule } from '../utils/buildModel'
+import { createLabelNode } from '../utils/labelNode'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -32,7 +33,7 @@ export default defineComponent({
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
-      const { type, label, align, blocked, span, hideInForm, exclude, labelSlot } = option
+      const { type, align, blocked, span, hideInForm, exclude } = option
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
         parent: props.effectData,
@@ -79,11 +80,13 @@ export default defineComponent({
         const __rules = formatRule(subData.rules, effectData)
         const rules = computed(() => (unref(attrs.disabled) ? undefined : __rules))
         const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
-        const _label = labelSlot || label
-        const _slots: Obj = { default: innerNode }
-        _label !== undefined && (_slots.label = () => toNode(_label, effectData))
+        const label = createLabelNode(option, effectData)
+
         node = () =>
-          h(base.FormItem, reactive({ ...formItemAttrs, name: subData.propChain, rules, colon: !!_label }), _slots)
+          h(base.FormItem, reactive({ ...formItemAttrs, name: subData.propChain, rules, colon: !!label }), {
+            default: innerNode,
+            label,
+          })
       }
 
       if (independent) {

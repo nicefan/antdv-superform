@@ -6,6 +6,7 @@ import Controls from '../index'
 import { buildInnerNode } from '../Collections'
 import { defaults, isFunction, isPlainObject, get as objGet, set as objSet } from 'lodash-es'
 import { globalConfig, globalProps } from '../../plugin'
+import { createLabelNode } from '../../utils/labelNode'
 
 const InputNode = defineComponent({
   props: {
@@ -78,7 +79,7 @@ export function buildColumns({ childrenMap, context, option, attrs, isView }: Bu
     const _columns: any[] = []
     ;[..._models].forEach(([col, model]) => {
       if (col.type === 'Hidden' || col.hideInTable || col.hidden === true || col.exclude?.includes('table')) return
-      const title = col.labelSlot || col.label
+      const title = createLabelNode(col, effectData)
       if (model.children) {
         const subColumns = getColumns(model.children)
         if (col.ignoreTableTitle) {
@@ -92,7 +93,7 @@ export function buildColumns({ childrenMap, context, option, attrs, isView }: Bu
       } else {
         const column: Obj = {
           title,
-          key: col.field || title,
+          key: col.field || col.label,
           dataIndex: model.propChain.length > 1 ? model.propChain : model.propChain[0],
         }
         if (col.options || col.dictName || col.type === 'Switch' || col.type?.includes('Picker')) {

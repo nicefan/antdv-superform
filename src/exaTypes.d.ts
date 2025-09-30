@@ -23,7 +23,8 @@ import type {
   TreeSelectProps,
   SpaceProps,
   SwitchProps,
-  ButtonProps
+  ButtonProps,
+  TooltipProps,
 } from 'ant-design-vue'
 
 import { RuleConfig } from './utils/buildRule'
@@ -72,7 +73,8 @@ interface ExtBaseOption {
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
-  help?: HelpMessage
+  tooltip?: VSlot | (TooltipProps & { title: VSlot; icon?: VSlot })
+  // help?: HelpMessage
   /** 校验规则，指定value而没指定field时无效 */
   rules?: RuleConfig | RuleConfig[]
   attrs?: Obj

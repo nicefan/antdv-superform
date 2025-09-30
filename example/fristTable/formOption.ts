@@ -122,6 +122,7 @@ export const getTableOption = () => {
         type: 'Select',
         field: 'area',
         label: '区域',
+        tooltip: '支持多选',
         options: ['湖南', '广东', '江西'],
         // valueToNumber: true,
         valueToString: true,
