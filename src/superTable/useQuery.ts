@@ -1,17 +1,9 @@
 import type { RootTableOption } from '../exaTypes'
 import { computed, reactive, ref, watch, mergeProps } from 'vue'
-import { mergeWith, throttle } from 'lodash-es'
+import { throttle } from 'lodash-es'
 import { globalConfig } from '../plugin'
+import { merge } from '../utils/merge'
 
-const merge = (obj, ...source) => {
-  return mergeWith(obj, ...source, (objValue, srcValue, key, current) => {
-    if (srcValue === undefined) {
-      current[key] = undefined
-    } else if (Array.isArray(objValue)) {
-      return srcValue
-    }
-  })
-}
 const resultTransform = (res) => {
   return globalConfig.tableApiSetting?.resultTransform?.(res) || res
 }

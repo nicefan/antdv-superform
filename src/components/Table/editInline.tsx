@@ -1,12 +1,13 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent, unref, computed } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneDeep, isFunction, merge } from 'lodash-es'
+import { cloneDeep, isFunction } from 'lodash-es'
 import { message, Form } from 'ant-design-vue'
 import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
 import base from '../base'
 import { buildInnerNode } from '../Collections'
 import { formatRule } from '../../utils/buildModel'
+import { merge } from '../../utils/merge'
 
 function createEditCache(childrenMap) {
   const editMap = new WeakMap()
@@ -68,9 +69,9 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
     }
   }
   const methods = {
-    add() {
+    add({index, resetData}) {
       if (!checkEdit()) return
-      const item = { '_ID_': nanoid(12) }
+      const item = { '_ID_': nanoid(12), ...resetData }
       newItems.value.push(item)
       setEditInfo(item, {
         isEdit: true,
@@ -78,10 +79,10 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       })
       hasEditor.value = true
     },
-    edit({ record, selectedRows }) {
+    edit({ record, selectedRows, resetData }) {
       if (!checkEdit()) return
       const data = record || selectedRows[0]
-      setEditInfo(toRaw(data), { isEdit: true })
+      setEditInfo(merge(data, resetData), { isEdit: true })
       hasEditor.value = true
     },
     delete({ record, selectedRows }) {

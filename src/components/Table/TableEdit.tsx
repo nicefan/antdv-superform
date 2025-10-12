@@ -44,11 +44,12 @@ export default function ({ model, orgList, rowKey }) {
   )
 
   const methods = {
-    add({ index }) {
+    add({ index, resetData }) {
+      const item = { '_ID_': nanoid(12), ...resetData }
       if (index !== undefined) {
-        orgList.value.splice(index + 1, 0, {})
+        orgList.value.splice(index + 1, 0, item)
       } else {
-        orgList.value.push({})
+        orgList.value.push(item)
       }
     },
     // delete({ record }) {

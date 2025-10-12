@@ -34,28 +34,25 @@ export default defineComponent({
     const attrs: Obj = ctx.attrs
     const rowKey = (record) => record[attrs.rowKey || 'id'] || record['_ID_']
     const orgList = toRef(model, 'refData')
-    const __rowSelection = option.attrs?.rowSelection // === true ? {} : attrs.rowSelection
+    const __rowSelection = option.attrs?.rowSelection || undefined //?? (editInline ? {} : undefined)
     const selectedRowKeys = ref<any[]>(__rowSelection?.selectedRowKeys || [])
     const selectedRows = ref<Obj[]>([])
-    const rowSelection =
-      __rowSelection || (__rowSelection === undefined && editInline)
-        ? {
-            fixed: true,
-            ...__rowSelection,
-            selectedRowKeys,
-            onChange: (_selectedRowKeys, _selectedRows) => {
-              selectedRowKeys.value = _selectedRowKeys
-              selectedRows.value = _selectedRows
-              __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows)
-            },
-            ...(editInline && {
-              getCheckboxProps: (record) => ({
-                disabled: !orgList.value.includes(record),
-                ...__rowSelection?.getCheckboxProps?.(record),
-              }),
-            }),
-          }
-        : undefined
+    const rowSelection = __rowSelection && {
+      fixed: true,
+      ...__rowSelection,
+      selectedRowKeys,
+      onChange: (_selectedRowKeys, _selectedRows) => {
+        selectedRowKeys.value = _selectedRowKeys
+        selectedRows.value = _selectedRows
+        __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows)
+      },
+      ...(editInline && {
+        getCheckboxProps: (record) => ({
+          disabled: !orgList.value.includes(record),
+          ...__rowSelection?.getCheckboxProps?.(record),
+        }),
+      }),
+    }
 
     const childrenField = attrs.childrenColumnName || 'children'
     const getExpandKeys = (list, deep = 0, level = 1) => {
@@ -74,7 +71,7 @@ export default defineComponent({
     const expandedRowKeys = ref(option.attrs?.expandedRowKeys || [])
     const updateExpand = (val) => {
       expandedRowKeys.value = val
-      document.dispatchEvent(new Event('redoHeight'));
+      document.dispatchEvent(new Event('redoHeight'))
       ctx.emit('expandedRowChange', val)
     }
     if (props.defaultExpandLevel || attrs.defaultExpandAllRows) {
@@ -89,7 +86,7 @@ export default defineComponent({
       )
     }
     const listener = {
-      async onSave(data) {
+      async onSave(data, index?:number) {
         if (apis.save) {
           const { _ID_, ...rest } = data
           await apis.save(rest)
@@ -98,7 +95,11 @@ export default defineComponent({
           }
           return apis.query?.(true)
         } else {
-          orgList.value.push(data)
+          if (index !== undefined) {
+            orgList.value[index] = data
+          } else {
+            orgList.value.push(data)
+          }
         }
       },
       async onUpdate(newData, oldData) {
@@ -117,7 +118,7 @@ export default defineComponent({
           }
         }
       },
-      async onDelete(items:any[]) {
+      async onDelete(items: any[]) {
         const keys = items.map((item) => rowKey(item))
         if (apis.delete) {
           await apis.delete(keys, items)
