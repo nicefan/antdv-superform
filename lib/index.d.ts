@@ -1,44 +1,44 @@
 /// <reference types="../types" />
 
 import { AllowedComponentProps } from 'vue';
-import { App } from 'vue';
-import { ButtonProps } from 'ant-design-vue';
-import { ColProps } from 'ant-design-vue';
-import { Component } from 'vue';
+import type { App } from 'vue';
+import type { ButtonProps } from 'ant-design-vue';
+import type { ColProps } from 'ant-design-vue';
+import type { Component } from 'vue';
 import { ComponentCustomProps } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComputedRef } from 'vue';
-import { default as default_2 } from 'vue';
 import { DefineComponent } from 'vue';
-import { DescriptionsProps } from 'ant-design-vue';
+import type { DescriptionsProps } from 'ant-design-vue';
 import { ExtractPropTypes } from 'vue';
-import { FormItemProps } from 'ant-design-vue';
-import { FormProps } from 'ant-design-vue';
-import { HTMLAttributes } from 'vue';
-import { InputProps } from 'ant-design-vue';
-import { ListProps } from 'ant-design-vue';
-import { Locale } from 'ant-design-vue/es/locale-provider';
-import { ModalFuncProps } from 'ant-design-vue';
-import { ModalProps } from 'ant-design-vue';
-import { PaginationProps } from 'ant-design-vue';
+import type { FormItemProps } from 'ant-design-vue';
+import type { FormProps } from 'ant-design-vue';
+import type { HTMLAttributes } from 'vue';
+import type { InputProps } from 'ant-design-vue';
+import type { ListProps } from 'ant-design-vue';
+import type { Locale } from 'ant-design-vue/es/locale-provider';
+import type { ModalFuncProps } from 'ant-design-vue';
+import type { ModalProps } from 'ant-design-vue';
+import type { PaginationProps } from 'ant-design-vue';
 import { PropType } from 'vue';
-import { RadioGroupProps } from 'ant-design-vue';
+import type { RadioGroupProps } from 'ant-design-vue';
 import { Ref as Ref_2 } from 'vue';
 import { RendererElement } from 'vue';
 import { RendererNode } from 'vue';
-import { RowProps } from 'ant-design-vue';
-import { SelectProps } from 'ant-design-vue';
-import { SpaceProps } from 'ant-design-vue';
-import { SwitchProps } from 'ant-design-vue';
-import { TableColumnProps } from 'ant-design-vue';
-import { TableProps } from 'ant-design-vue';
-import { TabsProps } from 'ant-design-vue';
-import { TooltipProps } from 'ant-design-vue';
-import { TreeSelectProps } from 'ant-design-vue';
-import { UploadProps } from 'ant-design-vue';
+import type { RowProps } from 'ant-design-vue';
+import type { SelectProps } from 'ant-design-vue';
+import type { SpaceProps } from 'ant-design-vue';
+import type { SwitchProps } from 'ant-design-vue';
+import type { TableColumnProps } from 'ant-design-vue';
+import type { TableProps } from 'ant-design-vue';
+import type { TabsProps } from 'ant-design-vue';
+import type { TooltipProps } from 'ant-design-vue';
+import type { TreeSelectProps } from 'ant-design-vue';
+import type { UploadProps } from 'ant-design-vue';
 import { VNode } from 'vue';
 import { VNodeProps } from 'vue';
 import { VNodeTypes } from 'vue';
+import Vue from 'vue';
 
 declare type BaseComps = 'Divider' | 'InputGroup' | 'FormItem' | 'Tooltip' | 'Button' | 'MenuItem' | 'Menu' | 'Dropdown' | 'Space' | 'Card' | 'ListItem' | 'List' | 'Modal' | 'Table' | 'Tabs' | 'TabPane' | 'CollapsePanel' | 'Collapse' | 'Input' | 'InputNumber' | 'InputSearch' | 'Select' | 'Switch' | 'RangePicker' | 'DatePicker' | 'TimePicker' | 'RadioButton' | 'Radio' | 'RadioGroup' | 'Checkbox' | 'CheckboxGroup' | 'TreeSelect';
 
@@ -54,7 +54,7 @@ export declare interface ButtonItem {
     invalidDisabled?: boolean
     /**@deprecated 改用invlidDisabled开关 */
     roleMode?: 'hidden' | 'disable'
-    color?: 'success' | 'error' | 'warning' | 'primary'
+    color?: 'success' | 'error' | 'warning' | 'primary' | string
     /** 待改动 */
     validOn?: 'form' | 'detail' | 'both'
     dropdown?: DefaultOptionType
@@ -78,7 +78,7 @@ declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
 
 export declare function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
     modalRef: Ref_2<any>;
-    modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     setModal: (option?: ModalFuncProps | Obj) => void;
@@ -120,7 +120,7 @@ declare type Dict = {
 declare type EffectData =
 | (Obj & {
     /**整个表单数据 */
-    formData: default_2.DeepReadonly<Obj>
+    formData: Vue.DeepReadonly<Obj>
     /**当前属性所在对象 */
     current: Obj
     /** 上一级数据 */
@@ -411,6 +411,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
     TableProps & {
         /**数据初始化后默认展开的行 */
         defaultExpandLevel?: number | 'all'
+        rowSelection?: false | TableProps['rowSelection']
     }
     /** @deprecated 更名为editable */
     edit?: boolean
@@ -674,7 +675,7 @@ export declare const SuperButtons: DefineComponent<{
     effectData: ObjectConstructor;
 }, () => VNode<RendererNode, RendererElement, {
     [key: string]: any;
-}>, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly< ExtractPropTypes<{
+}>, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     limit: NumberConstructor;
     buttonType: PropType<"default" | "text" | "primary" | "link" | "dashed" | "ghost">;
     buttonShape: PropType<"default" | "circle" | "round">;
@@ -696,7 +697,7 @@ export declare const SuperButtons: DefineComponent<{
 export declare const SuperDetail: DefineComponent<{
     dataSource: ObjectConstructor;
     schema: PropType<ExtDescriptionsOption>;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly< ExtractPropTypes<{
+}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, "register"[], "register", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: ObjectConstructor;
     schema: PropType<ExtDescriptionsOption>;
 }>> & {
@@ -720,7 +721,7 @@ declare type SuperFormProps = FormProps & {
 export declare const SuperTable: DefineComponent<{
     dataSource: PropType<Obj<any>[]>;
     schema: PropType<RootTableOption>;
-}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("register" | "load" | "update:dataSource")[], "register" | "load" | "update:dataSource", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly< ExtractPropTypes<{
+}, () => any, unknown, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ("register" | "load" | "update:dataSource")[], "register" | "load" | "update:dataSource", VNodeProps & AllowedComponentProps & ComponentCustomProps, Readonly<ExtractPropTypes<{
     dataSource: PropType<Obj<any>[]>;
     schema: PropType<RootTableOption>;
 }>> & {
@@ -800,7 +801,7 @@ declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Prom
 export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any>;
     openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
-    modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
@@ -822,7 +823,7 @@ export declare function useModalForm(formOption: ExtFormOption, config?: ExtModa
         readonly setData: (data: any) => void;
     };
     modalRef: Ref_2<any>;
-    modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
+    modalSlot: (props: any, ctx: any) => VNode<RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
@@ -928,45 +929,3 @@ declare type WrapperTypes = {
 }
 
 export { }
-
-
-
-declare global {
-  export type GetOption<T extends keyof OptionType> = OptionType[T] & { type?: T }
-  export type GetBaseOption = Partial<ExtBaseOption> & ExtRow
-  export type MixWrapper = {
-    [K in keyof WrapperTypes]: (k: Partial<WrapperTypes[K]>) => void
-  }[keyof WrapperTypes] extends (k: infer U) => void
-    ? U
-    : never
-  export type MixOption = {
-    [K in keyof OptionType]: (k: Partial<OptionType[K]>) => void
-  }[keyof OptionType] extends (k: infer U) => void
-    ? U & ExtColumnsItem & Partial<CollapseItem> & { type?: string }
-    : never
-
-  export interface ModelData<T = GetBaseOption> {
-    refData: any
-    refName?: string
-    parent: Obj
-    index?: number
-    initialValue: any
-    fieldName?: string
-    propChain: string[]
-    rules?: Obj[]
-    children?: ModelsMap<T>
-    /** 存储列表配置默认数据 */
-    listData?: ModelChildren
-  }
-  export interface ModelDataGroup<T = ExtGroupBaseOption> extends ModelData<T> {
-    children: Map<T, ModelDataGroup>
-    /** 存储列表配置默认数据 */
-    listData: ModelChildren
-  }
-  export type ModelsMap<T = GetBaseOption> = Map<T, ModelData>
-  export interface ModelChildren<T = GetBaseOption> {
-    modelsMap: ModelsMap<T>
-    rules: Obj
-  }
-}
-

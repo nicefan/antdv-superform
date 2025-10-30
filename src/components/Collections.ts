@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRef } from 'vue'
+import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults } from 'lodash-es'
 import Controls, { containers } from './index'
@@ -30,6 +30,7 @@ export default defineComponent({
     const inheritOptions = inject<Obj>('inheritOptions', {})
     const presetSpan = subSpan ?? inheritOptions.subSpan
 
+    const index = computed(() => props.model.index)
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
@@ -40,8 +41,8 @@ export default defineComponent({
         current: parent,
         field: subData.refName,
         value: refData,
-        ...('index' in subData && {
-          index: subData.index,
+        ...(index.value !== undefined && {
+          index,
           record: !subData.refName ? refData : parent,
         }),
       })

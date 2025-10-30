@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw, computed } from 'vue'
+import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw, computed, unref } from 'vue'
 import { cloneModels } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -7,6 +7,7 @@ import { toNode } from '../utils'
 import { Space } from 'ant-design-vue'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { globalProps } from '../plugin'
+import { nanoid } from 'nanoid'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -79,6 +80,7 @@ export default defineComponent({
         compact: false,
       },
     }
+
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
@@ -89,7 +91,6 @@ export default defineComponent({
         }
         listItems.value = list.map((record, idx) => {
           const refData = toRef(orgList.value, idx)
-
           let itemOption: Obj = { ...columns[0] }
           let itemModel
           if (isSingle) {
@@ -125,7 +126,8 @@ export default defineComponent({
           rowButtonsConfig && children.set(rowButtonsConfig, { parent: orgList, index: idx })
           return {
             children,
-            refData,
+            model: reactive({ parent: orgList, children, index: idx }),
+            key: refData.value ?? nanoid(),
             // effectData: reactive({ parent: effectData, current: orgList, index: idx, record: refData }),
           }
         })
@@ -136,8 +138,8 @@ export default defineComponent({
     )
 
     const render = () => {
-      return listItems.value.map(({ children, refData }, idx) => {
-        return h(Collections, { model: { parent: orgList, children }, option, effectData, key: toRaw(refData) })
+      return listItems.value.map(({ model, key }) => {
+        return h(Collections, { model, option, effectData, key })
       })
     }
 

@@ -180,7 +180,7 @@ interface ButtonItem {
   invalidDisabled?: boolean
   /**@deprecated 改用invlidDisabled开关 */
   roleMode?: 'hidden' | 'disable'
-  color?: 'success' | 'error' | 'warning' | 'primary'
+  color?: 'success' | 'error' | 'warning' | 'primary' | string
   /** 待改动 */
   validOn?: 'form' | 'detail' | 'both'
   dropdown?: DefaultOptionType
@@ -264,6 +264,7 @@ interface ExtTableOption extends ExtBaseOption {
     TableProps & {
       /**数据初始化后默认展开的行 */
       defaultExpandLevel?: number | 'all'
+      rowSelection?: false | TableProps['rowSelection']
     }
   /** @deprecated 更名为editable */
   edit?: boolean
