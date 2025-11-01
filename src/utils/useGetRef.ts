@@ -10,12 +10,15 @@ function usePromise() {
 export function useGetRef() {
   const formRef = ref()
   let status = usePromise()
+  let waiting = true
   watch(formRef, (form) => {
     if (form) {
       status.resolve(true)
-    } else {
+      waiting = false
+    } else if (!waiting) {
       // formRef清理后，重建promise.
       status = usePromise()
+      waiting = true
     }
   })
   const getForm = () => status.promise.then(() => formRef.value)

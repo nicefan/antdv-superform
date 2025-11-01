@@ -29,6 +29,7 @@ import Controls from '../components'
 import { globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
 import base from '../components/base'
+import { nanoid } from 'nanoid'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -95,6 +96,14 @@ export default defineComponent({
       dataRef,
       searchForm: computed(() => searchForm.value?.formRef),
       validate: async () => tableFormRef.value?.validate(),
+      setColumns: (cols) => {
+        if (!initQuery && !option.columns?.length) {
+          Object.assign(option, { columns: cols })
+        } else {
+          Object.assign(option, { columns: cols })
+          updateColumns(cols)
+        }
+      },
     }
 
     const tableRef = ref({ ...exposed })
@@ -122,14 +131,15 @@ export default defineComponent({
 
     const slots = ref({})
     const tableSlot = ref()
+    const effectData = reactive({ formData: dataRef, current: dataRef, queryParams: computed(getQueryParams) })
 
     let initQuery = false
     const unWatch = watch(
       option,
       (opt) => {
-        if (!opt?.columns) return
+        if (!opt?.columns?.length) return
         if (tableSlot.value) {
-          unWatch()
+          unWatch() // 由于立即监听，第一次执行后方法还没初始化，需下次执行解除监听
           return
         }
         const { columns, maxHeight, isScanHeight = true, inheritHeight } = opt
@@ -138,8 +148,6 @@ export default defineComponent({
           refData: dataRef,
           listData: buildModelsMap(columns),
         })
-
-        const effectData = reactive({ formData: dataRef, current: dataRef, queryParams: computed(getQueryParams) })
 
         slots.value = useInnerSlots(option.slots, effectData, ctx.slots)
 
@@ -213,6 +221,19 @@ export default defineComponent({
         immediate: true,
       }
     )
+
+    const updateColumns = (cols) => {
+      const model = reactive({
+        refData: dataRef,
+        listData: buildModelsMap(cols),
+      })
+      const table = () => h(Controls.Table, { option, effectData, model, key: Symbol(), ...tableAttrs } as any, slots.value)
+      if (option.editable) {
+        tableSlot.value = () => h(base.Form, { model: dataRef.value, ref: tableFormRef }, table)
+      } else {
+        tableSlot.value = table
+      }
+    }
 
     return () =>
       tableSlot.value &&

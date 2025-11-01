@@ -1,6 +1,6 @@
 {
   "name": "antdv-superform",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "author": {
     "name": "nicefan",
     "email": "covien@msn.com"
@@ -17,9 +17,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
+    "build:dist": "vite build --mode dist",
     "rollup": "rollup -c",
     "dts": "vue-tsc --declaration --emitDeclarationOnly",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "docs:dev": "cd docs && npm run dev",
+    "docs:build": "cd docs && npm run build",
+    "docs:preview": "cd docs && npm run preview"
   },
   "peerDependencies": {
     "ant-design-vue": ">=3.2.20",
@@ -55,6 +59,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-vue-jsx-compat": "^0.0.6",
     "sass": "^1.69.4",
+    "tslib": "^2.8.1",
     "typescript": "~5.3.3",
     "vite": "^4.5.0",
     "vite-plugin-dts": "^3.6.0",

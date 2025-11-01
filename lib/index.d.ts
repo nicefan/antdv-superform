@@ -841,6 +841,8 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     readonly dataSource: ComputedRef<any>;
     /** 跳转到指定页 */
     readonly goPage: (page: number) => void;
+    /** 设置表格列 */
+    readonly setColumns: (cols: RootTableOption['columns']) => void;
     /** 刷新数据，不改动查询条件与当前页 */
     readonly reload: () => void;
     /** @deprecated 增加条件刷新数据 */

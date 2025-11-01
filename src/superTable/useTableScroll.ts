@@ -17,16 +17,14 @@ export function useTableScroll(
 
   const getScrollRef = ref<any>({})
 
-  if (abortController) {
-    window.addEventListener('resize', debounceRedoHeight, { signal: abortController.signal })
-  } else {
-    document.addEventListener('redoHeight', debounceRedoHeight)
-    onUnmounted(() => {
-      document.removeEventListener('redoHeight', debounceRedoHeight)
-    })
-  }
-
+  let beResize = false
   const listenResize = () => {
+    beResize = true
+    if (abortController) {
+      window.addEventListener('resize', debounceRedoHeight, { signal: abortController.signal })
+    } else {
+      document.addEventListener('redoHeight', debounceRedoHeight)
+    }
     getScrollRef.value = option.attrs?.scroll
     watch(
       () => [wrapRef.value, unref(dataRef)?.length],
@@ -53,8 +51,12 @@ export function useTableScroll(
       { immediate: true, flush: 'post' }
     )
   }
+  onUnmounted(() => {
+    beResize && document.removeEventListener('redoHeight', debounceRedoHeight)
+  })
 
   function redoHeight() {
+    if (!beResize) return
     nextTick(() => {
       calcTableHeight()
     })

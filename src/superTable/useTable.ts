@@ -68,6 +68,10 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       goPage(page: number) {
         tableRef.value?.goPage(page)
       },
+      /** 设置表格列 */
+      setColumns(cols: RootTableOption['columns']) {
+        asyncCall('setColumns', cols)
+      },
       /** 刷新数据，不改动查询条件与当前页 */
       reload() {
         tableRef.value?.reload()
