@@ -450,6 +450,10 @@ interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
 interface ExtTagInputOption extends ExtFormItemOption {
   attrs?: {
     valueToString?: boolean
+    /**新增标签名 */
+    newLabel?: VSlot
+    /** 是否可删除, 默认为true */
+    closable?: boolean | ((tag: string, index: number) => boolean)
   } & HTMLAttributes
 }
 interface ExtTreeOption extends ExtFormItemOption {

@@ -28,7 +28,7 @@ export default defineComponent({
     expandedRowKeys: Array,
     defaultExpandLevel: null as unknown as PropType<number | 'all'>,
   },
-  emits: ['register', 'expandedRowChange'],
+  emits: ['register', 'expandedRowsChange'],
   setup({ option, model, apis = {} as TableApis, effectData, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
@@ -71,7 +71,7 @@ export default defineComponent({
     const expandedRowKeys = ref(option.attrs?.expandedRowKeys || [])
     const updateExpand = (val) => {
       expandedRowKeys.value = val
-      ctx.emit('expandedRowChange', val)
+      ctx.emit('expandedRowsChange', val)
     }
     if (props.defaultExpandLevel || attrs.defaultExpandAllRows) {
       watch(
@@ -207,7 +207,7 @@ export default defineComponent({
       return slots.headerCell?.(col) || toNode(col.title, effectData)
     }
     const render = () => [
-      modalSlot?.(),
+      ...modalSlot.map((slot) => slot()),
       h(
         base.Table,
         {

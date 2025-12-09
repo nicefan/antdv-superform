@@ -172,7 +172,7 @@ export default defineComponent({
         }
         const tabsField = opt.tabs && opt.tabs.field
         if (opt.tabs && tabsField) {
-          const tabsKey = (opt.tabs.activeKey ??= ref(opt.tabs.defaultActiveKey))
+          const tabsKey = ref(opt.tabs.activeKey || opt.tabs.defaultActiveKey)
           watch(
             tabsKey,
             (key) => {
@@ -185,7 +185,7 @@ export default defineComponent({
         watch(
           ref(opt.params),
           (p) => {
-            setQueryParams(p)
+            setQueryParams(p, 'dynamic')
             initQuery && query()
           },
           { deep: true, immediate: true }

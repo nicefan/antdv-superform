@@ -18,10 +18,10 @@ const pageTransform = (param) => {
   return param
 }
 export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
-  const searchParam = {}
   // const otherParam = {}
   const pageParam = reactive<Obj>({})
   const loading = ref(false)
+  let searchParam = {}
 
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
@@ -82,8 +82,17 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     }
   }
 
+  // let dynamicParams: Obj = {}
+  const formParams: Obj = {}
   const setQueryParams = (data?: Obj, target?: string) => {
-    merge(searchParam, data)
+    if (target === 'dynamic') {
+      // 动态参数结构会变化，不能直接合并
+      // dynamicParams = data || {}
+      searchParam = merge({}, formParams, data)
+    } else {
+      Object.assign(formParams, data)
+      merge(searchParam, data)
+    }
   }
   const getQueryParams = () => searchParam
 

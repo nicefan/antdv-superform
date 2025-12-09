@@ -1,11 +1,11 @@
 <template>
   <template v-for="(tag, index) in tags" :key="tag">
     <Tooltip v-if="tag.length > 20" :title="tag">
-      <Tag :closable="index !== 0" @close="handleClose(tag)">
+      <Tag :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
         {{ `${tag.slice(0, 20)}...` }}
       </Tag>
     </Tooltip>
-    <Tag v-else :closable="index !== 0" @close="handleClose(tag)">
+    <Tag v-else :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
       {{ tag }}
     </Tag>
   </template>
@@ -20,28 +20,37 @@
   />
   <Tag v-else style="background: #fff; border-style: dashed" @click="showInput">
     <plus-outlined />
-    New Tag
+    <component :is="() => toNode(newLabel, effectData)" />
   </Tag>
 </template>
 <script lang="ts" setup>
-import { computed, defineComponent, nextTick, ref, watch } from 'vue'
-import baseComps from './base';
-import { PlusOutlined } from '@ant-design/icons-vue';
+import { computed, nextTick, ref, type Slot } from 'vue'
+import baseComps from './base'
+import { PlusOutlined } from '@ant-design/icons-vue'
+import { toNode } from '../utils'
 
-const {Input, Tooltip, Tag} = baseComps
+const { Input, Tooltip, Tag } = baseComps
 
 defineOptions({
   inheritAttrs: false,
 })
 
-const props = defineProps<{
-  option: GetBaseOption
-  model: ModelData
-  effectData: Obj
-  value?: string | string[]
-  valueToString?: boolean
-  isView?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    option: GetBaseOption
+    model: ModelData
+    effectData: Obj
+    value?: string | string[]
+    valueToString?: boolean
+    newLabel?: string | Fn
+    isView?: boolean
+    closable?: boolean | Fn
+  }>(),
+  {
+    newLabel: '添加',
+    closable: true,
+  }
+)
 
 const emit = defineEmits(['update:value'])
 
@@ -55,6 +64,12 @@ const inputVisible = ref(false)
 //     val ?? emit('update:value', [])
 //   },
 // )
+const getClosable = (tag: string, index: number) => {
+  if (typeof props.closable === 'function') {
+    return props.closable(tag, index)
+  }
+  return props.closable
+}
 
 const tags = computed(() => {
   if (!props.value) {

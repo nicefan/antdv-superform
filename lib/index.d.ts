@@ -458,6 +458,10 @@ export declare interface ExtTabsOption extends ExtBaseOption {
 declare interface ExtTagInputOption extends ExtFormItemOption {
     attrs?: {
         valueToString?: boolean
+        /**新增标签名 */
+        newLabel?: VSlot
+        /** 是否可删除, 默认为true */
+        closable?: boolean | ((tag: string, index: number) => boolean)
     } & HTMLAttributes
 }
 

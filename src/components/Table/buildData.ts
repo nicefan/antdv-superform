@@ -1,4 +1,4 @@
-import { ref, h } from 'vue'
+import { ref, h, inject } from 'vue'
 import { useModal } from '../../superModal'
 import inlineRender from './editInline'
 import modalRender from './editModal'
@@ -22,15 +22,19 @@ function buildDetail(option, modelsMap, rowKey) {
   const getTitle = (param) => {
     return toNode(modalConfig.title, { target: 'detail', ...param }) || `${title ? title + ' - ' : ''}详情`
   }
-  const { openModal, closeModal } = useModal(detail, modalConfig)
-  return async ({ record, selectedRows, meta, ...params }) => {
-    const data = record || selectedRows[0]
-    if (apis?.info) {
-      source.value = await apis.info(rowKey(data), data)
-    } else {
-      source.value = data
+  const { openModal, modalSlot } = useModal(detail, modalConfig)
+
+  return {
+    detailSlot: modalSlot,
+    openDetail: async ({ record, selectedRows, meta, ...params }) => {
+      const data = record || selectedRows[0]
+      if (apis?.info) {
+        source.value = await apis.info(rowKey(data), data)
+      } else {
+        source.value = data
+      }
+      openModal({ ...meta, title: getTitle({ ...params, source: source.value }) })
     }
-    openModal({ ...meta, title: getTitle({ ...params, source: source.value }) })
   }
 }
 
@@ -48,11 +52,12 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
   const context: {
     list: Ref
     methods: Obj
-    modalSlot?: Fn
+    modalSlot: Fn[]
     getEditRender?: Fn
     editButtonsSlot?: Fn
   } = {
     list: orgList,
+    modalSlot: [],
     methods: {
       delete({ record, selectedRows }) {
         const items = record ? [record] : selectedRows
@@ -87,9 +92,11 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
     } else {
       Object.assign(context.methods, methods)
     }
-    context.modalSlot = modalSlot
+    context.modalSlot.push(modalSlot)
   }
-  context.methods.detail = buildDetail(option, childrenMap, rowKey)
+  const { detailSlot, openDetail } = buildDetail(option, childrenMap, rowKey)
+  context.modalSlot.push(detailSlot)
+  context.methods.detail = openDetail
 
   return context
 }
