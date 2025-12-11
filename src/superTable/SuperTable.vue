@@ -172,7 +172,7 @@ export default defineComponent({
         }
         const tabsField = opt.tabs && opt.tabs.field
         if (opt.tabs && tabsField) {
-          const tabsKey = ref(opt.tabs.activeKey || opt.tabs.defaultActiveKey)
+          const tabsKey = (opt.tabs.activeKey ??= ref(opt.tabs.defaultActiveKey))
           watch(
             tabsKey,
             (key) => {

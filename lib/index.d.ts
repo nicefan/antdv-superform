@@ -46,6 +46,7 @@ export declare interface ButtonItem {
     label?: VSlot
     /** 全局默认配置指定的名称 */
     name?: string
+    customRender?: VSlot
     /** 确认提示文本 */
     confirmText?: string | Fn<string>
     /** 权限标识 */

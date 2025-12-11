@@ -1,6 +1,6 @@
 <template>
   <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
-    <template v-for="({ attrs, icon, label, tooltip, dropdown, menu, onClick }, index) of btns" :key="label">
+    <template v-for="({ attrs, icon, label, tooltip, dropdown, menu, onClick, render }, index) of btns" :key="label">
       <Dropdown v-if="dropdown" :disabled="attrs.disabled">
         <template #overlay>
           <Menu @click="onClick">
@@ -16,14 +16,19 @@
         </Button>
       </Dropdown>
       <Tooltip v-else-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
-        <Button v-bind="attrs"
+        <component v-if="render" :is="() => render({ props: attrs, ...effectData })" />
+        <Button v-else v-bind="attrs"
           ><component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
         /></Button>
       </Tooltip>
-      <Button v-else v-bind="attrs">
-        <component v-if="icon && !labelOnly" :is="getIconNode(icon)" /> <component :is="() => toNode(label, effectData)" />
-      </Button>
+      <template v-else>
+        <component v-if="render" :is="() => render({ props: attrs, ...effectData })" />
+        <Button v-else v-bind="attrs">
+          <component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
+          <component :is="() => toNode(label, effectData)" />
+        </Button>
+      </template>
       <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
 
@@ -45,7 +50,7 @@
   </Space>
 </template>
 <script setup lang="ts">
-import { ref, watchEffect, reactive, toValue } from 'vue'
+import { ref, watchEffect, reactive, toValue, inject } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
 import { EllipsisOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { getComputedStatus, useDisabled, getIconNode, toNode } from '../../utils'
@@ -92,6 +97,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
       return true
     })
   }
+  const rootSlots = inject('rootSlots', {})
   const allBtns = actionBtns.map((item) => {
     const isHide = getComputedStatus(item.hidden, param)
     const disabled = item.disabled !== undefined ? useDisabled(item.disabled, param) : dis
@@ -109,7 +115,8 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
       }
       return { isHide, ...item, menu, onClick, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled } }
     }
-    return { isHide, ...item, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled, onClick } }
+    const render = typeof item.customRender === 'string' ? rootSlots[item.customRender] : item.customRender
+    return { isHide, render, ...item, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled, onClick } }
   })
 
   const btns = ref<any[]>([])
