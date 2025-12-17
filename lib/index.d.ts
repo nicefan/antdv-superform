@@ -224,8 +224,6 @@ export declare type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & 
     /** 表格内容渲染 */
     viewRender?: VSlot
     columnProps?: TableColumnProps
-    /**是否可编辑 */
-    editable?: boolean | Fn<boolean>
 }
 
 declare interface ExtDateRange extends ExtFormItemOption {
@@ -277,6 +275,8 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     | Fn<string>
     formItemProps?: FormItemProps
     descriptionsProps?: ExtDescriptionsProps
+    /**是否可编辑 */
+    editable?: boolean | Fn<boolean>
 }
 
 export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
@@ -417,14 +417,12 @@ export declare interface ExtTableOption extends ExtBaseOption {
     /** @deprecated 更名为editable */
     edit?: boolean
     /** 表格全部为编辑状态，开启后rowEdit无效 */
-    editable?: boolean
+    editable?: boolean | Fn<boolean>
     rowEditor?: {
         editMode?: 'inline' | 'modal'
         addMode?: 'inline' | 'modal'
         form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
         modalProps?: ModalFuncProps | Obj
-        /** 行内编辑时同时只能编辑一行 */
-        singleEdit?: boolean
         /**提交保存前 */
         onSave?: Fn
         onCancel?: Fn

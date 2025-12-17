@@ -40,54 +40,51 @@ function createEditCache(childrenMap) {
 
 export default function ({ childrenMap, orgList, listener, rowEditor }) {
   // 数据监听
-  const newItems = ref<Obj[]>([])
+  const hasEditor = ref(false)
   const list = ref<Obj[]>([])
   watch(
     () => [...orgList.value],
     (org) => {
-      list.value = org.concat(newItems.value)
+      list.value = org
+      hasEditor.value = false
     },
     { immediate: true }
   )
 
-  watch(
-    () => [...newItems.value],
-    (items) => {
-      list.value = orgList.value.concat(items)
-    }
-  )
-
   const { getEditInfo, setEditInfo } = createEditCache(childrenMap)
-  const hasEditor = ref(false)
-  const banEdit = computed(() => rowEditor?.singleEdit && hasEditor.value)
-  const checkEdit = () => {
-    if (banEdit.value) {
-      message.error('只能同时编辑一行！')
-      return false
-    } else {
-      return (hasEditor.value = true)
-    }
-  }
+
   const methods = {
-    add({index, resetData}) {
-      if (!checkEdit()) return
-      const item = { '_ID_': nanoid(12), ...resetData }
-      newItems.value.push(item)
-      setEditInfo(item, {
-        isEdit: true,
-        isNew: true,
-      })
-      hasEditor.value = true
+    add: {
+      disabled: () => hasEditor.value,
+      onClick({ index, resetData }) {
+        const item = { '_ID_': nanoid(12), ...resetData }
+        if (index !== undefined) {
+          list.value.splice(index + 1, 0, item)
+        } else {
+          list.value.push(item)
+        }
+        setEditInfo(item, {
+          index,
+          isEdit: true,
+          isNew: true,
+        })
+        hasEditor.value = true
+      },
     },
-    edit({ record, selectedRows, resetData }) {
-      if (!checkEdit()) return
-      const data = record || selectedRows[0]
-      setEditInfo(merge(data, resetData), { isEdit: true })
-      hasEditor.value = true
+    edit: {
+      disabled: (param) => hasEditor.value || !(param.record || param.selectedRows?.length === 1),
+      onClick({ record, selectedRows, resetData }) {
+        const data = record || selectedRows[0]
+        setEditInfo(merge(data, resetData), { isEdit: true })
+        hasEditor.value = true
+      },
     },
-    delete({ record, selectedRows }) {
-      const items = record ? [record] : selectedRows
-      return listener.onDelete(items)
+    delete: {
+      disabled: (param) => hasEditor.value || !(param.record || param.selectedRows?.length > 0),
+      onClick({ record, selectedRows }) {
+        const items = record ? [record] : selectedRows
+        return listener.onDelete(items)
+      },
     },
   }
 
@@ -106,8 +103,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
             if (custom === false) return false
             if (editInfo.isNew) {
               Object.assign(record, raw)
-              listener.onSave(record).then(() => {
-                newItems.value.splice(newItems.value.indexOf(record), 1)
+              listener.onSave(record, editInfo.index).then(() => {
                 editInfo.isNew = false
                 editInfo.isEdit = false
               })
@@ -131,10 +127,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
         const custom = await rowEditor?.onCancel?.({ ...args, isNew: editInfo.isNew })
         if (custom === false) return
         if (editInfo.isNew) {
-          newItems.value.splice(newItems.value.indexOf(args.record), 1)
-        } else {
-          // editInfo.isEdit = false
-          // editInfo.form.resetFields(record)
+          list.value.splice(editInfo.index + 1, 1)
         }
         editInfo.isEdit = false
         hasEditor.value = false
@@ -177,6 +170,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
           ? h(
               base.FormItem,
               {
+                wrapperCol: {},
                 ...form.validateInfos[ruleName],
               },
               inputSlot

@@ -8,6 +8,14 @@
 .sup-table-wrapper .ant-table-cell > .ant-form-item .ant-form-item-label {
   display: none;
 }
+.sup-table-wrapper .editable-cell {
+  width: 100%;
+}
+.sup-table-wrapper .editable-cell .ant-picker,
+.sup-table-wrapper .editable-cell .ant-select {
+  width: 100%;
+  text-align: left;
+}
 .sup-group + .sup-group {
   margin-top: 16px;
 }

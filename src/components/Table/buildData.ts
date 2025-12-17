@@ -1,4 +1,4 @@
-import { ref, h, inject } from 'vue'
+import { ref, h, inject, computed } from 'vue'
 import { useModal } from '../../superModal'
 import inlineRender from './editInline'
 import modalRender from './editModal'
@@ -7,6 +7,7 @@ import { globalProps } from '../../plugin'
 import View from '../Detail'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode } from '../../utils'
+import { isFunction } from 'lodash-es'
 
 function buildDetail(option, modelsMap, rowKey) {
   const source = ref({})
@@ -45,9 +46,10 @@ type BuildDataParam = {
   rowKey: Fn<string>
   listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
   isView?: boolean
+  effectData?: Obj
 }
 
-function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDataParam) {
+function buildData({ option, model, orgList, rowKey, listener, isView, effectData }: BuildDataParam) {
   const { modelsMap: childrenMap } = model.listData
   const context: {
     list: Ref
@@ -70,7 +72,9 @@ function buildData({ option, model, orgList, rowKey, listener, isView }: BuildDa
   const { editMode, addMode } = rowEditor || option // 兼容旧版
 
   if (!isView && editable) {
-    const { methods, getEditRender } = useTableEdit({ model, orgList, rowKey })
+    const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
+
+    const { methods, getEditRender } = useTableEdit({ model, orgList, rowKey, editableRef })
     Object.assign(context.methods, methods)
     context.getEditRender = getEditRender
   } else if (editMode === 'inline') {

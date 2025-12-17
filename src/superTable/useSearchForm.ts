@@ -19,7 +19,7 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
   schema.subItems.forEach((item: any) => {
     if (typeof item === 'string') {
       const col = columns.find((col) => col.field === item)
-      col && subItems.push({ type: 'Input', ...col })
+      col && subItems.push({ type: 'Input', ...col, editable: true })
     } else {
       return subItems.push({ ...item })
     }

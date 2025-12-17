@@ -3,12 +3,21 @@
     margin-bottom: 10px;
   }
 }
-.sup-table-wrapper .ant-table-cell > .ant-form-item {
-  margin-bottom: 0;
+.sup-table-wrapper {
+  .ant-table-cell > .ant-form-item {
+    margin-bottom: 0;
 
-  .ant-form-item-control > .ant-form-item-explain,
-  .ant-form-item-label {
-    display: none;
+    .ant-form-item-control > .ant-form-item-explain,
+    .ant-form-item-label {
+      display: none;
+    }
+  }
+  .editable-cell {
+    width: 100%;
+    .ant-picker, .ant-select {
+      width: 100%;
+      text-align: left;
+    }
   }
 }
 .sup-group + .sup-group {

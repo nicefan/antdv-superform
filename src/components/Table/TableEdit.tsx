@@ -8,7 +8,7 @@ import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
 import { formatRule } from '../../utils/buildModel'
 
-export default function ({ model, orgList, rowKey }) {
+export default function ({ model, orgList, rowKey, editableRef }) {
   const { modelsMap: childrenMap } = model.listData
 
   let listMap: Obj = {}
@@ -79,13 +79,15 @@ export default function ({ model, orgList, rowKey }) {
       })
       const { editable = true } = option
       const { attrs, hidden } = useControl({ option, effectData })
-      const editableRef = computed(() => !hidden.value && (isFunction(editable) ? editable(effectData) : editable))
+      const selfEditableRef = computed(
+        () => !hidden.value && editableRef.value && (isFunction(editable) ? editable(effectData) : editable)
+      )
       const inputSlot = buildInnerNode(option, model.value, effectData, attrs)
       const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
       const __rules = formatRule(model.value.rules, effectData)
       const rules = __rules && computed(() => (unref(attrs.disabled) ? undefined : __rules))
       return () =>
-        editableRef.value
+        selfEditableRef.value
           ? h(
               base.FormItem,
               reactive({

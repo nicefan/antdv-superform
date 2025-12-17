@@ -30,14 +30,14 @@ const InputNode = defineComponent({
     })
     const model: any = { parent, refData }
     const { attrs, hidden } = useControl({ option, effectData: { ...effectData, inTable: true } })
-    const inputSlot = buildInnerNode(option, model, effectData, mergeProps(attrs, { style: { maxWidth: '100%' } }))
+    const inputSlot = buildInnerNode(option, model, effectData, attrs)
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : unref(editable)))
     const viewNode = getViewNode(option, effectData)
 
     return () => {
       if (hidden.value) return ''
       if (editableRef.value) {
-        return inputSlot()
+        return h('div', { class: 'editable-cell' }, inputSlot())
       }
       return viewNode ? viewNode() : refData.value
     }
@@ -66,14 +66,15 @@ interface BuildColumnsParam {
     getEditRender?: Fn // 行内编辑render方法
     editButtonsSlot?: Fn
   }
+  effectData: Obj
   attrs: Obj
   option: Obj // 表格配置
   isView: boolean
 }
 
-export function buildColumns({ childrenMap, context, option, attrs, isView }: BuildColumnsParam) {
+export function buildColumns({ childrenMap, context, option, attrs, isView, effectData: parentData }: BuildColumnsParam) {
   const { list, methods, getEditRender, editButtonsSlot } = context
-  const effectData = getEffectData({ list, isView })
+  const effectData = getEffectData({ list, isView, parent: parentData })
 
   const columns = (function getColumns(_models = childrenMap) {
     const _columns: any[] = []

@@ -1,10 +1,10 @@
 import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
-import { defaults } from 'lodash-es'
-import Controls, { containers } from './index'
+import { defaults, isFunction } from 'lodash-es'
+import Controls, { containers, formItemTypes } from './index'
 import { ButtonGroup } from './buttons'
 import base from './base'
-import { getEffectData, useControl, useInnerSlots, useVModel } from '../utils'
+import { getEffectData, getViewNode, useControl, useInnerSlots, useVModel } from '../utils'
 import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
 import { formatRule } from '../utils/buildModel'
@@ -34,7 +34,7 @@ export default defineComponent({
     const nodes: any[] = []
     let currentGroup: any[] | undefined
     ;[...props.model.children].forEach(([option, subData], idx) => {
-      const { type, align, blocked, span, hideInForm, exclude } = option
+      const { type, align, blocked, span, hideInForm, exclude, editable } = option
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
         parent: props.effectData,
@@ -56,9 +56,14 @@ export default defineComponent({
         inheritDisabled: inheritOptions.disabled,
       })
 
-      const innerNode = buildInnerNode(option, subData, effectData, attrs)
+      let innerNode = buildInnerNode(option, subData, effectData, attrs)
       if (!innerNode) return
-
+      if (formItemTypes.includes(type) && editable !== undefined && editable !== true) {
+        const inputNode = innerNode
+        const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
+        const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
+        innerNode = () => (editableRef.value ? inputNode() : viewNode ? viewNode() : refData.value)
+      }
       const colProps: Obj = { ...option.colProps, span }
       defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
       if (colProps.span === 0 || colProps.flex) {

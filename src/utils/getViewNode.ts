@@ -154,6 +154,10 @@ export function getViewNode(option, effectData: Obj = {}) {
       const attrs = mergeProps({ ...option.attrs, innerHTML: param.value }, dynamicAttrs)
       return h('span', attrs)
     }
+  } else if (colType === 'Textarea') {
+    return (param: Obj = effectData) => {
+      return h('pre', param.value)
+    }
   } else if (!content && (colType === 'Upload' || colType.startsWith('Ext'))) {
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)

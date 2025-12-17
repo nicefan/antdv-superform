@@ -22,8 +22,11 @@ export default defineComponent({
       required: true,
       type: Object as PropType<ModelDataGroup>,
     },
+    effectData: {
+      required: true,
+      type: Object as PropType<Obj>,
+    },
     isView: Boolean,
-    effectData: Object,
     apis: Object as PropType<TableApis>,
     expandedRowKeys: Array,
     defaultExpandLevel: null as unknown as PropType<number | 'all'>,
@@ -85,7 +88,7 @@ export default defineComponent({
       )
     }
     const listener = {
-      async onSave(data, index?:number) {
+      async onSave(data, index?: number) {
         if (apis.save) {
           const { _ID_, ...rest } = data
           await apis.save(rest)
@@ -95,7 +98,7 @@ export default defineComponent({
           return apis.query?.(true)
         } else {
           if (index !== undefined) {
-            orgList.value[index] = data
+            orgList.value.splice(index + 1, 0, data)
           } else {
             orgList.value.push(data)
           }
@@ -134,8 +137,8 @@ export default defineComponent({
       },
     }
 
-    const context = buildData({ option, model, orgList, rowKey, listener, isView })
-    const columns = buildColumns({ childrenMap: model.listData.modelsMap, context, option, attrs, isView })
+    const context = buildData({ option, model, orgList, rowKey, listener, isView, effectData })
+    const columns = buildColumns({ childrenMap: model.listData.modelsMap, context, option, attrs, isView, effectData })
 
     const { list, methods, modalSlot } = context
     // TODO: 补充TS
@@ -170,7 +173,7 @@ export default defineComponent({
       { flush: 'sync' }
     )
 
-    const editParam = reactive({ ...effectData, current: orgList, selectedRows, selectedRowKeys, tableRef: exposed })
+    const editParam = reactive({ ...effectData, selectedRows, selectedRowKeys, tableRef: exposed })
 
     const slots: Obj = { ...ctx.slots }
 

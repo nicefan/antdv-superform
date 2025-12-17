@@ -8,12 +8,12 @@ import { toNode } from '../../utils'
 import { merge } from '../../utils/merge'
 
 export default function editModal({ rowKey, option, listener }) {
-  const source = ref({})
   const formRef = ref()
   const rowEditor = option.rowEditor
   const formOption = rowEditor?.form || option.editForm || option.formSchema || {}
   // buttons: { actions: ['submit', 'reset'] },
   formOption.subItems = formOption.subItems || option.columns.filter((item) => !item.hideInForm || !item.exclude?.includes('form'))
+  const source = ref(formOption.dataSource || {})
 
   // 生成新增表单
   const editForm = () =>
