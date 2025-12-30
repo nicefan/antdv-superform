@@ -1,4 +1,4 @@
-import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive, toRef } from 'vue'
+import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive, toRef, ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { isFunction } from 'lodash-es'
 import Controls from '../index'
@@ -10,33 +10,29 @@ import { formatRule } from '../../utils/buildModel'
 
 export default function ({ model, orgList, rowKey, editableRef }) {
   const { modelsMap: childrenMap } = model.listData
-
-  let listMap: Obj = {}
+  const editList = ref<any[]>([])
+  const listMap = new WeakMap()
+  const keyMap = new Map()
   // 监听数据变化
   watch(
     () => [...orgList.value],
     (org) => {
-      const tempMap = {}
+      keyMap.clear()
       // 使用原响应列表拿到的子集才是同一引用
-      orgList.value.forEach((record, idx) => {
-        const hash = rowKey(record) || nanoid(12)
-        record['_ID_'] = hash
-        const listItem = listMap[hash] || shallowReactive({})
-        listItem.record = record
+      editList.value = org.map((record, idx) => {
+        const listItem = listMap.get(toRaw(record)) || shallowReactive({})
 
         if (listItem.index !== idx) {
           listItem.index = idx
-          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(
-            toRaw(childrenMap),
-            toRef(listItem, 'record'),
-            model.propChain,
-            idx
-          )
+          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(toRaw(childrenMap), record, model.propChain, idx)
           listItem.modelsMap = modelsMap
         }
-        tempMap[hash] = listItem
+        listItem.record ??= reactive({ ...toRefs(record) })
+        const hash = (listItem.record._ID_ ??= rowKey(record) || nanoid(12))
+        listMap.set(toRaw(record), listItem)
+        keyMap.set(hash, listItem)
+        return listItem.record
       })
-      listMap = tempMap
     },
     {
       immediate: true,
@@ -45,7 +41,7 @@ export default function ({ model, orgList, rowKey, editableRef }) {
 
   const methods = {
     add({ index, resetData }) {
-      const item = { '_ID_': nanoid(12), ...resetData }
+      const item = { ...resetData }
       if (index !== undefined) {
         orgList.value.splice(index + 1, 0, item)
       } else {
@@ -66,7 +62,7 @@ export default function ({ model, orgList, rowKey, editableRef }) {
     setup({ option }, ctx) {
       const { record } = ctx.attrs as Obj
       const model = computed(() => {
-        const row = listMap[rowKey(record)]
+        const row = keyMap.get(record._ID_)
         return row.modelsMap.get(option)
       })
       const { index, parent, refData } = toRefs(model.value)
@@ -111,6 +107,7 @@ export default function ({ model, orgList, rowKey, editableRef }) {
   }
 
   return {
+    list: editList,
     methods,
     getEditRender,
   }

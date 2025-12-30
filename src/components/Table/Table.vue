@@ -36,6 +36,7 @@ export default defineComponent({
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const rowKey = (record) => record[attrs.rowKey || 'id'] || record['_ID_']
+    const setKeyValue = (record, val) => (record[attrs.rowKey || '_ID_'] = val)
     const orgList = toRef(model, 'refData')
     const __rowSelection = option.attrs?.rowSelection || undefined //?? (editInline ? {} : undefined)
     const selectedRowKeys = ref<any[]>(__rowSelection?.selectedRowKeys || [])
@@ -127,7 +128,7 @@ export default defineComponent({
           return apis.query?.(true)
         } else {
           items.forEach((item) => {
-            orgList.value.splice(orgList.value.indexOf(item), 1)
+            orgList.value.splice(list.value.indexOf(item), 1)
           })
         }
         if (rowSelection) {

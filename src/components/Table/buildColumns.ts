@@ -74,7 +74,7 @@ interface BuildColumnsParam {
 
 export function buildColumns({ childrenMap, context, option, attrs, isView, effectData: parentData }: BuildColumnsParam) {
   const { list, methods, getEditRender, editButtonsSlot } = context
-  const effectData = getEffectData({ list, isView, parent: parentData })
+  const effectData = getEffectData({ list: parentData.value, isView, parent: parentData })
 
   const columns = (function getColumns(_models = childrenMap) {
     const _columns: any[] = []

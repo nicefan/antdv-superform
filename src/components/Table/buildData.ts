@@ -74,9 +74,9 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
   if (!isView && editable) {
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
 
-    const { methods, getEditRender } = useTableEdit({ model, orgList, rowKey, editableRef })
+    const { methods, ..._context } = useTableEdit({ model, orgList, rowKey, editableRef })
     Object.assign(context.methods, methods)
-    context.getEditRender = getEditRender
+    Object.assign(context, _context)
   } else if (editMode === 'inline') {
     const { list, methods, editButtonsSlot, getEditRender } = inlineRender({
       childrenMap,
