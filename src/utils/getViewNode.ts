@@ -1,5 +1,5 @@
 import { globalConfig } from '../plugin'
-import { ref, unref, h, reactive, type VNode, inject, computed, mergeProps } from 'vue'
+import { ref, unref, h, reactive, type VNode, inject, computed, mergeProps, toValue } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls from '../components'
 import { isPlainObject, get as objectGet } from 'lodash-es'
@@ -73,6 +73,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     valueToLabel,
     valueToNumber,
     tagViewer,
+    initialValue,
   } = option as any
 
   const rootSlots = inject<Obj>('rootSlots', {})
@@ -95,7 +96,7 @@ export function getViewNode(option, effectData: Obj = {}) {
         if (!optionsArr.value) {
           getOptions(option, param, optionsArr)
         }
-        const text = (param.text || param.value) ?? ''
+        const text = (param.text || param.value) ?? toValue(initialValue) ?? ''
         if (text === '') return ''
         const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
         const values = arr.map((val) => {
@@ -109,7 +110,7 @@ export function getViewNode(option, effectData: Obj = {}) {
         return tags.length ? tags : values.join(',')
       }
     } else if (colType === 'Switch') {
-      return ({ text } = effectData) => (option.valueLabels || '否是')[text]
+      return ({ text } = effectData) => (option.valueLabels || '否是')[text ?? toValue(initialValue)]
     } else {
       // textRender为undefined将直接返回绑定的值
     }
@@ -133,7 +134,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     }
   } else if (tagViewer && !autoTag) {
     return (param: Obj = effectData) => {
-      const text = param.text
+      const text = param.text ?? toValue(initialValue)
       if (typeof text === 'boolean' && tagViewer === true) {
         return buildTagRender({ label: text ? '是' : '否', color: text ? 'success' : 'error' })
       }
@@ -143,7 +144,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     }
   } else if (colType === 'Text' && (option.attrs || option.dynamicAttrs)) {
     return (param: Obj = effectData) => {
-      const text = content?.(param) || param.value
+      const text = content?.(param) || (param.value ?? toValue(initialValue))
       const dynamicAttrs = getComputedAttr(option.dynamicAttrs, param)
       const attrs = mergeProps({ ...option.attrs, title: text }, dynamicAttrs)
       return h('span', attrs, text)
@@ -156,7 +157,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     }
   } else if (colType === 'Textarea') {
     return (param: Obj = effectData) => {
-      return h('pre', param.value)
+      return h('pre', { style: 'white-space: break-spaces;' }, param.value ?? toValue(initialValue))
     }
   } else if (!content && (colType === 'Upload' || colType.startsWith('Ext'))) {
     return (param: Obj = effectData) => {
