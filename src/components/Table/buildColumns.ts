@@ -117,8 +117,10 @@ export function buildColumns({ childrenMap, context, option, attrs, isView, effe
   if (indexColumn) columns.unshift(indexColumn)
 
   const actionColumn = buildActionSlot({ buttons: option.rowButtons, methods, editButtonsSlot, isView, effectData })
-  if (actionColumn) columns.push(actionColumn)
-
+  if (actionColumn) {
+    defaults(actionColumn, option.columnProps, globalProps.Column)
+    columns.push(actionColumn)
+  }
   return columns as TableColumnProps[]
 }
 

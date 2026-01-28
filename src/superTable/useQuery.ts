@@ -25,7 +25,9 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
 
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
-
+  if (option.onLoaded) {
+    callbacks.push(option.onLoaded)
+  }
   const queryApi = computed(() => {
     return typeof option.apis === 'function' ? apis : option.apis?.query
   })

@@ -22,7 +22,7 @@ export default defineComponent({
   emits: ['update:activeKey'],
   setup(props, { attrs, slots, emit }) {
     const { Card, Tabs, TabPane } = baseComps
-    const { optionsRef } = useOptions(props, props.options, props.effectData)
+    const { optionsRef } = useOptions(props, [], props.effectData)
     const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<string | number | undefined>
     const updateActiveKey = (key) => {
       activeKey.value = key

@@ -2,7 +2,7 @@
 import { FormItemRest } from 'ant-design-vue'
 import base from './base'
 import Collections from './Collections'
-import { computed, defineComponent, h, mergeProps, ref, watch } from 'vue'
+import { computed, defineComponent, h, inject, mergeProps, ref, unref, watch } from 'vue'
 import { globalProps } from '../plugin'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
@@ -66,9 +66,12 @@ export default defineComponent({
     } else {
       extProps.style = 'margin: 0'
     }
+    const inheritAttrs = inject<Obj>('inheritOptions', {})
 
     // 生成FormItem
-    const rules = computed(() => (props.disabled ? undefined : ruleObj))
+    const rules = computed(() =>
+      props.disabled ? undefined : !option.required || unref(inheritAttrs.required) ? ruleObj : ruleObj.slice(1)
+    )
     const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps, extProps)
     const _label = createLabelNode(option, props.effectData)
 

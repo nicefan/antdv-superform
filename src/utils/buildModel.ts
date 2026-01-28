@@ -1,6 +1,7 @@
 import buildRule from './buildRule'
 import { reactive, toRef, toValue, watch, markRaw, isRef, computed, ref } from 'vue'
 import { update, get as objectGet, set as objectSet } from 'lodash-es'
+import { getComputedStatus } from './reactivity'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
@@ -62,9 +63,19 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
   items.forEach((child) => {
     if (typeof child !== 'object') return
     const subModel: ModelData = buildModelData(child, currentData, propChain)
-    const { rules: _rules, label, subItems, columns } = child
-    if (_rules && subModel.propChain.length) {
+    const { required, label, subItems, columns } = child
+
+    if ((child.rules || required) && subModel.propChain.length) {
+      const _rules = child.rules || [] 
       const _r = Array.isArray(_rules) ? _rules : [_rules]
+      if (required) {
+        const first = _r[0]
+        if (first) {
+          first.required = required
+        } else {
+          _r.push({ required })
+        }
+      }
       let ruleType = 'string'
       if (subModel.refData) {
         const baseType = typeof subModel.refData

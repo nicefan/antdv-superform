@@ -11,10 +11,11 @@ type Param = {
 }
 
 export default function render({ option, effectData, inheritDisabled }: Param) {
-  const { type, dynamicAttrs: __attrs, disabled: __disabled, hidden: __hidden } = option
+  const { type, dynamicAttrs: __attrs, disabled: __disabled, hidden: __hidden, required: __required } = option
 
   // 元素隐藏控制
   const hidden = getComputedStatus(__hidden, effectData)
+  const required = getComputedStatus(__required, effectData)
 
   // 元素禁用控制
   const disabled =
@@ -42,5 +43,5 @@ export default function render({ option, effectData, inheritDisabled }: Param) {
   const __merged = mergeProps({ ...globalProps[type] }, { ...option.attrs }, listener, computedAttr)
   const attrs: Obj = merge({}, option.attrs, __merged, { disabled })
 
-  return { attrs, hidden }
+  return { attrs, hidden, required }
 }

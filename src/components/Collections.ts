@@ -50,7 +50,7 @@ export default defineComponent({
         useVModel({ option, model: subData, effectData })
         return
       }
-      const { hidden, attrs } = useControl({
+      const { hidden, required, attrs } = useControl({
         option,
         effectData,
         inheritDisabled: inheritOptions.disabled,
@@ -84,7 +84,9 @@ export default defineComponent({
       if (!independent && (!blocked || (option.field && option.label))) {
         // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
         const __rules = formatRule(subData.rules, effectData)
-        const rules = computed(() => (unref(attrs.disabled) ? undefined : __rules))
+        const rules = computed(() =>
+          unref(attrs.disabled) ? undefined : !option.required || required.value ? __rules : __rules.slice(1)
+        )
         const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
         const label = createLabelNode(option, effectData)
 
@@ -98,6 +100,7 @@ export default defineComponent({
       if (independent) {
         // 容器组件转递继承属性
         const inheritOptions: Obj = {
+          required,
           disabled: attrs.disabled,
           subSpan: option.subSpan ?? presetSpan,
         }

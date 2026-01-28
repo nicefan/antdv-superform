@@ -1,14 +1,17 @@
 <template>
-  <checkable-tag
-    v-bind="$attrs"
-    class="tag-select"
-    v-for="{ label, value } of optionsRef"
-    :key="value"
-    :checked="selected.indexOf(value) > -1"
-    @change="(checked) => handleChange(value, checked)"
-  >
-    {{ label }}
-  </checkable-tag>
+  <template v-if="optionsRef.length">
+    <checkable-tag
+      v-bind="$attrs"
+      class="tag-select"
+      v-for="{ label, value } of optionsRef"
+      :key="value"
+      :checked="selected.indexOf(value) > -1"
+      @change="(checked) => handleChange(value, checked)"
+    >
+      {{ label }}
+    </checkable-tag>
+  </template>
+  <div v-else class="ant-form-item-extra">{{ placeholder }}</div>
 </template>
 <script lang="ts" setup>
 import { computed } from 'vue'
@@ -30,6 +33,7 @@ const props = defineProps<{
   valueToString?: boolean
   multiple?: boolean
   isView?: boolean
+  placeholder?: string
 }>()
 
 const emit = defineEmits(['update:value', 'change', 'check'])

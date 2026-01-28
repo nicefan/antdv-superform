@@ -77,6 +77,7 @@ interface ExtBaseOption {
   // help?: HelpMessage
   /** 校验规则，指定value而没指定field时无效 */
   rules?: RuleConfig | RuleConfig[]
+  required?: boolean | Fn<boolean>
   attrs?: Obj
   dynamicAttrs?: Fn<Obj>
   /** 是否隐藏，提供一个监听方法，根据数据变化自动切换 */
@@ -317,9 +318,10 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
   /**是否立即查询，默认为true */
   immediate?: boolean
   /** 查询请求前可对请求参数进行处理 */
-  beforeQuery?: (data: Obj) => Obj
+  beforeQuery?: (data: Obj) => Obj | void
   /** 查询请求后可对返回结果进行处理 */
-  afterQuery?: (data: Obj) => Obj
+  afterQuery?: (data: Obj) => Obj | void
+  onLoaded?: Fn
   /**
    * @deprecated 改为searchForm
    */
