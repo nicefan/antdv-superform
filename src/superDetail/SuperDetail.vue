@@ -12,7 +12,14 @@ export default defineComponent({
   emits: ['register'],
   setup(props, ctx) {
     const option: Obj = shallowRef(props.schema || {})
-    const dataRef = props.dataSource ? toRef(props, 'dataSource') : ref(props.schema?.dataSource || {})
+    const dataRef = ref(props.schema?.dataSource || {})
+    watch(
+      () => props.dataSource,
+      (data) => {
+        data && (dataRef.value = data)
+      },
+      { immediate: true }
+    )
 
     const exposed = {
       setOption: (_option: ExtFormOption) => {

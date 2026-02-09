@@ -17,7 +17,7 @@ export default function createButtons({ config, methods, effectData, isView }: U
       } else {
         const validOn = item.validOn
         if (isView) {
-          return validOn === 'both' || validOn === 'detail'
+          return validOn !== 'form'
         } else {
           return validOn !== 'detail'
         }
