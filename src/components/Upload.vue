@@ -481,7 +481,7 @@ export default defineComponent({
 
     const filePreview = async (file) => {
       if (onPreview) {
-        const src = await onPreview(file)
+        const src = await onPreview(reconvert(file))
         src && preview.open(src)
       } else if (isImageUrl(file)) {
         let current
