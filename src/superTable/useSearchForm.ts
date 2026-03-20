@@ -5,6 +5,7 @@ import Controls from '../components'
 import { getEffectData } from '../utils'
 import type { RootTableOption } from 'src/exaTypes'
 import { DownOutlined, UpOutlined } from '@ant-design/icons-vue'
+import { omit } from 'lodash-es'
 
 export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) {
   const { columns, searchForm } = tableOption
@@ -19,7 +20,7 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
   schema.subItems.forEach((item: any) => {
     if (typeof item === 'string') {
       const col = columns.find((col) => col.field === item)
-      col && subItems.push({ type: 'Input', ...col, editable: true })
+      col && subItems.push({ type: 'Input', ...omit(col as any, 'span', 'disabled', 'hidden'), editable: true, exclude: [] })
     } else {
       return subItems.push({ ...item })
     }

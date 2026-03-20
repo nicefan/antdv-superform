@@ -46,7 +46,7 @@ export default defineComponent({
           record: !subData.refName ? refData : parent,
         }),
       })
-      if (type === 'Hidden' || hideInForm || exclude?.includes('form')) {
+      if (type === 'Hidden' || (exclude ? exclude.includes('form') : hideInForm)) {
         useVModel({ option, model: subData, effectData })
         return
       }

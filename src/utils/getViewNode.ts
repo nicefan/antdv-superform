@@ -46,7 +46,12 @@ const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) =>
   if (tagViewer !== true || !color) {
     const tagOption = tagViewer === true ? globalConfig.tagViewer : tagViewer
     if (typeof tagOption === 'function') {
-      item.color = tagOption(value)
+      const res = tagOption(value)
+      if (isPlainObject(res)) {
+        Object.assign(item, res)
+      } else {
+        item.color = res
+      }
     } else if (Array.isArray(tagOption) && isPlainObject(tagOption[0])) {
       const tag = tagOption.find((item) => item.value === value)
       Object.assign(item, tag)
