@@ -36,4 +36,5 @@ export {
   Upload,
   Tag,
   CheckableTag,
+  AutoComplete
 } from 'ant-design-vue'

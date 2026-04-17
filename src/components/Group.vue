@@ -2,9 +2,9 @@
 import { h, defineComponent, toRaw, mergeProps } from 'vue'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { toNode } from '../utils'
 import { createButtons } from './buttons'
 import { Row, Col } from 'ant-design-vue'
+import { createLabelNode } from '../utils/labelNode'
 export default defineComponent({
   inheritAttrs: false,
   props: {
@@ -28,7 +28,7 @@ export default defineComponent({
     const { style, class: _class, ...attrs } = ctx.attrs
     const slots = {
       ...ctx.slots,
-      title: title ? () => toNode(title, effectData) : undefined,
+      title: title ? createLabelNode(option, effectData) : undefined,
       actions: buttonsSlot,
       default: () =>
         h(

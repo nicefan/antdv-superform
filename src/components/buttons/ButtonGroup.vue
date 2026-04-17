@@ -1,10 +1,10 @@
 <template>
   <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
-    <template v-for="({ attrs, icon, label, tooltip, dropdown, menu, onClick, render }, index) of btns" :key="label">
-      <Dropdown v-if="dropdown" :disabled="attrs.disabled">
+    <template v-for="({ attrs, icon, label, tooltip, dropdownProp, menu, render, onClick }, index) of btns" :key="label">
+      <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
         <template #overlay>
           <Menu @click="onClick">
-            <menu-item v-for="item of menu" :key="item.value">
+            <menu-item v-for="item of menu" :key="item.value" :disabled="item.disabled">
               <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
               <component :is="() => toNode(item.label, effectData)" />
             </menu-item>
@@ -17,14 +17,14 @@
       </Dropdown>
       <Tooltip v-else-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
         <component v-if="render" :is="() => render({ props: attrs, ...effectData })" />
-        <Button v-else v-bind="attrs"
+        <Button v-else v-bind="attrs" @click="onClick"
           ><component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
         /></Button>
       </Tooltip>
       <template v-else>
         <component v-if="render" :is="() => render({ props: attrs, ...effectData })" />
-        <Button v-else v-bind="attrs">
+        <Button v-else v-bind="attrs" @click="onClick">
           <component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
           <component :is="() => toNode(label, effectData)" />
         </Button>
@@ -38,8 +38,8 @@
       </Button>
       <template #overlay>
         <Menu>
-          <menu-item v-for="{ attrs, icon, label } of moreBtns" :key="label" :disabled="attrs.disabled">
-            <Button block v-bind="attrs" shape="">
+          <menu-item v-for="{ attrs, icon, label, onClick } of moreBtns" :key="label" :disabled="attrs.disabled">
+            <Button block v-bind="attrs" shape="" @click="onClick">
               <component v-if="icon" :is="getIconNode(icon)" />
               <component :is="() => toNode(label, effectData)" />
             </Button>
@@ -50,14 +50,14 @@
   </Space>
 </template>
 <script setup lang="ts">
-import { ref, watchEffect, reactive, toValue, inject } from 'vue'
+import { ref, watchEffect, reactive, toValue, inject, computed } from 'vue'
 import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
 import { EllipsisOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { getComputedStatus, useDisabled, getIconNode, toNode } from '../../utils'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
-import { isArray, isPlainObject, uniq } from 'lodash-es'
+import { isPlainObject, uniq } from 'lodash-es'
 
 const props = defineProps<{
   option: ExtButtons
@@ -106,17 +106,26 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
       item.onClick?.({ ...param, e })
     }
     const _class = item.color && `ant-btn-${item.color}`
-    if (item.dropdown) {
-      let menu = isArray(item.dropdown) ? item.dropdown : []
-      if (isPlainObject(item.dropdown)) {
-        menu = Object.entries(item.dropdown).map(([value, label]) => ({ value, label }))
-      } else if (typeof menu[0] !== 'object') {
-        menu = uniq(menu).map((txt) => ({ value: txt, label: txt }))
-      }
-      return { isHide, ...item, menu, onClick, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled } }
-    }
+    const menu =
+      item.dropdown &&
+      computed(() => {
+        const config = toValue(item.dropdown) as any
+        if (isPlainObject(config)) {
+          return Object.entries(config).map(([value, label]) => ({ value, label }))
+        } else if (typeof config[0] !== 'object') {
+          return uniq(config).map((txt) => ({ value: txt, label: txt }))
+        }
+        return config
+      })
     const render = typeof item.customRender === 'string' ? rootSlots[item.customRender] : item.customRender
-    return { isHide, render, ...item, attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled, onClick } }
+    return {
+      isHide,
+      render,
+      menu,
+      ...item,
+      onClick,
+      attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled },
+    }
   })
 
   const btns = ref<any[]>([])

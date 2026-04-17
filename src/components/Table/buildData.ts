@@ -21,7 +21,7 @@ function buildDetail(option, modelsMap, rowKey) {
     ...modalProps,
   }
   const getTitle = (param) => {
-    return toNode(modalConfig.title, { target: 'detail', ...param }) || `${title ? title + ' - ' : ''}详情`
+    return toNode(modalConfig.title, param) || `${title ? title + ' - ' : ''}详情`
   }
   const { openModal, modalSlot } = useModal(detail, modalConfig)
 
@@ -34,7 +34,8 @@ function buildDetail(option, modelsMap, rowKey) {
       } else {
         source.value = data
       }
-      openModal({ ...meta, title: getTitle({ ...params, source: source.value }) })
+      meta.name = 'detail'
+      openModal({ ...meta, title: getTitle({ ...params, source: source.value, meta }) })
     }
   }
 }

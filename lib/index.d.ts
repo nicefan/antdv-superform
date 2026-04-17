@@ -2,6 +2,7 @@
 
 import { AllowedComponentProps } from 'vue';
 import type { App } from 'vue';
+import type { AutoCompleteProps } from 'ant-design-vue';
 import type { ButtonProps } from 'ant-design-vue';
 import type { ColProps } from 'ant-design-vue';
 import type { Component } from 'vue';
@@ -10,6 +11,7 @@ import { ComponentOptionsMixin } from 'vue';
 import { ComputedRef } from 'vue';
 import { DefineComponent } from 'vue';
 import type { DescriptionsProps } from 'ant-design-vue';
+import type { DropdownProps } from 'ant-design-vue';
 import { ExtractPropTypes } from 'vue';
 import type { FormItemProps } from 'ant-design-vue';
 import type { FormProps } from 'ant-design-vue';
@@ -58,7 +60,8 @@ export declare interface ButtonItem {
     color?: 'success' | 'error' | 'warning' | 'primary' | string
     /** 待改动 */
     validOn?: 'form' | 'detail' | 'both'
-    dropdown?: DefaultOptionType
+    dropdown?: SelectOptions
+    dropdownProps?: DropdownProps
     tooltip?: string
     icon?: string | Component
     attrs?: ButtonProps & HTMLAttributes
@@ -135,6 +138,12 @@ declare type EffectData =
     isView: boolean
 })
 | Obj
+
+declare interface ExtAutoCompleteOption extends ExtFormItemOption {
+    options?: SelectOptions
+    dictName?: string
+    attrs?: AutoCompleteProps & HTMLAttributes
+}
 
 export declare interface ExtBaseOption {
     type: string
@@ -906,6 +915,7 @@ declare type WidgetTypes = {
     HTML: ExtFormItemOption
     Textarea: ExtFormItemOption
     Input: ExtInputOption
+    AutoComplete: ExtAutoCompleteOption
     InputNumber: ExtFormItemOption
     DatePicker: ExtFormItemOption
     TimePicker: ExtFormItemOption

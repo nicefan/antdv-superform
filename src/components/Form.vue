@@ -53,6 +53,10 @@ export default {
       attrs,
       onSubmit: submitRegister,
     })
+    provide('inheritOptions', {
+      disabled: attrs.disabled,
+      subSpan: option.subSpan,
+    })
 
     const submitValidate = (data) =>
       Promise.all(

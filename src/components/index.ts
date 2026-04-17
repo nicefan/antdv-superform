@@ -17,6 +17,7 @@ import Switch from './Switch.vue'
 import DateRange from './DateRange.vue'
 import DatePicker from './DatePicker.vue'
 // import TimePicker from './TimePicker.vue'
+import AutoComplete from './AutoComplete.vue'
 import Radio from './Radio.vue'
 import Checkbox from './Checkbox.vue'
 import TreeSelect from './TreeSelect.vue'
@@ -46,6 +47,7 @@ const formItems = {
   InputNumber,
   InputGroup,
   InputList,
+  AutoComplete,
   Select,
   Switch,
   DateRange,

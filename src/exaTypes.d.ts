@@ -25,6 +25,8 @@ import type {
   SwitchProps,
   ButtonProps,
   TooltipProps,
+  DropdownProps,
+  AutoCompleteProps,
 } from 'ant-design-vue'
 
 import { RuleConfig } from './utils/buildRule'
@@ -185,7 +187,8 @@ interface ButtonItem {
   color?: 'success' | 'error' | 'warning' | 'primary' | string
   /** 待改动 */
   validOn?: 'form' | 'detail' | 'both'
-  dropdown?: DefaultOptionType
+  dropdown?: SelectOptions
+  dropdownProps?: DropdownProps
   tooltip?: string
   icon?: string | Component
   attrs?: ButtonProps & HTMLAttributes
@@ -484,6 +487,11 @@ interface ExtDateRange extends ExtFormItemOption {
 interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
   attrs?: RadioGroupProps & HTMLAttributes
 }
+interface ExtAutoCompleteOption extends ExtFormItemOption {
+  options?: SelectOptions
+  dictName?: string
+  attrs?: AutoCompleteProps & HTMLAttributes
+}
 interface ExtUpload extends ExtFormItemOption {
   vModelFields?: {
     fileList?: string | Obj
@@ -542,6 +550,7 @@ type WidgetTypes = {
   HTML: ExtFormItemOption
   Textarea: ExtFormItemOption
   Input: ExtInputOption
+  AutoComplete: ExtAutoCompleteOption
   InputNumber: ExtFormItemOption
   DatePicker: ExtFormItemOption
   TimePicker: ExtFormItemOption

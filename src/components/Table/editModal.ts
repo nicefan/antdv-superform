@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, defaults } from 'lodash-es'
 import { nanoid } from 'nanoid'
 import { globalProps } from '../../plugin'
 import { createModal } from '../../superModal'
@@ -33,7 +33,7 @@ export default function editModal({ rowKey, option, listener }) {
 
   const getTitle = ({ meta, ...param }: Obj) => {
     return (
-      toNode(modalProps.title, { target: 'edit', ...param }) ||
+      toNode(modalProps.title, { meta, ...param }) ||
       `${formOption.title ? formOption.title + ' - ' : ''}  ${meta.title || meta.label}`
     )
   }
@@ -44,25 +44,27 @@ export default function editModal({ rowKey, option, listener }) {
       nextTick(() => {
         formRef.value?.clearValidate()
       })
-
+      meta.title ??= '新增'
+      meta.name = 'add'
+      meta.isNew = true
       return openModal({
         ...meta,
-        title: getTitle({ ...args, source: source.value, isNew: true }),
+        title: getTitle({ ...args, source: source.value, meta }),
         onOk: async () => {
           return formRef.value.submit().then(async (data) => {
-            const custom = await rowEditor?.onSave?.({ ...args, source: data, isNew: true })
+            const custom = await rowEditor?.onSave?.({ ...args, source: data, meta })
             if (custom === false) return
             return listener.onSave(data, index)
           })
         },
         onCancel: async () => {
-          await rowEditor?.onCancel?.({ ...args, isNew: true })
+          await rowEditor?.onCancel?.({ ...args, meta })
           return closeModal()
         },
       })
     },
     async edit(args) {
-      const { record, selectedRows, resetData, meta } = args
+      const { record, selectedRows, resetData, meta = {} } = args
       const data = record || selectedRows[0]
       if (!data) {
         return Promise.reject(new Error('未选择记录'))
@@ -72,20 +74,21 @@ export default function editModal({ rowKey, option, listener }) {
       } else {
         source.value = cloneDeep(data)
       }
+      defaults(meta, { name: 'edit', title: '编辑', isNew: false })
       merge(source.value, resetData)
       formRef.value?.clearValidate()
       return openModal({
         ...meta,
-        title: getTitle({ ...args, source: source.value }),
+        title: getTitle({ ...args, source: source.value, meta }),
         onOk: async () => {
           return formRef.value.submit().then(async (newData) => {
-            const custom = await rowEditor?.onSave?.({ ...args, source: newData, isNew: false })
+            const custom = await rowEditor?.onSave?.({ ...args, source: newData, meta })
             if (custom === false) return
             return listener.onUpdate(newData, data)
           })
         },
         onCancel: async () => {
-          await rowEditor?.onCancel?.({ ...args, isNew: false })
+          await rowEditor?.onCancel?.({ ...args, meta })
           return closeModal()
         },
       })

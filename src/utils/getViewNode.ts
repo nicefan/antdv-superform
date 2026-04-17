@@ -91,7 +91,7 @@ export function getViewNode(option, effectData: Obj = {}) {
       return ({ current } = effectData) => String(objectGet(current, labelField) ?? '')
     } else if (keepField) {
       return ({ current, text } = effectData) => (text || '') + ' - ' + (objectGet(current, keepField) || '')
-    } else if (colOptions || dictName) {
+    } else if ((colOptions || dictName) && colType !== 'AutoComplete') {
       // 绑定值为Label时直接返回原值
       if (valueToLabel) return
       const optionsArr = ref<any[]>()

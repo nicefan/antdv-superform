@@ -5,7 +5,7 @@ import base from '../base'
 import { buildData } from './buildData'
 import { Col, Row } from 'ant-design-vue'
 import type { TableApis } from '../../exaTypes'
-import { toNode } from '../../utils'
+import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
 import { buildColumns } from './buildColumns'
@@ -199,7 +199,7 @@ export default defineComponent({
       (titleSlot || extraSlot) &&
       (() =>
         h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
-          titleSlot && h(Col, { class: 'sup-title' }, () => toNode(titleSlot, effectData)),
+          titleSlot && h(Col, { class: 'sup-title' }, createLabelNode({labelSlot: titleSlot, tooltip: option.tooltip}, effectData)),
           extraSlot &&
             h(
               Col,
@@ -226,7 +226,7 @@ export default defineComponent({
           rowKey,
           expandedRowKeys: expandedRowKeys.value,
           'onUpdate:expandedRowKeys': updateExpand,
-          class: 'sup-table-wrapper',
+          class: ['sup-table-wrapper', option.editable && 'sup-table-editable'],
         },
         __slots
       ),
