@@ -103,6 +103,7 @@ export default defineConfig({
   lang: 'zh-CN',
   title: 'antdv-superform',
   description: '基于 Vue 3 与 Ant Design Vue 3 的声明式业务组件库文档',
+  base: '/antdv-superform/',
   cleanUrls: true,
   lastUpdated: true,
   themeConfig: {
@@ -113,7 +114,7 @@ export default defineConfig({
       { text: '组件', link: '/components/' },
       { text: 'API 参考', link: '/reference/' },
       { text: '示例模板', link: '/examples/' },
-      { text: '仓库', link: 'http://192.168.0.232/ufan/antdv-superform.git' },
+      { text: '仓库', link: 'https://github.com/nicefan/antdv-superform' },
     ],
     sidebar: {
       '/guide/': guide,
@@ -121,7 +122,7 @@ export default defineConfig({
       '/reference/': reference,
       '/examples/': examples,
     },
-    socialLinks: [{ icon: 'github', link: 'http://192.168.0.232/ufan/antdv-superform.git' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/nicefan/antdv-superform' }],
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2026 antdv-superform',
