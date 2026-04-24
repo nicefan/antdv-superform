@@ -21,9 +21,9 @@
     "rollup": "rollup -c",
     "dts": "vue-tsc --declaration --emitDeclarationOnly",
     "serve": "vite preview",
-    "docs:dev": "cd docs && npm run dev",
-    "docs:build": "cd docs && npm run build",
-    "docs:preview": "cd docs && npm run preview"
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "peerDependencies": {
     "ant-design-vue": ">=3.2.20",
@@ -62,6 +62,7 @@
     "tslib": "^2.8.1",
     "typescript": "~5.3.3",
     "vite": "^4.5.0",
+    "vitepress": "^1.6.3",
     "vite-plugin-dts": "^3.6.0",
     "vite-svg-symbol-loader": "^1.0.0",
     "vitest": "^0.29.8",
