@@ -27,7 +27,7 @@ function buildDetail(option, modelsMap, rowKey) {
 
   return {
     detailSlot: modalSlot,
-    openDetail: async ({ record, selectedRows, meta, ...params }) => {
+    openDetail: async ({ record, selectedRows, meta = {} as Obj, ...params }) => {
       const data = record || selectedRows[0]
       if (apis?.info) {
         source.value = await apis.info(rowKey(data), data)

@@ -315,7 +315,7 @@ interface TableScanHight {
 }
 interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
   isContainer?: boolean
-  apis?: TableApis | TableApis['query']
+  apis?: TableApis
   dataSource?: Obj[] | Ref<any[]>
   params?: Obj
   /**是否立即查询，默认为true */

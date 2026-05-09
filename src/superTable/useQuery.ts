@@ -28,19 +28,16 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   if (option.onLoaded) {
     callbacks.push(option.onLoaded)
   }
-  const queryApi = computed(() => {
-    return typeof option.apis === 'function' ? apis : option.apis?.query
-  })
 
   const request = (param?: Obj) => {
     if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
     const _params = merge({}, pageTransform(pageParam), searchParam, param)
     const _data = option.beforeQuery?.(_params) || _params
-    if (!queryApi.value) return
+    if (!option.apis?.query) return
 
     loading.value = true
     return Promise.resolve(
-      queryApi.value?.(_data).then((res) => {
+      option.apis.query(_data).then((res) => {
         const _res = option.afterQuery?.(res) || res
         return setPageData(resultTransform(_res))
       })
@@ -128,12 +125,8 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   watch(pageParam, (p) => {
     pagination.value && (pagination.value = { ...pagination.value, pageSize: p.size, current: p.current })
   })
-  const apis = computed(() => {
-    return queryApi.value && { ...option.apis, query }
-  })
 
   return {
-    apis,
     goPage,
     reload: throttleRequest,
     setQueryParams,

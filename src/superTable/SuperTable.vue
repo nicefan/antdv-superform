@@ -67,7 +67,7 @@ export default defineComponent({
 
     watchEffect(() => props.schema && setOption(props.schema))
 
-    const { loading, pagination, setPageData, onLoaded, apis, goPage, reload, query, setQueryParams, getQueryParams } =
+    const { loading, pagination, setPageData, onLoaded, goPage, reload, query, setQueryParams, getQueryParams } =
       useQuery(option, updateSource)
     const { getScrollRef, redoHeight, listenResize } = useTableScroll(option, dataRef, wrapRef)
 
@@ -116,7 +116,7 @@ export default defineComponent({
     ctx.expose(tableRef.value)
 
     const tableAttrs: Obj = reactive({
-      apis,
+      apis: computed(() => ({ ...option.apis, query })),
       onRegister: register,
       loading,
     })
@@ -237,7 +237,7 @@ export default defineComponent({
 
     return () =>
       tableSlot.value &&
-      h(DataProvider, { name: 'exaProvider', data: { data: dataRef, apis } }, () =>
+      h(DataProvider, { name: 'exaProvider', data: { data: dataRef } }, () =>
         !searchForm.value || option.searchForm?.teleport
           ? h(
               'div',

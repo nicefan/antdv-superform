@@ -145,47 +145,45 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
     let isBlock = option.blocked
     let wrapNode
     let node
-    if (model.children || model.listData) {
-      const __viewRender = typeof viewRender === 'string' ? rootSlots[viewRender as string] : viewRender
-      wrapNode = __viewRender && (() => toNode(__viewRender, effectData))
-      const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
-      if (type === 'InputGroup') {
-        if (!viewRender) {
-          let isBreak = option.wrapping
-          const contents = [...modelsMap].map(([opt, model]) => {
-            const labelSlot = opt.labelSlot || opt.label
-            const showLabel = attrs?.compact === false && labelSlot
-            const content = getContent(opt, model, effectData)
-            isBreak = opt.wrapping || isBreak
-            return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
-          })
-          wrapNode = () =>
-            h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () => contents.map((node) => node()))
-        }
-        node = {
-          option,
-          label: __label,
-          hidden,
-          content: wrapNode,
-        }
-      } else {
-        isBlock ??= !option.span // 未定义时默认为true
-        const viewType = [...containers, 'InputList'].includes(type) ? type : 'Group'
-        const Control = Controls[viewType]
-        const defRender = () =>
-          h(Control, reactive({ option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }), slots)
-        wrapNode ??= defRender
-        if (type === 'InputList') {
-          if (!isBlock || (__label && !attrs?.labelIndex)) {
-            node = {
-              option: { ...option },
-              label: __label,
-              hidden,
-              content: wrapNode,
-            }
-          } else {
-            wrapNode = defRender
+    const __viewRender = typeof viewRender === 'string' ? rootSlots[viewRender as string] : viewRender
+    wrapNode = __viewRender && (() => toNode(__viewRender, effectData))
+    const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
+    if (type === 'InputGroup') {
+      if (!viewRender) {
+        let isBreak = option.wrapping
+        const contents = [...modelsMap].map(([opt, model]) => {
+          const labelSlot = opt.labelSlot || opt.label
+          const showLabel = attrs?.compact === false && labelSlot
+          const content = getContent(opt, model, effectData)
+          isBreak = opt.wrapping || isBreak
+          return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
+        })
+        wrapNode = () =>
+          h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () => contents.map((node) => node()))
+      }
+      node = {
+        option,
+        label: __label,
+        hidden,
+        content: wrapNode,
+      }
+    } else if (model.children || model.listData || containers.includes(type)) {
+      isBlock ??= !option.span // 未定义时默认为true
+      const viewType = [...containers, 'InputList'].includes(type) ? type : 'Group'
+      const Control = Controls[viewType]
+      const defRender = () =>
+        h(Control, reactive({ option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }), slots)
+      wrapNode ??= defRender
+      if (type === 'InputList') {
+        if (!isBlock || (__label && !attrs?.labelIndex)) {
+          node = {
+            option: { ...option },
+            label: __label,
+            hidden,
+            content: wrapNode,
           }
+        } else {
+          wrapNode = defRender
         }
       }
     } else {

@@ -580,7 +580,7 @@ declare interface RegistPram {
 
 export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
     isContainer?: boolean
-    apis?: TableApis | TableApis['query']
+    apis?: TableApis
     dataSource?: Obj[] | Ref_2<any[]>
     params?: Obj
     /**是否立即查询，默认为true */
@@ -880,15 +880,14 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         /** 初始化数据 */
         resetData?: Obj<any> | undefined;
         /** 弹窗标题 */
-        meta?: {
-            /** 弹窗标题 */
-            title?: string | undefined;
-        } | undefined;
+        meta?: ModalFuncProps | undefined;
     } | undefined) => any;
     /** 修改行，须判断是否已有选中行 */
     readonly edit: (param?: {
         /** 弹窗标题 */
         title?: string | undefined;
+        record?: Obj<any> | undefined;
+        meta?: ModalFuncProps | undefined;
     } | undefined) => any;
     /** 删除行，须判断是否已有选中行 */
     readonly delete: () => any;
@@ -896,6 +895,8 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     readonly detail: (param?: {
         /** 弹窗标题 */
         title?: string | undefined;
+        record?: Obj<any> | undefined;
+        meta?: ModalFuncProps | undefined;
     } | undefined) => any;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
     /** `editable`模式下进行表单校验 */

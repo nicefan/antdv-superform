@@ -2,6 +2,7 @@ import { computed, h, toValue, type VNode } from 'vue'
 import SuperTable from './SuperTable.vue'
 import { useGetRef } from '../utils'
 import type { RootTableOption } from '../exaTypes'
+import type { ModalFuncProps } from 'ant-design-vue'
 
 type RegisterMethod = {
   (): () => VNode
@@ -40,12 +41,14 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
   type ModalMeta = {
     /** 弹窗标题 */
     title?: string
+    record?: Obj
+    meta?: ModalFuncProps
   }
   type AddParam = {
     /** 初始化数据 */
     resetData?: Obj
     /** 弹窗标题 */
-    meta?: ModalMeta
+    meta?: ModalFuncProps
   }
   return [
     register,

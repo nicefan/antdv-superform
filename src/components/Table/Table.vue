@@ -108,18 +108,17 @@ export default defineComponent({
       async onUpdate(newData, oldData) {
         if (apis.update) {
           await apis.update(newData)
-          return apis.query?.(true)
-        } else {
-          Object.assign(oldData, newData)
-          const key = rowKey(oldData)
-          if (key) {
-            // 原始对象是解构对象时，更新记录
-            const idx = orgList.value.findIndex((item) => rowKey(item) === key)
-            if (idx > -1) {
-              orgList.value.splice(idx, 1, oldData)
-            }
+        }
+        Object.assign(oldData, newData)
+        const key = rowKey(oldData)
+        if (key) {
+          // 原始对象是解构对象时，更新记录
+          const idx = orgList.value.findIndex((item) => rowKey(item) === key)
+          if (idx > -1) {
+            orgList.value.splice(idx, 1, oldData)
           }
         }
+        return apis.query?.(true)
       },
       async onDelete(items: any[]) {
         const keys = items.map((item) => rowKey(item))
@@ -199,7 +198,12 @@ export default defineComponent({
       (titleSlot || extraSlot) &&
       (() =>
         h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
-          titleSlot && h(Col, { class: 'sup-title' }, createLabelNode({labelSlot: titleSlot, tooltip: option.tooltip}, effectData)),
+          titleSlot &&
+            h(
+              Col,
+              { class: 'sup-title' },
+              createLabelNode({ labelSlot: titleSlot, tooltip: option.tooltip }, effectData)
+            ),
           extraSlot &&
             h(
               Col,
