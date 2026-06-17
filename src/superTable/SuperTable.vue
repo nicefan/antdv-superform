@@ -19,6 +19,7 @@ import {
   Teleport,
   nextTick,
   shallowRef,
+  toRaw,
 } from 'vue'
 import { useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
@@ -65,7 +66,7 @@ export default defineComponent({
       Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
     }
 
-    watchEffect(() => props.schema && setOption(props.schema))
+    watchEffect(() => props.schema && setOption(toRaw(props.schema)))
 
     const { loading, pagination, setPageData, onLoaded, goPage, reload, query, setQueryParams, getQueryParams } =
       useQuery(option, updateSource)

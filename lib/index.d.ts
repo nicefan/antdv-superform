@@ -281,7 +281,7 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     | boolean
     | Obj<string>
     | string[]
-    | { label?: string; value: string; color: string; icon?: Fn }[]
+    | { label?: string; value: any; color: string; icon?: Fn }[]
     | Fn<string | { label: string; color?: string; icon?: Fn }>
     formItemProps?: FormItemProps
     descriptionsProps?: ExtDescriptionsProps

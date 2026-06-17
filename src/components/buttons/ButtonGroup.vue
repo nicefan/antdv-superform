@@ -134,7 +134,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
   watchEffect(() => {
     const items = isHide.value ? [] : allBtns.filter(({ isHide }) => !isHide.value)
     btns.value = items
-    if (limit) {
+    if (limit !== undefined && limit !== null) {
       const count = iconOnly && items.length === limit + 1 ? limit + 1 : limit
       btns.value = items.slice(0, count)
       moreBtns.value = items.slice(count)

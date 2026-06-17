@@ -20,7 +20,8 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
   schema.subItems.forEach((item: any) => {
     if (typeof item === 'string') {
       const col = columns.find((col) => col.field === item)
-      col && subItems.push({ type: 'Input', ...omit(col as any, 'span', 'disabled', 'hidden'), editable: true, exclude: [] })
+      col &&
+        subItems.push({ type: 'Input', ...omit(col as any, 'span', 'disabled', 'hidden'), editable: true, exclude: [] })
     } else {
       return subItems.push({ ...item })
     }
@@ -57,12 +58,15 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
   buttonsConfig.actions ??= !searchOnChange ? ['search', 'reset'] : undefined
 
   if (buttonsConfig.actions?.length) {
-    buttonsConfig.actions.push({
-      label: () => (expanded.value ? ['收起 ', h(UpOutlined)] : ['展开 ', h(DownOutlined)]),
-      attrs: { type: 'link' },
-      onClick: () => (expanded.value = !expanded.value),
-      hidden: !limit || subItems.length <= limit,
-    } as any)
+    if (limit && subItems.length > limit)
+      buttonsConfig.actions = [
+        {
+          label: () => (expanded.value ? ['收起 ', h(UpOutlined)] : ['展开 ', h(DownOutlined)]),
+          attrs: { type: 'link' },
+          onClick: () => (expanded.value = !expanded.value),
+        } as any,
+        ...buttonsConfig.actions,
+      ]
     subItems.push({
       type: 'InfoSlot',
       align: 'right',
