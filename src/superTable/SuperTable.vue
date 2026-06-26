@@ -31,6 +31,7 @@ import { globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
 import base from '../components/base'
 import { nanoid } from 'nanoid'
+import { set as setObject } from 'lodash-es'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -174,10 +175,12 @@ export default defineComponent({
         const tabsField = opt.tabs && opt.tabs.field
         if (opt.tabs && tabsField) {
           const tabsKey = (opt.tabs.activeKey ??= ref(opt.tabs.defaultActiveKey))
+          const tabParam = {}
           watch(
             tabsKey,
             (key) => {
-              setQueryParams({ [tabsField]: key })
+              setObject(tabParam, tabsField, key)
+              setQueryParams(tabParam)
               initQuery && query()
             },
             { immediate: true }

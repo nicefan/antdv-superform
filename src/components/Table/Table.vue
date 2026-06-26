@@ -122,18 +122,20 @@ export default defineComponent({
       },
       async onDelete(items: any[]) {
         const keys = items.map((item) => rowKey(item))
-        if (apis.delete) {
-          await apis.delete(keys, items)
-          return apis.query?.(true)
-        } else {
-          items.forEach((item) => {
-            orgList.value.splice(list.value.indexOf(item), 1)
-          })
+        try {
+          await apis.delete?.(keys, items)
+        } catch (error) {
+          console.error(error)
+          return error
         }
         if (rowSelection) {
           selectedRowKeys.value = selectedRowKeys.value.filter((key) => !keys.includes(key))
           selectedRows.value = selectedRows.value.filter((item) => !keys.includes(rowKey(item)))
         }
+        items.forEach((item) => {
+          orgList.value.splice(list.value.indexOf(item), 1)
+        })
+        return apis.query?.(true)
       },
     }
 
