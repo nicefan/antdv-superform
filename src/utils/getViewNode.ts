@@ -53,7 +53,7 @@ const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) =>
         item.color = res
       }
     } else if (Array.isArray(tagOption) && isPlainObject(tagOption[0])) {
-      const tag = tagOption.find((item) => item.value === value)
+      const tag = tagOption.find((item) => item.value == value) // 字符串数字都匹配
       Object.assign(item, tag)
     }
     item.color ??=
@@ -105,7 +105,7 @@ export function getViewNode(option, effectData: Obj = {}) {
         if (text === '') return ''
         const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
         const values = arr.map((val) => {
-          const item = unref(optionsArr)?.find(({ value }) => (valueToNumber ? Number(value) : value) === val)
+          const item = unref(optionsArr)?.find(({ value }) => value == val) // 字符串数字都匹配
           // 内部调用时不进行标签化
           if (!inner && autoTag) {
             tags.push(buildTagRender({ value: val, label: val, ...item, tagViewer }))

@@ -179,6 +179,7 @@ export default defineComponent({
           watch(
             tabsKey,
             (key) => {
+              if (key === undefined) return
               setObject(tabParam, tabsField, key)
               setQueryParams(tabParam)
               initQuery && query()
