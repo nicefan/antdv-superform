@@ -30,7 +30,8 @@ function buildDetail(option, modelsMap, rowKey) {
     openDetail: async ({ record, selectedRows, meta = {} as Obj, ...params }) => {
       const data = record || selectedRows[0]
       if (apis?.info) {
-        source.value = await apis.info(rowKey(data), data)
+        const res = await apis.info(rowKey(data), data)
+        source.value = Object.assign({}, data, res)
       } else {
         source.value = data
       }

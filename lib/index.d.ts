@@ -937,6 +937,7 @@ declare type WrapperTypes = {
     InfoSlot: ExtInfoSlotOption
     Form: ExtFormOption
     Group: ExtGroupOption
+    Fragment: ExtGroupOption
     Card: ExtGroupBaseOption
     List: ExtListOption
     ListGroup: ExtListGroupOption

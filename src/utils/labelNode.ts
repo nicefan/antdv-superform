@@ -6,9 +6,9 @@ import { toNode } from './toNode'
 import { getIconNode } from './useIcon'
 
 export const createLabelNode = (option, effectData) => {
-  const { label, labelSlot, tooltip } = option
+  const { title, label, labelSlot, tooltip } = option
   const tipProps = tooltip && (isPlainObject(tooltip) ? tooltip : { title: tooltip })
-  const _label = labelSlot || label
+  const _label = title || labelSlot || label
   return _label === undefined
     ? undefined
     : () => [
