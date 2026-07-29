@@ -41,11 +41,13 @@
 .sup-table .ant-table-pagination.ant-pagination {
   margin: 16px 0 0 0;
 }
-.sup-table-search > .ant-form {
+.sup-table-search > .ant-form,
+.sup-form-simple {
   margin-top: -6px;
   margin-bottom: -6px;
 }
-.sup-table-search > .ant-form .ant-form-item {
+.sup-table-search > .ant-form .ant-form-item,
+.sup-form-simple .ant-form-item {
   margin-bottom: 6px;
   margin-top: 6px;
 }

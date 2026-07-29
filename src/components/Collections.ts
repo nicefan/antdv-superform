@@ -33,7 +33,9 @@ export default defineComponent({
     const index = computed(() => props.model.index)
     const nodes: any[] = []
     let currentGroup: any[] | undefined
-    ;[...props.model.children].forEach(([option, subData], idx) => {
+    const childrenArr = [...props.model.children]
+    for (let idx = 0; idx < childrenArr.length; idx++) {
+      const [option, subData] = childrenArr[idx]
       const { type, align, blocked, span, hideInForm, exclude, editable } = option
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
@@ -48,16 +50,24 @@ export default defineComponent({
       })
       if (type === 'Hidden' || (exclude ? exclude.includes('form') : hideInForm)) {
         useVModel({ option, model: subData, effectData })
-        return
+        continue
       }
       const { hidden, required, attrs } = useControl({
         option,
         effectData,
         inheritDisabled: inheritOptions.disabled,
       })
-
+      if (type === 'Fragment') {
+        subData.children &&
+          childrenArr.splice(
+            idx + 1,
+            0,
+            ...[...subData.children].map(([o, d]) => [{ ...o, hidden, disabled: attrs.disabled }, d] as any)
+          )
+        continue
+      }
       let innerNode = buildInnerNode(option, subData, effectData, attrs)
-      if (!innerNode) return
+      if (!innerNode) continue
       if (formItemTypes.includes(type) && editable !== undefined && editable !== true) {
         const inputNode = innerNode
         const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
@@ -74,7 +84,7 @@ export default defineComponent({
         const width = Number(colProps.span) && (100 / (24 / colProps.span)).toFixed(2) + '%'
         // const _class = colProps.span && 'ant-col-' + colProps.span
         nodes.push(() => !hidden.value && h(innerNode, mergeProps({ style: { width } }, colProps)))
-        return
+        continue
       }
 
       let node = innerNode
@@ -138,7 +148,7 @@ export default defineComponent({
         currentGroup.push(() => !hidden.value && h(Col, mergeProps({ style: alignStyle, key: idx }, colProps), node))
         if (option.wrapping) currentGroup = undefined
       }
-    })
+    }
 
     let hasWrap = false
     const content = () =>

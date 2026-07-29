@@ -195,7 +195,8 @@ export declare interface ExtButtonGroup<T extends string = string> {
     size?: 'large' | 'middle' | 'small'
     align?: 'right' | 'left' | 'center'
     validOn?: 'form' | 'detail' | 'both'
-    placement?: 'top' | 'bottom'
+    /** 表单按钮位置 */
+    placement?: 'top' | 'bottom' | 'inline'
     /** 分隔符， type为'link'/'text'时默认true */
     divider?: boolean
     /** 按钮图标文字显示模式 */
@@ -703,8 +704,8 @@ export declare const SuperButtons: DefineComponent<{
     actions: PropType<ButtonItem[]>;
     effectData: ObjectConstructor;
 }>>, {
-    hidden: boolean;
     disabled: boolean;
+    hidden: boolean;
     invalidDisabled: boolean;
 }, {}>;
 
@@ -937,7 +938,7 @@ declare type WrapperTypes = {
     InfoSlot: ExtInfoSlotOption
     Form: ExtFormOption
     Group: ExtGroupOption
-    Fragment: ExtGroupOption
+    Fragment: Pick<ExtGroupBaseOption, 'type' | 'field' | 'disabled' | 'exclude' | 'hidden' | 'subItems' | 'subSpan'>
     Card: ExtGroupBaseOption
     List: ExtListOption
     ListGroup: ExtListGroupOption

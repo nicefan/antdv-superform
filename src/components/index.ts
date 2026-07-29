@@ -1,4 +1,4 @@
-import { defineComponent, h, reactive, toRefs } from 'vue'
+import { h } from 'vue'
 import Group from './Group.vue'
 import Form from './Form.vue'
 import InputGroup from './InputGroup.vue'
@@ -40,6 +40,7 @@ const components = {
   Table,
   Collapse,
   Descriptions: Group,
+  Fragment: Group,
 }
 const formItems = {
   Textarea,

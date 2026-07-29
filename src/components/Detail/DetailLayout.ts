@@ -52,7 +52,7 @@ const DetailLayouts = defineComponent({
     let section: any[] | undefined
 
     nodes.forEach((item, idx) => {
-      item.node ??= () => h(Descriptions, { config: attrs, items: item.group, class: attrs.class })
+      item.node ??= () => h(Descriptions, { config: attrs, items: item.group!, class: attrs.class })
       // if (nodes.length === 1) {
       //   nodeGroup.push(['block', item])
       //   return
@@ -120,9 +120,12 @@ const DetailLayouts = defineComponent({
   },
 })
 
+type NodeItem = { option: Obj; hidden: Ref<boolean>; label?: Fn; content: Fn }
+type BlockNode = { option: Obj; isBlock?: boolean; hidden?: Ref<boolean>; node?: Fn; group?: NodeItem[] }
+
 function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
-  const nodes: any[] = []
-  let currentGroup: any[] | undefined
+  const nodes: BlockNode[] = []
+  let currentGroup: NodeItem[] | undefined
   const rootSlots = inject<Obj>('rootSlots', {})
 
   ;[...modelsMap].forEach(([option, model], idx) => {
@@ -141,12 +144,12 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
     const { attrs, hidden } = useControl({ option, effectData })
     const slots = useInnerSlots(option.slots, effectData)
 
-    const __label = createLabelNode(option, effectData)
+    const label = createLabelNode(option, effectData)
     let isBlock = option.blocked
-    let wrapNode
-    let node
+    let render
+    const nodeItems: NodeItem[] = []
     const __viewRender = typeof viewRender === 'string' ? rootSlots[viewRender as string] : viewRender
-    wrapNode = __viewRender && (() => toNode(__viewRender, effectData))
+    render = __viewRender && (() => toNode(__viewRender, effectData))
     const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
     if (type === 'InputGroup') {
       if (!viewRender) {
@@ -158,14 +161,20 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
           isBreak = opt.wrapping || isBreak
           return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
         })
-        wrapNode = () =>
+        render = () =>
           h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () => contents.map((node) => node()))
       }
-      node = {
-        option,
-        label: __label,
-        hidden,
-        content: wrapNode,
+      nodeItems.push({ option, label, hidden, content: render })
+    } else if (type === 'Fragment') {
+      const subNodes = buildNodes(modelsMap, option, effectData)
+      const subItems = subNodes[0].group
+      if (subItems) {
+        subNodes.shift()
+        nodeItems.push(...subItems.map((item) => ({ ...item, hidden })))
+      }
+      if (subNodes.length) {
+        currentGroup = undefined
+        nodes.push(...subNodes)
       }
     } else if (model.children || model.listData || containers.includes(type)) {
       isBlock ??= !option.span // 未定义时默认为true
@@ -173,50 +182,39 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
       const Control = Controls[viewType]
       const defRender = () =>
         h(Control, reactive({ option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }), slots)
-      wrapNode ??= defRender
+      render ??= defRender
       if (type === 'InputList') {
-        if (!isBlock || (__label && !attrs?.labelIndex)) {
-          node = {
+        if (!isBlock || (label && !attrs?.labelIndex)) {
+          nodeItems.push({
             option: { ...option },
-            label: __label,
+            label,
             hidden,
-            content: wrapNode,
-          }
+            content: render,
+          })
         } else {
-          wrapNode = defRender
+          render = defRender
         }
       }
     } else {
       const content = getContent(option, model, effectData)
-      node = content && {
-        option,
-        label: __label,
-        hidden,
-        content,
-      }
+      content && nodeItems.push({ option, label, hidden, content })
     }
-    let blockNode
-    if (node) {
-      if (isBlock) {
-        if (option.label) {
-          blockNode = { option: preOption, isBlock, group: [node] }
-        } else {
-          const style = option.align && { textAlign: option.align }
-          blockNode = { option: preOption, isBlock, node: () => h(node.content, { style }) }
-        }
+    if (!nodeItems.length && !render) return
+    if (nodeItems.length && !isBlock) {
+      if (!currentGroup) {
+        currentGroup = []
+        nodes.push({ option: preOption, isBlock: true, group: currentGroup })
+      }
+      currentGroup.push(...nodeItems) // 加入分组
+    } else {
+      if (nodeItems.length && label) {
+        nodes.push({ option: preOption, isBlock, group: nodeItems }) // 独立分组
       } else {
-        if (!currentGroup) {
-          currentGroup = []
-          nodes.push({ option: preOption, isBlock: true, group: currentGroup })
-        }
-        currentGroup.push(node)
+        const style = option.align && { textAlign: option.align }
+        render = nodeItems[0]?.content || render
+        nodes.push({ option, isBlock, node: () => h(render, { style }), hidden }) // 自定义render,直接渲染
       }
-    } else if (wrapNode) {
-      blockNode = { option, isBlock, node: wrapNode, hidden }
-    }
-    if (blockNode) {
-      currentGroup = undefined
-      nodes.push(blockNode)
+      currentGroup = undefined // 隔断分组
     }
   })
   return nodes

@@ -6,15 +6,15 @@
           <super-buttons style="margin: 16px" />
         </div>
       </template>
-      <template #test="{ attrs, current }">
-        <div v-bind="attrs">这是个插槽！{{ current.name }}</div>
+      <template #test="{ props, formData }">
+        <div v-bind="props" :title="Object.keys(props)">这是个插槽！{{ formData.name }}</div>
       </template>
     </SuperForm>
   </div>
 </template>
 <script setup lang="ts">
 import { inject, reactive, ref, watch } from 'vue'
-import { Row, Button } from 'ant-design-vue'
+import { Row, Button, Image, Modal } from 'ant-design-vue'
 import useOption from './useExForm'
 import { useDetail, useForm, useModal, SuperForm } from '../src'
 import { useButtons } from '../src/superButtons'
@@ -24,7 +24,7 @@ import dayjs from 'dayjs'
 //   msg: string
 //   other?: string
 // }>()
-// const myModel = useExampleModal()
+  // const myModel = useExampleModal()
 const value3 = ref()
 watch(value3, (v) => {
   console.log(v)

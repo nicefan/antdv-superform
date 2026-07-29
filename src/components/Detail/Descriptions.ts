@@ -1,10 +1,10 @@
-import { type PropType, defineComponent, h, inject, mergeProps, unref } from 'vue'
+import { type PropType, computed, defineComponent, h, inject, mergeProps, unref } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 
 export default defineComponent({
   props: {
     items: {
-      type: Array as PropType<{ label?: Fn; span: number; content: Fn; option: Obj; hidden: Ref }[]>,
+      type: Array as PropType<{ label?: Fn; content: Fn; option: Obj; hidden: Ref }[]>,
       required: true,
     },
     config: {
@@ -31,11 +31,12 @@ export default defineComponent({
 
     let colNum = column || (Number(subSpan) ? Math.floor(24 / subSpan) : gridConfig.column)
     colNum ??= Number(gridConfig.subSpan) ? Math.floor(24 / gridConfig.subSpan) : 2
-    const rowGroup = (function () {
+    function getRowGroup() {
       const group: any[] = []
       let current: any[] = []
       let n = 0
       props.items.forEach(({ option, label, content, hidden }, idx) => {
+        if (unref(hidden)) return
         const { span = option.span } = option.descriptionsProps || {}
         let ceil = Number(span) ? Math.ceil(span / (24 / colNum)) : 1
         ceil = ceil > colNum ? colNum : ceil
@@ -53,7 +54,6 @@ export default defineComponent({
           span,
           label,
           content,
-          hidden,
           colspan: ceil,
         }
         if (mode === 'table') {
@@ -86,7 +86,8 @@ export default defineComponent({
         }
       })
       return group
-    })()
+    }
+    const rowGroup = computed(() => getRowGroup())
 
     if (mode === 'table') {
       let colorStyle = ''
@@ -94,87 +95,81 @@ export default defineComponent({
       labelBgColor && (colorStyle += `--descriptions-bg-color:${labelBgColor};`)
       const rows = () =>
         layout === 'vertical'
-          ? rowGroup.flatMap((group) => [
+          ? rowGroup.value.flatMap((group) => [
               (group.length > 1 || group[0].label) &&
                 h(
                   'tr',
                   { class: 'ant-descriptions-row' },
-                  group.map(
-                    (item) =>
-                      !unref(item.hidden) &&
-                      h(
-                        'th',
-                        mergeProps(
-                          {
-                            class: 'ant-descriptions-item-label',
-                            colspan: item.colspan,
-                            style: `width: ${((item.span / 24) * 100).toFixed(2)}%`,
-                          },
-                          { class: item.labelCol.class, style: item.labelCol.style }
-                        ),
-                        item.label?.()
-                      )
+                  group.map((item) =>
+                    h(
+                      'th',
+                      mergeProps(
+                        {
+                          class: 'ant-descriptions-item-label',
+                          colspan: item.colspan,
+                          style: `width: ${((item.span / 24) * 100).toFixed(2)}%`,
+                        },
+                        { class: item.labelCol.class, style: item.labelCol.style }
+                      ),
+                      item.label?.()
+                    )
                   )
                 ),
               h(
                 'tr',
                 { class: 'ant-descriptions-row' },
-                group.map(
-                  (item) =>
-                    !unref(item.hidden) &&
-                    h(
-                      'td',
-                      mergeProps(
-                        { class: 'ant-descriptions-item-content', colspan: item.colspan },
-                        { class: item.wrapperCol.class, style: item.wrapperCol.style }
-                      ),
-                      item.content()
-                    )
+                group.map((item) =>
+                  h(
+                    'td',
+                    mergeProps(
+                      { class: 'ant-descriptions-item-content', colspan: item.colspan },
+                      { class: item.wrapperCol.class, style: item.wrapperCol.style }
+                    ),
+                    item.content()
+                  )
                 )
               ),
             ])
           : // 横向排列
-            rowGroup.map((group, idx) =>
+            rowGroup.value.map((group, idx) =>
               h(
                 'tr',
                 { class: 'ant-descriptions-row' },
-                group.flatMap(
-                  (item) =>
-                    !unref(item.hidden) &&
-                    (!item.label
-                      ? [
-                          h(
-                            'td',
+                group.flatMap((item) =>
+                  !item.label
+                    ? [
+                        h(
+                          'td',
+                          {
+                            class: 'ant-descriptions-item-content',
+                            style: item.wrapperCol.style,
+                            colspan: item.colspan * 2,
+                          },
+                          item.content()
+                        ),
+                      ]
+                    : [
+                        h(
+                          'th',
+                          mergeProps(
+                            { class: 'ant-descriptions-item-label' },
+                            { class: item.labelCol.class, style: item.labelCol.style }
+                          ),
+                          item.label()
+                        ),
+                        h(
+                          'td',
+                          mergeProps(
                             {
                               class: 'ant-descriptions-item-content',
                               style: item.wrapperCol.style,
-                              colspan: item.colspan * 2,
+                              colspan: item.colspan * 2 - 1,
                             },
-                            item.content()
+                            { class: item.wrapperCol.class }
                           ),
-                        ]
-                      : [
-                          h(
-                            'th',
-                            mergeProps(
-                              { class: 'ant-descriptions-item-label' },
-                              { class: item.labelCol.class, style: item.labelCol.style }
-                            ),
-                            item.label()
-                          ),
-                          h(
-                            'td',
-                            mergeProps(
-                              {
-                                class: 'ant-descriptions-item-content',
-                                style: item.wrapperCol.style,
-                                colspan: item.colspan * 2 - 1,
-                              },
-                              { class: item.wrapperCol.class }
-                            ),
-                            item.content()
-                          ),
-                        ])
+                          item.content()
+                        ),
+                      ]
                 )
               )
             )
@@ -190,10 +185,9 @@ export default defineComponent({
         )
     } else {
       const render = () =>
-        rowGroup.map((group) =>
+        rowGroup.value.map((group) =>
           h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
-            group.map(({ option, content, span, label, labelCol, wrapperCol, hidden, attrs }) => {
-              if (unref(hidden)) return null
+            group.map(({ option, content, span, label, labelCol, wrapperCol, attrs }) => {
               const colProps = { span, ...(attrs.colProps || option.colProps) }
               if (colProps.span === 0 || colProps.flex) {
                 colProps.span = undefined

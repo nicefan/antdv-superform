@@ -1,6 +1,6 @@
 import path from 'path'
 // import { terser } from 'rollup-plugin-terser';
-// import resolve from '@rollup/plugin-node-resolve'
+import resolve from '@rollup/plugin-node-resolve'
 // import commonjs from '@rollup/plugin-commonjs'
 import ts from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
@@ -9,8 +9,8 @@ import vuePlugin from '@vitejs/plugin-vue'
 import vueJsx from 'rollup-plugin-vue-jsx-compat'
 import esbuild from 'rollup-plugin-esbuild'
 import postcss from 'rollup-plugin-postcss'
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('./package.json')
 const name = pkg.name
@@ -24,34 +24,39 @@ const banner = `/*!
 const tsPlugin = ts({
   lib: ['esnext', 'dom'],
   target: 'es2015',
-  declaration: true,
+  declaration: false,
   noForceEmit: true,
-  outDir: dir,
-  declarationDir: dir + '/types',
-  // check: true,
+  // outDir: dir,
+  // declarationDir: dir + '/types',
+  // check: false,
+  importHelpers: false,
   tsconfig: './tsconfig.json',
 })
 
 const mainFile = 'src/index.ts'
 const mainConfig = {
-    input: mainFile,
-    output: {
-      banner,
-      format: 'es',
-      file: pkg.module,
-    },
-    plugins: [
-      // componentsPlugin,
-      vuePlugin(),
-      tsPlugin,
-      // vueJsx(),
-      // esbuild({
-      //   jsxFactory: 'vueJsxCompat',
-      // }),
+  input: mainFile,
+  output: {
+    banner,
+    format: 'es',
+    dir,
+    // file: pkg.module,
+  },
+  plugins: [
+    // componentsPlugin,
+    vuePlugin(),
+    tsPlugin,
+    resolve(),
+    // commonjs(),
+    // terser(),
+    // vueJsx(),
+    // esbuild({
+    //   jsxFactory: 'vueJsxCompat',
+    // }),
 
-      postcss(),
-    ],
-  }
+    postcss(),
+  ],
+}
 const types = {
   input: [`dist/index.d.ts`],
   output: {
@@ -59,8 +64,6 @@ const types = {
     dir: '.',
     entryFileNames: 'lib/index.d.ts',
   },
-  plugins: [
-    dts(),
-  ]
+  plugins: [dts()],
 }
-export default types
+export default mainConfig

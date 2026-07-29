@@ -8,6 +8,7 @@ export const getTableOption = () => {
     { label: '文本', value: 'text', color: 'green' },
     { label: '数字', value: 'number', color: 'blue' },
   ]
+  const activeKey = ref('text')
   const type = ref()
   return defineTable({
     attrs: {
@@ -52,7 +53,7 @@ export const getTableOption = () => {
       return data
     },
     // title: 'avc',
-    params: { fieldName: 'abc', other: 'abc' },
+    params: ref({ fieldName: 'abc', other: 'abc' }),
     modalProps: { width: '500px' },
     rowButtons: {
       columnProps: {
@@ -77,7 +78,8 @@ export const getTableOption = () => {
     tabs: {
       options: typeDict,
       bordered: true,
-      activeKey: type,
+      field: 'dataType1',
+      activeKey: activeKey,
       customTab: ({ item }) => h('span', { style: 'font-size:18px' }, item.tab),
     },
     slots: {
@@ -92,6 +94,7 @@ export const getTableOption = () => {
         type: 'Input',
         label: '标题',
         field: 'title',
+        editable: true,
         rules: { required: true },
       },
       {
@@ -99,13 +102,14 @@ export const getTableOption = () => {
         label: '日期',
         field: 'date',
         keepField: 'date2',
+        editable: true,
         rules: { required: true },
       },
       {
         type: 'Select',
         label: '数据类型',
         field: 'dataType',
-        // editable: true,
+        editable: ({current}) => !current.isRequire,
         rules: { required: true },
         options: () =>
           Promise.resolve([
@@ -126,9 +130,10 @@ export const getTableOption = () => {
         options: ['湖南', '广东', '江西'],
         // valueToNumber: true,
         valueToString: true,
+        editable: true,
         attrs: {
           mode: 'multiple',
-          style: 'width:100%'
+          // style: 'width:100%'
         },
       },
       {

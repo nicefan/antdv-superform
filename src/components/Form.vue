@@ -99,6 +99,7 @@ export default {
         resetFields(modelData.value, data, initialData)
         formRef.value?.clearValidate()
         const cloneData = cloneDeep(modelData.value)
+        onReset?.(cloneData as Obj)
         emit('reset', cloneData)
         return cloneData
       },
@@ -121,14 +122,14 @@ export default {
         {
           type: 'InfoSlot',
           align: buttonsConfig.align || 'center',
-          span: buttonsConfig.span,
-          blocked: buttonsConfig.blocked ?? true,
+          blocked: true,
           render: () =>
             h(ButtonGroup, {
               option: buttonsConfig,
-              methods: { submit: actions.submit, reset: actions.resetFields },
+              methods: { submit: actions.submit, reset: actions.resetFields, search: actions.submit },
               effectData,
             }),
+          ...(buttonsConfig.placement === 'inline' && { span: 'auto', blocked: false, align: buttonsConfig.align || 'right' }),
         },
       ]
     }
@@ -154,7 +155,7 @@ export default {
         base.Form,
         {
           ref: getForm,
-          class: ['sup-form', compact && 'sup-form-compact'],
+          class: ['sup-form', compact && 'sup-form-compact', ignoreRules && 'sup-form-simple'],
           model: modelData.value,
           labelAlign: 'right',
           ...attrs,

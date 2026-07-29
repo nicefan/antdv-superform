@@ -1,4 +1,4 @@
-import { inject, reactive, ref, unref, watchEffect } from 'vue'
+import { inject, isRef, reactive, ref, unref, watchEffect } from 'vue'
 
 /** 统一生成动态属性参数 */
 export function getEffectData<T extends Obj>(param?: T) {
@@ -7,7 +7,7 @@ export function getEffectData<T extends Obj>(param?: T) {
 }
 
 export function getComputedStatus(org: undefined | boolean | Ref<boolean> | Fn<boolean>, dataRef: Obj) {
-  const res = ref(!!unref(org))
+  const res = ref(isRef(org) ? org : !!org)
   if (typeof org === 'function') {
     watchEffect(() => {
       res.value = org(dataRef)

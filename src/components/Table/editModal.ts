@@ -63,19 +63,19 @@ export default function editModal({ rowKey, option, listener }) {
         },
       })
     },
-    async edit(args) {
+    edit(args) {
       const { record, selectedRows, resetData, meta = {} } = args
       const data = record || selectedRows[0]
       if (!data) {
         return Promise.reject(new Error('未选择记录'))
       }
+      source.value = merge({}, data, resetData)
       if (option.apis?.info) {
-        source.value = await option.apis.info(rowKey(data), data)
-      } else {
-        source.value = cloneDeep(data)
-      }
+        option.apis.info(rowKey(data), data).then(res => {
+          formRef.value?.setFieldsValue(merge(res, resetData))
+        })
+      } 
       defaults(meta, { name: 'edit', title: '编辑', isNew: false })
-      merge(source.value, resetData)
       formRef.value?.clearValidate()
       return openModal({
         ...meta,

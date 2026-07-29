@@ -4,12 +4,17 @@ import { AppleOutlined, AndroidOutlined, UserOutlined, SearchOutlined } from '@a
 import { Button, message, Modal } from 'ant-design-vue'
 import { uniq } from 'lodash-es'
 import CustomGroup from './CustomGroup.vue'
+import { getBase64WithFile } from '../src/utils/file'
 
 export default function exampleForm() {
   const list = ref<any[]>([
     { value: '1', label: '一' },
     { value: '2', label: '二' },
   ])
+  const tableRef = ref<any>()
+  setTimeout(() => {
+    tableRef.value?.redoHeight()
+  }, 1500)
 
   const { openModal } = useModal(() => '这是内容', {
     destroyOnClose: false,
@@ -87,6 +92,7 @@ export default function exampleForm() {
           actions: [
             {
               label: '开始',
+              color: 'error',
               dropdown: [
                 { label: '按钮一', value: 'start1', icon: AndroidOutlined },
                 { label: '按钮二', value: 'start2', icon: AndroidOutlined },
@@ -95,6 +101,9 @@ export default function exampleForm() {
                 console.log(data)
                 message.info(data.e.key)
               },
+            },
+            {
+              customRender: 'test',
             },
           ],
         },
@@ -120,10 +129,17 @@ export default function exampleForm() {
             label: '文本一',
             initialValue: '文本一',
           },
+
           {
             type: 'Text',
-            label: '文本二',
-            value: '文本二',
+            label: '文本三',
+            value: '文本三',
+            hidden: ({ current }) => current.isReg,
+          },
+          {
+            type: 'Text',
+            label: '文本四',
+            value: '文本四',
           },
           {
             type: 'Text',
@@ -156,14 +172,26 @@ export default function exampleForm() {
           },
           {
             type: 'Input',
-            // field: 'name',
-            value: valname,
+            field: 'name',
+            // value: valname,
             label: '姓名',
-            rules: { required: true },
+            tooltip: { title: '姓名是啥？' },
+            rules: {
+              required: true,
+              // message: '请输入',
+              validator(d) {
+                console.log(d)
+                // if (d.value.length < 2)
+                // return Promise.reject('姓名至少2个字符')
+                // throw '姓名至少2个字符'
+                return d.value.length > 1 || Error('姓名至少2个字符')
+              },
+            },
+            computed: (val, { current, field }) => current[field]?.trim?.(),
             attrs: {
               // 可改变查询按钮标签
               addonAfter: '查询',
-              suffix: 'a',
+              // suffix: 'a',
               enterButton: {
                 icon: SearchOutlined,
                 type: 'primary',
@@ -213,33 +241,40 @@ export default function exampleForm() {
             },
           },
           {
-            type: 'DatePicker',
-            field: 'born',
-            initialValue: '2020-09-01',
-            label: '生日',
-            rules: { required: true, trigger: 'change' },
-            disabled: ({ current }) => {
-              return !current.isReg
-            },
-          },
-          {
-            type: 'Select',
-            field: 'forever',
-            labelField: 'foreverName',
-            label: '爱好',
-            valueToNumber: true,
-            attrs: {
-              placeholder: '使用普通数组生成下拉选项',
-            },
-            /** 依赖数据变化切换 */
-            // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
-            /** 异步请求更新 */
-            // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
-            /** 传递响应式数组，本地进行更新 */
-            options: selectList,
-            /** 静态固定数组 */
-            // options: selectList,
-            // disabled: (data) => data.age > 20,
+            type: 'Fragment',
+            disabled: ({ current }) => current.isReg,
+            subItems: [
+              {
+                type: 'DatePicker',
+                field: 'born',
+                initialValue: '2020-09-01',
+                label: '生日',
+                rules: { required: true, trigger: 'change' },
+                disabled: ({ current }) => {
+                  return !current.isReg
+                },
+              },
+              {
+                type: 'Select',
+                field: 'forever',
+                labelField: 'foreverName',
+                label: '爱好',
+                valueToNumber: true,
+                attrs: {
+                  placeholder: '使用普通数组生成下拉选项',
+                  defaultActiveFirstOption: true,
+                },
+                /** 依赖数据变化切换 */
+                // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
+                /** 异步请求更新 */
+                // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
+                /** 传递响应式数组，本地进行更新 */
+                options: selectList,
+                /** 静态固定数组 */
+                // options: selectList,
+                // disabled: (data) => data.age > 20,
+              },
+            ],
           },
           {
             type: 'TagSelect',
@@ -276,7 +311,7 @@ export default function exampleForm() {
             disabled: (data) => data.formData.forever === 2,
             initialValue: 170,
             attrs: { type: 'number' },
-            rules: { type: 'number', min: 150 },
+            // rules: { type: 'number', min: 150 },
           },
           {
             type: 'DateRange',
@@ -290,6 +325,7 @@ export default function exampleForm() {
             // field: 'address',
             // span: 16,
             gutter: 0,
+
             subItems: [
               {
                 type: 'Select',
@@ -300,7 +336,9 @@ export default function exampleForm() {
                 attrs: {
                   placeholder: '可输入动态添加选项',
                   showSearch: true,
+                  defaultActiveFirstOption: true,
                 },
+                required: ({ current }) => current.isReg,
                 /** value将使用label保存 */
                 valueToLabel: true,
                 /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
@@ -319,13 +357,13 @@ export default function exampleForm() {
                 field: 'addr',
                 label: '地址',
                 span: 'auto',
-                rules: { required: true },
                 attrs: {
                   allowClear: true,
                 },
               },
               {
                 type: 'InfoSlot',
+                hideInDescription: true,
                 colProps: { style: { width: '80px' } },
                 render: () => h(Button, () => '选择'),
               },
@@ -360,11 +398,16 @@ export default function exampleForm() {
               //   delete: (file) => new Promise((resolve, reject) => setTimeout(reject, 5000)),
               //   upload: (data) => new Promise((resolve, reject) => setTimeout(()=>resolve({url:'http://abc.jpg'}), 5000)),
               // },
-              uploadMode: 'base64',
+              uploadMode: 'custom',
               listType: 'picture-card',
               isSingle: true,
               valueKey: 'url',
               // showUploadList: false,
+            },
+            onChange({ current }, { file, fileList }) {
+              getBase64WithFile(file).then(({ result }) => {
+                fileList[0].url = result
+              })
             },
             // slots: {
             //   default(data) {
@@ -493,7 +536,7 @@ export default function exampleForm() {
         // hidden:({current}) => current.isReg,
         // disabled: ({ formData }) => !!formData.isReg,
         descriptionsProps: {
-          tableLayout: 'fixed'
+          tableLayout: 'fixed',
         },
         buttons: {
           limit: 3,
@@ -541,6 +584,9 @@ export default function exampleForm() {
             type: 'InfoSlot',
             // field: 'test',
             label: '模板插槽',
+            attrs: {
+              style: 'color: skyblue',
+            },
             // labelSlot: ({ current }) => h('span', { style: 'color:red' }, `模板插槽${current.name || ''}`),
             render: 'test',
           },
@@ -575,7 +621,7 @@ export default function exampleForm() {
             data: treeData,
             // initialValue: () => ['0-0'],
             attrs: {
-              multiple: true,
+              // multiple: true,
             },
             on: {
               change(...args) {
@@ -607,7 +653,7 @@ export default function exampleForm() {
                 // labelSlot: (data) =>{
                 //   return '姓名' + '一二三四'[data.index] //只有一个元素时，可获取到index
                 // },
-                // rules: { required: true },
+                rules: { required: true },
               },
             ],
           },
@@ -619,6 +665,7 @@ export default function exampleForm() {
               span: 24,
               column: 2,
             },
+            initialValue: () => [{}, {}],
             // label: '付款日期',
             rules: { min: 2 },
             rowButtons: ['add', 'delete'],
@@ -638,9 +685,13 @@ export default function exampleForm() {
             columns: [
               {
                 type: 'InputGroup',
-                labelSlot: (data) => {
+                labelSlot: ({ current, index }) => {
                   // labelIndex为true时，可以为每行生成一个label
-                  return '付款日期' + (data.index + 1)
+                  const id = index + 1
+                  if (current.length === id) {
+                    return '付款日期' + id + 'end'
+                  }
+                  return '付款日期' + id
                 },
                 subItems: [
                   {
@@ -682,11 +733,13 @@ export default function exampleForm() {
         type: 'Table',
         field: 'table',
         label: '表格',
-        attrs: { bordered: true },
-        editable: true,
+        attrs: { bordered: true, ref: tableRef },
+        editable: ({ current }) => {
+          return !current.isReg
+        },
         // rowEditor: {
-        //   // editMode: 'inline',
-        //   addMode: 'modal',
+        //   editMode: 'inline',
+        //   // addMode: 'inline',
         //   singleEdit: true,
         //   form: {
         //     subSpan: 12,
@@ -696,7 +749,17 @@ export default function exampleForm() {
         //   },
         // },
         buttons: {
-          actions: ['add', 'edit', 'delete'],
+          actions: [
+            {
+              name: 'add',
+              onClick: (args, action) => {
+                console.log(args)
+                action()
+              },
+            },
+            'edit',
+            'delete',
+          ],
         },
         rowButtons: {
           columnProps: { width: 120 },
@@ -705,10 +768,9 @@ export default function exampleForm() {
           actions: [
             {
               name: 'add',
-              meta: {
-                onOk: (...args) => {
-                  console.log(args)
-                },
+              onClick: (args, action) => {
+                console.log(args)
+                action()
               },
             },
             'edit',
@@ -737,6 +799,9 @@ export default function exampleForm() {
                 label: '分组2',
                 data: treeData,
                 attrs: { multiple: true },
+                editable: ({ current }) => {
+                  return !current.okable
+                },
               },
             ],
           },

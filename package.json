@@ -1,6 +1,6 @@
 {
   "name": "antdv-superform",
-  "version": "0.6.15",
+  "version": "0.6.16",
   "author": {
     "name": "nicefan",
     "email": "covien@msn.com"
@@ -20,10 +20,7 @@
     "build:dist": "vite build --mode dist",
     "rollup": "rollup -c",
     "dts": "vue-tsc --declaration --emitDeclarationOnly",
-    "serve": "vite preview",
-    "docs:dev": "cd docs && npm run dev",
-    "docs:build": "cd docs && npm run build",
-    "docs:preview": "cd docs && npm run preview"
+    "serve": "vite preview"
   },
   "peerDependencies": {
     "ant-design-vue": ">=3.2.20",

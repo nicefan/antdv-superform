@@ -1,4 +1,3 @@
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import { merge } from 'lodash-es'
 import type { App, Component, VNode } from 'vue'
 import { override, addComponent } from './components'
@@ -88,7 +87,7 @@ const globalProps: Obj = {
 }
 
 const install = async (app: App, config: InstallConfig = {}) => {
-  const { locale = zhCN, components, defaultProps, ..._config } = config
+  const { locale, components, defaultProps, ..._config } = config
   app.provide('localeData', { locale: locale, exist: true })
   Object.assign(globalConfig, _config)
   components && override(components)
