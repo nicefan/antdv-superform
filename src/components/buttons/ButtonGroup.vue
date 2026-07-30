@@ -1,34 +1,30 @@
 <template>
   <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
-    <template v-for="({ attrs, icon, label, tooltip, dropdownProp, menu, render, onClick }, index) of btns" :key="label">
-      <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
-        <template #overlay>
-          <Menu @click="onClick">
-            <menu-item v-for="item of menu" :key="item.value" :disabled="item.disabled">
-              <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
-              <component :is="() => toNode(item.label, effectData)" />
-            </menu-item>
-          </Menu>
-        </template>
-        <Button v-bind="attrs">
-          <component v-if="icon" :is="getIconNode(icon)" />
-          <component :is="() => toNode(label, effectData)" /><DownOutlined />
-        </Button>
-      </Dropdown>
-      <Tooltip v-else-if="tooltip || (iconOnly && icon)" :title="tooltip || label">
-        <component v-if="render" :is="() => render({ props: attrs, ...effectData })" />
+    <template
+      v-for="({ attrs, icon, label, tooltipTitle, dropdownProp, menu, render, onClick }, index) of btns"
+      :key="label"
+    >
+      <Tooltip :title="tooltipTitle">
+        <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
+          <template #overlay>
+            <Menu @click="onClick">
+              <menu-item v-for="item of menu" :key="item.value" :disabled="item.disabled">
+                <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
+                <component :is="() => toNode(item.label, effectData)" />
+              </menu-item>
+            </Menu>
+          </template>
+          <Button v-bind="attrs">
+            <component v-if="icon" :is="getIconNode(icon)" />
+            <component :is="() => toNode(label, effectData)" /><DownOutlined />
+          </Button>
+        </Dropdown>
+        <component v-else-if="render" :is="() => render({ props: attrs, ...effectData })" />
         <Button v-else v-bind="attrs" @click="onClick"
           ><component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
         /></Button>
       </Tooltip>
-      <template v-else>
-        <component v-if="render" :is="() => render({ props: attrs, ...effectData })" />
-        <Button v-else v-bind="attrs" @click="onClick">
-          <component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
-          <component :is="() => toNode(label, effectData)" />
-        </Button>
-      </template>
       <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
 
@@ -38,11 +34,17 @@
       </Button>
       <template #overlay>
         <Menu>
-          <menu-item v-for="{ attrs, icon, label, onClick } of moreBtns" :key="label" :disabled="attrs.disabled">
-            <Button block v-bind="attrs" shape="" @click="onClick">
-              <component v-if="icon" :is="getIconNode(icon)" />
-              <component :is="() => toNode(label, effectData)" />
-            </Button>
+          <menu-item
+            v-for="{ attrs, icon, label, tooltipTitle, onClick } of moreBtns"
+            :key="label"
+            :disabled="attrs.disabled"
+          >
+            <Tooltip :title="tooltipTitle">
+              <Button block v-bind="attrs" shape="" @click="onClick">
+                <component v-if="icon" :is="getIconNode(icon)" />
+                <component :is="() => toNode(label, effectData)" />
+              </Button>
+            </Tooltip>
           </menu-item>
         </Menu>
       </template>
@@ -118,11 +120,19 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
         return config
       })
     const render = typeof item.customRender === 'string' ? rootSlots[item.customRender] : item.customRender
+    const tooltipTitle = computed(() => {
+      const tips =
+        disabled.value && item.disabledTooltip
+          ? item.disabledTooltip
+          : item.tooltip || (iconOnly && item.icon ? item.label : undefined)
+      return typeof tips === 'function' ? tips(param) : tips
+    })
     return {
       isHide,
       render,
       menu,
       ...item,
+      tooltipTitle,
       onClick,
       attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled },
     }

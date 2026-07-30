@@ -190,6 +190,8 @@ interface ButtonItem {
   dropdown?: SelectOptions
   dropdownProps?: DropdownProps
   tooltip?: string
+  /** 按钮禁用时的提示 */
+  disabledTooltip?: string | Fn<string>
   icon?: string | Component
   attrs?: ButtonProps & HTMLAttributes
   hidden?: boolean | Fn<boolean>

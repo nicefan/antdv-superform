@@ -550,6 +550,7 @@ export default function exampleForm() {
                 return data.formData.forever === 2
               },
               label: '新增',
+              disabledTooltip: '新增按钮已禁用',
               onClick() {},
             },
             {
