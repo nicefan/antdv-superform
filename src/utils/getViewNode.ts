@@ -34,14 +34,12 @@ const getOptions = (option, _effectData, optionsArr) => {
       })
   } else if (isPlainObject(__options)) {
     optionsArr.value = Object.entries(__options).map(([key, label]) => ({ value: key, label }))
-  } else if (Array.isArray(__options) && typeof __options[0] === 'string') {
-    optionsArr.value = __options.map((label, index) => ({ value: String(index), label }))
   } else {
-    optionsArr.value = __options
+    optionsArr.value = Array.isArray(__options) ? __options : []
   }
 }
 
-const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) => {
+const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }: Obj) => {
   const item: Obj = { color, label, icon }
   if (tagViewer !== true || !color) {
     const tagOption = tagViewer === true ? globalConfig.tagViewer : tagViewer
@@ -57,7 +55,7 @@ const buildTagRender = ({ value, label, color, icon, tagViewer = true }: Obj) =>
       Object.assign(item, tag)
     }
     item.color ??=
-      color || tagOption[Number(value)] || (value === true && 'success') || (value === false && 'error') || 'default'
+      color || tagOption[value] || (value === true && 'success') || (value === false && 'error') || 'default'
   }
   return h(
     Tag,
@@ -92,10 +90,8 @@ export function getViewNode(option, effectData: Obj = {}) {
     } else if (keepField) {
       return ({ current, text } = effectData) => (text || '') + ' - ' + (objectGet(current, keepField) || '')
     } else if ((colOptions || dictName) && colType !== 'AutoComplete') {
-      // 绑定值为Label时直接返回原值
-      if (valueToLabel) return
-      const optionsArr = ref<any[]>()
       autoTag = !(tagViewer === false || (!tagViewer && globalConfig.tagViewer === false))
+      const optionsArr = ref<any[]>()
       return (param = effectData, inner?: boolean) => {
         const tags: any[] = []
         if (!optionsArr.value) {
@@ -103,6 +99,10 @@ export function getViewNode(option, effectData: Obj = {}) {
         }
         const text = (param.text || param.value) ?? toValue(initialValue) ?? ''
         if (text === '') return ''
+        // 绑定值为Label时直接返回原值
+        if (valueToLabel || unref(optionsArr)?.includes(text)) {
+          return !inner && autoTag ? buildTagRender({ value: text, label: text, tagViewer }) : text
+        }
         const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
         const values = arr.map((val) => {
           const item = unref(optionsArr)?.find(({ value }) => value == val) // 字符串数字都匹配
@@ -116,8 +116,8 @@ export function getViewNode(option, effectData: Obj = {}) {
       }
     } else if (colType === 'Switch') {
       return ({ text } = effectData) => (option.valueLabels || '否是')[text ?? toValue(initialValue)]
-    } else {
-      // textRender为undefined将直接返回绑定的值
+    // } else {
+    //   //textRender为undefined将直接返回绑定的值
     }
   })() //as false | undefined | ((param?: Obj) => VNode)
 

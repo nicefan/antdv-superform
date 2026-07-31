@@ -1,5 +1,4 @@
 import { cloneDeep, defaults } from 'lodash-es'
-import { nanoid } from 'nanoid'
 import { globalProps } from '../../plugin'
 import { createModal } from '../../superModal'
 import { ref, h, nextTick } from 'vue'
@@ -40,7 +39,7 @@ export default function editModal({ rowKey, option, listener }) {
   const methods = {
     add(args: Obj = {}) {
       const { meta = {}, resetData, index } = args
-      source.value = { '_ID_': nanoid(12), ...resetData }
+      source.value = { ...resetData }
       nextTick(() => {
         formRef.value?.clearValidate()
       })

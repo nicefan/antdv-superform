@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, ref, toRef, useAttrs, watch } from 'vue'
+import { type PropType, defineComponent, h, reactive, ref, toRaw, toRef, useAttrs, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../utils/buildModel'
 import { createButtons } from './buttons'
@@ -47,14 +47,18 @@ export default defineComponent({
       },
     }
 
+    const keyMap = new WeakMap<object, PropertyKey>()
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
       () => [...orgList.value],
       (org) => {
         listItems.value = org.map((record, idx) => {
-          const hash = record[rowKey] || nanoid(12)
-          record[rowKey] = hash
+          const raw = toRaw(record)
+          if (!keyMap.has(raw)) {
+            keyMap.set(raw, record[rowKey] || nanoid(12))
+          }
+          const hash = keyMap.get(raw)
           // 原数据已经存在, 此处建立表单绑定
           const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
 

@@ -46,16 +46,18 @@ type BuildDataParam = {
   model: ModelDataGroup
   orgList: Ref<Obj[]>
   rowKey: Fn<string>
+  setRowKey: Fn
   listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
   isView?: boolean
   effectData?: Obj
 }
 
-function buildData({ option, model, orgList, rowKey, listener, isView, effectData }: BuildDataParam) {
+function buildData({ option, model, orgList, rowKey, setRowKey, listener, isView, effectData }: BuildDataParam) {
   const { modelsMap: childrenMap } = model.listData
   const context: {
     list: Ref
     methods: Obj
+    buttonMethods?: Obj
     modalSlot: Fn[]
     getEditRender?: Fn
     editButtonsSlot?: Fn
@@ -76,11 +78,11 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
   if (!isView && editable) {
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
 
-    const { methods, ..._context } = useTableEdit({ model, orgList, rowKey, editableRef })
+    const { methods, ..._context } = useTableEdit({ model, orgList, rowKey, setRowKey, editableRef })
     Object.assign(context.methods, methods)
     Object.assign(context, _context)
   } else if (editMode === 'inline') {
-    const { list, methods, editButtonsSlot, getEditRender } = inlineRender({
+    const { list, methods, buttonMethods, editButtonsSlot, getEditRender } = inlineRender({
       childrenMap,
       orgList,
       listener,
@@ -88,13 +90,15 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
     })
     context.list = list
     Object.assign(context.methods, methods)
-    Object.assign(context, { editButtonsSlot, getEditRender })
+    Object.assign(context, { buttonMethods, editButtonsSlot, getEditRender })
   }
   if (editMode === 'modal' || addMode === 'modal') {
     const { modalSlot, methods } = modalRender({ rowKey, option, listener })
     if (context.methods.edit) {
       // 编辑模式为行内编辑时，新增按钮使用弹窗模式
       context.methods.add = methods.add
+      context.buttonMethods ||= {}
+      context.buttonMethods.add = methods.add
     } else {
       Object.assign(context.methods, methods)
     }

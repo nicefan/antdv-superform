@@ -12,10 +12,10 @@ export default defineComponent({
     size: String as PropType<'large' | 'middle' | 'small'>,
     /** 按钮显示方式icon/label */
     labelMode: String as PropType<'icon' | 'label' | 'both'>,
-    hidden: Boolean || Function,
+    hidden: [Boolean, Function] as PropType<boolean | Fn<boolean>>,
     /** 无效禁用，默认隐藏 */
     invalidDisabled: Boolean,
-    disabled: Boolean || (Function as PropType<Fn<boolean>>),
+    disabled: [Boolean, Function] as PropType<boolean | Fn<boolean>>,
     actions: Array as PropType<ButtonItem[]>,
     effectData: Object,
   },

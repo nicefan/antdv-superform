@@ -1,5 +1,4 @@
 import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive, toRef, ref } from 'vue'
-import { nanoid } from 'nanoid'
 import { isFunction } from 'lodash-es'
 import Controls from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
@@ -8,16 +7,15 @@ import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
 import { formatRule } from '../../utils/buildModel'
 
-export default function ({ model, orgList, rowKey, editableRef }) {
+export default function ({ model, orgList, rowKey, setRowKey, editableRef }) {
   const { modelsMap: childrenMap } = model.listData
   const editList = ref<any[]>([])
   const listMap = new WeakMap()
-  const keyMap = new Map()
+  const keyMap = new WeakMap()
   // 监听数据变化
   watch(
     () => [...orgList.value],
     (org) => {
-      keyMap.clear()
       // 使用原响应列表拿到的子集才是同一引用
       editList.value = org.map((record, idx) => {
         const listItem = listMap.get(toRaw(record)) || shallowReactive({})
@@ -28,9 +26,10 @@ export default function ({ model, orgList, rowKey, editableRef }) {
           listItem.modelsMap = modelsMap
         }
         listItem.record ??= reactive({ ...toRefs(record) })
-        const hash = (listItem.record._ID_ ??= rowKey(record) || nanoid(12))
+        const hash = rowKey(record)
+        setRowKey(listItem.record, hash)
         listMap.set(toRaw(record), listItem)
-        keyMap.set(hash, listItem)
+        keyMap.set(toRaw(listItem.record), listItem)
         return listItem.record
       })
     },
@@ -62,7 +61,7 @@ export default function ({ model, orgList, rowKey, editableRef }) {
     setup({ option }, ctx) {
       const { record } = ctx.attrs as Obj
       const model = computed(() => {
-        const row = keyMap.get(record._ID_)
+        const row = keyMap.get(toRaw(record))
         return row.modelsMap.get(option)
       })
       const { index, parent, refData } = toRefs(model.value)

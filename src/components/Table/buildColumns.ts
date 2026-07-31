@@ -63,6 +63,7 @@ interface BuildColumnsParam {
   context: {
     list: Ref
     methods?: Obj // 按钮组件绑定方法
+    buttonMethods?: Obj // 带禁用状态等配置的按钮方法
     getEditRender?: Fn // 行内编辑render方法
     editButtonsSlot?: Fn
   }
@@ -73,7 +74,7 @@ interface BuildColumnsParam {
 }
 
 export function buildColumns({ childrenMap, context, option, attrs, isView, effectData: parentData }: BuildColumnsParam) {
-  const { list, methods, getEditRender, editButtonsSlot } = context
+  const { list, methods, buttonMethods, getEditRender, editButtonsSlot } = context
   const effectData = getEffectData({ list: parentData.value, isView, parent: parentData })
 
   const columns = (function getColumns(_models = childrenMap) {
@@ -116,7 +117,13 @@ export function buildColumns({ childrenMap, context, option, attrs, isView, effe
   const indexColumn = buildIndexColumn(option, attrs)
   if (indexColumn) columns.unshift(indexColumn)
 
-  const actionColumn = buildActionSlot({ buttons: option.rowButtons, methods, editButtonsSlot, isView, effectData })
+  const actionColumn = buildActionSlot({
+    buttons: option.rowButtons,
+    methods: buttonMethods || methods,
+    editButtonsSlot,
+    isView,
+    effectData,
+  })
   if (actionColumn) {
     defaults(actionColumn, option.columnProps, globalProps.Column)
     columns.push(actionColumn)

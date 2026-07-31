@@ -411,6 +411,7 @@ interface ExtFormItemOption extends ExtBaseOption {
   value?: any
   /** 指定查看时显示的字段 */
   labelField?: string
+  /**标签化显示，当有options时自动开启 */
   tagViewer?:
     | boolean
     | Obj<string>

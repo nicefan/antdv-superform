@@ -1,5 +1,6 @@
 <script lang="ts">
-import { h, ref, reactive, unref, type PropType, defineComponent, toRef, watch } from 'vue'
+import { h, ref, reactive, unref, type PropType, defineComponent, toRaw, toRef, watch } from 'vue'
+import { nanoid } from 'nanoid'
 import { createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
@@ -35,8 +36,19 @@ export default defineComponent({
   setup({ option, model, apis = {} as TableApis, effectData, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
-    const rowKey = (record) => record[attrs.rowKey || 'id'] || record['_ID_']
-    const setKeyValue = (record, val) => (record[attrs.rowKey || '_ID_'] = val)
+    const keyMap = new WeakMap<object, PropertyKey>()
+    const rowKeyField = attrs.rowKey || 'id'
+    const rowKey = (record) => {
+      const key = record[rowKeyField]
+      if (key) return key
+
+      const raw = toRaw(record)
+      if (!keyMap.has(raw)) {
+        keyMap.set(raw, nanoid(12))
+      }
+      return keyMap.get(raw)
+    }
+    const setRowKey = (record, key) => keyMap.set(toRaw(record), key)
     const orgList = toRef(model, 'refData')
     const __rowSelection = option.attrs?.rowSelection || undefined //?? (editInline ? {} : undefined)
     const selectedRowKeys = ref<any[]>(__rowSelection?.selectedRowKeys || [])
@@ -91,10 +103,9 @@ export default defineComponent({
     const listener = {
       async onSave(data, index?: number) {
         if (apis.save) {
-          const { _ID_, ...rest } = data
-          await apis.save(rest)
-          if (rest.parentId) {
-            expandedRowKeys.value = [...expandedRowKeys.value, rest.parentId]
+          await apis.save(data)
+          if (data.parentId) {
+            expandedRowKeys.value = [...expandedRowKeys.value, data.parentId]
           }
           return apis.query?.(true)
         } else {
@@ -139,10 +150,10 @@ export default defineComponent({
       },
     }
 
-    const context = buildData({ option, model, orgList, rowKey, listener, isView, effectData })
+    const context = buildData({ option, model, orgList, rowKey, setRowKey, listener, isView, effectData })
     const columns = buildColumns({ childrenMap: model.listData.modelsMap, context, option, attrs, isView, effectData })
 
-    const { list, methods, modalSlot } = context
+    const { list, methods, buttonMethods = methods, modalSlot } = context
     // TODO: 补充TS
     const actions = {
       selectedRowKeys,
@@ -186,7 +197,7 @@ export default defineComponent({
       const buttonsSlot = createButtons({
         config: buttonsConfig,
         effectData: editParam,
-        methods,
+        methods: buttonMethods,
         isView,
       })
       if (orgSlot || buttonsSlot) {

@@ -280,6 +280,7 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     value?: any
     /** 指定查看时显示的字段 */
     labelField?: string
+    /**标签化显示，当有options时自动开启 */
     tagViewer?:
     | boolean
     | Obj<string>
@@ -684,10 +685,10 @@ export declare const SuperButtons: DefineComponent<{
     size: PropType<"small" | "middle" | "large">;
     /** 按钮显示方式icon/label */
     labelMode: PropType<"label" | "both" | "icon">;
-    hidden: BooleanConstructor;
+    hidden: PropType<boolean | Fn<boolean>>;
     /** 无效禁用，默认隐藏 */
     invalidDisabled: BooleanConstructor;
-    disabled: BooleanConstructor;
+    disabled: PropType<boolean | Fn<boolean>>;
     actions: PropType<ButtonItem[]>;
     effectData: ObjectConstructor;
 }, () => VNode<RendererNode, RendererElement, {
@@ -699,15 +700,13 @@ export declare const SuperButtons: DefineComponent<{
     size: PropType<"small" | "middle" | "large">;
     /** 按钮显示方式icon/label */
     labelMode: PropType<"label" | "both" | "icon">;
-    hidden: BooleanConstructor;
+    hidden: PropType<boolean | Fn<boolean>>;
     /** 无效禁用，默认隐藏 */
     invalidDisabled: BooleanConstructor;
-    disabled: BooleanConstructor;
+    disabled: PropType<boolean | Fn<boolean>>;
     actions: PropType<ButtonItem[]>;
     effectData: ObjectConstructor;
 }>>, {
-    disabled: boolean;
-    hidden: boolean;
     invalidDisabled: boolean;
 }, {}>;
 

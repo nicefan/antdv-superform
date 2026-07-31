@@ -20,12 +20,14 @@ import Setups from './setups.vue'
 import FirstForm from './form.vue'
 import FristTable from './fristTable/index.vue'
 import Detail from './Detail.vue'
+import RowKeyTest from './RowKeyTest.vue'
 
 const tabs = [
   { comp: Setups, label: '弹窗' },
   { comp: FirstForm, label: '超级表单' },
   { comp: FristTable, label: '一体表格' },
   { comp: Detail, label: '详情描述' },
+  { comp: RowKeyTest, label: '无 rowKey 测试' },
 ]
 
 const tab = ref((location.hash || '#1').substring(1))

@@ -1,5 +1,4 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent, unref, computed } from 'vue'
-import { nanoid } from 'nanoid'
 import { cloneDeep, isFunction } from 'lodash-es'
 import { message, Form } from 'ant-design-vue'
 import Controls, { ButtonGroup } from '../index'
@@ -54,37 +53,43 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
   const { getEditInfo, setEditInfo } = createEditCache(childrenMap)
 
   const methods = {
+    add({ index, resetData }) {
+      const item = { ...resetData }
+      if (index !== undefined) {
+        list.value.splice(index + 1, 0, item)
+      } else {
+        list.value.push(item)
+      }
+      setEditInfo(item, {
+        index,
+        isEdit: true,
+        isNew: true,
+      })
+      hasEditor.value = true
+    },
+    edit({ record, selectedRows, resetData }) {
+      const data = record || selectedRows[0]
+      setEditInfo(merge(data, resetData), { isEdit: true })
+      hasEditor.value = true
+    },
+    delete({ record, selectedRows }) {
+      const items = record ? [record] : selectedRows
+      return listener.onDelete(items)
+    },
+  }
+
+  const buttonMethods = {
     add: {
       disabled: () => hasEditor.value,
-      onClick({ index, resetData }) {
-        const item = { '_ID_': nanoid(12), ...resetData }
-        if (index !== undefined) {
-          list.value.splice(index + 1, 0, item)
-        } else {
-          list.value.push(item)
-        }
-        setEditInfo(item, {
-          index,
-          isEdit: true,
-          isNew: true,
-        })
-        hasEditor.value = true
-      },
+      onClick: methods.add,
     },
     edit: {
       disabled: (param) => hasEditor.value || !(param.record || param.selectedRows?.length === 1),
-      onClick({ record, selectedRows, resetData }) {
-        const data = record || selectedRows[0]
-        setEditInfo(merge(data, resetData), { isEdit: true })
-        hasEditor.value = true
-      },
+      onClick: methods.edit,
     },
     delete: {
       disabled: (param) => hasEditor.value || !(param.record || param.selectedRows?.length > 0),
-      onClick({ record, selectedRows }) {
-        const items = record ? [record] : selectedRows
-        return listener.onDelete(items)
-      },
+      onClick: methods.delete,
     },
   }
 
@@ -196,6 +201,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
   return {
     list,
     methods,
+    buttonMethods,
     getEditRender,
     editButtonsSlot,
   }

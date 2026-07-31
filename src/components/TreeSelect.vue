@@ -1,6 +1,6 @@
 
 <script lang="ts">
-import { ref, watchPostEffect, watch, defineComponent, h, toRef } from 'vue'
+import { ref, unref, watchPostEffect, watch, defineComponent, h, toRef } from 'vue'
 import base from './base'
 export default defineComponent({
   props: {
@@ -19,9 +19,9 @@ export default defineComponent({
           dataRef.value = res || []
         })
       })
-    } else if (data) {
+    } else if (treeData) {
       watch(
-        () => treeData,
+        () => unref(treeData),
         (data) => (dataRef.value = data as any),
         { immediate: true }
       )
