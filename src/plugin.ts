@@ -95,21 +95,26 @@ const install = async (app: App, config: InstallConfig = {}) => {
 }
 
 /** 绑定到组件上的动态属性 */
-interface RegistPram {
+interface RegisterParam {
   option: Obj
   effectData: Obj
   /** 当前值 */
   value?: any
   [K: string]: any
 }
-function registComponent(name: string, component: ((param: RegistPram) => VNode) | Component) {
+function registerComponent(name: string, component: ((param: RegisterParam) => VNode) | Component) {
   addComponent(name, component)
+}
+/** @deprecated 使用 `registerComponent` */
+function registComponent(name: string, component: ((param: RegisterParam) => VNode) | Component) {
+  registerComponent(name, component)
 }
 function setDefaultProps(props: Obj) {
   merge(globalProps, props)
 }
 export default {
   install,
+  registerComponent,
   registComponent,
   setDefaultProps,
 }

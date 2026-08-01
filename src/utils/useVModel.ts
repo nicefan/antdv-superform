@@ -9,14 +9,27 @@ type Param = {
 }
 
 export default function useVModel({ option, model, effectData }: Param, defaultValue?: any) {
-  const { type, field, keepField, labelField, valueToString, computed: __computed, value, onUpdate }: MixOption = option
+  const {
+    type,
+    field,
+    endField: newEndField,
+    keepField,
+    labelField,
+    stringifyValue: newStringifyValue,
+    valueToString,
+    computed: __computed,
+    value,
+    onUpdate,
+  }: MixOption = option
+  const endField = newEndField ?? keepField
+  const stringifyValue = newStringifyValue ?? valueToString
   const vModels: Obj = {}
 
   const vModelFields: Obj = option.vModelFields || {}
   if (labelField) {
     vModels['labelValue'] = computed(() => objectGet(model.parent, labelField))
     vModels[`onUpdate:labelValue`] = (val) => {
-      const value = valueToString ? val?.toString() : val
+      const value = stringifyValue ? val?.toString() : val
       objectSet(model.parent, labelField, value)
     }
   }
@@ -70,19 +83,19 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   let raw = toValue(model.refData) // 阻止监听自身数据变化
   // 表单绑定值，变更后同步处理后再改到实际存储变量中
   let effect: Fn
-  if (type === 'DateRange' && keepField) {
-    tempData.value = [refValue.value, model.parent[keepField]]
+  if (type === 'DateRange' && endField) {
+    tempData.value = [refValue.value, model.parent[endField]]
     effect = (val) => {
       const [start, end] = val || []
       refValue.value = start
       raw = start
-      model.parent[keepField] = end
+      model.parent[endField] = end
     }
     // 源数据变化通知表单同步
-    watch([refValue, () => model.parent[keepField]], (arr) => {
+    watch([refValue, () => model.parent[endField]], (arr) => {
       tempData.value = arr
     })
-  } else if (valueToString) {
+  } else if (stringifyValue) {
     const convert = (val) => {
       return val?.toString().split(',') || []
     }

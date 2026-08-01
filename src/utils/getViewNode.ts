@@ -72,12 +72,12 @@ export function getViewNode(option, effectData: Obj = {}) {
     options: colOptions,
     dictName,
     labelField,
-    keepField,
-    valueToLabel,
     valueToNumber,
     tagViewer,
     initialValue,
   } = option as any
+  const endField = option.endField ?? option.keepField
+  const labelAsValue = option.labelAsValue ?? option.valueToLabel
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const __render = viewRender || (colType === 'InfoSlot' && render)
@@ -87,8 +87,8 @@ export function getViewNode(option, effectData: Obj = {}) {
   const content = (() => {
     if (labelField) {
       return ({ current } = effectData) => String(objectGet(current, labelField) ?? '')
-    } else if (keepField) {
-      return ({ current, text } = effectData) => (text || '') + ' - ' + (objectGet(current, keepField) || '')
+    } else if (endField) {
+      return ({ current, text } = effectData) => (text || '') + ' - ' + (objectGet(current, endField) || '')
     } else if ((colOptions || dictName) && colType !== 'AutoComplete') {
       autoTag = !(tagViewer === false || (!tagViewer && globalConfig.tagViewer === false))
       const optionsArr = ref<any[]>()
@@ -100,7 +100,7 @@ export function getViewNode(option, effectData: Obj = {}) {
         const text = (param.text || param.value) ?? toValue(initialValue) ?? ''
         if (text === '') return ''
         // 绑定值为Label时直接返回原值
-        if (valueToLabel || unref(optionsArr)?.includes(text)) {
+        if (labelAsValue || unref(optionsArr)?.includes(text)) {
           return !inner && autoTag ? buildTagRender({ value: text, label: text, tagViewer }) : text
         }
         const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]

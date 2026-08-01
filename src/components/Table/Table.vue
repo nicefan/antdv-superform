@@ -191,7 +191,7 @@ export default defineComponent({
     const slots: Obj = { ...ctx.slots }
 
     const buttonsConfig = option.buttons as any
-    const slotName = buttonsConfig?.forSlot || 'extra'
+    const slotName = buttonsConfig?.targetSlot ?? buttonsConfig?.forSlot ?? 'extra'
     if (buttonsConfig) {
       const orgSlot = slots[slotName]
       const buttonsSlot = createButtons({

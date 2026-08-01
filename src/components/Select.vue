@@ -31,7 +31,9 @@ const props = defineProps<{
   dictName?: string
   /** 选项中的value转成number类型 */
   valueToNumber?: boolean
-  /** 选项中的value使用label */
+  /** 使用选项 label 作为字段值 */
+  labelAsValue?: boolean
+  /** @deprecated 使用 `labelAsValue` */
   valueToLabel?: boolean
   onChange?: Fn
   onSearch?: Fn

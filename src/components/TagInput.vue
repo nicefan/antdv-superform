@@ -41,6 +41,8 @@ const props = withDefaults(
     model: ModelData
     effectData: Obj
     value?: string | string[]
+    stringifyValue?: boolean
+    /** @deprecated 使用 `stringifyValue` */
     valueToString?: boolean
     newLabel?: string | Fn
     isView?: boolean
@@ -92,7 +94,7 @@ const handleClose = (removedTag) => {
 }
 
 const updateValue = (val: string[]) => {
-  if (props.valueToString) {
+  if (props.stringifyValue || props.valueToString) {
     emit('update:value', val.join(','))
   } else {
     emit('update:value', val)

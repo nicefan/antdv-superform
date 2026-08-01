@@ -122,14 +122,14 @@ export default {
         {
           type: 'InfoSlot',
           align: buttonsConfig.align || 'center',
-          blocked: true,
+          block: true,
           render: () =>
             h(ButtonGroup, {
               option: buttonsConfig,
               methods: { submit: actions.submit, reset: actions.resetFields, search: actions.submit },
               effectData,
             }),
-          ...(buttonsConfig.placement === 'inline' && { span: 'auto', blocked: false, align: buttonsConfig.align || 'right' }),
+          ...(buttonsConfig.placement === 'inline' && { span: 'auto', block: false, align: buttonsConfig.align || 'right' }),
         },
       ]
     }

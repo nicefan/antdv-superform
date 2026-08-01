@@ -26,7 +26,9 @@ export default defineComponent({
     dictName: String,
     /** 选项中的value转成number类型 */
     valueToNumber: Boolean,
-    /** 选项中的value使用label */
+    /** 使用选项 label 作为字段值 */
+    labelAsValue: Boolean,
+    /** @deprecated 使用 `labelAsValue` */
     valueToLabel: Boolean,
     /** 第一个选项为选中值 */
     firstIsChecked: Boolean,

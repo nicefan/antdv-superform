@@ -14,7 +14,7 @@ export default defineComponent({
   },
 
   setup(props, ctx) {
-    const { optionsRef } = useOptions({ ...props.option, valueToLabel: true }, props.options, props.effectData)
+    const { optionsRef } = useOptions({ ...props.option, labelAsValue: true }, props.options, props.effectData)
     return () =>
       h(
         baseComps.AutoComplete,

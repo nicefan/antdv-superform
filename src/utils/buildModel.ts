@@ -6,7 +6,8 @@ import { getComputedStatus } from './reactivity'
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
 function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
-  const { field, keepField = option.labelField, columns, subItems, initialValue, value } = option
+  const { field, columns, subItems, initialValue, value } = option
+  const relatedField = option.endField ?? option.keepField ?? option.labelField
   const nameArr = field ? field.split('.') : []
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]
@@ -31,7 +32,7 @@ function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
       origin,
       (data) => {
         model.refData ??= toValue(value) ?? toValue(initialValue) ?? ((columns && []) || (subItems && {}))
-        if (keepField) update(model.parent, keepField, (v) => v)
+        if (relatedField) update(model.parent, relatedField, (v) => v)
       },
       { immediate: true, flush: 'sync' }
     )

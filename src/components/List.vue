@@ -79,7 +79,7 @@ export default defineComponent({
 
     slots.title ||= title && (() => toNode(title, effectData))
     if (buttonsConfig) {
-      const slotName = buttonsConfig['forSlot'] || 'extra'
+      const slotName = buttonsConfig['targetSlot'] ?? buttonsConfig['forSlot'] ?? 'extra'
       const orgSlot = slots[slotName]
       const buttonsSlot = createButtons({
         config: buttonsConfig,

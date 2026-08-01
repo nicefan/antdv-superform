@@ -22,7 +22,7 @@ const app = createApp(App)
 //     )
 //   }
 // })
-superForm.registComponent('InNumber', InputNumber)
+superForm.registerComponent('InNumber', InputNumber)
 
 const defaultButtons: Obj<ButtonItem> = {
   add: {

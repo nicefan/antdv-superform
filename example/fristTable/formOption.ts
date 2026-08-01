@@ -17,7 +17,7 @@ export const getTableOption = () => {
       pagination: false,
     },
     buttons: {
-      // forSlot: 'tabBarExtraContent',
+      // targetSlot: 'tabBarExtraContent',
       actions: ['add', 'edit', 'delete'],
     },
     rowEditor: {
@@ -101,7 +101,7 @@ export const getTableOption = () => {
         type: 'DateRange',
         label: '日期',
         field: 'date',
-        keepField: 'date2',
+        endField: 'date2',
         editable: true,
         rules: { required: true },
       },
@@ -129,7 +129,7 @@ export const getTableOption = () => {
         tooltip: '支持多选',
         options: ['湖南', '广东', '江西'],
         // valueToNumber: true,
-        valueToString: true,
+        stringifyValue: true,
         editable: true,
         attrs: {
           mode: 'multiple',

@@ -72,7 +72,7 @@ export default defineComponent({
         } else {
           current.push(item)
         }
-        if (option.wrapping) {
+        if (option.breakAfter ?? option.wrapping) {
           group.push(current)
           n = 0
           current = []

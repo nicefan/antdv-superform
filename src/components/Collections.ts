@@ -36,7 +36,9 @@ export default defineComponent({
     const childrenArr = [...props.model.children]
     for (let idx = 0; idx < childrenArr.length; idx++) {
       const [option, subData] = childrenArr[idx]
-      const { type, align, blocked, span, hideInForm, exclude, editable } = option
+      const { type, align, span, hideInForm, exclude, editable } = option
+      const block = option.block ?? option.blocked
+      const breakAfter = option.breakAfter ?? option.wrapping
       const { parent, refData } = toRefs(subData)
       const effectData = getEffectData({
         parent: props.effectData,
@@ -91,7 +93,7 @@ export default defineComponent({
       /** 容器组件 */
       const independent = [...containers, 'InputList', 'InputGroup'].includes(type)
       // const isListFormItem = type === 'InputList' && (labelSlot || label) && !option.attrs?.labelIndex
-      if (!independent && (!blocked || (option.field && option.label))) {
+      if (!independent && (!block || (option.field && option.label))) {
         // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
         const __rules = formatRule(subData.rules, effectData)
         const rules = computed(() =>
@@ -118,7 +120,7 @@ export default defineComponent({
       }
 
       // 容器组件独行显示
-      const __isBlock = blocked ?? (containers.includes(type) && !option.span)
+      const __isBlock = block ?? (containers.includes(type) && !option.span)
       const alignStyle = align && `text-align: ${align}`
       if (__isBlock) {
         currentGroup = undefined
@@ -146,7 +148,7 @@ export default defineComponent({
           nodes.push((currentGroup = []))
         }
         currentGroup.push(() => !hidden.value && h(Col, mergeProps({ style: alignStyle, key: idx }, colProps), node))
-        if (option.wrapping) currentGroup = undefined
+        if (breakAfter) currentGroup = undefined
       }
     }
 

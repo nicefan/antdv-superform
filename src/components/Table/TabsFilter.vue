@@ -12,7 +12,9 @@ export default defineComponent({
     bordered: Boolean,
     /** 字典名称 */
     dictName: String,
-    /** 选项中的value使用label */
+    /** 使用选项 label 作为字段值 */
+    labelAsValue: Boolean,
+    /** @deprecated 使用 `labelAsValue` */
     valueToLabel: Boolean,
     activeKey: [String, Number, Object],
     defaultActiveKey: [String, Number],
@@ -22,7 +24,11 @@ export default defineComponent({
   emits: ['update:activeKey'],
   setup(props, { attrs, slots, emit }) {
     const { Card, Tabs, TabPane } = baseComps
-    const { optionsRef } = useOptions(props, [], props.effectData)
+    const { optionsRef } = useOptions(
+      { ...props, labelAsValue: props.labelAsValue || props.valueToLabel },
+      [],
+      props.effectData
+    )
     const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<string | number | undefined>
     const updateActiveKey = (key) => {
       activeKey.value = key

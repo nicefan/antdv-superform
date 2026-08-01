@@ -97,9 +97,19 @@ interface ExtBaseOption {
   colProps?: ColProps & HTMLAttributes
   /** 快捷实现col span */
   span?: number | 'auto'
-  /** 是否为独立块，分组元素默认为true */
+  /** 当前节点脱离前后栅格组，独立成块；分组元素默认为 true */
+  block?: boolean
+  /**
+   * 是否为独立块
+   * @deprecated 使用 `block`
+   */
   blocked?: boolean
-  /** 是否换行 */
+  /** 当前节点后换行 */
+  breakAfter?: boolean
+  /**
+   * 是否在当前节点后换行
+   * @deprecated 使用 `breakAfter`
+   */
   wrapping?: boolean
   align?: 'left' | 'right' | 'center'
   slots?: Obj<VSlot>
@@ -180,12 +190,19 @@ interface ButtonItem {
   confirmText?: string | Fn<string>
   /** 权限标识 */
   roleName?: string
-  /** 无效禁用，默认隐藏 */
+  /** 无权限时的展示方式，默认隐藏 */
+  unauthorized?: 'hide' | 'disable'
+  /**
+   * 无权限时禁用，默认隐藏
+   * @deprecated 使用 `unauthorized: 'disable'`
+   */
   invalidDisabled?: boolean
-  /**@deprecated 改用invlidDisabled开关 */
+  /** @deprecated 使用 `unauthorized` */
   roleMode?: 'hidden' | 'disable'
   color?: 'success' | 'error' | 'warning' | 'primary' | string
-  /** 待改动 */
+  /** 按钮可见场景 */
+  visibleIn?: 'form' | 'detail' | 'both'
+  /** @deprecated 使用 `visibleIn` */
   validOn?: 'form' | 'detail' | 'both'
   dropdown?: SelectOptions
   dropdownProps?: DropdownProps
@@ -215,6 +232,9 @@ interface ExtButtonGroup<T extends string = string> {
   buttonShape?: 'circle' | 'round' | 'default'
   size?: 'large' | 'middle' | 'small'
   align?: 'right' | 'left' | 'center'
+  /** 按钮组可见场景 */
+  visibleIn?: 'form' | 'detail' | 'both'
+  /** @deprecated 使用 `visibleIn` */
   validOn?: 'form' | 'detail' | 'both'
   /** 表单按钮位置 */
   placement?: 'top' | 'bottom' | 'inline'
@@ -224,13 +244,21 @@ interface ExtButtonGroup<T extends string = string> {
   labelMode?: 'icon' | 'label' | 'both'
   /** 更多按钮slot */
   moreLabel?: VSlot
-  /** 无效禁用，默认隐藏 */
+  /** 无权限时的展示方式，默认隐藏 */
+  unauthorized?: 'hide' | 'disable'
+  /**
+   * 无权限时禁用，默认隐藏
+   * @deprecated 使用 `unauthorized: 'disable'`
+   */
   invalidDisabled?: boolean
-  /**@deprecated 改用invlidDisabled开关 */
+  /** @deprecated 使用 `unauthorized` */
   roleMode?: 'hidden' | 'disable'
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
   /** 将按钮放置到组件的指定slot中 */
+  /** 按钮组渲染到的目标插槽 */
+  targetSlot?: string
+  /** @deprecated 使用 `targetSlot` */
   forSlot?: string
   methods?: Obj<Fn>
   /** 传递到事件方法中可响应数据 */
@@ -246,7 +274,12 @@ interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
   options?: SelectOptions
   /** 字典名称 */
   dictName?: string
-  /** 选项中的value使用label */
+  /** 使用选项 label 作为字段值 */
+  labelAsValue?: boolean
+  /**
+   * 选项中的 value 使用 label
+   * @deprecated 使用 `labelAsValue`
+   */
   valueToLabel?: boolean
   activeKey?: Ref<string | number | undefined>
   slots?: Obj<VSlot>
@@ -441,9 +474,19 @@ interface ExtSelect {
   dictName?: string
   /** 选项中的value转成number类型 */
   valueToNumber?: boolean
-  /** 选项中的value使用label */
+  /** 使用选项 label 作为字段值 */
+  labelAsValue?: boolean
+  /**
+   * 选项中的 value 使用 label
+   * @deprecated 使用 `labelAsValue`
+   */
   valueToLabel?: boolean
-  /** 多选时保存为逗号分隔字符串 */
+  /** 将多选结果转换为逗号分隔字符串后写回字段 */
+  stringifyValue?: boolean
+  /**
+   * 多选时保存为逗号分隔字符串
+   * @deprecated 使用 `stringifyValue`
+   */
   valueToString?: boolean
 }
 interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
@@ -452,11 +495,17 @@ interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
 interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
   attrs?: {
     multiple?: boolean
+    /** 将多选结果转换为逗号分隔字符串后写回字段 */
+    stringifyValue?: boolean
+    /** @deprecated 使用 `stringifyValue` */
     valueToString?: boolean
   } & HTMLAttributes
 }
 interface ExtTagInputOption extends ExtFormItemOption {
   attrs?: {
+    /** 将标签数组转换为逗号分隔字符串后写回字段 */
+    stringifyValue?: boolean
+    /** @deprecated 使用 `stringifyValue` */
     valueToString?: boolean
     /**新增标签名 */
     newLabel?: VSlot
@@ -486,7 +535,11 @@ interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
 
 interface ExtDateRange extends ExtFormItemOption {
   /** 绑定结束日期字段 */
+  endField?: string
+  /** @deprecated 使用 `endField` */
   keepField?: string
+  /** 未配置 `endField` 时，将日期范围转换为逗号分隔字符串后写回字段 */
+  stringifyValue?: boolean
 }
 interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
   attrs?: RadioGroupProps & HTMLAttributes

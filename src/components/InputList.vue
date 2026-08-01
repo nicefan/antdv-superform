@@ -148,9 +148,10 @@ export default defineComponent({
     if (isView) {
       if (isFormItem) {
         if (isSingle) {
-          const { wrapping, label, labelSlot = label } = columns[0]
+          const { label, labelSlot = label } = columns[0]
+          const breakAfter = columns[0].breakAfter ?? columns[0].wrapping
           return () =>
-            h(Space, { direction: wrapping ? 'vertical' : 'horizontal' }, () =>
+            h(Space, { direction: breakAfter ? 'vertical' : 'horizontal' }, () =>
               listItems.value.map(({ children }) => {
                 return h('span', [toNode(labelSlot, effectData), labelSlot ? ': ' : '', effectData.value])
               })

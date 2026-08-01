@@ -64,7 +64,7 @@ export default function exampleForm() {
       attrs: {
         size: 40,
       },
-      validOn: 'form',
+      visibleIn: 'form',
       actions: ['submit', 'reset'],
     },
     onSubmit: (data) => {
@@ -76,7 +76,7 @@ export default function exampleForm() {
       {
         type: 'InfoSlot',
         render: 'formTop',
-        blocked: true,
+        block: true,
       },
       {
         type: 'Descriptions',
@@ -164,7 +164,7 @@ export default function exampleForm() {
             // field: 'array',
             // label: 'render',
             // span: 24,
-            blocked: true,
+            block: true,
             // initialValue: ['自定义消息'],
             render: ({ current }) => {
               return h('h2', { style: 'border-bottom:1px solid #eee' }, '自定' + (current.name || ''))
@@ -218,7 +218,7 @@ export default function exampleForm() {
             field: 'tags',
             initialValue: 'abc,ddo',
             attrs: {
-              valueToString: true,
+              stringifyValue: true,
               class: 'a',
             },
           },
@@ -317,7 +317,7 @@ export default function exampleForm() {
             type: 'DateRange',
             label: '起止日期',
             field: 'startDate',
-            keepField: 'endDate',
+            endField: 'endDate',
           },
           {
             type: 'InputGroup',
@@ -340,7 +340,7 @@ export default function exampleForm() {
                 },
                 required: ({ current }) => current.isReg,
                 /** value将使用label保存 */
-                valueToLabel: true,
+                labelAsValue: true,
                 /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
                 options: (data, searchText) => {
                   if (searchText) {
@@ -373,7 +373,7 @@ export default function exampleForm() {
             type: 'Textarea',
             field: 'memo',
             label: '备注',
-            wrapping: true,
+            breakAfter: true,
             disabled(data) {
               return !data.formData.foreverName
             },
@@ -446,7 +446,7 @@ export default function exampleForm() {
           {
             type: 'Buttons',
             align: 'center',
-            blocked: true,
+            block: true,
             actions: [
               {
                 icon: AndroidOutlined,
@@ -913,7 +913,7 @@ export default function exampleForm() {
                 type: 'DateRange',
                 label: '有效期',
                 field: 'startDate',
-                keepField: 'endDate',
+                endField: 'endDate',
               },
             ],
           },

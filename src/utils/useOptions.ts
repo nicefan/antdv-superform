@@ -3,7 +3,8 @@ import { isArray, isPlainObject, uniq } from 'lodash-es'
 import { ref, watchPostEffect, watch, unref, computed } from 'vue'
 
 export function useOptions(option, attrOptions, effectData) {
-  const { options: orgOptions, dictName, valueToNumber, valueToLabel } = option
+  const { options: orgOptions, dictName, valueToNumber } = option
+  const labelAsValue = option.labelAsValue ?? option.valueToLabel
 
   const list = ref<any[]>(attrOptions || [])
   if (typeof orgOptions === 'function') {
@@ -35,7 +36,7 @@ export function useOptions(option, attrOptions, effectData) {
         const label = String(val)
         return { value: label, label }
       })
-    } else if (valueToLabel) {
+    } else if (labelAsValue) {
       // value 替换成 label
       _options = _list.map(({ label }) => ({ value: label, label }))
     }

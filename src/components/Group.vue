@@ -20,7 +20,7 @@ export default defineComponent({
     if (buttons) {
       const _buttons = Array.isArray(buttons) ? { actions: buttons } : buttons
       if (type === 'Descriptions') {
-        _buttons.validOn ??= 'detail'
+        _buttons.visibleIn ??= _buttons.validOn ?? 'detail'
       }
       buttonsSlot = createButtons({ config: _buttons, effectData, isView: _isView })
     }

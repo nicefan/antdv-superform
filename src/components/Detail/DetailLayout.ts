@@ -145,7 +145,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
     const slots = useInnerSlots(option.slots, effectData)
 
     const label = createLabelNode(option, effectData)
-    let isBlock = option.blocked
+    let isBlock = option.block ?? option.blocked
     let render
     const nodeItems: NodeItem[] = []
     const __viewRender = typeof viewRender === 'string' ? rootSlots[viewRender as string] : viewRender
@@ -153,12 +153,12 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
     const modelsMap = model.children || (model.listData?.modelsMap as ModelsMap)
     if (type === 'InputGroup') {
       if (!viewRender) {
-        let isBreak = option.wrapping
+        let isBreak = option.breakAfter ?? option.wrapping
         const contents = [...modelsMap].map(([opt, model]) => {
           const labelSlot = opt.labelSlot || opt.label
           const showLabel = attrs?.compact === false && labelSlot
           const content = getContent(opt, model, effectData)
-          isBreak = opt.wrapping || isBreak
+          isBreak = (opt.breakAfter ?? opt.wrapping) || isBreak
           return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
         })
         render = () =>

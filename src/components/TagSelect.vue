@@ -30,6 +30,8 @@ const props = defineProps<{
   effectData: Obj
   value?: (string | number) | (string | number)[]
   options?: any[]
+  stringifyValue?: boolean
+  /** @deprecated 使用 `stringifyValue` */
   valueToString?: boolean
   multiple?: boolean
   isView?: boolean
@@ -40,10 +42,11 @@ const emit = defineEmits(['update:value', 'change', 'check'])
 const { optionsRef } = useOptions(props.option, props.options, props.effectData)
 
 const selected = computed(() => {
-  const { value, valueToString } = props
+  const { value } = props
+  const stringifyValue = props.stringifyValue || props.valueToString
   if (value === undefined) {
     return []
-  } else if (valueToString) {
+  } else if (stringifyValue) {
     return (value as string).split(',')
   } else if (Array.isArray(value)) {
     return value
@@ -67,7 +70,7 @@ const handleChange = (tag, checked) => {
 const updateValue = (val: string[]) => {
   if (!props.multiple) {
     emit('update:value', val[0])
-  } else if (props.valueToString) {
+  } else if (props.stringifyValue || props.valueToString) {
     emit('update:value', val.join(','))
   } else {
     emit('update:value', val)

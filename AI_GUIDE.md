@@ -23,7 +23,7 @@
 
 5. `attrs` 传给底层 Ant Design Vue 组件；表单布局、表格业务行为等库级配置应放在 schema 对应层级，不要把所有配置都塞进 `attrs`。
 
-6. 自定义字段类型必须先通过 `registComponent` 注册。不要虚构 `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 等当前注册表中不存在的类型。
+6. 自定义字段类型必须先通过 `registerComponent` 注册。不要虚构 `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 等当前注册表中不存在的类型。
 
 ## 2. 公共导出
 
@@ -99,7 +99,7 @@ app.use(superForm, {
 - `buttonRoles()` 返回当前权限字符串数组。
 - `tableApiSetting.resultTransform` 应返回数组，或 `{ current, size, total, records }`。
 - `components` 可替换库使用的底层组件，例如 `Table`、`Modal`。
-- `superForm.registComponent('ModalSelect', Comp)` 注册后的 schema 类型是 `ExtModalSelect`，不是 `ModalSelect`。
+- `superForm.registerComponent('ModalSelect', Comp)` 注册后的 schema 类型是 `ExtModalSelect`，不是 `ModalSelect`。
 - `superForm.setDefaultProps()` 可在安装后继续合并全局默认属性。
 
 ## 4. Schema 基础规则
@@ -119,8 +119,8 @@ app.use(superForm, {
   required: ({ current }) => current.mode === 'strict',
   exclude: ['description'],
   span: 12,
-  blocked: false,
-  wrapping: false,
+  block: false,
+  breakAfter: false,
 }
 ```
 
@@ -132,7 +132,7 @@ app.use(superForm, {
 - `hidden`、`disabled`、`required` 支持布尔值或函数。
 - `exclude` 的合法场景是 `table`、`form`、`description`。
 - `span` 使用 Ant Design 24 栅格；`subSpan` 是容器对子项的默认跨度。
-- `blocked: true` 让节点独占一个区块；`wrapping: true` 从该节点后换行。
+- `block: true` 让当前节点脱离前后栅格组并独立成块；`breakAfter: true` 从当前节点后换行。
 - 普通事件写在字段顶层，例如 `onChange(effectData, value)`；也可使用 `on: { change(...) {} }`。
 - `computed(value, effectData)` 会持续计算并回写当前字段。它不是只读展示计算，避免造成循环更新。
 - `onUpdate(effectData)` 在字段实际存储值变化时触发。
@@ -327,8 +327,8 @@ options: [
 
 - `labelField: 'statusName'`：同时把选中项 label 保存到另一个字段。
 - `valueToNumber: true`：将选项 value 转为 number。
-- `valueToLabel: true`：将 label 作为 value。
-- `valueToString: true`：控件内用数组，模型中用逗号连接字符串。该转换不支持转义，值本身不能含逗号。
+- `labelAsValue: true`：将选项 label 作为字段值。
+- `stringifyValue: true`：将控件结果转换为字符串后写回模型；多选值表现为逗号分隔字符串。该转换不支持转义，值本身不能含逗号。
 - `tagViewer: false`：只读模式不渲染 Tag。
 
 远程搜索：
@@ -352,11 +352,11 @@ options: [
   type: 'DateRange',
   label: '创建时间',
   field: 'startTime',
-  keepField: 'endTime',
+  endField: 'endTime',
 }
 ```
 
-`field` 保存开始值，`keepField` 保存结束值；默认日期格式为 `YYYY-MM-DD`。
+`field` 保存开始值，`endField` 保存结束值；默认日期格式为 `YYYY-MM-DD`。不配置 `endField` 时，可设置 `stringifyValue: true`，将日期范围作为逗号分隔字符串保存到 `field`。`endField` 与 `stringifyValue` 同时配置时优先拆分到两个字段。
 
 ## 7. SuperTable
 
@@ -550,7 +550,8 @@ buttons: {
 - `labelMode` 支持 `icon`、`label`、`both`。
 - `limit` 把超出按钮放入“更多”。
 - `roleName` 配合全局 `buttonRoles()` 过滤权限。
-- 无权限默认隐藏；设置 `invalidDisabled: true` 时改为禁用。
+- `visibleIn` 使用 `form`、`detail` 或 `both` 控制按钮可见场景。
+- 无权限默认隐藏；设置 `unauthorized: 'disable'` 时改为禁用，使用 `unauthorized: 'hide'` 时隐藏。
 - 行按钮上下文包含 `record`、`index` 等列渲染信息。
 - 工具栏按钮上下文包含 `selectedRows`、`selectedRowKeys`、`tableRef`。
 
@@ -583,7 +584,7 @@ const [register, detail] = useDetail(detailSchema, initialData)
 detail.setData(record)
 ```
 
-详情会复用字段的 `labelField`、`keepField`、options/dict、`tagViewer`、`viewRender` 和扩展组件只读展示逻辑。用 `exclude: ['description']` 排除字段。
+详情会复用字段的 `labelField`、`endField`、options/dict、`tagViewer`、`viewRender` 和扩展组件只读展示逻辑。用 `exclude: ['description']` 排除字段。
 
 ## 10. 弹窗
 
@@ -686,7 +687,7 @@ const importModal = useModalForm(
 import superForm from 'antdv-superform'
 import ModalSelect from './ModalSelect.vue'
 
-superForm.registComponent('ModalSelect', ModalSelect)
+superForm.registerComponent('ModalSelect', ModalSelect)
 ```
 
 使用：
@@ -730,11 +731,20 @@ superForm.registComponent('ModalSelect', ModalSelect)
 | 表格 `edit` | `editable`，或按场景使用 `rowEditor` |
 | `searchSchema` | `searchForm` |
 | TreeSelect `data` | `treeData`；当前版本优先使用返回数据的函数 |
-| `roleMode` | `invalidDisabled` |
+| `validOn` | `visibleIn` |
+| `invalidDisabled: true` | `unauthorized: 'disable'` |
+| `roleMode: 'hidden' \| 'disable'` | `unauthorized: 'hide' \| 'disable'` |
 | `form.setData(data)` | `form.resetFields(data)` |
 | `table.request(params)` | `table.query(params)` 或 `table.reload()` |
 | `labelBgColor` / `borderColor` | 使用项目主题或样式变量 |
 | 安装配置 `tagColors` | `tagViewer` |
+| `valueToLabel` | `labelAsValue` |
+| `valueToString` | `stringifyValue` |
+| `blocked` | `block` |
+| `wrapping` | `breakAfter` |
+| 按钮配置 `forSlot` | `targetSlot` |
+| `registComponent` | `registerComponent` |
+| DateRange `keepField` | `endField` |
 
 以下内容也不要假定存在：
 
@@ -747,7 +757,7 @@ superForm.registComponent('ModalSelect', ModalSelect)
 ## 14. 生成完成后的自检
 
 1. 所有 import 都来自包根入口或消费项目已有封装。
-2. 字段类型在内置列表中，或已确认存在对应 `registComponent`。
+2. 字段类型在内置列表中，或已确认存在对应 `registerComponent`。
 3. 表格显式设置了稳定 `attrs.rowKey`。
 4. 分页需求明确配置了 `pagination`。
 5. `immediate`、`params`、`searchForm` 位于表格 schema 正确层级。

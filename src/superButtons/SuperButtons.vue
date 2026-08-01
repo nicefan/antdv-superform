@@ -13,7 +13,9 @@ export default defineComponent({
     /** 按钮显示方式icon/label */
     labelMode: String as PropType<'icon' | 'label' | 'both'>,
     hidden: [Boolean, Function] as PropType<boolean | Fn<boolean>>,
-    /** 无效禁用，默认隐藏 */
+    /** 无权限时的展示方式，默认隐藏 */
+    unauthorized: String as PropType<'hide' | 'disable'>,
+    /** @deprecated 使用 `unauthorized: 'disable'` */
     invalidDisabled: Boolean,
     disabled: [Boolean, Function] as PropType<boolean | Fn<boolean>>,
     actions: Array as PropType<ButtonItem[]>,
