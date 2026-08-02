@@ -77,13 +77,9 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       },
       /** 刷新数据，不改动查询条件与当前页 */
       reload() {
-        tableRef.value?.reload()
+        return tableRef.value?.reload()
       },
-      /** @deprecated 增加条件刷新数据 */
-      request(param: Obj) {
-        tableRef.value?.reload(param)
-      },
-      /** 手动执行条件查询，覆盖搜索表单参数 */
+      /** 手动执行条件查询，不覆盖搜索表单参数 */
       query(param?: Obj): Promise<any> {
         return tableRef.value?.query(param)
       },

@@ -43,9 +43,6 @@ export default defineComponent<SuperFormProps, any, unknown>({
         //   // delete formOption.model
         // }
       },
-      setData: (data) => {
-        data && (formOption.dataSource = data)
-      },
     }
 
     provide('rootSlots', ctx.slots)

@@ -154,15 +154,15 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
     if (type === 'InputGroup') {
       if (!viewRender) {
         let isBreak = option.breakAfter ?? option.wrapping
-        const contents = [...modelsMap].map(([opt, model]) => {
+        const subNodes = buildNodes(modelsMap, option, effectData)
+        const contents = subNodes[0].group?.map(({ option: opt, content }) => {
           const labelSlot = opt.labelSlot || opt.label
           const showLabel = attrs?.compact === false && labelSlot
-          const content = getContent(opt, model, effectData)
           isBreak = (opt.breakAfter ?? opt.wrapping) || isBreak
           return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
         })
         render = () =>
-          h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () => contents.map((node) => node()))
+          h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () => contents?.map((node) => node()))
       }
       nodeItems.push({ option, label, hidden, content: render })
     } else if (type === 'Fragment') {

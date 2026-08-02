@@ -1,7 +1,6 @@
 import buildRule from './buildRule'
 import { reactive, toRef, toValue, watch, markRaw, isRef, computed, ref } from 'vue'
 import { update, get as objectGet, set as objectSet } from 'lodash-es'
-import { getComputedStatus } from './reactivity'
 
 /* eslint-disable no-param-reassign */
 /** 当前控件数据初始化 */
@@ -30,8 +29,8 @@ function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
     })
     watch(
       origin,
-      (data) => {
-        model.refData ??= toValue(value) ?? toValue(initialValue) ?? ((columns && []) || (subItems && {}))
+      () => {
+        model.refData ??= toValue(initialValue) ?? toValue(value) ?? ((columns && []) || (subItems && {}))
         if (relatedField) update(model.parent, relatedField, (v) => v)
       },
       { immediate: true, flush: 'sync' }

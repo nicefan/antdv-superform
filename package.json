@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
+    "test": "vitest run",
     "build:dist": "vite build --mode dist",
     "rollup": "rollup -c",
     "dts": "vue-tsc --declaration --emitDeclarationOnly",

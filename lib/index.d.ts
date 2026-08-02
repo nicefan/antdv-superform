@@ -859,7 +859,7 @@ export declare function useDetail(option: DetailOption, data?: Obj): readonly [(
     readonly setData: (data: any) => void;
 }];
 
-export declare function useForm(option: UseFormOption, data?: Obj): readonly [(actions?: Obj, ref?: Obj) => any, {
+export declare function useForm(option: UseFormOption): readonly [(actions?: Obj, ref?: Obj) => any, {
     readonly dataSource: ComputedRef<any>;
     readonly getForm: () => Promise<any>;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
@@ -921,10 +921,8 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     /** 设置表格列 */
     readonly setColumns: (cols: RootTableOption['columns']) => void;
     /** 刷新数据，不改动查询条件与当前页 */
-    readonly reload: () => void;
-    /** @deprecated 增加条件刷新数据 */
-    readonly request: (param: Obj) => void;
-    /** 手动执行条件查询，覆盖搜索表单参数 */
+    readonly reload: () => any;
+    /** 手动执行条件查询，不覆盖搜索表单参数 */
     readonly query: (param?: Obj) => Promise<any>;
     /** 查询完成，返回结果回调 */
     readonly onLoaded: (callback: (data: any) => void) => void;

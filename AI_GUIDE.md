@@ -3,7 +3,7 @@
 > 适用版本：`antdv-superform@0.6.16`  
 > 技术栈：Vue 3.3+、Ant Design Vue 3.2+、TypeScript
 
-本文供编码 AI 在使用 `antdv-superform` 生成或修改业务代码时读取。内容以当前公开导出、类型声明和运行时代码为准，并用真实管理后台项目中的表单、表格、弹窗、详情、上传和扩展字段用法做过交叉验证。
+本文只提供使用 `antdv-superform` 编写业务代码时需要遵守的公开 API 和配置规则，不描述组件库内部实现。
 
 ## 1. 生成代码前必须遵守
 
@@ -127,6 +127,8 @@ app.use(superForm, {
 规则：
 
 - `field` 支持点路径，例如 `profile.name`。
+- `initialValue` 用于初始化 `field` 对应的表单字段；`value: externalRef` 可让控件与外部 `Ref` 双向绑定。
+- `field` 和外部 Ref `value` 可以同时配置，此时表单字段与外部 Ref 会互相同步。
 - `attrs` 是底层组件属性。
 - `dynamicAttrs(effectData)` 用于响应式计算底层属性。
 - `hidden`、`disabled`、`required` 支持布尔值或函数。
@@ -296,8 +298,9 @@ form.dataSource
 
 - `submit()` 先校验和等待 Upload 等子组件提交任务，再返回深拷贝数据。
 - schema 的 `onSubmit(data)` 返回 `false` 或 `{ errMessage }` 可阻止提交。
-- `resetFields(data)` 按 schema 已建立的字段复位；需要随表单提交或回显的主键、上下文字段应声明为 `Hidden`。
-- `setFieldsValue` 用于局部赋值；整体切换一条记录优先使用 `resetFields(record)`。
+- `dataSource` 是表单绑定的数据模型。初始化时库会按 schema 补齐字段并直接修改该对象；除非需要与外部对象双向绑定，不要指定或动态替换它。
+- `resetFields()` 恢复 schema 中定义的初始值；传入 `data` 时按已建立的数据模型字段回填。数组值整体复制，需要随表单提交或回显的主键、上下文字段应声明为 `Hidden`。
+- `setFieldsValue(partial)` 用于局部赋值，只更新 schema 已建立且传入的字段；整体回填一条记录使用 `resetFields(record)`。
 - `ignoreRules: true` 会关闭校验并隐藏必填标识，适合搜索表单，不适合编辑表单。
 - 按钮 `placement: 'inline'` 为 `0.6.16` 新增。
 
@@ -343,7 +346,7 @@ options: [
 }
 ```
 
-当 `showSearch` 为 true、`options` 是函数且没有显式 `onSearch` 时，库会以约 600ms 节流调用 `options(effectData, keyword)`。
+远程搜索使用函数形式的 `options(effectData, keyword)`；需要自行控制搜索事件时配置 `onSearch`。
 
 `DateRange` 可把范围拆到两个字段：
 
@@ -428,6 +431,30 @@ const [register, table] = useTable({
 - 查询响应可以是数组，或 `{ current, size, total, records }`。
 - 其他后端响应结构必须在 `afterQuery` 或全局 `resultTransform` 中转换。
 
+查询表单控件可以通过 `value` 与 `params` 共用同一个 Ref。控件变化会更新 `params`，从而立即触发表格查询，无需配置 `searchForm.searchOnChange`：
+
+```ts
+const status = ref()
+
+const [register, table] = useTable({
+  params: { status },
+  searchForm: {
+    subItems: [
+      {
+        type: 'Select',
+        field: 'status',
+        label: '状态',
+        value: status,
+        options: [
+          { label: '启用', value: 1 },
+          { label: '停用', value: 0 },
+        ],
+      },
+    ],
+  },
+})
+```
+
 ```ts
 afterQuery: (result) => ({
   current: result.pageNum,
@@ -437,7 +464,7 @@ afterQuery: (result) => ({
 })
 ```
 
-`searchForm.subItems` 可以写列字段名。库会复制同名 column 配置，并去掉列的 `span`、`disabled`、`hidden`，同时强制 `editable: true` 和 `exclude: []`。查询字段与编辑字段不同时，写完整查询项，不要依赖字符串复制。
+`searchForm.subItems` 可以引用同名列字段；查询字段与编辑字段配置不同时，应写完整查询项。列字段未指定type时，默认是`Input`。
 
 `searchForm.searchOnChange: true` 会监听搜索数据并自动查询；否则默认生成 `search`、`reset` 按钮。`limit` 用于折叠超出数量的搜索项，`teleport` 可把搜索表单传送到指定选择器。
 
@@ -466,14 +493,15 @@ table.validate()
 
 `getQueryParams()` 只返回当前 `searchForm` 参数与动态 `params` 的合并结果，不包含分页参数，也不会记住上一次 `query(param)` 的临时参数。导出接口需要分页信息时应由业务代码显式补充。
 
-`reload()` 和普通 `query()` 都经过节流；不要依赖它们返回可准确表示本次请求完成的 Promise。需要在刷新后串行处理业务时，优先在 `onLoaded` 中处理，或直接等待业务 API 后再调用刷新。
+`reload()` 保留当前页和查询条件，`query(params?)` 会回到第一页，`goPage()` 切换分页；三者都会直接发起请求并返回对应 Promise。
+
+表格查询遵循“最后一次生效”。`apis.query` 的第二个参数提供 `{ signal }`，使用 fetch 或 Axios 时应传递该信号，并在业务错误提示中忽略 `AbortError`。
 
 `asyncCall` 是底层逃生口。存在上述明确动作时不要生成 `asyncCall('...')`。
 
 ### rowKey、选择和本地数据
 
-- 默认行主键读取 `attrs.rowKey || 'id'`；缺少主键时使用组件内部 `WeakMap` key，不会向业务数据写入字段。
-- 业务表必须显式设置稳定 `rowKey`。
+- 默认行主键是 `id`。业务表应通过 `attrs.rowKey` 显式设置稳定主键，临时生成的主键不会写入业务数据。
 - 行选择使用 `attrs.rowSelection: {}` 或完整 Ant Design Vue rowSelection 对象；关闭时使用 `false` 或省略。
 - 没有 `apis.query` 时，可用 `dataSource`、`useTable(option, dataRef)` 或 `table.setData(rows)` 管理本地数据。
 
@@ -494,7 +522,7 @@ table.validate()
 ### 内置 CRUD
 
 - `apis.info` 调用形式为 `info(rowKeyValue, row)`。
-- `apis.save` 接收新增表单数据；组件内部行 key 不会混入业务数据。
+- `apis.save` 接收新增表单数据。
 - `apis.update` 接收编辑后的完整表单数据。
 - `apis.delete` 调用形式为 `delete(keys, rows)`。
 - save/update/delete 成功后会刷新查询。
@@ -751,7 +779,6 @@ superForm.registerComponent('ModalSelect', ModalSelect)
 - `apis.export` 的自动导出行为
 - `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 内置字段
 - `rowSelection: true` 的正式类型支持；使用 `{}`
-- `attrs.immediate`；使用 schema 顶层 `immediate`
 - 未注册的任意 `Ext*` 组件
 
 ## 14. 生成完成后的自检

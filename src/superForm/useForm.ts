@@ -1,19 +1,16 @@
-import { h, watchEffect, computed, toValue } from 'vue'
+import { h, computed, toValue } from 'vue'
 import { SuperForm } from './'
 import { useGetRef } from '../utils'
 import type { ExtFormOption } from '../exaTypes'
 
 type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Promise<ExtFormOption>)
-export function useForm(option: UseFormOption, data?: Obj) {
+export function useForm(option: UseFormOption) {
   const [formRef, getForm] = useGetRef()
   const syncOption = Promise.resolve(typeof option === 'function' ? option() : option)
   const register = (actions?: Obj, ref?: Obj): any => {
     if (actions) {
       if (!formRef.value) {
         syncOption.then(actions.setOption)
-        if (data) {
-          watchEffect(() => actions.setData(data))
-        }
       }
       formRef.value = ref
     } else {

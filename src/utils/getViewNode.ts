@@ -60,7 +60,7 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
   return h(
     Tag,
     { color: item.color },
-    { default: () => item.label || item.value, icon: item.icon || (() => getIconNode(item.icon)) }
+    { default: () => item.label || value, icon: item.icon || (() => getIconNode(item.icon)) }
   )
 }
 

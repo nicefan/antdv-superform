@@ -750,6 +750,7 @@ export default function exampleForm() {
         //   },
         // },
         buttons: {
+          visibleIn: 'form',
           actions: [
             {
               name: 'add',

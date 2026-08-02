@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, h, provide, reactive, readonly, ref, toRef } from 'vue'
+import { type PropType, h, provide, reactive, readonly, ref, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -30,7 +30,7 @@ export default {
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit, slots: ctxSlots }) {
     const formRef = ref()
-    const modelData = props.dataSource ? toRef(props, 'dataSource') : ref(props.option.dataSource || {})
+    const modelData = ref<Obj>({})
     const {
       option: { onSubmit, onReset, buttons, ...option },
       ignoreRules,
@@ -105,16 +105,6 @@ export default {
       },
     }
 
-    // watch(
-    //   () => props.dataSource,
-    //   (data) => {
-    //     if (data) {
-    //       formRef.value?.clearValidate()
-    //       modelData.value = data
-    //     }
-    //   }
-    // )
-
     const buttonsConfig: any = Array.isArray(buttons) ? { actions: buttons } : buttons
     if (buttonsConfig?.actions?.length) {
       option.subItems = [
@@ -136,6 +126,16 @@ export default {
 
     const { modelsMap } = buildModelsMap(option.subItems, modelData)
     const initialData = cloneDeep(modelData.value)
+    watch(
+      () => props.dataSource ?? props.option.dataSource,
+      (data) => {
+        if (data) {
+          formRef.value?.clearValidate()
+          modelData.value = data
+        }
+      },
+      { immediate: true, flush: 'sync' }
+    )
 
     const exposeData = reactive({ ...actions })
     const getForm = (form) => {

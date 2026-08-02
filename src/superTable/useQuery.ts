@@ -22,6 +22,8 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   const pageParam = reactive<Obj>({})
   const loading = ref(false)
   let searchParam = {}
+  let latestRequestId = 0
+  let activeController: AbortController | undefined
 
   const callbacks: Fn[] = []
   const onLoaded = (cb: Fn) => callbacks.push(cb)
@@ -29,21 +31,34 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     callbacks.push(option.onLoaded)
   }
 
-  const request = (param?: Obj) => {
-    if (loading.value) return Promise.reject(() => console.warn('跳过重复执行！')).finally()
+  const request = async (param?: Obj) => {
     const _params = merge({}, pageTransform(pageParam), searchParam, param)
     const _data = option.beforeQuery?.(_params) || _params
-    if (!option.apis?.query) return
+    const queryApi = option.apis?.query
 
-    loading.value = true
-    return Promise.resolve(
-      option.apis.query(_data).then((res) => {
-        const _res = option.afterQuery?.(res) || res
-        return setPageData(resultTransform(_res))
-      })
-    ).finally(() => {
+    activeController?.abort()
+    const requestId = ++latestRequestId
+    if (!queryApi) {
+      activeController = undefined
       loading.value = false
-    })
+      return
+    }
+
+    const controller = new AbortController()
+    activeController = controller
+    loading.value = true
+    try {
+      const res = await queryApi(_data, { signal: controller.signal })
+      if (requestId !== latestRequestId || controller.signal.aborted) return
+
+      const _res = option.afterQuery?.(res) || res
+      return setPageData(resultTransform(_res))
+    } finally {
+      if (requestId === latestRequestId) {
+        activeController = undefined
+        loading.value = false
+      }
+    }
   }
 
   const setPageData = (res) => {
@@ -63,22 +78,25 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     }
     return Promise.all(callbacks.map((cb) => cb(res)))
   }
-  const throttleRequest = throttle(request, 300, { 'leading': false })
 
   const goPage = (current, size = pageParam.size) => {
     pageParam.current = current
     pageParam.size = size
-    throttleRequest()
+    return request()
   }
 
-  const query = (param?: true | Obj) => {
-    if (param === true) {
-      // 强制刷新，在新增修改后刷新数据
-      return request()
-    } else {
-      if (pagination.value) pageParam.current = 1
-      return throttleRequest(param)
-    }
+  const query = (param?: Obj) => {
+    if (pagination.value) pageParam.current = 1
+    return request(param)
+  }
+
+  /** 仅供组件初始化阶段合并异步触发，只执行最后一次查询。 */
+  const throttleRequest = throttle(query, 300, { leading: false })
+  const cancelQuery = () => {
+    activeController?.abort()
+    activeController = undefined
+    latestRequestId += 1
+    loading.value = false
   }
 
   // let dynamicParams: Obj = {}
@@ -128,7 +146,9 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
 
   return {
     goPage,
-    reload: throttleRequest,
+    reload: request,
+    throttleRequest,
+    cancelQuery,
     setQueryParams,
     getQueryParams,
     query,

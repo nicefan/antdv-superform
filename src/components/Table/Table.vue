@@ -5,7 +5,7 @@ import { createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
 import { Col, Row } from 'ant-design-vue'
-import type { TableApis } from '../../exaTypes'
+import type { RootTableOption } from '../../exaTypes'
 import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
@@ -17,7 +17,7 @@ export default defineComponent({
   props: {
     option: {
       required: true,
-      type: Object as PropType<GetOption<'Table'>>,
+      type: Object as PropType<GetOption<'Table'> & Pick<RootTableOption, 'apis'>>,
     },
     model: {
       required: true,
@@ -28,12 +28,12 @@ export default defineComponent({
       type: Object as PropType<Obj>,
     },
     isView: Boolean,
-    apis: Object as PropType<TableApis>,
+    reload: Function as PropType<(param?: Obj) => Promise<any>>,
     expandedRowKeys: Array,
     defaultExpandLevel: null as unknown as PropType<number | 'all'>,
   },
   emits: ['register', 'expandedRowsChange'],
-  setup({ option, model, apis = {} as TableApis, effectData, isView, ...props }, ctx) {
+  setup({ option, model, reload, effectData, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     const keyMap = new WeakMap<object, PropertyKey>()
@@ -102,12 +102,12 @@ export default defineComponent({
     }
     const listener = {
       async onSave(data, index?: number) {
-        if (apis.save) {
-          await apis.save(data)
+        if (option.apis?.save) {
+          await option.apis.save(data)
           if (data.parentId) {
             expandedRowKeys.value = [...expandedRowKeys.value, data.parentId]
           }
-          return apis.query?.(true)
+          return reload?.()
         } else {
           if (index !== undefined) {
             orgList.value.splice(index + 1, 0, data)
@@ -117,8 +117,8 @@ export default defineComponent({
         }
       },
       async onUpdate(newData, oldData) {
-        if (apis.update) {
-          await apis.update(newData)
+        if (option.apis?.update) {
+          await option.apis.update(newData)
         }
         Object.assign(oldData, newData)
         const key = rowKey(oldData)
@@ -129,12 +129,12 @@ export default defineComponent({
             orgList.value.splice(idx, 1, oldData)
           }
         }
-        return apis.query?.(true)
+        return reload?.()
       },
       async onDelete(items: any[]) {
         const keys = items.map((item) => rowKey(item))
         try {
-          await apis.delete?.(keys, items)
+          await option.apis?.delete?.(keys, items)
         } catch (error) {
           console.error(error)
           return error
@@ -146,7 +146,7 @@ export default defineComponent({
         items.forEach((item) => {
           orgList.value.splice(list.value.indexOf(item), 1)
         })
-        return apis.query?.(true)
+        return reload?.()
       },
     }
 
@@ -168,7 +168,6 @@ export default defineComponent({
       expandAll: () => {
         updateExpand(getExpandKeys(orgList.value))
       },
-      reload: () => apis.query?.(true),
       add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
       edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
       delete: () => methods.delete?.(editParam),

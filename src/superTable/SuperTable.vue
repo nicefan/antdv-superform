@@ -69,8 +69,19 @@ export default defineComponent({
 
     watchEffect(() => props.schema && setOption(toRaw(props.schema)))
 
-    const { loading, pagination, setPageData, onLoaded, goPage, reload, query, setQueryParams, getQueryParams } =
-      useQuery(option, updateSource)
+    const {
+      loading,
+      pagination,
+      setPageData,
+      onLoaded,
+      goPage,
+      reload,
+      query,
+      throttleRequest,
+      cancelQuery,
+      setQueryParams,
+      getQueryParams,
+    } = useQuery(option, updateSource)
     const { getScrollRef, redoHeight, listenResize } = useTableScroll(option, dataRef, wrapRef)
 
     // editable模式下，表格表单校验
@@ -118,13 +129,14 @@ export default defineComponent({
     ctx.expose(tableRef.value)
 
     const tableAttrs: Obj = reactive({
-      apis: computed(() => ({ ...option.apis, query })),
+      reload,
       onRegister: register,
       loading,
     })
 
     // const windowResize = new AbortController()
     onUnmounted(() => {
+      cancelQuery()
       // 异步更新option,添加resize事件，需提前配置销毁
       // windowResize.abort()
       ctx.emit('register', null)
@@ -169,7 +181,7 @@ export default defineComponent({
           searchForm.value = useSearchForm(opt, tableRef, (data) => {
             // 初始化时同步表单数据
             setQueryParams(data, 'form')
-            initQuery && query()
+            initQuery && throttleRequest()
           })
         }
         const tabsField = opt.tabs && opt.tabs.field
@@ -182,7 +194,7 @@ export default defineComponent({
               if (key === undefined) return
               setObject(tabParam, tabsField, key)
               setQueryParams(tabParam)
-              initQuery && query()
+              initQuery && throttleRequest()
             },
             { immediate: true }
           )
@@ -191,14 +203,14 @@ export default defineComponent({
           ref(opt.params),
           (p) => {
             setQueryParams(p, 'dynamic')
-            initQuery && query()
+            initQuery && throttleRequest()
           },
           { deep: true, immediate: true }
         )
         nextTick(() => {
           initQuery = true
           if (option.immediate !== false) {
-            query()
+            throttleRequest()
           }
         })
         if (isScanHeight || inheritHeight || maxHeight) {
