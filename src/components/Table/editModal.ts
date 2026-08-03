@@ -1,4 +1,4 @@
-import { cloneDeep, defaults } from 'lodash-es'
+import { defaults } from 'lodash-es'
 import { globalProps } from '../../plugin'
 import { createModal } from '../../superModal'
 import { ref, h, nextTick } from 'vue'
@@ -11,7 +11,8 @@ export default function editModal({ rowKey, option, listener }) {
   const rowEditor = option.rowEditor
   const formOption = rowEditor?.form || option.editForm || option.formSchema || {}
   // buttons: { actions: ['submit', 'reset'] },
-  formOption.subItems = formOption.subItems || option.columns.filter((item) => !item.hideInForm || !item.exclude?.includes('form'))
+  formOption.subItems =
+    formOption.subItems || option.columns.filter((item) => !(item.hideInForm || item.exclude?.includes('form')))
   const source = ref(formOption.dataSource || {})
 
   // 生成新增表单
@@ -62,18 +63,14 @@ export default function editModal({ rowKey, option, listener }) {
         },
       })
     },
-    edit(args) {
+    async edit(args) {
       const { record, selectedRows, resetData, meta = {} } = args
       const data = record || selectedRows[0]
       if (!data) {
         return Promise.reject(new Error('未选择记录'))
       }
-      source.value = merge({}, data, resetData)
-      if (option.apis?.info) {
-        option.apis.info(rowKey(data), data).then(res => {
-          formRef.value?.setFieldsValue(merge(res, resetData))
-        })
-      } 
+      const res = await option.apis?.info?.(rowKey(data), data)
+      source.value = merge({}, data, res, resetData)
       defaults(meta, { name: 'edit', title: '编辑', isNew: false })
       formRef.value?.clearValidate()
       return openModal({

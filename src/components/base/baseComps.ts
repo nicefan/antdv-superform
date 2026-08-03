@@ -23,6 +23,7 @@ export {
   Select,
   Switch,
   RangePicker,
+  TimeRangePicker,
   DatePicker,
   TimePicker,
   RadioButton,
@@ -36,5 +37,5 @@ export {
   Upload,
   Tag,
   CheckableTag,
-  AutoComplete
+  AutoComplete,
 } from 'ant-design-vue'

@@ -84,6 +84,12 @@ const globalProps: Obj = {
   Table: {
     size: 'small',
   },
+  TimePicker: {
+    valueFormat: 'HH:mm:ss',
+  },
+  TimeRange: {
+    valueFormat: 'HH:mm:ss',
+  },
 }
 
 const install = async (app: App, config: InstallConfig = {}) => {

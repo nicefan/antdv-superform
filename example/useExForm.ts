@@ -262,7 +262,6 @@ export default function exampleForm() {
                 valueToNumber: true,
                 attrs: {
                   placeholder: '使用普通数组生成下拉选项',
-                  defaultActiveFirstOption: true,
                 },
                 /** 依赖数据变化切换 */
                 // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
@@ -911,7 +910,7 @@ export default function exampleForm() {
                 label: 'tab4',
               },
               {
-                type: 'DateRange',
+                type: 'TimeRange',
                 label: '有效期',
                 field: 'startDate',
                 endField: 'endDate',

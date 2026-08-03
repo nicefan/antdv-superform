@@ -613,6 +613,7 @@ type WidgetTypes = {
   DatePicker: ExtFormItemOption
   TimePicker: ExtFormItemOption
   DateRange: ExtDateRange
+  TimeRange: ExtDateRange
   Select: ExtSelectOption
   TreeSelect: ExtTreeOption
   Radio: ExtRadioOption

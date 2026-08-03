@@ -83,7 +83,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
   let raw = toValue(model.refData) // 阻止监听自身数据变化
   // 表单绑定值，变更后同步处理后再改到实际存储变量中
   let effect: Fn
-  if (type === 'DateRange' && endField) {
+  if (type.endsWith('Range') && endField) {
     tempData.value = [refValue.value, model.parent[endField]]
     effect = (val) => {
       const [start, end] = val || []

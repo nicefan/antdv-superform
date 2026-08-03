@@ -1,11 +1,12 @@
 import { globalConfig } from '../plugin'
-import { isArray, isPlainObject, uniq } from 'lodash-es'
+import { isArray, isPlainObject } from 'lodash-es'
 import { ref, watchPostEffect, watch, unref, computed } from 'vue'
 
 export function useOptions(option, attrOptions, effectData) {
   const { options: orgOptions, dictName, valueToNumber } = option
-  const labelAsValue = option.labelAsValue ?? option.valueToLabel
 
+  const labelName = option.attrs?.fieldNames?.label || 'label'
+  const valueName = option.attrs?.fieldNames?.value || 'value'
   const list = ref<any[]>(attrOptions || [])
   if (typeof orgOptions === 'function') {
     watchPostEffect(() => {
@@ -24,30 +25,23 @@ export function useOptions(option, attrOptions, effectData) {
   }
 
   const optionsRef = computed(() => {
-    let _list = isArray(list.value) ? list.value : []
-    if (isPlainObject(list.value)) {
-      _list = Object.entries(list.value).map(([value, label]) => ({ value, label }))
+    let labelAsValue = option.labelAsValue ?? option.valueToLabel
+    const _list = isArray(list.value) ? list.value : []
+    if (_list[0] && !isPlainObject(_list[0]) && !valueToNumber) {
+      labelAsValue = true
     }
-    if (!_list.length) return _list
-    let _options = _list
-    if (typeof _list[0] !== 'object') {
-      // 普通数组转成选项对象数组
-      _options = uniq(_list).map((val, idx) => {
-        const label = String(val)
-        return { value: label, label }
-      })
-    } else if (labelAsValue) {
-      // value 替换成 label
-      _options = _list.map(({ label }) => ({ value: label, label }))
-    }
-    if (valueToNumber) {
-      return _options.map((item) => ({
-        ...item,
-        value: Number(item.value),
+    // 普通数组转成选项对象数组
+    if (isPlainObject(list.value) || !isPlainObject(_list[0])) {
+      return Object.entries(list.value).map(([value, label]) => ({
+        label,
+        value: labelAsValue ? label : valueToNumber ? Number(value) : value,
       }))
-    } else {
-      return _options
     }
+    return _list.map((item) => ({
+      ...item,
+      label: item[labelName],
+      value: labelAsValue ? item[labelName] : valueToNumber ? Number(item[valueName]) : item[valueName],
+    }))
   })
 
   return {

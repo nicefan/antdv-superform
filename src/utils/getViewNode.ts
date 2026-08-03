@@ -1,5 +1,5 @@
 import { globalConfig } from '../plugin'
-import { ref, unref, h, reactive, type VNode, inject, computed, mergeProps, toValue } from 'vue'
+import { ref, unref, h, reactive, inject, computed, mergeProps, toValue } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls from '../components'
 import { isPlainObject, get as objectGet } from 'lodash-es'
@@ -19,23 +19,30 @@ const getVModelProps = (options, parent: Obj) => {
   return vModels
 }
 
+const formatOptions = (opt, labelName, valueName) => {
+  if (isPlainObject(opt) || !isPlainObject(opt?.[0])) {
+    return Object.entries(opt).map(([key, label]) => ({ value: key, label }))
+  } else {
+    return Array.isArray(opt) ? opt.map((item) => ({ label: item[labelName], value: item[valueName] })) : []
+  }
+}
 const getOptions = (option, _effectData, optionsArr) => {
   const { options, dictName } = option as any
+  const labelName = option.attrs?.fieldNames?.label || 'label'
+  const valueName = option.attrs?.fieldNames?.value || 'value'
   const __options = unref(options)
   if (dictName && globalConfig.dictApi) {
     globalConfig.dictApi(dictName).then((data) => (optionsArr.value = data))
   } else if (typeof options === 'function') {
     Promise.resolve(options(_effectData))
       .then((data) => {
-        optionsArr.value = data
+        optionsArr.value = formatOptions(data, labelName, valueName)
       })
       .catch((err) => {
         console.warn('useOptionsLabel', err)
       })
-  } else if (isPlainObject(__options)) {
-    optionsArr.value = Object.entries(__options).map(([key, label]) => ({ value: key, label }))
   } else {
-    optionsArr.value = Array.isArray(__options) ? __options : []
+    optionsArr.value = formatOptions(__options, labelName, valueName)
   }
 }
 
@@ -77,7 +84,6 @@ export function getViewNode(option, effectData: Obj = {}) {
     initialValue,
   } = option as any
   const endField = option.endField ?? option.keepField
-  const labelAsValue = option.labelAsValue ?? option.valueToLabel
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const __render = viewRender || (colType === 'InfoSlot' && render)
@@ -91,17 +97,21 @@ export function getViewNode(option, effectData: Obj = {}) {
       return ({ current, text } = effectData) => (text || '') + ' - ' + (objectGet(current, endField) || '')
     } else if ((colOptions || dictName) && colType !== 'AutoComplete') {
       autoTag = !(tagViewer === false || (!tagViewer && globalConfig.tagViewer === false))
+      let labelAsValue = option.labelAsValue ?? option.valueToLabel
+      if (unref(colOptions)?.[0] && !isPlainObject(unref(colOptions)?.[0]) && !valueToNumber) {
+        labelAsValue = true
+      }
       const optionsArr = ref<any[]>()
       return (param = effectData, inner?: boolean) => {
         const tags: any[] = []
-        if (!optionsArr.value) {
-          getOptions(option, param, optionsArr)
-        }
         const text = (param.text || param.value) ?? toValue(initialValue) ?? ''
         if (text === '') return ''
         // 绑定值为Label时直接返回原值
-        if (labelAsValue || unref(optionsArr)?.includes(text)) {
+        if (labelAsValue) {
           return !inner && autoTag ? buildTagRender({ value: text, label: text, tagViewer }) : text
+        }
+        if (!optionsArr.value) {
+          getOptions(option, param, optionsArr)
         }
         const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
         const values = arr.map((val) => {
@@ -116,8 +126,8 @@ export function getViewNode(option, effectData: Obj = {}) {
       }
     } else if (colType === 'Switch') {
       return ({ text } = effectData) => (option.valueLabels || '否是')[text ?? toValue(initialValue)]
-    // } else {
-    //   //textRender为undefined将直接返回绑定的值
+      // } else {
+      //   //textRender为undefined将直接返回绑定的值
     }
   })() //as false | undefined | ((param?: Obj) => VNode)
 

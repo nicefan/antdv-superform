@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, h, provide, reactive, readonly, ref, watch } from 'vue'
+import { type PropType, h, provide, reactive, readonly, ref, unref, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -127,7 +127,7 @@ export default {
     const { modelsMap } = buildModelsMap(option.subItems, modelData)
     const initialData = cloneDeep(modelData.value)
     watch(
-      () => props.dataSource ?? props.option.dataSource,
+      () => unref(props.dataSource ?? props.option.dataSource),
       (data) => {
         if (data) {
           formRef.value?.clearValidate()

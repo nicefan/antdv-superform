@@ -147,7 +147,7 @@ app.use(superForm, {
 
 ```text
 Input, Textarea, InputNumber, AutoComplete, Select, TreeSelect,
-DatePicker, DateRange, TimePicker, Switch, Radio, Checkbox,
+DatePicker, DateRange, TimePicker, TimeRange, Switch, Radio, Checkbox,
 Upload, TagInput, TagSelect, Text, HTML, Hidden, InputSlot, InfoSlot
 ```
 
@@ -324,7 +324,7 @@ options: [
 ]
 ```
 
-原始值数组会被转换为“数组下标字符串作为 value、元素文本作为 label”；除非明确需要该行为，否则不要生成原始值数组。
+原始值数组强制使用元素本身作为 label 和 value。配置 `valueToNumber: true` 时，为兼容旧用法，改用数字下标作为 value。原始值数组含义不如对象数组明确，一般不要生成；当前也不支持 Select 分组选项。
 
 常用转换：
 
@@ -348,7 +348,7 @@ options: [
 
 远程搜索使用函数形式的 `options(effectData, keyword)`；需要自行控制搜索事件时配置 `onSearch`。
 
-`DateRange` 可把范围拆到两个字段：
+`DateRange` 和 `TimeRange` 可把范围拆到两个字段：
 
 ```ts
 {
@@ -359,7 +359,7 @@ options: [
 }
 ```
 
-`field` 保存开始值，`endField` 保存结束值；默认日期格式为 `YYYY-MM-DD`。不配置 `endField` 时，可设置 `stringifyValue: true`，将日期范围作为逗号分隔字符串保存到 `field`。`endField` 与 `stringifyValue` 同时配置时优先拆分到两个字段。
+`field` 保存开始值，`endField` 保存结束值；`DateRange` 默认格式为 `YYYY-MM-DD`，`TimePicker` 和 `TimeRange` 默认格式为 `HH:mm:ss`。不配置 `endField` 时，可设置 `stringifyValue: true`，将范围作为逗号分隔字符串保存到 `field`。`endField` 与 `stringifyValue` 同时配置时优先拆分到两个字段。
 
 ## 7. SuperTable
 

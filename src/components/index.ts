@@ -52,6 +52,7 @@ const formItems = {
   Select,
   Switch,
   DateRange,
+  TimeRange: base.TimeRangePicker,
   DatePicker,
   TimePicker: base.TimePicker,
   Radio,

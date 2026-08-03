@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { toRef, useAttrs } from 'vue'
+import { useAttrs } from 'vue'
 import baseComps from './base'
 import { throttle } from 'lodash-es'
 import { useOptions } from '../utils/useOptions'
@@ -35,22 +35,23 @@ const props = defineProps<{
   labelAsValue?: boolean
   /** @deprecated 使用 `labelAsValue` */
   valueToLabel?: boolean
+  fieldNames?: Obj
   onChange?: Fn
   onSearch?: Fn
 }>()
 
 const { options: orgOptions, labelField } = props.option
-const attrs:Obj = useAttrs()
+const attrs: Obj = useAttrs()
 
 const { optionsRef, setOptions } = useOptions(props.option, props.options, props.effectData)
 
 // 同步保存label字段
 let onChange = props.onChange
 if (labelField) {
-  const labelName = attrs.fieldNames?.label || 'label'
+  const labelName = props.fieldNames?.label || 'label'
   onChange = (...args) => {
-    const [_, item] = args
-    emit('update:labelValue', Array.isArray(item) ? item.map(item => item[labelName]) : item?.[labelName])
+    const item = args[1]
+    emit('update:labelValue', Array.isArray(item) ? item.map((item) => item[labelName]) : item?.[labelName])
     props.onChange?.(...args)
   }
 }
