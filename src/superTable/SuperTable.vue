@@ -21,13 +21,13 @@ import {
   shallowRef,
   toRaw,
 } from 'vue'
-import { useControl, useInnerSlots } from '../utils'
+import { reportSchemaDiagnostics, useControl, useInnerSlots } from '../utils'
 import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
 import { DataProvider } from '../dataProvider'
 import Controls from '../components'
-import { globalProps } from '../plugin'
+import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
 import base from '../components/base'
 import { nanoid } from 'nanoid'
@@ -59,6 +59,7 @@ export default defineComponent({
 
     const searchForm = ref()
     const setOption = (_option: RootTableOption) => {
+      if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'table', 'SuperTable')
       const { isScanHeight, inheritHeight, isFixedHeight, isContainer, ...attrs } = mergeProps(
         globalProps.Table,
         { ..._option.attrs },

@@ -2,10 +2,10 @@
 import { defineComponent, ref, h, mergeProps, watchEffect, onMounted, computed, shallowReactive, provide } from 'vue'
 import { merge, defaults } from 'lodash-es'
 import Controls from '../components'
-import { globalProps } from '../plugin'
+import { globalConfig, globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
 import type { FormProps } from 'ant-design-vue'
-import { getEffectData, useInnerSlots } from '../utils'
+import { getEffectData, reportSchemaDiagnostics, useInnerSlots } from '../utils'
 
 type SuperFormProps = FormProps & {
   /** 是否为容器包装 */
@@ -34,8 +34,10 @@ export default defineComponent<SuperFormProps, any, unknown>({
       dataSource: props.dataSource || props.model || props.schema?.dataSource,
       attrs: mergeProps({ ...globalProps.Form }, { ...props.schema?.attrs }),
     })
+    if (globalConfig.schemaDiagnostics && props.schema) reportSchemaDiagnostics(props.schema, 'form', 'SuperForm')
     const actions = {
       setOption: (_option: ExtFormOption) => {
+        if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'form', 'SuperForm')
         defaults(formOption, _option)
         formOption.attrs = mergeProps(formOption.attrs, { ..._option.attrs }, { ...props.schema?.attrs })
         // if (formOption.dataSource) {

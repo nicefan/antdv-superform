@@ -125,6 +125,8 @@ export declare function defineTable(option: RootTableOption): RootTableOption;
 
 declare type DetailOption = ExtDescriptionsOption | ExtFormOption | (() => ExtDescriptionsOption | ExtFormOption) | (() => Promise<ExtDescriptionsOption | ExtFormOption>);
 
+export declare function diagnoseSchema(schema: Obj, kind?: SchemaKind): SchemaDiagnostic[];
+
 declare type Dict = {
     label: string;
     value: string | number;
@@ -579,6 +581,8 @@ declare interface ExtUpload extends ExtFormItemOption {
 }
 
 declare interface GlobalConfig {
+    /** 是否在组件接收 schema 时输出诊断信息 */
+    schemaDiagnostics?: boolean;
     dictApi?: (name: string) => Promise<Dict[]>;
     /** 自定义图标处理组件 */
     customIcon?: (name: string) => VNode;
@@ -721,6 +725,17 @@ declare const ruleTypeMap: {
         message: string;
     };
 };
+
+export declare type SchemaDiagnostic = {
+    level: SchemaDiagnosticLevel;
+    code: string;
+    path: string;
+    message: string;
+};
+
+export declare type SchemaDiagnosticLevel = 'error' | 'warning' | 'suggestion';
+
+export declare type SchemaKind = 'auto' | 'form' | 'table' | 'detail';
 
 declare type SelectOptions =
 | DefaultOptionsType

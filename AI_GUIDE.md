@@ -5,6 +5,10 @@
 
 本文只提供使用 `antdv-superform` 编写业务代码时需要遵守的公开 API 和配置规则，不描述组件库内部实现。
 
+安装依赖后，可在消费项目根目录执行 `npx antdv-superform init-ai`。命令会检测并安全更新项目已有的 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、Copilot 或 Cursor 指令入口，不覆盖原有约束；没有检测到入口时不会创建文件，而是输出供用户手动添加的提示词。
+
+生成可序列化的 schema 后，使用 `npx antdv-superform diagnose-schema <schema.json> --type form|table|detail` 诊断；包含函数或 Ref 的动态 schema 使用包根导出的 `diagnoseSchema(schema, type)`。安装时配置 `schemaDiagnostics: import.meta.env.DEV`，可在组件接收 schema 时把诊断结果输出到开发控制台。
+
 ## 1. 生成代码前必须遵守
 
 1. 只从包根入口导入公共 API：
@@ -37,6 +41,7 @@
 | 弹窗 | `createModal`、`useModal`、`useModalForm` | 命令式弹窗和弹窗表单 |
 | 按钮 | `SuperButtons`、`useButtons` | 独立按钮组 |
 | 插件 | 默认导出 `superForm` | 全局安装、默认值、组件替换、扩展字段注册 |
+| 诊断 | `diagnoseSchema` | 返回 schema 的错误、警告和冗余配置建议 |
 
 常用公开类型包括：
 
@@ -70,6 +75,7 @@ app.mount('#app')
 
 ```ts
 app.use(superForm, {
+  schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => fetchDictionary(name),
   customIcon: (name) => renderProjectIcon(name),
   buttonRoles: () => permissionStore.currentRoles,
@@ -112,15 +118,12 @@ app.use(superForm, {
   field: 'profile.name',
   label: '姓名',
   initialValue: '',
-  attrs: { placeholder: '请输入姓名' },
   dynamicAttrs: ({ current }) => ({ maxlength: current.shortName ? 20 : 50 }),
   hidden: ({ current }) => !current.enabled,
   disabled: ({ current }) => current.locked,
   required: ({ current }) => current.mode === 'strict',
   exclude: ['description'],
   span: 12,
-  block: false,
-  breakAfter: false,
 }
 ```
 
@@ -140,6 +143,31 @@ app.use(superForm, {
 - `onUpdate(effectData)` 在字段实际存储值变化时触发。
 
 `effectData` 随上下文变化。表单字段通常包含 `formData`、`current`、`parent`、`value`、`field`、`index`、`isView`；表格列或行按钮还可能包含 `record`、`text`、`column`、`selectedRows`、`selectedRowKeys`、`tableRef`。回调只读取当前场景确实提供的字段。
+
+### 常用默认配置：满足需求时不要重复生成
+
+以下是库的内置默认值。生成代码前应先检查消费项目是否通过安装配置、`setDefaultProps()` 或二次封装覆盖了它们；没有覆盖且默认行为满足需求时，省略对应配置。
+
+| 场景 | 内置默认行为 | 通常不需要生成 |
+| --- | --- | --- |
+| 表单栅格 | 子项 `span` 默认 `8`，即一行 3 项；`gutter` 默认 `16` | `subSpan: 8`、逐项 `span: 8`、`gutter: 16` |
+| 容器布局 | 未设置 `span` 的容器默认独占一块 | 仅为独占一行而生成 `block: true` |
+| 输入占位符 | `Input`、`InputNumber`、`Textarea`、`AutoComplete` 默认“请输入 + label” | 与默认文案相同的 `attrs.placeholder` |
+| 选择占位符 | `Select`、`TreeSelect` 默认“请选择 + label” | 与默认文案相同的 `attrs.placeholder` |
+| 表单校验 | `FormItem.validateFirst` 默认 `true` | `formItemProps: { validateFirst: true }` |
+| 输入组合 | `InputGroup` 默认使用紧凑布局 | `attrs: { compact: true }` |
+| 日期时间值 | `DatePicker`、`DateRange` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRange` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat` |
+| 选项只读展示 | 配置 `options` 后默认按 Tag 展示，并使用内置颜色组 | `tagViewer: true` |
+| 表格首次查询 | `immediate` 默认 `true` | `immediate: true` |
+| 表格分页 | 默认不分页；启用分页后 `current` 默认 `1`、`pageSize` 默认 `10` | 无分页时的 `pagination: false`；标准分页时重复写页码和每页数量 |
+| 查询表单按钮 | 未启用 `searchOnChange` 时默认生成 `search`、`reset` | `buttons: { actions: ['search', 'reset'] }` |
+
+生成时还应遵循：
+
+- 不生成没有实际内容的 `attrs: {}`、`rules: []`、`options: []`、`rowProps: {}` 或 `params: {}`。
+- 不生成 `initialValue: undefined`，也不要为未提出的功能预置 `hidden: false`、`disabled: false`等开关。
+- 仅在覆盖默认占位符、格式、布局或行为时输出对应属性。
+- 表单 `buttons` 没有默认动作；只有页面确实需要表单按钮时才配置。查询表单的默认搜索、重置按钮不需要重复声明。
 
 ### 当前内置类型
 
@@ -265,7 +293,6 @@ const [register, form] = useForm({
         { label: '启用', value: 1 },
         { label: '停用', value: 0 },
       ],
-      valueToNumber: true,
     },
   ],
 })
@@ -375,7 +402,6 @@ import { SuperTable, useTable } from 'antdv-superform'
 
 const [register, table] = useTable({
   isContainer: true,
-  immediate: true,
   pagination: { pageSize: 20 },
   apis: {
     query: api.page,

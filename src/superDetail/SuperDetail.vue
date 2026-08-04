@@ -3,6 +3,8 @@ import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, rea
 import { buildModelsMap } from '../utils/buildModel'
 import { DetailLayout } from '../components/Detail'
 import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
+import { reportSchemaDiagnostics } from '../utils'
+import { globalConfig } from '../plugin'
 
 export default defineComponent({
   props: {
@@ -12,6 +14,7 @@ export default defineComponent({
   emits: ['register'],
   setup(props, ctx) {
     const option: Obj = shallowRef(props.schema || {})
+    if (globalConfig.schemaDiagnostics && props.schema) reportSchemaDiagnostics(props.schema, 'detail', 'SuperDetail')
     const dataRef = ref(props.schema?.dataSource || {})
     watch(
       () => props.dataSource,
@@ -23,6 +26,7 @@ export default defineComponent({
 
     const exposed = {
       setOption: (_option: ExtFormOption) => {
+        if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'detail', 'SuperDetail')
         option.value = _option
         _option.dataSource && (dataRef.value = _option.dataSource)
       },

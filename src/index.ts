@@ -7,6 +7,8 @@ export * from './superTable'
 export * from './superButtons'
 export * from './superDetail'
 export * from './superModal'
+export { diagnoseSchema } from './utils/diagnoseSchema'
+export type { SchemaDiagnostic, SchemaDiagnosticLevel, SchemaKind } from './utils/diagnoseSchema'
 
 export default plugin
 

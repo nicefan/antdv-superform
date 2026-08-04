@@ -1,16 +1,21 @@
 {
   "name": "antdv-superform",
-  "version": "0.6.16",
+  "version": "0.7.0",
   "author": {
     "name": "nicefan",
     "email": "covien@msn.com"
   },
   "files": [
+    "bin",
+    "shared",
     "lib",
     "types",
     "index.d.ts",
     "AI_GUIDE.md"
   ],
+  "bin": {
+    "antdv-superform": "bin/antdv-superform.mjs"
+  },
   "type": "module",
   "main": "./lib/index.js",
   "module": "./lib/index.js",

@@ -45,6 +45,8 @@ interface InstallConfig extends GlobalConfig {
   defaultProps?: Obj
 }
 interface GlobalConfig {
+  /** 是否在组件接收 schema 时输出诊断信息 */
+  schemaDiagnostics?: boolean
   dictApi?: (name: string) => Promise<Dict[]>
   /** 自定义图标处理组件 */
   customIcon?: (name: string) => VNode
