@@ -1,3 +1,5 @@
+import { isNumber } from "lodash-es"
+
 function formatStr(str: string, data: Obj = {}) {
   const reg = new RegExp('{(\\w*)}', 'g')
   return str.replace(reg, (match, key) => data[key] || '')
@@ -59,11 +61,11 @@ function getRangeRule(type, len, max, min) {
   let rule
   if (len) {
     rule = { type, len, message: 'len' }
-  } else if (!isNaN(max) && !isNaN(min)) {
+  } else if (isNumber(max) && isNumber(min)) {
     rule = { type, max, min, message: 'range' }
-  } else if (!isNaN(max)) {
+  } else if (isNumber(max)) {
     rule = { type, max, message: 'max' }
-  } else if (!isNaN(min)) {
+  } else if (isNumber(min)) {
     rule = { type, min, message: 'min' }
   } else {
     return false
@@ -132,7 +134,7 @@ function buildRule(item: RuleConfig, label = '') {
     rules.push({ pattern, trigger, message })
   }
 
-  if (len || !isNaN(Number(max)) || !isNaN(Number(min))) {
+  if (len || isNumber(max) || isNumber(min)) {
     const rule = getRangeRule(type, len, max, min)
     const message = formatStr(rule.message, { label, len, max, min })
     rules.push({ ...rule, trigger, message, type })

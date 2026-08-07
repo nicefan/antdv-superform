@@ -241,7 +241,7 @@ export default function exampleForm() {
             },
           },
           {
-            type: 'Fragment',
+            type: 'Group',
             disabled: ({ current }) => current.isReg,
             subItems: [
               {
@@ -635,7 +635,6 @@ export default function exampleForm() {
           {
             type: 'InputList',
             field: 'nameList',
-            // subSpan: 20,
             rules: { required: true, min: 2 },
             label: '客户', // 唯一子元素有定义label时，此处无效
             attrs: {
@@ -648,6 +647,7 @@ export default function exampleForm() {
             columns: [
               {
                 type: 'Input',
+                // span: 'auto',
                 field: '$index', // 只有一个控件并绑定$index时，直接存为数组值。
                 // label: '姓名',
                 // labelSlot: (data) =>{
@@ -657,6 +657,7 @@ export default function exampleForm() {
               },
             ],
           },
+          {type: 'Input', field: 'nameRate', label: '客户率'},
           {
             type: 'InputList',
             field: 'datelist',
@@ -665,9 +666,10 @@ export default function exampleForm() {
               span: 24,
               column: 2,
             },
+            compact: true,
             initialValue: () => [{}, {}],
-            // label: '付款日期',
-            rules: { min: 2 },
+            label: '付款日期',
+            // rules: { min: 2 },
             rowButtons: ['add', 'delete'],
             // attrs: {
             //   labelIndex: true,
@@ -676,24 +678,24 @@ export default function exampleForm() {
             //   // labelIndex为true时，可以为每行生成一个label
             //   return '付款日期' + data.index
             // },
-            hidden: (data) => {
-              return false
-            },
+            // hidden: (data) => {
+            //   return false
+            // },
             // viewRender(data) {
             //   return JSON.stringify(data.value)
             // },
             columns: [
-              {
-                type: 'InputGroup',
-                labelSlot: ({ current, index }) => {
-                  // labelIndex为true时，可以为每行生成一个label
-                  const id = index + 1
-                  if (current.length === id) {
-                    return '付款日期' + id + 'end'
-                  }
-                  return '付款日期' + id
-                },
-                subItems: [
+              // {
+              //   type: 'InputGroup',
+              //   labelSlot: ({ current, index }) => {
+              //     // labelIndex为true时，可以为每行生成一个label
+              //     const id = index + 1
+              //     if (current.length === id) {
+              //       return '付款日期' + id + 'end'
+              //     }
+              //     return '付款日期' + id
+              //   },
+              //   subItems: [
                   {
                     type: 'DatePicker',
                     label: '日期b',
@@ -706,17 +708,15 @@ export default function exampleForm() {
                   },
 
                   {
-                    type: 'DatePicker',
+                    type: 'Input',
                     label: '日期c',
                     field: 'index3',
-                    attrs: {
-                      picker: 'quarter',
-                    },
-                    // rules: {required: true}
+                    // required: true,
+                    rules: {required: true}
                     // span: 12,
                   },
-                ],
-              },
+              //   ],
+              // },
 
               // {
               //   type: 'DatePicker',

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw, computed, unref } from 'vue'
+import { type PropType, defineComponent, h, reactive, shallowRef, toRef, watch, toRaw, computed } from 'vue'
 import { cloneModels } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -27,17 +27,19 @@ export default defineComponent({
     isView: Boolean,
     labelIndex: Boolean,
   },
-  setup(props, ctx) {
+  setup(props) {
     const { model, option, isView, effectData, labelIndex } = props
-    const { columns, rowButtons, label, labelSlot, slots: optionSlots, ..._option } = option
+    const { columns, rowButtons, label, labelSlot, compact, slots: _optionSlots, ..._option } = option
     const { modelsMap: childrenMap } = model.listData
 
+    // 普通数组，值对应下标
     const isSingle = columns.length === 1 && columns[0].field === '$index'
 
     const isFormItem = !labelIndex && (label || labelSlot)
 
-    const { propChain, rules } = model
+    // const { propChain } = model
     const orgList = toRef(model, 'refData')
+    let singleVersion = 0
 
     const methods = {
       add: {
@@ -52,7 +54,8 @@ export default defineComponent({
         confirmText: '',
         icon: () => h(MinusOutlined),
         onClick({ index }) {
-          orgList.value = toRaw(orgList.value).filter((_, idx) => idx !== index)
+          orgList.value.splice(index, 1)
+          orgList.value = [...toRaw(orgList.value)]
         },
       },
     }
@@ -70,64 +73,97 @@ export default defineComponent({
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
       }
 
-    const groupOption = {
-      ..._option,
-      type: 'InputGroup',
-      label,
-      labelSlot,
-      subSpan: option.subSpan ?? 'auto',
-      attrs: {
-        compact: false,
-      },
-    }
+    //将配置选项下沉
+    // const groupOption = {
+    //   ..._option,
+    //   type: 'InputGroup',
+    //   label,
+    //   labelSlot,
+    //   subSpan: option.subSpan ?? 'auto',
+    // }
 
-    const listItems = ref<any[]>([])
+    const keyMap = new WeakMap<object, PropertyKey>()
+    const listItems = shallowRef<any[]>([])
     // 监听数据变化
     watch(
-      orgList,
-      (list) => {
-        if (list.length === 0) {
-          list.push(isSingle ? undefined : {})
+      () => orgList.value.map((record) => toRaw(record)),
+      (currentList) => {
+        if (currentList.length === 0) {
+          orgList.value.push(isSingle ? undefined : {})
         }
+        const list = currentList.length ? currentList : orgList.value.map((record) => toRaw(record))
+        const previousItems = listItems.value
+        if (isSingle && previousItems.length !== list.length) {
+          singleVersion += 1
+        }
+        const keys = list.map((record, idx) => {
+          const rawRecord = toRaw(record)
+          if (rawRecord !== null && typeof rawRecord === 'object') {
+            if (!keyMap.has(rawRecord)) {
+              keyMap.set(rawRecord, nanoid(12))
+            }
+            return keyMap.get(rawRecord)
+          }
+          // $index 模式按索引槽位绑定普通数组，字段值变化不应改变行 key
+          return previousItems[idx]?.baseKey ?? nanoid(12)
+        })
         listItems.value = list.map((record, idx) => {
           const refData = toRef(orgList.value, idx)
-          let itemOption: Obj = { ...columns[0] }
-          let itemModel
+          const propChain = [...model.propChain, idx]
+          const newModel: Obj = {
+            index: idx,
+            parent: orgList,
+            refData,
+            propChain,
+          }
+          const ghostModel = new Map()
+          let itemOption: Obj
           if (isSingle) {
-            itemModel = {
+            itemOption = { ...columns[0] }
+            ghostModel.set(itemOption, {
               ...childrenMap.get(columns[0]),
-              index: idx,
-              parent: orgList,
-              refData,
-              propChain: [...propChain, idx],
-            }
+              ...newModel,
+            })
           } else {
-            const cloneChild = cloneModels(childrenMap, record, propChain, idx).modelsMap
-
-            if (cloneChild.size === 1 && !columns[0].field) {
-              itemModel = {
-                ...cloneChild.get(columns[0]),
-                parent: orgList,
-                refData,
-              }
+            if (childrenMap.size === 1 || !columns[0].field) {
+              itemOption = { subSpan: 'auto', ...columns[0], field: String(idx) }
+              const oldModel = [...childrenMap.values()][0]
+              ghostModel.set(itemOption, {
+                ...oldModel,
+                ...newModel,
+                refName: String(idx),
+                children: cloneModels(oldModel.children || new Map(), record, propChain).modelsMap,
+              })
             } else {
-              itemOption = { ...groupOption }
-              itemModel = { parent: orgList, refData, children: cloneChild, index: idx }
-              if (!labelIndex) {
-                itemOption = { type: 'Group', span: 'auto' }
-              }
+              itemOption = compact
+                ? {
+                    ..._option,
+                    type: 'InputGroup',
+                    initialValue: undefined,
+                    subSpan: option.subSpan ?? 'auto',
+                    field: String(idx),
+                  }
+                : { type: 'Group', span: 'auto' }
+
+              ghostModel.set(itemOption, {
+                ...newModel,
+                refName: String(idx),
+                children: cloneModels(childrenMap, record, propChain).modelsMap,
+              })
             }
           }
           if (labelIndex) {
             itemOption.label ??= label
             itemOption.labelSlot ??= labelSlot || itemOption.label + String(idx + 1)
           }
-          const children = new Map([[itemOption, reactive(itemModel)]])
-          rowButtonsConfig && children.set(rowButtonsConfig, { parent: orgList, index: idx })
+          //将按钮加入排板
+          rowButtonsConfig && ghostModel.set(rowButtonsConfig, { parent: orgList, index: idx })
           return {
-            children,
-            model: reactive({ parent: orgList, children, index: idx }),
-            key: refData.value ?? nanoid(),
+            children: ghostModel,
+            model: { parent: orgList, children: ghostModel, index: idx },
+            refData,
+            baseKey: keys[idx],
+            key: isSingle ? `${String(keys[idx])}:${idx}:${singleVersion}` : keys[idx],
             // effectData: reactive({ parent: effectData, current: orgList, index: idx, record: refData }),
           }
         })
@@ -143,8 +179,6 @@ export default defineComponent({
       })
     }
 
-    const slots: Obj = { ...ctx.slots }
-
     if (isView) {
       if (isFormItem) {
         if (isSingle) {
@@ -152,18 +186,32 @@ export default defineComponent({
           const breakAfter = columns[0].breakAfter ?? columns[0].wrapping
           return () =>
             h(Space, { direction: breakAfter ? 'vertical' : 'horizontal' }, () =>
-              listItems.value.map(({ children }) => {
-                return h('span', [toNode(labelSlot, effectData), labelSlot ? ': ' : '', effectData.value])
+              listItems.value.map(({ refData, key }, index) => {
+                const itemEffectData = {
+                  ...effectData,
+                  parent: effectData,
+                  current: orgList.value,
+                  field: columns[0].field,
+                  value: refData.value,
+                  index,
+                  record: refData.value,
+                }
+                return h('span', { key }, [toNode(labelSlot, itemEffectData), labelSlot ? ': ' : '', refData.value])
               })
             )
         } else {
           return () =>
-            listItems.value.map(({ children }) => {
+            listItems.value.map(({ children, key }) => {
               // const [_option, model] = [...children][0]
               // const option = _option.descriptionsProps
               //   ? _option
               //   : { ..._option, descriptionsProps: { mode: 'default', labelCol: {} } }
-              return h(DetailLayout, { modelsMap: children, option, effectData })
+              return h(DetailLayout, {
+                key,
+                modelsMap: children,
+                option,
+                effectData,
+              })
             })
         }
       }
@@ -173,9 +221,26 @@ export default defineComponent({
       })
 
       return () =>
-        h(DetailLayout, { option: groupOption, modelsMap: children.value, effectData, key: Date(), ...attrs })
+        h(DetailLayout, {
+          option: { ..._option, label, labelSlot },
+          modelsMap: children.value,
+          effectData,
+          ...attrs,
+        })
     } else if (isFormItem) {
-      const children = new Map([[{ ...groupOption, slots: { default: render } }, model]])
+      const children = new Map([
+        [
+          {
+            ..._option,
+            label,
+            labelSlot,
+            type: 'InfoSlot',
+            block: false,
+            render,
+          },
+          model,
+        ],
+      ])
       return () => h(Collections, { model: { children }, option, effectData })
     } else {
       return render

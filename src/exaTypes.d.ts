@@ -400,6 +400,7 @@ interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
 }
 interface ExtInputList extends ExtFormItemOption, ExtRow {
   title?: VSlot
+  compact?: boolean
   attrs?: {
     /** 标签后加序号 */
     labelIndex?: boolean
@@ -652,7 +653,7 @@ declare global {
     refName?: string
     parent: Obj
     index?: number
-    initialValue: any
+    initialValue?: any
     fieldName?: string
     propChain: string[]
     rules?: Obj[]

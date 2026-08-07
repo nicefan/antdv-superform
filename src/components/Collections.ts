@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref } from 'vue'
+import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRaw } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults, isFunction } from 'lodash-es'
 import Controls, { containers, formItemTypes } from './index'
@@ -39,7 +39,7 @@ export default defineComponent({
       const { type, align, span, hideInForm, exclude, editable } = option
       const block = option.block ?? option.blocked
       const breakAfter = option.breakAfter ?? option.wrapping
-      const { parent, refData } = toRefs(subData)
+      const { parent, refData } = toRaw(subData)
       const effectData = getEffectData({
         parent: props.effectData,
         current: parent,
@@ -108,7 +108,6 @@ export default defineComponent({
             label,
           })
       }
-
       if (independent) {
         // 容器组件转递继承属性
         const inheritOptions: Obj = {
@@ -141,7 +140,7 @@ export default defineComponent({
       } else {
         if (type === 'InputList') {
           // currentGroup = undefined
-          colProps.span = 24
+          colProps.span = span ?? 24
           // colProps.flex = 'auto'
         }
         if (!currentGroup) {

@@ -2,7 +2,7 @@
 import { FormItemRest } from 'ant-design-vue'
 import base from './base'
 import Collections from './Collections'
-import { computed, defineComponent, h, inject, mergeProps, ref, unref, watch } from 'vue'
+import { computed, defineComponent, h, inject, mergeProps, reactive, ref, unref, watch } from 'vue'
 import { globalProps } from '../plugin'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
@@ -32,40 +32,47 @@ export default defineComponent({
         { deep: true }
       )
     } else if (model.children && compact) {
-      if (field) {
-        const rule = {
-          type: 'object',
-          required: false,
-          fields: {} as Obj,
-        }
-        model.children.forEach((val) => {
-          if (val.rules && val.fieldName) {
-            if (val.rules[0].required) rule.required = true
-            rule.fields[val.fieldName] = val.rules
+      const rule = {
+        type: 'object',
+        required: false,
+        fields: {} as Obj,
+      }
+      for (const val of model.children.values()) {
+        if (val.rules && val.fieldName) {
+          if (val.rules[0].required) rule.required = true
+          const effectData = reactive({
+            ...props.effectData,
+            parent: props.effectData,
+            current: val.parent,
+            field: val.fieldName,
+            value: val.refData,
+          })
+
+          rule.fields[val.fieldName] = formatRule(val.rules, effectData)
+          if (!model.refName) {
+            // Group 未绑定字段，取第一个子项的字段作为校验字段
+            _propChain = val.propChain
+            ruleObj = rule.fields[val.fieldName]
+            watch(
+              () => unref(val.refData),
+              () => formItemContext.value?.onFieldChange()
+            )
+            break
           }
-        })
+        }
+      }
+      if (model.refName) {
         ruleObj = [rule]
-        // 监听子组件数据变化
         watch(
           () => model.refData,
           () => formItemContext.value?.onFieldChange(),
           { deep: true }
         )
-      } else {
-        const { rules, propChain, refName } =
-          [...model.children.values()].find((val) => !!val.rules) || ({} as ModelData)
-        if (refName) {
-          ruleObj = rules
-          _propChain = propChain
-          watch(
-            () => model.refData[refName],
-            () => formItemContext.value?.onFieldChange()
-          )
-        }
       }
     } else {
       extProps.style = 'margin: 0'
     }
+    extProps.required = !!ruleObj[0]?.required
     const inheritAttrs = inject<Obj>('inheritOptions', {})
 
     // 生成FormItem

@@ -105,8 +105,8 @@ export default defineComponent({
     }
 
     return () =>
-      listItems.value.map(({ model, effectData, key }, idx) => {
-        return h(Controls.Group, { model, option: groupOption, effectData, key: key + idx, isView }, ctx.slots)
+      listItems.value.map(({ model, effectData, key }) => {
+        return h(Controls.Group, { model, option: groupOption, effectData, key, isView }, ctx.slots)
       })
   },
 })
