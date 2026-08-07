@@ -24,7 +24,9 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "test": "vitest run",
-    "build:dist": "vite build --mode dist",
+    "build:dist": "vite build --mode dist && node scripts/sync-docs-repl.mjs",
+    "docs:dev": "pnpm --dir docs dev",
+    "docs:build": "pnpm --dir docs build",
     "rollup": "rollup -c",
     "dts": "vue-tsc --declaration --emitDeclarationOnly",
     "serve": "vite preview"

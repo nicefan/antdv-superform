@@ -1,0 +1,19 @@
+{
+  "latest": "0.7.0",
+  "versions": [
+    {
+      "version": "0.7.0",
+      "vue": "3.3.13",
+      "path": "repl/0.7.0",
+      "createdAt": "2026-08-04T09:15:59.685Z",
+      "hashes": {
+        "antd.js": "sha256-EHfemQxC1UscEWodmRGnJUbY5c5ou5Ph1ctRvFHbpjo=",
+        "antd.css": "sha256-q/sVZXp2VdoxHm2Bb17/wvqf4M9lPZxSXIcXnWg/ONE=",
+        "antdv-superform.js": "sha256-3LZ1eWbWX1Y9RuiDGdxIDnFxH9FEtFL0V6c7crQx76M=",
+        "style.css": "sha256-vjzoPRmv0ORbMvYuYs7j1LJlxgVXtnEho+4v1b0amyA=",
+        "vue.runtime.esm-browser.js": "sha256-Gy07uzwsCRI8fb920I9KW1kxF2zudJgOYwVRpvmhUvk=",
+        "vue.runtime.esm-browser.prod.js": "sha256-EFux37S8RWMmwTMBc44xcKw0yT3rq5OYCNO/PGX7toM="
+      }
+    }
+  ]
+}
