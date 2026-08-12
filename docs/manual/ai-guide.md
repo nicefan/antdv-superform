@@ -124,7 +124,7 @@ import {
 
 | 类型              | 直接声明属性                                                                                                                                                    | 详细页面                                                  |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `TableApis`       | `query`、`info`、`save`、`update`、`delete`                                                                                                                     | [后端接口约定](/manual/backend-contracts)                 |
+| `TableApis`       | `query`、`info`、`save`、`update`、`delete`                                                                                                                     | [接口与数据适配](/manual/backend-contracts)             |
 | `TabsHeader`      | `field`、`initialValue`、`bordered`、`options`、`dictName`、`labelAsValue`、`activeKey`、`slots`、`customTab`                                                   | [SuperTable tabs](/manual/super-table#tabs-标签筛选)      |
 | `ExtColumnsItem`  | `viewRender`、`columnProps`                                                                                                                                     | [Table 列](/manual/fields/collections#列-extcolumnsitem)  |
 | `ExtTableOption`  | `field`、`title`、`attrs`、`editable`、`rowEditor`、`columns`、`tabs`、`columnProps`、`indexColumn`、`buttons`、`rowButtons`、`modalProps`、`descriptionsProps` | [Table 容器](/manual/fields/collections#table-数组容器)   |

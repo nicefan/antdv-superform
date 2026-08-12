@@ -16,7 +16,7 @@ const typeFile = ts.createSourceFile(
 );
 const propertyNames = new Set();
 
-// 这些属性存在于类型声明中，但运行时尚未形成公开能力，只在 SOURCE_REVIEW.md 跟踪，
+// 这些属性存在于类型声明中，但运行时尚未形成公开能力，
 // 不应为了通过覆盖校验而出现在面向使用者的手册正文中。
 const reviewOnlyProperties = new Set([
   "advanced",
@@ -47,10 +47,6 @@ function collectMarkdown(directory) {
 
 collectMarkdown(join(docsRoot, "manual"));
 
-const reviewSource = readFileSync(join(docsRoot, "SOURCE_REVIEW.md"), "utf8");
-const missingReviewRecords = [...reviewOnlyProperties]
-  .filter((name) => !reviewSource.includes(`\`${name}\``))
-  .sort();
 const missing = [...propertyNames]
   .filter(
     (name) =>
@@ -58,13 +54,7 @@ const missing = [...propertyNames]
   )
   .sort();
 
-if (missingReviewRecords.length) {
-  console.error(
-    "以下非运行时属性既未进入公开手册，也未记录在 SOURCE_REVIEW.md："
-  );
-  console.error(missingReviewRecords.join("\n"));
-  process.exitCode = 1;
-} else if (missing.length) {
+if (missing.length) {
   console.error(
     `exaTypes.d.ts 中有 ${missing.length} 个属性未在手册中以配置名出现：`
   );
@@ -74,6 +64,6 @@ if (missingReviewRecords.length) {
   console.log(
     `类型属性覆盖校验通过，共 ${
       propertyNames.size - reviewOnlyProperties.size
-    } 个公开属性、${reviewOnlyProperties.size} 个源码审核属性`
+    } 个公开属性、${reviewOnlyProperties.size} 个未公开属性`
   );
 }

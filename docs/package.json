@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vitepress dev --host 127.0.0.1",
     "format:examples": "node scripts/format-example-code.mjs",
-    "build": "node scripts/validate-type-property-coverage.mjs && node scripts/validate-example-catalog.mjs && node scripts/validate-repl-assets.mjs && vitepress build",
+    "check:type-coverage": "node scripts/validate-type-property-coverage.mjs",
+    "build": "node scripts/validate-example-catalog.mjs && node scripts/validate-repl-assets.mjs && vitepress build",
     "preview": "vitepress preview --host 127.0.0.1"
   },
   "dependencies": {

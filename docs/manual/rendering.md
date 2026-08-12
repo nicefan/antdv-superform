@@ -182,6 +182,6 @@ HTML 通过 `innerHTML` 渲染，组件库不会清洗内容。只应展示可�
 | 一次性自定义输入控件       | `InputSlot`                                     |
 | 插入不绑定数据的内容       | `InfoSlot`                                      |
 | 多处复用的业务控件         | 注册自定义字段                                  |
-| 替换某个内置字段的底层实现 | [底层组件包装扩展](/manual/component-overrides) |
+| 替换某个内置字段的底层实现 | [替换底层组件](/manual/component-overrides)     |
 
 可运行场景见[自定义渲染示例](/examples?example=rendering)。

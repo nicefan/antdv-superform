@@ -1,4 +1,4 @@
-# 全局默认配置
+# 全局配置
 
 插件安装配置用于接入应用级字典、权限、图标、组件和默认属性。配置只做跨页面一致性；单个页面的业务差异仍写在 Schema。
 
@@ -134,7 +134,7 @@ app.use(SuperFormPlugin, {
 });
 ```
 
-接口必须返回标准 `{ label, value }[]`。字段如何使用 `dictName`、局部 `options` 与缓存策略见[字典与权限接入](/manual/dictionaries-and-permissions#字典接入)。
+接口必须返回标准 `{ label, value }[]`。字段如何使用 `dictName`、局部 `options` 与缓存策略见[字典与权限](/manual/dictionaries-and-permissions#字典接入)。
 
 ## 图标、权限与按钮规范
 
@@ -154,7 +154,7 @@ app.use(SuperFormPlugin, {
 });
 ```
 
-它只负责前端显示或禁用，不能替代后端鉴权。权限策略详见[字典与权限接入：按钮权限](/manual/dictionaries-and-permissions#按钮权限)。
+它只负责前端显示或禁用，不能替代后端鉴权。权限策略详见[字典与权限：按钮权限](/manual/dictionaries-and-permissions#按钮权限)。
 
 `defaultButtons` 按动作 `name` 与内置配置深度合并，可统一修改内置按钮，也可以把项目常用动作标准化：
 
@@ -189,7 +189,7 @@ app.use(SuperFormPlugin, {
 });
 ```
 
-函数接收当前值，可以返回颜色字符串，也可以返回 `{ label, color, icon }`。字段级 `tagViewer` 优先于全局配置，设为 `false` 可关闭当前字段的 Tag 展示。更多值形态见[字典与权限接入：标签展示](/manual/dictionaries-and-permissions#标签展示)。
+函数接收当前值，可以返回颜色字符串，也可以返回 `{ label, color, icon }`。字段级 `tagViewer` 优先于全局配置，设为 `false` 可关闭当前字段的 Tag 展示。更多值形态见[字典与权限：标签展示](/manual/dictionaries-and-permissions#标签展示)。
 
 ## defaultProps 的层级
 
@@ -221,7 +221,7 @@ SuperFormPlugin.setDefaultProps({
 
 它适合按应用启动阶段追加主题配置，不适合在页面生命周期里频繁切换。
 
-`components` 与 `defaultProps` 的作用不同：前者替换底层组件实现，后者只设置默认属性。全局替换会影响所有对应字段，包装组件必须保持原组件的 v-model、事件、插槽和实例契约，详见[底层组件包装扩展](/manual/component-overrides)。
+`components` 与 `defaultProps` 的作用不同：前者替换底层组件实现，后者只设置默认属性。全局替换会影响所有对应字段，包装组件必须保持原组件的 v-model、事件、插槽和实例契约，详见[替换底层组件](/manual/component-overrides)。
 
 ## tableApiSetting
 
@@ -256,6 +256,6 @@ tableApiSetting: {
 | DatePicker / DateRange | `YYYY-MM-DD`          |
 | options 只读展示       | Tag + 内置颜色组      |
 
-默认满足需求时不要在每个 Schema 重复生成。组件替换细节见[底层组件包装扩展](/manual/component-overrides)。
+默认满足需求时不要在每个 Schema 重复生成。组件替换细节见[替换底层组件](/manual/component-overrides)。
 
 `isFixedHeight` 与 `resizeHeightOffset` 不是库内置的 Table 默认值。上方完整示例把它们作为业务项目的统一页面策略：固定表格区域，并为页面底部保留 36px。高度模式、作用范围和单页覆盖方式见[SuperTable：页面容器与高度策略](/manual/super-table#页面容器与高度策略)。

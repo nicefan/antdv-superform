@@ -170,7 +170,7 @@ Ant Design Vue 字段校验
 
 根 `onSubmit` 返回 `false` 或 `{ errMessage: '...' }` 会阻止成功提交；`errMessage` 会作为消息提示展示。
 
-FormItem 全局默认 `validateFirst: true`，即同一字段遇到首个失败规则后停止。可通过[全局默认配置](/manual/global-config)或节点的 `formItemProps` 调整。
+FormItem 全局默认 `validateFirst: true`，即同一字段遇到首个失败规则后停止。可通过[全局配置](/manual/global-config)或节点的 `formItemProps` 调整。
 
 ## ignoreRules 的边界
 

@@ -52,7 +52,7 @@ Group 是通用分组容器：
 | `ignoreTableTitle`  | boolean         | `false`    | Schema 用于表格时忽略分组表头 |
 | `descriptionsProps` | object          | —          | 只读详情布局                  |
 
-`component` 适合项目统一 Section 外壳；只想换全局基础组件时使用[底层组件包装扩展](/manual/component-overrides)。
+`component` 适合项目统一 Section 外壳；只想换全局基础组件时使用[替换底层组件](/manual/component-overrides)。
 
 ## Fragment
 

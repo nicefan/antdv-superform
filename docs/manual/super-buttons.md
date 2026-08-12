@@ -190,7 +190,7 @@ const buttons = {
 }
 ```
 
-无权限默认隐藏。按钮级策略优先于组级策略；前端隐藏不替代后端鉴权。权限接入见[字典与权限接入](/manual/dictionaries-and-permissions#按钮权限)。
+无权限默认隐藏。按钮级策略优先于组级策略；前端隐藏不替代后端鉴权。权限接入见[字典与权限](/manual/dictionaries-and-permissions#按钮权限)。
 
 ## 上下文差异
 

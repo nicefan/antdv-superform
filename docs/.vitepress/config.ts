@@ -7,7 +7,7 @@ export default defineConfig({
     '基于 Vue 3 和 Ant Design Vue 的配置式表单与表格组件库。用一份配置，统一表单、表格与详情，让中后台开发更高效',
   lang: 'zh-CN',
   base: '/antdv-superform/',
-  srcExclude: ['README.md', 'SOURCE_REVIEW.md', 'manual/_partials/**'],
+  srcExclude: ['README.md', 'manual/_partials/**'],
   cleanUrls: true,
   lastUpdated: true,
   head: [
@@ -96,16 +96,21 @@ export default defineConfig({
           ],
         },
         {
-          text: '扩展与定制',
+          text: '项目集成',
           items: [
-            { text: '后端接口约定', link: '/manual/backend-contracts' },
-            { text: '全局默认配置', link: '/manual/global-config' },
+            { text: '全局配置', link: '/manual/global-config' },
+            { text: '接口与数据适配', link: '/manual/backend-contracts' },
             {
-              text: '字典与权限接入',
+              text: '字典与权限',
               link: '/manual/dictionaries-and-permissions',
             },
-            { text: '底层组件扩展', link: '/manual/component-overrides' },
-            { text: '注册自定义字段', link: '/manual/custom-fields' },
+          ],
+        },
+        {
+          text: '扩展开发',
+          items: [
+            { text: '自定义字段', link: '/manual/custom-fields' },
+            { text: '替换底层组件', link: '/manual/component-overrides' },
           ],
         },
         {

@@ -290,6 +290,6 @@ tagViewer: (value) => ({
 })
 ```
 
-配置 options 后默认开启 Tag。全局颜色策略见[字典与权限接入](/manual/dictionaries-and-permissions#标签展示)。
+配置 options 后默认开启 Tag。全局颜色策略见[字典与权限](/manual/dictionaries-and-permissions#标签展示)。
 
 完整可运行代码见[选择输入示例](/examples?example=selections)。

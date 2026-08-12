@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "推送前检查：手册类型属性覆盖"
+pnpm docs:check-types

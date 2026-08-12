@@ -104,7 +104,7 @@ const [register, table] = useTable({ attrs: { rowKey: "id" }, columns }, rows);
 | `update` | function | —      | `(updatedData)`        | 更新               |
 | `delete` | function | —      | `(keys, rows)`         | 删除选择行或当前行 |
 
-接口适配见[后端接口约定](/manual/backend-contracts)。
+接口适配见[接口与数据适配](/manual/backend-contracts)。
 
 ## 查询参数与转换
 

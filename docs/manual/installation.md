@@ -52,7 +52,7 @@ app.use(SuperFormPlugin, {
 });
 ```
 
-各项配置见[全局默认配置](/manual/global-config)和[字典与权限接入](/manual/dictionaries-and-permissions)。
+各项配置见[全局配置](/manual/global-config)和[字典与权限](/manual/dictionaries-and-permissions)。
 
 ## 公共导入约定
 

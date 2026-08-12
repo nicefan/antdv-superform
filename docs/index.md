@@ -34,7 +34,7 @@ features:
     details: dataSource、响应式参数与查询 CRUD 使用清晰契约，页面状态更容易维护。
   - icon: 🧩
     title: 复杂需求，灵活扩展
-    details: 支持 Ref、函数、插槽、自定义字段、业务组件注册和全局默认配置。
+    details: 支持 Ref、函数、插槽、自定义字段、业务组件注册和全局配置。
   - icon: ✨
     title: AI 编码，更稳更快
     details: 附带公开规则、Schema 诊断工具和 AI 项目指令初始化能力。
