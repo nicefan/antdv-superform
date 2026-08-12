@@ -1,6 +1,8 @@
-# 响应式配置
+# 响应式与联动
 
 Schema 可以是稳定的普通对象，变化留给其中的函数和 Ref。SuperForm 会在响应式作用域中执行这些配置，并追踪函数实际读取的数据；依赖改变后，只更新对应状态或属性，不要求业务代码重建整份 Schema。
+
+本章按“响应式配置 → 字段状态与模型联动 → 事件和上下文”的顺序组织。状态函数负责描述结果，`computed` 负责派生值，`onUpdate` 与组件事件负责副作用；先区分这三类职责，复杂联动会更容易维护。
 
 ## 三种配置形态
 
@@ -36,13 +38,13 @@ Schema 可以是稳定的普通对象，变化留给其中的函数和 Ref。Sup
 - `parent`：上一级响应上下文。
 
 ```ts
-disabled: ({ current }) => !current.country
+disabled: ({ current }) => !current.country;
 
 // 跨业务分组时读取根模型
-hidden: ({ formData }) => formData.orderType !== 'company'
+hidden: ({ formData }) => formData.orderType !== "company";
 ```
 
-优先读取距离最近的 `current`，让字段组更容易复用；只有确实跨层级时再读取 `formData`。完整上下文见[事件与上下文](/manual/events-and-context#effectdata-上下文)。
+优先读取距离最近的 `current`，让字段组更容易复用；只有确实跨层级时再读取 `formData`。完整上下文见本页的[事件与上下文](#effectdata-上下文)。
 
 ## dynamicAttrs：计算底层组件属性
 
@@ -112,23 +114,28 @@ hidden: ({ formData }) => formData.orderType !== 'company'
 选项和数据源也可以独立响应：
 
 ```ts
-const cities = ref([])
-const record = ref({ province: undefined, city: undefined })
+const cities = ref([]);
+const record = ref({ province: undefined, city: undefined });
 
 const schema = {
   dataSource: record,
   subItems: [
-    { type: 'Select', field: 'province', label: '省份', options: provinceOptions },
-    { type: 'Select', field: 'city', label: '城市', options: cities },
+    {
+      type: "Select",
+      field: "province",
+      label: "省份",
+      options: provinceOptions,
+    },
+    { type: "Select", field: "city", label: "城市", options: cities },
   ],
-}
+};
 ```
 
 - `options` 可以是数组、Ref 或函数；函数可返回数组或 Promise。
 - `dataSource` 可以是对象或 Ref；Ref 指向新对象时，SuperForm 切换到新模型。
 - 字段 `value` 可以绑定 Ref，与模型字段进行双向同步。
 
-选项函数的远程搜索参数和触发条件见[选择输入：远程搜索](/manual/fields/selections#远程搜索)，数据源切换的具体行为见[数据源与双向绑定](/manual/data-binding)。
+选项函数的远程搜索参数和触发条件见[选择输入：远程搜索](/manual/fields/selections#远程搜索)，数据源切换的具体行为见[Schema 与数据模型](/manual/schema#数据源与双向绑定)。
 
 ## 状态优先级与继承
 
@@ -144,7 +151,7 @@ const schema = {
 }
 ```
 
-禁用字段暂停其当前校验规则，但仍保留在模型和提交数据中。隐藏字段同样保留模型值。完整状态语义和选择建议见[字段状态与联动](/manual/field-state)。
+禁用字段暂停其当前校验规则，但仍保留在模型和提交数据中。隐藏字段同样保留模型值。完整状态语义和选择建议见本页的[字段状态与联动](#字段状态与联动)。
 
 ## 保持响应式配置可维护
 
@@ -152,3 +159,9 @@ const schema = {
 - 复用的条件先提取为具名函数，例如 `canEditPrice(effectData)`。
 - 一个字段需要触发业务请求时使用事件或 `onUpdate`，不要借用 `dynamicAttrs`。
 - 大量字段依赖同一个派生状态时，可在 Schema 外用 Vue `computed` 统一计算，再把 Ref 传入。
+
+前面的内容解释响应式配置如何建立依赖；下面继续说明这些依赖如何落实为字段状态、模型联动和业务事件。
+
+<!--@include: ./_partials/field-state.md-->
+
+<!--@include: ./_partials/events-and-context.md-->

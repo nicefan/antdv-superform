@@ -1,4 +1,4 @@
-# 插槽与自定义渲染
+# 渲染与插槽
 
 Schema 不会把所有内容强制变成内置控件。默认渲染解决常规输入和展示；`viewRender`、`slots`、`InputSlot`、`InfoSlot` 分别覆盖只读内容、组件局部插槽、完整输入控件和非字段内容。
 
@@ -23,7 +23,7 @@ Schema → 内置/扩展输入控件 → v-model → 数据模型
 1. 配置 `labelField` 时，显示关联的文本字段。
 2. 配置 `endField` 时，显示“开始值 - 结束值”。
 3. Select、Radio、Checkbox 等根据 `options` 或字典把值转换为标签。
-4. Switch 根据 `valueLabels` 显示文本。
+4. Switch 配置 `options` 时按选项显示标签；没有选项时才使用 `valueLabels` 补充只读文案。
 5. Text、HTML、Textarea、Upload 等使用各自展示方式。
 6. 配置 `viewRender` 时，以自定义结果为准。
 
@@ -37,7 +37,7 @@ Schema → 内置/扩展输入控件 → v-model → 数据模型
 }
 ```
 
-详情中优先显示 `departmentName`。`labelField` 的模型结构见[字段与数据路径](/manual/fields-and-paths#labelfield-同时保存值与显示文本)，选项显示规则见[选择输入](/manual/fields/selections)。
+详情中优先显示 `departmentName`。`labelField` 的模型结构见[Schema 与数据模型](/manual/schema#labelfield-同时保存值与显示文本)，选项显示规则见[选择输入](/manual/fields/selections)。
 
 ```ts
 {
@@ -108,7 +108,7 @@ import { h } from 'vue'
 }
 ```
 
-插槽函数参数会合并两部分：当前字段的 `effectData` 与底层组件提供的插槽参数。因此既可以读取 `current`，也可以读取 Select 传入的 `option`。完整上下文字段见[事件与上下文](/manual/events-and-context#effectdata-上下文)。
+插槽函数参数会合并两部分：当前字段的 `effectData` 与底层组件提供的插槽参数。因此既可以读取 `current`，也可以读取 Select 传入的 `option`。完整上下文字段见[响应式与联动](/manual/reactivity#effectdata-上下文)。
 
 ## InputSlot：完全接管输入控件
 

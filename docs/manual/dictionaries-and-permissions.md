@@ -7,14 +7,14 @@
 ```ts
 app.use(SuperFormPlugin, {
   dictApi: async (name) => {
-    const result = await dictionaryApi.get(name)
+    const result = await dictionaryApi.get(name);
     return result.map((item) => ({
       label: item.name,
       value: item.code,
       disabled: item.disabled,
-    }))
+    }));
   },
-})
+});
 ```
 
 字段只声明名称：
@@ -36,11 +36,11 @@ app.use(SuperFormPlugin, {
 组件库不内置缓存。缓存、请求合并、过期和租户隔离应在 dictApi 中完成：
 
 ```ts
-const cache = new Map()
+const cache = new Map();
 
 async function dictApi(name) {
-  if (!cache.has(name)) cache.set(name, api.getDictionary(name))
-  return cache.get(name)
+  if (!cache.has(name)) cache.set(name, api.getDictionary(name));
+  return cache.get(name);
 }
 ```
 
@@ -72,13 +72,32 @@ tagViewer: { enabled: 'green', disabled: 'default' }
 
 `tagViewer` 还接受字符串数组、值到颜色对象、`{ label?, value, color, icon? }[]`。只想显示普通选项文字时设为 `false`。
 
+项目中的状态值通常是稳定的，更推荐在全局函数中把值、显示标签和语义色一起标准化：
+
+```ts
+app.use(SuperFormPlugin, {
+  tagViewer(value) {
+    const statusMap: Record<string, { label: string; color: string }> = {
+      0: { label: "停用", color: "default" },
+      1: { label: "启用", color: "green" },
+      2: { label: "异常", color: "red" },
+    };
+    return statusMap[String(value)];
+  },
+});
+```
+
+函数只接收当前值；返回颜色字符串时保留 options/dictName 提供的标签，返回对象时可以同时覆盖 `label`、`color` 和 `icon`。
+
 ## 按钮权限
 
 ```ts
 app.use(SuperFormPlugin, {
   buttonRoles: () => permissionStore.currentRoles,
-})
+});
 ```
+
+`buttonRoles()` 在按钮组或表格操作列构建时读取当前权限数组，不会持续监听 store。路由权限模式下，应先在导航守卫或页面进入阶段更新当前页面权限，再挂载页面；同一页面内权限发生变化时，需要让相关按钮组重新创建。
 
 ```ts
 {
@@ -97,7 +116,7 @@ app.use(SuperFormPlugin, {
 | `unauthorized: 'hide'`    | 明确隐藏     |
 | `unauthorized: 'disable'` | 显示但禁用   |
 
-按钮组也可设置统一 `unauthorized`，单按钮配置优先。旧 `invalidDisabled`、`roleMode` 已废弃。
+按钮组也可设置统一 `unauthorized`，单按钮配置优先。
 
 ## 可见场景与业务状态
 
@@ -116,8 +135,6 @@ app.use(SuperFormPlugin, {
 - `roleName`：用户是否有权限。
 - `visibleIn`：表单/详情场景是否展示。
 - `hidden` / `disabled`：当前业务数据是否允许操作。
-
-旧 `validOn` 改用 `visibleIn`。
 
 ## 安全边界
 

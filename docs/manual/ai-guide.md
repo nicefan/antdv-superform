@@ -1,6 +1,6 @@
 # AI 编码指引
 
-组件包内置 `AI_GUIDE.md`，它是面向 AI 编码工具的现行公开 API 约束，包含默认值、组件类型、接口签名、废弃 API 和生成后检查。业务项目应让 AI 先读本地安装版本，而不是凭历史代码猜用法。
+组件包内置 `AI_GUIDE.md`，它是面向 AI 编码工具的现行公开 API 约束，包含默认值、组件类型、接口签名和生成后检查。业务项目应让 AI 先读本地安装版本，而不是凭历史代码猜用法。
 
 ## 初始化项目指令
 
@@ -49,7 +49,7 @@ import {
   SuperButtons,
   useButtons,
   diagnoseSchema,
-} from 'antdv-superform'
+} from "antdv-superform";
 ```
 
 默认导出是插件对象，提供 `install`、`registerComponent`、`setDefaultProps`。类型也从包根导入。
@@ -90,51 +90,48 @@ import {
 
 ### ExtBaseOption / ExtRow
 
-| 属性                                                     | 文档                                                           |
-| -------------------------------------------------------- | -------------------------------------------------------------- |
-| `type`、`field`、`initialValue`、`vModelFields`          | [Schema](/manual/schema)、[字段路径](/manual/fields-and-paths) |
-| `label`、`labelSlot`、`tooltip`                          | [展示与辅助](/manual/fields/display#字段标签与提示)            |
-| `rules`、`required`                                      | [校验机制](/manual/validation)                                 |
-| `attrs`、`dynamicAttrs`                                  | [响应式配置](/manual/reactivity#dynamicattrs-计算底层组件属性) |
-| `hidden`、`disabled`、`computed`、`onUpdate`             | [字段状态与联动](/manual/field-state)                          |
-| `exclude`                                                | [Schema 场景](/manual/schema#一份字段-多种页面场景)            |
-| `on`、`onXxx`                                            | [事件与上下文](/manual/events-and-context#两种事件写法)        |
-| `colProps`、`span`、`block`、`breakAfter`、`align`       | [布局与嵌套](/manual/layout)                                   |
-| `slots`、`viewRender`                                    | [插槽与自定义渲染](/manual/rendering)                          |
-| `rowProps`、`subSpan`、`gutter`                          | [布局与嵌套](/manual/layout#自动栅格分组)                      |
-| `hideInForm`、`hideInDescription`、`blocked`、`wrapping` | 本页[废弃属性迁移](#废弃属性迁移)                              |
+| 属性组                                             | 文档                                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------- |
+| `type`、`field`、`initialValue`、`vModelFields`    | [Schema 与数据模型](/manual/schema#字段与数据路径)               |
+| `label`、`labelSlot`、`tooltip`                    | [展示与辅助](/manual/fields/display#字段标签与提示)              |
+| `rules`、`required`                                | [校验机制](/manual/validation)                                   |
+| `attrs`、`dynamicAttrs`                            | [响应式与联动](/manual/reactivity#dynamicattrs-计算底层组件属性) |
+| `hidden`、`disabled`、`computed`、`onUpdate`       | [响应式与联动](/manual/reactivity#字段状态与联动)                |
+| `exclude`                                          | [Schema 场景](/manual/schema#一份字段-多种页面场景)              |
+| `on`、`onXxx`                                      | [事件与上下文](/manual/reactivity#两种事件写法)                  |
+| `colProps`、`span`、`block`、`breakAfter`、`align` | [布局与结构](/manual/layout)                                     |
+| `slots`、`viewRender`                              | [渲染与插槽](/manual/rendering)                                  |
+| `rowProps`、`subSpan`、`gutter`                    | [布局与结构](/manual/layout#自动栅格分组)                        |
 
 ### 详情、分组与表单
 
-| 类型                    | 直接声明属性                                                                                                    | 详细页面                                                      |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `ExtDescriptionsProps`  | `mode`、`wrapperCol`、`labelCol`、`labelAlign`、`tableLayout`、`noInput`、`span`、`labelBgColor`、`borderColor` | [SuperDetail](/manual/super-detail#extdescriptionsprops-细节) |
-| `ExtGroupBaseOption`    | `title`、`buttons`、`subItems`、`descriptionsProps`                                                             | [布局容器](/manual/fields/containers#group)                   |
-| `ExtGroupOption`        | `component`、`ignoreTableTitle`、`contentAttrs`                                                                 | [布局容器](/manual/fields/containers#group)                   |
-| `ExtDescriptionsOption` | `title`、`dataSource`、`buttons`、`mode`、`attrs`、`isContainer`、`subItems`                                    | [Descriptions](/manual/fields/containers#descriptions)        |
-| `ExtFormOption`         | `dataSource`、`attrs`、`isContainer`、`compact`、`ignoreRules`、`subItems`、`buttons`、`descriptionsProps`      | [SuperForm](/manual/super-form#根-schema-属性)                |
+| 类型                    | 直接声明属性                                                                                               | 详细页面                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `ExtDescriptionsProps`  | `mode`、`wrapperCol`、`labelCol`、`labelAlign`、`tableLayout`、`noInput`、`span`                           | [SuperDetail](/manual/super-detail#extdescriptionsprops-细节) |
+| `ExtGroupBaseOption`    | `title`、`buttons`、`subItems`、`descriptionsProps`                                                        | [布局容器](/manual/fields/containers#group)                   |
+| `ExtGroupOption`        | `component`、`ignoreTableTitle`、`contentAttrs`                                                            | [布局容器](/manual/fields/containers#group)                   |
+| `ExtDescriptionsOption` | `title`、`dataSource`、`buttons`、`mode`、`attrs`、`isContainer`、`subItems`                               | [Descriptions](/manual/fields/containers#descriptions)        |
+| `ExtFormOption`         | `dataSource`、`attrs`、`isContainer`、`compact`、`ignoreRules`、`subItems`、`buttons`、`descriptionsProps` | [SuperForm](/manual/super-form#根-schema-属性)                |
 
 ### 按钮
 
 | 类型             | 直接声明属性                                                                                                                                                                                                          | 详细页面                                                   |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `ButtonItem`     | `label`、`name`、`customRender`、`confirmText`、`roleName`、`unauthorized`、`color`、`visibleIn`、`dropdown`、`dropdownProps`、`tooltip`、`disabledTooltip`、`icon`、`attrs`、`hidden`、`disabled`、`meta`、`onClick` | [单个按钮](/manual/super-buttons#单个-buttonitem-全部属性) |
+| `ButtonItem`     | `label`、`name`、`customRender`、`confirmText`、`roleName`、`unauthorized`、`color`、`visibleIn`、`dropdown`、`tooltip`、`disabledTooltip`、`icon`、`attrs`、`hidden`、`disabled`、`meta`、`onClick`                  | [单个按钮](/manual/super-buttons#单个-buttonitem-全部属性) |
 | `ExtButtonGroup` | `attrs`、`limit`、`buttonType`、`buttonShape`、`size`、`align`、`visibleIn`、`placement`、`divider`、`labelMode`、`moreLabel`、`unauthorized`、`hidden`、`disabled`、`targetSlot`、`methods`、`effectData`、`actions` | [按钮组属性](/manual/super-buttons#按钮组全部属性)         |
-| 旧按钮属性       | `validOn`、`invalidDisabled`、`roleMode`、`forSlot`                                                                                                                                                                   | 本页[废弃属性迁移](#废弃属性迁移)                          |
 
 ### Table、SuperTable 与标签筛选
 
-| 类型              | 直接声明属性                                                                                                                                                    | 详细页面                                                 |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `TableApis`       | `query`、`info`、`save`、`update`、`delete`、`export`                                                                                                           | [后端接口约定](/manual/backend-contracts)                |
-| `TabsHeader`      | `field`、`initialValue`、`bordered`、`options`、`dictName`、`labelAsValue`、`activeKey`、`slots`、`customTab`、旧 `valueToLabel`                                | [SuperTable tabs](/manual/super-table#tabs-标签筛选)     |
-| `ExtColumnsItem`  | `viewRender`、`columnProps`、旧 `hideInTable`                                                                                                                   | [Table 列](/manual/fields/collections#列-extcolumnsitem) |
-| `ExtTableOption`  | `field`、`title`、`attrs`、`editable`、`rowEditor`、`columns`、`tabs`、`columnProps`、`indexColumn`、`buttons`、`rowButtons`、`modalProps`、`descriptionsProps` | [Table 容器](/manual/fields/collections#table-数组容器)  |
-| `rowEditor`       | `editMode`、`addMode`、`form`、`modalProps`、`onSave`、`onCancel`                                                                                               | [四种编辑方式](/manual/fields/collections#四种编辑方式)  |
-| `TableScanHight`  | `maxHeight`、`isScanHeight`、`resizeHeightOffset`、`isFixedHeight`、`inheritHeight`                                                                             | [SuperTable 高度](/manual/super-table#高度与页面容器)    |
-| `RootTableOption` | `isContainer`、`apis`、`dataSource`、`params`、`immediate`、`beforeQuery`、`afterQuery`、`onLoaded`、`searchForm`、`pagination`、`attrs`                        | [SuperTable](/manual/super-table#根配置总览)             |
-| `searchForm`      | `subItems`、`searchOnChange`、`teleport`、`limit`、`advanced` 及 Form 属性                                                                                      | [搜索表单](/manual/super-table#搜索表单)                 |
-| 旧表格属性        | `edit`、`editMode`、`addMode`、`editForm`、`searchSchema`                                                                                                       | 本页[废弃属性迁移](#废弃属性迁移)                        |
+| 类型              | 直接声明属性                                                                                                                                                    | 详细页面                                                  |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `TableApis`       | `query`、`info`、`save`、`update`、`delete`                                                                                                                     | [后端接口约定](/manual/backend-contracts)                 |
+| `TabsHeader`      | `field`、`initialValue`、`bordered`、`options`、`dictName`、`labelAsValue`、`activeKey`、`slots`、`customTab`                                                   | [SuperTable tabs](/manual/super-table#tabs-标签筛选)      |
+| `ExtColumnsItem`  | `viewRender`、`columnProps`                                                                                                                                     | [Table 列](/manual/fields/collections#列-extcolumnsitem)  |
+| `ExtTableOption`  | `field`、`title`、`attrs`、`editable`、`rowEditor`、`columns`、`tabs`、`columnProps`、`indexColumn`、`buttons`、`rowButtons`、`modalProps`、`descriptionsProps` | [Table 容器](/manual/fields/collections#table-数组容器)   |
+| `rowEditor`       | `editMode`、`addMode`、`form`、`modalProps`、`onSave`、`onCancel`                                                                                               | [四种编辑方式](/manual/fields/collections#四种编辑方式)   |
+| `TableScanHight`  | `maxHeight`、`isScanHeight`、`resizeHeightOffset`、`isFixedHeight`、`inheritHeight`                                                                             | [SuperTable 高度](/manual/super-table#页面容器与高度策略) |
+| `RootTableOption` | `isContainer`、`apis`、`dataSource`、`params`、`immediate`、`beforeQuery`、`afterQuery`、`onLoaded`、`searchForm`、`pagination`、`attrs`                        | [SuperTable](/manual/super-table#根配置总览)              |
+| `searchForm`      | `subItems`、`searchOnChange`、`teleport`、`limit` 及 Form 属性                                                                                                  | [搜索表单](/manual/super-table#搜索表单)                  |
 
 ### 数组容器
 
@@ -149,38 +146,38 @@ import {
 
 | 类型                | 直接声明属性                                                    | 详细页面                                              |
 | ------------------- | --------------------------------------------------------------- | ----------------------------------------------------- |
-| `ExtTabsOption`     | `activeKey`、`forceRender`、`buttons`、`subItems`               | [Tabs](/manual/fields/containers#tabs)                |
+| `ExtTabsOption`     | `activeKey`、`buttons`、`subItems`                              | [Tabs](/manual/fields/containers#tabs)                |
 | `ExtTabItem`        | `label`、`key`、`icon`、`subItems` 及 GroupBase 属性            | [页签项](/manual/fields/containers#页签项-exttabitem) |
 | `ExtCollapseOption` | `title`、`activeKey`、`subItems`                                | [Collapse](/manual/fields/containers#collapse)        |
 | `CollapseItem`      | `label`、`key`、`icon`、`subItems`、`buttons` 及 GroupBase 属性 | [Collapse](/manual/fields/containers#collapse)        |
 
 ### 通用字段与输入字段
 
-| 类型                    | 直接声明属性                                                                         | 详细页面                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| `ExtFormItemOption`     | `value`、`labelField`、`tagViewer`、`formItemProps`、`descriptionsProps`、`editable` | [数据绑定](/manual/data-binding#字段级-ref)、[展示辅助](/manual/fields/display) |
-| `ExtInputOption`        | `onSearch`、`attrs: InputProps`                                                      | [Input](/manual/fields/basic-inputs#input)                                      |
-| `ExtAutoCompleteOption` | `options`、`dictName`、`attrs: AutoCompleteProps`                                    | [AutoComplete](/manual/fields/basic-inputs#autocomplete)                        |
-| `ExtSlotOption`         | `render`                                                                             | [InputSlot / InfoSlot](/manual/fields/display#inputslot)                        |
+| 类型                    | 直接声明属性                                                                         | 详细页面                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `ExtFormItemOption`     | `value`、`labelField`、`tagViewer`、`formItemProps`、`descriptionsProps`、`editable` | [数据绑定](/manual/schema#字段级-ref)、[展示辅助](/manual/fields/display) |
+| `ExtInputOption`        | `onSearch`、`attrs: InputProps`                                                      | [Input](/manual/fields/basic-inputs#input)                                |
+| `ExtAutoCompleteOption` | `options`、`dictName`、`attrs: AutoCompleteProps`                                    | [AutoComplete](/manual/fields/basic-inputs#autocomplete)                  |
+| `ExtSlotOption`         | `render`                                                                             | [InputSlot / InfoSlot](/manual/fields/display#inputslot)                  |
 
 ### 选择字段
 
-| 类型                       | 直接声明属性                                                                                                 | 详细页面                                                    |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| `DefaultOptionType`        | `label`、`value`、`children`、`disabled` 及业务扩展字段                                                      | [options 格式](/manual/fields/selections#通用-options-格式) |
-| `ExtSelect`                | `options`、`dictName`、`valueToNumber`、`labelAsValue`、`stringifyValue`、旧 `valueToLabel`、`valueToString` | [通用值转换](/manual/fields/selections#通用值转换属性)      |
-| `ExtSelectOption`          | `attrs: SelectProps`                                                                                         | [Select](/manual/fields/selections#select)                  |
-| `ExtTagSelectOption.attrs` | `multiple`、`stringifyValue`、旧 `valueToString`                                                             | [TagSelect](/manual/fields/selections#tagselect)            |
-| `ExtTagInputOption.attrs`  | `stringifyValue`、`newLabel`、`closable`、旧 `valueToString`                                                 | [TagInput](/manual/fields/basic-inputs#taginput)            |
-| `ExtTreeOption`            | `labelField`、`attrs: TreeSelectProps`、`treeData`、旧 `data`                                                | [TreeSelect](/manual/fields/selections#treeselect)          |
-| `ExtSwitchOption`          | `valueLabels`、`attrs.firstIsChecked`、`attrs.defaultChecked` 及 SwitchProps                                 | [Switch](/manual/fields/selections#switch)                  |
-| `ExtRadioOption`           | `attrs: RadioGroupProps` 及 ExtSelect                                                                        | [Radio / Checkbox](/manual/fields/selections#radio)         |
+| 类型                       | 直接声明属性                                                                 | 详细页面                                                    |
+| -------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `DefaultOptionType`        | `label`、`value`、`children`、`disabled` 及业务扩展字段                      | [options 格式](/manual/fields/selections#通用-options-格式) |
+| `ExtSelect`                | `options`、`dictName`、`valueToNumber`、`labelAsValue`、`stringifyValue`     | [通用值转换](/manual/fields/selections#通用值转换属性)      |
+| `ExtSelectOption`          | `attrs: SelectProps`                                                         | [Select](/manual/fields/selections#select)                  |
+| `ExtTagSelectOption.attrs` | `multiple`、`stringifyValue`                                                 | [TagSelect](/manual/fields/selections#tagselect)            |
+| `ExtTagInputOption.attrs`  | `stringifyValue`、`newLabel`、`closable`                                     | [TagInput](/manual/fields/basic-inputs#taginput)            |
+| `ExtTreeOption`            | `labelField`、`attrs: TreeSelectProps`、`treeData`                           | [TreeSelect](/manual/fields/selections#treeselect)          |
+| `ExtSwitchOption`          | `valueLabels`、`attrs.firstIsChecked`、`attrs.defaultChecked` 及 SwitchProps | [Switch](/manual/fields/selections#switch)                  |
+| `ExtRadioOption`           | `attrs: RadioGroupProps` 及 ExtSelect                                        | [Radio / Checkbox](/manual/fields/selections#radio)         |
 
 ### 日期范围与 Upload
 
 | 类型                     | 直接声明属性                                                                                                                                | 详细页面                                                      |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `ExtDateRange`           | `endField`、`stringifyValue`、旧 `keepField`                                                                                                | [范围值模式](/manual/fields/date-time#daterange-的三种值模式) |
+| `ExtDateRange`           | `endField`、`stringifyValue`                                                                                                                | [范围值模式](/manual/fields/date-time#daterange-的三种值模式) |
 | `ExtUpload.vModelFields` | `fileList`                                                                                                                                  | [Upload 字段值](/manual/fields/upload#字段值形态)             |
 | `ExtUpload.attrs.apis`   | `upload`、`delete`、`download`                                                                                                              | [Upload 接口](/manual/fields/upload#apis-契约)                |
 | `ExtUpload.attrs`        | `infoNames`、`valueKey`、`minSize`、`maxSize`、`isSingle`、`hideOnMax`、`uploadMode`、`tip`、`title`、`repeatable`、`isView` 及 UploadProps | [文件上传](/manual/fields/upload)                             |
@@ -189,7 +186,7 @@ import {
 
 `WrapperTypes` 声明 `InfoSlot`、`Form`、`Group`、`Fragment`、`Card`、`List`、`ListGroup`、`Tabs`、`Table`、`Collapse`、`Descriptions`；`WidgetTypes` 声明 `Buttons`、`Hidden`、`InputSlot`、`InfoSlot`、`Text`、`HTML`、`Textarea`、`Input`、`AutoComplete`、`InputNumber`、`DatePicker`、`TimePicker`、`DateRange`、`TimeRange`、`Select`、`TreeSelect`、`Radio`、`Checkbox`、`Switch`、`Upload`、`InputGroup`、`InputList`、`TagInput`、`TagSelect`。
 
-`ModelData`、`ModelDataGroup`、`ModelChildren` 是内部建模类型，不是 Schema 配置。其声明属性 `refData`、`refName`、`parent`、`index`、`initialValue`、`fieldName`、`propChain`、`rules`、`children`、`listData`、`modelsMap` 用于组件库内部模型图；业务回调只使用公开的 effectData，不应直接构造这些对象。`HelpMessage.color` 所在 HelpMessage 当前未进入公开 Schema 属性。`VColumnProps.defaultHidden` 中的 `defaultHidden` 也未被当前运行时消费，不能把它当作列显隐 API。
+`ModelData`、`ModelDataGroup`、`ModelChildren` 是内部建模类型，不是 Schema 配置。其声明属性 `refData`、`refName`、`parent`、`index`、`initialValue`、`fieldName`、`propChain`、`rules`、`children`、`listData`、`modelsMap` 用于组件库内部模型图；业务回调只使用公开的 effectData，不应直接构造这些对象。
 
 ## 废弃属性迁移
 
@@ -214,6 +211,8 @@ import {
 | `searchSchema`            | `searchForm`                               |
 | `form.setData`            | `form.resetFields`                         |
 | `registComponent`         | `registerComponent`                        |
+| `labelBgColor`            | 项目主题或样式变量                         |
+| `borderColor`             | 项目主题或样式变量                         |
 
 类型中保留旧属性用于迁移，不代表新代码应继续使用。
 

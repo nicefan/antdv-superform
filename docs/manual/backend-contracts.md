@@ -66,13 +66,12 @@ async function pageUsers(params, options) {
 
 ## TableApis CRUD
 
-| 属性     | 调用形式             | 期望行为             |
-| -------- | -------------------- | -------------------- |
-| `info`   | `(rowKeyValue, row)` | 返回完整编辑记录     |
-| `save`   | `(newData)`          | 新增并 resolve       |
-| `update` | `(updatedData)`      | 更新并 resolve       |
-| `delete` | `(keys, rows)`       | 删除一条或多条       |
-| `export` | 当前运行时不消费     | 自定义按钮中显式调用 |
+| 属性     | 类型     | 默认值 | 调用形式             | 期望行为         |
+| -------- | -------- | ------ | -------------------- | ---------------- |
+| `info`   | function | —      | `(rowKeyValue, row)` | 返回完整编辑记录 |
+| `save`   | function | —      | `(newData)`          | 新增并 resolve   |
+| `update` | function | —      | `(updatedData)`      | 更新并 resolve   |
+| `delete` | function | —      | `(keys, rows)`       | 删除一条或多条   |
 
 ```ts
 apis: {
@@ -93,13 +92,13 @@ dictApi(name): Promise<Array<{ label: unknown; value: string | number }>>
 
 ```ts
 dictApi: async (name) => {
-  const result = await api.dictionary(name)
+  const result = await api.dictionary(name);
   return result.map((item) => ({
     label: item.displayName,
     value: item.code,
     disabled: item.disabled,
-  }))
-}
+  }));
+};
 ```
 
 全局字典返回标准 label/value；字段的 `fieldNames` 只适配局部 options。缓存、重试、租户参数和错误兜底在业务 dictApi 中实现。

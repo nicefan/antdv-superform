@@ -113,13 +113,13 @@ AutoComplete 是“文本输入 + 建议列表”，最终值按标签语义输�
 
 ```ts
 // 响应式建议
-options: cityOptions
+options: cityOptions;
 
 // 异步建议；函数收到 effectData，但 AutoComplete 不提供 Select 的自动关键词节流协议
-options: ({ current }) => api.getCitySuggestions(current.province)
+options: ({ current }) => api.getCitySuggestions(current.province);
 
 // 全局字典
-dictName: 'cities'
+dictName: "cities";
 ```
 
 需要远程关键词搜索、保存独立 value 时优先使用 [Select 远程搜索](/manual/fields/selections#远程搜索)；需要自由文本且业务协议特殊时使用 InputSlot。
@@ -176,7 +176,7 @@ TagInput 适合用户自由创建标签，不依赖预设 options。
 // 推荐：模型为 string[]
 { type: 'TagInput', field: 'tags' }
 
-// 兼容逗号字段：模型为 'vue,typescript'
+// 提交为逗号分隔字符串：模型为 'vue,typescript'
 {
   type: 'TagInput',
   field: 'tags',
@@ -184,12 +184,11 @@ TagInput 适合用户自由创建标签，不依赖预设 options。
 }
 ```
 
-| attrs 属性       | 默认/说明                               |
-| ---------------- | --------------------------------------- |
-| `newLabel`       | 新增入口内容，默认“添加”，支持函数      |
-| `closable`       | 默认 `true`；也可按 `(tag, index)` 判断 |
-| `stringifyValue` | 把标签数组保存为逗号字符串              |
-| `valueToString`  | 已废弃，改用 `stringifyValue`           |
+| attrs 属性       | 类型             | 默认值   | 说明                             |
+| ---------------- | ---------------- | -------- | -------------------------------- |
+| `newLabel`       | string/function  | `'添加'` | 新增入口内容                     |
+| `closable`       | boolean/function | `true`   | 是否可删除，也可按标签和下标判断 |
+| `stringifyValue` | boolean          | `false`  | 是否把标签数组保存为逗号字符串   |
 
 重复标签会被忽略。字符串模式没有逗号转义，标签自身可能含逗号时必须使用数组。
 

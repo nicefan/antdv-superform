@@ -121,18 +121,19 @@ infoNames: {
 
 ## 限制与提示属性
 
-| attrs 属性            | 说明                                 |
-| --------------------- | ------------------------------------ |
-| `minSize` / `maxSize` | 文件大小，单位 MB                    |
-| `isSingle`            | 单文件模式，并限制最大数量为 1       |
-| `hideOnMax`           | 达到 `maxCount` 后隐藏上传入口       |
-| `repeatable`          | 是否允许同名文件，默认不允许         |
-| `tip`                 | 上传区辅助提示                       |
-| `title`               | 上传按钮内容，字符串或函数           |
-| `accept`              | 扩展名或 MIME 类型                   |
-| `maxCount`            | 最大文件数量                         |
-| `beforeUpload`        | 业务前置校验                         |
-| `isView`              | 强制只读查看模式，通常由详情自动传入 |
+| attrs 属性     | 类型            | 默认值       | 说明                                 |
+| -------------- | --------------- | ------------ | ------------------------------------ |
+| `minSize`      | number          | —            | 文件最小大小，单位 MB                |
+| `maxSize`      | number          | —            | 文件最大大小，单位 MB                |
+| `isSingle`     | boolean         | `false`      | 单文件模式，并限制最大数量为 1       |
+| `hideOnMax`    | boolean         | `false`      | 达到 `maxCount` 后隐藏上传入口       |
+| `repeatable`   | boolean         | `false`      | 是否允许同名文件                     |
+| `tip`          | string          | 自动生成     | 上传区辅助提示                       |
+| `title`        | string/function | `'上传文件'` | 上传按钮内容                         |
+| `accept`       | string          | —            | 扩展名或 MIME 类型                   |
+| `maxCount`     | number          | `Infinity`   | 最大文件数量                         |
+| `beforeUpload` | function        | —            | 业务前置校验                         |
+| `isView`       | boolean         | `false`      | 强制只读查看模式，通常由详情自动传入 |
 
 ```ts
 attrs: {
@@ -159,11 +160,11 @@ attrs: {
 ```ts
 const modal = useModalForm(schema, {
   onOk: async ({ file }) => {
-    const body = new FormData()
-    body.append('file', file.originFileObj)
-    return api.import(body)
+    const body = new FormData();
+    body.append("file", file.originFileObj);
+    return api.import(body);
   },
-})
+});
 ```
 
 ## 预览与只读

@@ -12,14 +12,14 @@ SuperForm 是根表单容器，负责建立标准模型、绑定数据源、组�
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from "antdv-superform";
 
 const [register, form] = useForm({
   subSpan: 12,
-  subItems: [{ type: 'Input', field: 'name', label: '名称' }],
-})
+  subItems: [{ type: "Input", field: "name", label: "名称" }],
+});
 
-const save = async () => api.save(await form.submit())
+const save = async () => api.save(await form.submit());
 </script>
 ```
 
@@ -28,28 +28,34 @@ Schema 也可以由函数或 Promise 异步提供，适合根据权限加载配�
 ### props 声明式模式
 
 ```vue
-<SuperForm :schema="schema" :data-source="record" :is-container="true" @submit="handleSubmit" @reset="handleReset" />
+<SuperForm
+  :schema="schema"
+  :data-source="record"
+  :is-container="true"
+  @submit="handleSubmit"
+  @reset="handleReset"
+/>
 ```
 
 只需渲染和监听事件时更直接；需要频繁提交、回填或操作底层实例时优先注册模式。
 
 ## 根 Schema 属性
 
-| 属性                | 类型/默认           | 作用与适用场景                                    |
-| ------------------- | ------------------- | ------------------------------------------------- |
-| `subItems`          | `UniOption[]`，必填 | 字段、容器和辅助节点                              |
-| `dataSource`        | 对象或 Ref          | 外部双向模型；缺失字段会按 Schema 补齐            |
-| `attrs`             | `FormProps`         | 传给 Ant Design Vue Form，如 `layout`、`labelCol` |
-| `isContainer`       | `boolean`           | 增加页面容器样式，适合独立页面表单                |
-| `compact`           | `boolean`           | 减少纵向间距，适合搜索或密集编辑                  |
-| `ignoreRules`       | `boolean`           | 关闭触发校验并隐藏必填标识，仅适合搜索表单        |
-| `subSpan`           | `number \| 'auto'`  | 子项默认栅格，未配置最终回退为 8                  |
-| `gutter`            | `number`，默认 16   | Row 间距                                          |
-| `rowProps`          | `RowProps`          | 根 Row 响应式布局属性                             |
-| `buttons`           | `ExtButtons`        | 表单按钮；根表单没有默认按钮                      |
-| `descriptionsProps` | 详情布局配置        | Schema 被详情场景复用时控制只读布局               |
-| `title`             | 字符串或函数        | 继承自分组配置；通常由页面标题承担                |
-| `slots`             | 插槽映射            | 把根插槽交给内部节点使用                          |
+| 属性                | 类型            | 默认值  | 作用与适用场景                                    |
+| ------------------- | --------------- | ------- | ------------------------------------------------- |
+| `subItems`          | array           | 必填    | 字段、容器和辅助节点                              |
+| `dataSource`        | object/Ref      | `{}`    | 外部双向模型；缺失字段会按 Schema 补齐            |
+| `attrs`             | object          | `{}`    | 传给 Ant Design Vue Form，如 `layout`、`labelCol` |
+| `isContainer`       | boolean         | `false` | 增加页面容器样式，适合独立页面表单                |
+| `compact`           | boolean         | `false` | 减少纵向间距，适合搜索或密集编辑                  |
+| `ignoreRules`       | boolean         | `false` | 关闭触发校验并隐藏必填标识，仅适合搜索表单        |
+| `subSpan`           | number/string   | `8`     | 子项默认栅格；字符串仅支持 `'auto'`               |
+| `gutter`            | number          | `16`    | Row 间距                                          |
+| `rowProps`          | object          | `{}`    | 根 Row 响应式布局属性                             |
+| `buttons`           | array/object    | —       | 表单按钮；根表单没有默认按钮                      |
+| `descriptionsProps` | object          | —       | Schema 被详情场景复用时控制只读布局               |
+| `title`             | string/function | —       | 继承自分组配置；通常由页面标题承担                |
+| `slots`             | object          | —       | 把根插槽交给内部节点使用                          |
 
 `attrs` 与布局配置不要混用：
 
@@ -89,34 +95,33 @@ buttons: {
 ```ts
 const schema = {
   onSubmit(data) {
-    return api.precheck(data)
+    return api.precheck(data);
   },
   onReset(data) {
-    console.log('重置后的副本', data)
+    console.log("重置后的副本", data);
   },
   subItems: [],
-}
+};
 ```
 
 提交顺序：字段校验 → Upload 等注册任务 → `schema.onSubmit(data)` → 组件 `submit` 事件 → 返回深拷贝。`onSubmit` 返回 `false` 或 `{ errMessage }` 会拒绝提交。
 
 ## useForm 动作
 
-| 动作/属性                 | 返回与行为                                     |
-| ------------------------- | ---------------------------------------------- |
-| `submit()`                | `Promise`；完成完整提交流程并返回数据副本      |
-| `resetFields(data?)`      | 无参数恢复 Schema 初始值；有参数按标准模型回填 |
-| `setFieldsValue(partial)` | 只更新已建立且本次提供的字段                   |
-| `getData()`               | 当前模型引用                                   |
-| `dataSource`              | 指向当前模型的只读 computed                    |
-| `getForm()`               | 等待并返回内部表单实例                         |
-| `asyncCall(name, param?)` | 调用内部实例能力的逃生口                       |
-| `setData(data)`           | 已废弃，改用 `resetFields(data)`               |
+| 动作/属性                 | 类型     | 默认值 | 返回与行为                                     |
+| ------------------------- | -------- | ------ | ---------------------------------------------- |
+| `submit()`                | function | —      | `Promise`；完成完整提交流程并返回数据副本      |
+| `resetFields(data?)`      | function | —      | 无参数恢复 Schema 初始值；有参数按标准模型回填 |
+| `setFieldsValue(partial)` | function | —      | 只更新已建立且本次提供的字段                   |
+| `getData()`               | function | —      | 当前模型引用                                   |
+| `dataSource`              | Ref      | `{}`   | 指向当前模型的只读 computed                    |
+| `getForm()`               | function | —      | 等待并返回内部表单实例                         |
+| `asyncCall(name, param?)` | function | —      | 调用内部实例能力的逃生口                       |
 
 ```ts
-form.setFieldsValue({ status: 1 })
-form.resetFields({ id: 8, name: '张三' })
-const data = await form.submit()
+form.setFieldsValue({ status: 1 });
+form.resetFields({ id: 8, name: "张三" });
+const data = await form.submit();
 ```
 
 `asyncCall` 只在确实没有稳定动作时使用；例如直接调用明确的 `submit()` 比 `asyncCall('submit')` 更清楚。
@@ -125,14 +130,14 @@ const data = await form.submit()
 
 ```ts
 // 需要与外部记录实时双向同步
-const record = ref({ id: 1, name: '张三' })
-const [register] = useForm({ dataSource: record, subItems })
+const record = ref({ id: 1, name: "张三" });
+const [register] = useForm({ dataSource: record, subItems });
 
 // 不希望编辑时直接修改列表原记录
-form.resetFields(structuredClone(row))
+form.resetFields(structuredClone(row));
 ```
 
-前者适合状态共享，后者适合“确认后才保存”的编辑体验。模型细节见[数据源与双向绑定](/manual/data-binding)。
+前者适合状态共享，后者适合“确认后才保存”的编辑体验。模型细节见[Schema 与数据模型](/manual/schema#数据源与双向绑定)。
 
 ## 从字段练习到业务表单
 

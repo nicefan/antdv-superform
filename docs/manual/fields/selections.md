@@ -8,12 +8,12 @@
 
 ```ts
 options: [
-  { label: '管理员', value: 'admin', disabled: false },
-  { label: '普通用户', value: 'user' },
-]
+  { label: "管理员", value: "admin", disabled: false },
+  { label: "普通用户", value: "user" },
+];
 ```
 
-`DefaultOptionType` 明确声明 `label`、`value`、`children`、`disabled`，并允许携带业务附加字段。当前 Select 不支持分组选项，也不消费 `fieldNames.options`；`children` 主要服务树形数据或底层组件场景。
+`DefaultOptionType` 明确声明 `label`、`value`、`children`、`disabled`，并允许携带业务附加字段。`children` 主要服务树形数据或底层组件场景。
 
 ### 其他来源对比
 
@@ -34,19 +34,17 @@ options: ({ current }) => api.getOptions(current.category)
 dictName: 'article_status'
 ```
 
-标准对象数组语义最明确。原始值数组配置 `valueToNumber: true` 时，兼容行为会改用数字下标作为 value；不要把它理解为对元素做 `Number()` 转换。
+标准对象数组语义最明确。原始值数组配置 `valueToNumber: true` 时会改用数字下标作为 value；不要把它理解为对元素做 `Number()` 转换。
 
 ## 通用值转换属性
 
-| 属性             | 结果                                         | 适合场景                   |
-| ---------------- | -------------------------------------------- | -------------------------- |
-| `valueToNumber`  | 选项 value 归一化为 number；原始数组使用下标 | 后端要求数字枚举           |
-| `labelAsValue`   | 字段直接保存选项 label                       | 值与文案完全一致的简单接口 |
-| `labelField`     | value 存 `field`，label 另存一个字段         | 同时提交 ID 和名称         |
-| `stringifyValue` | 多选数组转逗号字符串                         | 兼容旧接口                 |
-| `tagViewer`      | 控制只读 Tag 显示                            | 表格、详情状态展示         |
-
-旧 `valueToLabel`、`valueToString` 分别改用 `labelAsValue`、`stringifyValue`。
+| 属性             | 类型                          | 默认值  | 结果                                         | 适合场景                   |
+| ---------------- | ----------------------------- | ------- | -------------------------------------------- | -------------------------- |
+| `valueToNumber`  | boolean                       | `false` | 选项 value 归一化为 number；原始数组使用下标 | 后端要求数字枚举           |
+| `labelAsValue`   | boolean                       | `false` | 字段直接保存选项 label                       | 值与文案完全一致的简单接口 |
+| `labelField`     | string                        | —       | value 存 `field`，label 另存一个字段         | 同时提交 ID 和名称         |
+| `stringifyValue` | boolean                       | `false` | 多选数组转逗号字符串                         | 接口使用逗号分隔值         |
+| `tagViewer`      | boolean/object/array/function | 自动    | 控制只读 Tag 显示                            | 表格、详情状态展示         |
 
 ### 三种存储方式对比
 
@@ -66,7 +64,7 @@ dictName: 'article_status'
 }
 ```
 
-第三种最适合详情回显和提交快照。`labelField` 是同级数据路径，见[字段与数据路径](/manual/fields-and-paths#labelfield-同时保存值与显示文本)。
+第三种最适合详情回显和提交快照。`labelField` 是同级数据路径，见[Schema 与数据模型](/manual/schema#labelfield-同时保存值与显示文本)。
 
 ## fieldNames
 
@@ -124,9 +122,9 @@ dictName: 'article_status'
 ```ts
 // 完全接管关键词与加载状态
 onSearch: ({ current }, keyword) => {
-  current.lastKeyword = keyword
-  loadOptions(keyword)
-}
+  current.lastKeyword = keyword;
+  loadOptions(keyword);
+};
 ```
 
 显式 `onSearch` 后不会自动用关键词调用 `options`。
@@ -150,12 +148,11 @@ TreeSelect 使用 `treeData`，不走扁平 options 归一化：
 }
 ```
 
-| 属性         | 说明                                                                    |
-| ------------ | ----------------------------------------------------------------------- |
-| `treeData`   | 数组、返回数组的函数或 Promise 函数                                     |
-| `labelField` | 同步保存选择标签；多选时保存标签数组                                    |
-| `attrs`      | TreeSelectProps，如 `multiple`、`treeCheckable`、`treeDefaultExpandAll` |
-| `data`       | 已废弃，改用 `treeData`                                                 |
+| 属性         | 类型           | 默认值 | 说明                                                                    |
+| ------------ | -------------- | ------ | ----------------------------------------------------------------------- |
+| `treeData`   | array/function | `[]`   | 数组、返回数组的函数或 Promise 函数                                     |
+| `labelField` | string         | —      | 同步保存选择标签；多选时保存标签数组                                    |
+| `attrs`      | object         | `{}`   | TreeSelectProps，如 `multiple`、`treeCheckable`、`treeDefaultExpandAll` |
 
 字段值形态受 `multiple`、`treeCheckable`、`labelInValue` 等底层属性影响，使用前应与接口类型对齐。
 
@@ -213,19 +210,35 @@ Checkbox 对应 Checkbox.Group，字段通常是 value 数组：
   field: 'status',
   label: '状态',
   options: [
-    { label: '停用', value: 0 },
-    { label: '启用', value: 1 },
+    { label: '停用', value: 0 }, // 第一项：默认作为未选中状态的标签和值
+    { label: '启用', value: 1 }, // 第二项：默认作为选中状态的标签和值
   ],
-  valueLabels: ['停用', '启用'],
+  // options 已同时定义开关文案、绑定值和只读显示，无需再配置：
+  // valueLabels: ['停用', '启用'],
+  // attrs: { checkedChildren: '启用', unCheckedChildren: '停用' },
+}
+```
+
+配置 `options` 时，组件直接使用第一项作为未选中状态、第二项作为选中状态，同时取得各自的 `label` 和 `value`。因此通常只写 `options` 即可，不要重复配置 `valueLabels`、`checkedChildren`、`unCheckedChildren` 或默认值为 `false` 的 `firstIsChecked`。
+
+只有业务明确要求“第一项表示选中”时才反转顺序：
+
+```ts
+{
+  type: 'Switch',
+  field: 'status',
+  label: '状态',
+  options: [
+    { label: '启用', value: 1 }, // firstIsChecked 为 true 后，第一项表示选中
+    { label: '停用', value: 0 }, // 第二项表示未选中
+  ],
   attrs: {
-    firstIsChecked: false,
-    checkedChildren: '启用',
-    unCheckedChildren: '停用',
+    firstIsChecked: true,
   },
 }
 ```
 
-默认第二个选项是选中值、第一个是未选中值；`firstIsChecked` 反转。无 options 时 `valueToNumber` 使用 `0/1`。`valueLabels` 只控制只读显示文案，`attrs` 其余部分继承 SwitchProps。
+未配置 `options` 时，Switch 默认使用 `true/false`；配置 `valueToNumber: true` 后改用 `1/0`。此时可用 `valueLabels` 补充只读文案，或通过 Ant Design Vue 的 `checkedChildren`、`unCheckedChildren` 自定义开关内部内容。
 
 ## TagSelect
 
@@ -251,7 +264,7 @@ TagSelect 把少量选项直接展示为可点击 Tag：
 | `attrs.multiple: true`       | value 数组 |
 | `attrs.stringifyValue: true` | 逗号字符串 |
 
-顶层 ExtSelect 的 `options`、`dictName`、`valueToNumber`、`labelAsValue`、`stringifyValue` 也可使用；attrs 中的 `valueToString` 已废弃。组件事件包括 `onCheck(effectData, tag, checked)` 与 `onChange(effectData, tag, nextSelected)`。
+顶层 ExtSelect 的 `options`、`dictName`、`valueToNumber`、`labelAsValue`、`stringifyValue` 也可使用。组件事件包括 `onCheck(effectData, tag, checked)` 与 `onChange(effectData, tag, nextSelected)`。
 
 ## tagViewer 只读配置
 

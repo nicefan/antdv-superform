@@ -99,9 +99,9 @@ Hidden 建立和维护模型字段，但不生成 FormItem：
 
 ```ts
 subItems: [
-  { type: 'Hidden', field: 'id' },
-  { type: 'Hidden', field: 'version', initialValue: 0 },
-]
+  { type: "Hidden", field: "id" },
+  { type: "Hidden", field: "version", initialValue: 0 },
+];
 ```
 
 适合主键、乐观锁版本和提交上下文。Hidden 仍会执行值绑定，因此 `value`、`initialValue`、`labelField`、`vModelFields` 等模型配置依然有意义；布局、标签和校验配置没有可见效果。
@@ -159,7 +159,7 @@ InfoSlot 渲染非输入内容，不需要 `field`：
 }
 ```
 
-`editable: false` 时字段使用只读渲染而不是禁用控件。`viewRender` 可为函数或根插槽名，完整优先级见[插槽与自定义渲染](/manual/rendering)。
+`editable: false` 时字段使用只读渲染而不是禁用控件。`viewRender` 可为函数或根插槽名，完整优先级见[渲染与插槽](/manual/rendering)。
 
 ## 何时注册 Ext\* 字段
 

@@ -1,6 +1,6 @@
 # Schema 诊断
 
-诊断工具检查可静态识别的错误、废弃 API 和冗余默认值。它不会执行接口或业务回调，因此应与 TypeScript、测试和源码审核配合。
+诊断工具检查可静态识别的结构错误、非现行配置和冗余默认值。它不会执行接口或业务回调，因此应与 TypeScript、测试和源码审核配合。
 
 ## CLI：可序列化 Schema
 
@@ -17,21 +17,21 @@ cat schema.json | npx antdv-superform diagnose-schema - --type detail
 函数、Ref、VNode 或组件引用无法写入 JSON，应在代码中调用：
 
 ```ts
-import { diagnoseSchema } from 'antdv-superform'
+import { diagnoseSchema } from "antdv-superform";
 
-const diagnostics = diagnoseSchema(schema, 'table')
-const errors = diagnostics.filter((item) => item.level === 'error')
+const diagnostics = diagnoseSchema(schema, "table");
+const errors = diagnostics.filter((item) => item.level === "error");
 ```
 
 返回结构：
 
 ```ts
 type SchemaDiagnostic = {
-  level: 'error' | 'warning' | 'suggestion'
-  code: string
-  path: string
-  message: string
-}
+  level: "error" | "warning" | "suggestion";
+  code: string;
+  path: string;
+  message: string;
+};
 ```
 
 `path` 精确指向如 `schema.columns[2].attrs.placeholder` 的位置。
@@ -41,7 +41,7 @@ type SchemaDiagnostic = {
 ```ts
 app.use(SuperFormPlugin, {
   schemaDiagnostics: import.meta.env.DEV,
-})
+});
 ```
 
 SuperForm、SuperTable、SuperDetail 接收 Schema 时把结果分组输出到控制台。生产环境通常关闭，避免无关日志。
@@ -66,7 +66,7 @@ SuperForm、SuperTable、SuperDetail 接收 Schema 时把结果分组输出到�
 
 | code              | 检查                          |
 | ----------------- | ----------------------------- |
-| `deprecated-api`  | 使用废弃属性                  |
+| `deprecated-api`  | 使用非现行配置                |
 | `missing-type`    | 非表格字段未声明 type         |
 | `missing-options` | 选择字段没有 options/dictName |
 | `duplicate-field` | 同级 field 重复               |
@@ -100,6 +100,5 @@ SuperForm、SuperTable、SuperDetail 接收 Schema 时把结果分组输出到�
 - Ext\* 是否已经注册及其专属 props。
 - 回调在运行时是否读取了不存在的上下文。
 - 权限标识和字典名是否有效。
-- 类型已声明但运行时尚未消费的兼容属性。
 
 因此最终仍需运行消费项目 TypeScript 检查和相关交互测试。

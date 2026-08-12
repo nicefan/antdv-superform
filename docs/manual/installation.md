@@ -2,30 +2,33 @@
 
 ## 安装依赖
 
-```bash
-pnpm add antdv-superform ant-design-vue vue
-```
-
-也可以使用 npm 或 yarn。Vue 与 Ant Design Vue 是 peer dependency，业务项目需要显式安装。
+当前支持 Vue `>= 3.3.13`、Ant Design Vue `>= 3.2.20`。业务项目已经使用符合要求的版本时，只需安装组件包：
 
 ```bash
-npm install antdv-superform ant-design-vue vue
-# 或
-yarn add antdv-superform ant-design-vue vue
+pnpm add antdv-superform
 ```
+
+Vue 与 Ant Design Vue 是 peer dependency。如果项目尚未安装它们，再一并添加：
+
+```bash
+pnpm add vue ant-design-vue antdv-superform
+```
+
+也可以使用 npm 或 yarn。
 
 ## 应用级安装
 
 ```ts
-import { createApp } from 'vue'
-import Antdv from 'ant-design-vue'
-import 'ant-design-vue/dist/antd.css'
-import SuperFormPlugin from 'antdv-superform'
-import 'antdv-superform/lib/style.css'
-import App from './App.vue'
+import { createApp } from "vue";
+import Antdv from "ant-design-vue";
+import "ant-design-vue/dist/antd.css";
+import SuperFormPlugin from "antdv-superform";
+import App from "./App.vue";
 
-createApp(App).use(Antdv).use(SuperFormPlugin).mount('#app')
+createApp(App).use(Antdv).use(SuperFormPlugin).mount("#app");
 ```
+
+导入 `antdv-superform` 时会自动加载组件包自身样式，不要再手动引入 `antdv-superform/lib/style.css`。Ant Design Vue 的安装与主题样式仍按业务项目现有方式统一配置。
 
 插件安装负责：
 
@@ -43,10 +46,10 @@ app.use(SuperFormPlugin, {
   dictApi: (name) => dictionaryService.getOptions(name),
   buttonRoles: () => permissionStore.roles,
   defaultProps: {
-    Form: { layout: 'horizontal' },
-    Table: { size: 'small', bordered: true },
+    Form: { layout: "horizontal" },
+    Table: { size: "small", bordered: true },
   },
-})
+});
 ```
 
 各项配置见[全局默认配置](/manual/global-config)和[字典与权限接入](/manual/dictionaries-and-permissions)。
@@ -56,9 +59,20 @@ app.use(SuperFormPlugin, {
 运行时 API 与类型都从包根入口导入：
 
 ```ts
-import { SuperForm, SuperTable, SuperDetail, useForm, useTable, defineForm } from 'antdv-superform'
+import {
+  SuperForm,
+  SuperTable,
+  SuperDetail,
+  useForm,
+  useTable,
+  defineForm,
+} from "antdv-superform";
 
-import type { ExtFormOption, RootTableOption, UniOption } from 'antdv-superform'
+import type {
+  ExtFormOption,
+  RootTableOption,
+  UniOption,
+} from "antdv-superform";
 ```
 
 不要从 `antdv-superform/lib/...`、`src/...` 或其他内部路径导入。内部目录和构建结构不属于兼容性承诺。
@@ -68,21 +82,21 @@ import type { ExtFormOption, RootTableOption, UniOption } from 'antdv-superform'
 `defineForm`、`defineTable` 和 `defineDetail` 用于收窄 Schema 类型，运行时原样返回参数：
 
 ```ts
-import { defineForm } from 'antdv-superform'
+import { defineForm } from "antdv-superform";
 
 export const userForm = defineForm({
-  subItems: [{ type: 'Input', field: 'name', label: '姓名' }],
-})
+  subItems: [{ type: "Input", field: "name", label: "姓名" }],
+});
 ```
 
 也可以显式标注公开类型：
 
 ```ts
-import type { ExtFormOption } from 'antdv-superform'
+import type { ExtFormOption } from "antdv-superform";
 
 const schema: ExtFormOption = {
   subItems: [],
-}
+};
 ```
 
 前者通常拥有更好的字面量推导，后者适合函数参数或跨模块约束。
@@ -105,7 +119,7 @@ npx antdv-superform init-ai
 </template>
 
 <script setup lang="ts">
-import { SuperForm } from 'antdv-superform'
+import { SuperForm } from "antdv-superform";
 </script>
 ```
 

@@ -10,18 +10,18 @@ SuperTable 在字段级 Table 容器之上增加独立数据源、查询表单�
 </template>
 
 <script setup lang="ts">
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from "antdv-superform";
 
 const [register, table] = useTable({
   isContainer: true,
   pagination: { pageSize: 20 },
-  attrs: { rowKey: 'userId' },
+  attrs: { rowKey: "userId" },
   apis: { query: api.page },
   columns: [
-    { field: 'name', label: '姓名' },
-    { field: 'status', label: '状态', type: 'Select', dictName: 'status' },
+    { field: "name", label: "姓名" },
+    { field: "status", label: "状态", type: "Select", dictName: "status" },
   ],
-})
+});
 </script>
 ```
 
@@ -49,24 +49,26 @@ const [register, table] = useTable({
 
 “顶层单属性”包括 `title`、`dataSource`、`immediate`、`pagination`、`editable`、`indexColumn` 及高度策略等独立值。将请求入口、动态参数和请求转换连续放置，能直接读出完整数据链路；把 `columns` 固定在最后，较长的列定义不会打断页面行为配置。
 
-| 属性                         | 作用                                                                                               |
-| ---------------------------- | -------------------------------------------------------------------------------------------------- |
-| `title` / `dataSource`       | 标题与本地数组或 Ref                                                                               |
-| `immediate`                  | 是否首次自动查询，默认 `true`                                                                      |
-| `pagination`                 | `false` 或分页配置；省略时当前运行时启用标准分页                                                   |
-| `editable` / `indexColumn`   | 整表编辑与序号列                                                                                   |
-| 高度策略                     | `isContainer`、`isScanHeight`、`inheritHeight`、`maxHeight`、`isFixedHeight`、`resizeHeightOffset` |
-| `attrs`                      | Ant Design Vue Table 属性及高度扩展                                                                |
-| `apis`                       | 查询、详情、保存、更新、删除接口                                                                   |
-| `params`                     | 响应式附加查询参数                                                                                 |
-| `beforeQuery` / `afterQuery` | 请求前后转换                                                                                       |
-| `on*`                        | `onLoaded` 等表格事件                                                                              |
-| `searchForm`                 | 查询表单配置                                                                                       |
-| `rowEditor`                  | 行内或弹窗编辑配置                                                                                 |
-| `buttons` / `rowButtons`     | 工具栏与操作列                                                                                     |
-| `tabs`                       | 表格顶部标签筛选                                                                                   |
-| `columnProps`                | 所有列的公共属性                                                                                   |
-| `columns`                    | 表格列，未声明 `type` 时为只读文本列                                                               |
+| 属性                         | 类型                 | 默认值     | 作用                                                                                               |
+| ---------------------------- | -------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
+| `title`                      | string/function      | —          | 表格标题                                                                                           |
+| `dataSource`                 | array/Ref            | `[]`       | 本地数据源                                                                                         |
+| `immediate`                  | boolean              | `true`     | 是否首次自动查询                                                                                   |
+| `pagination`                 | boolean/object       | 标准分页   | `false` 关闭分页，object 用于自定义分页                                                            |
+| `editable`                   | boolean/function     | `false`    | 整表编辑状态                                                                                       |
+| `indexColumn`                | boolean/object       | `false`    | 序号列                                                                                             |
+| 高度策略                     | boolean/number       | 见高度章节 | `isContainer`、`isScanHeight`、`inheritHeight`、`maxHeight`、`isFixedHeight`、`resizeHeightOffset` |
+| `attrs`                      | object               | `{}`       | Ant Design Vue Table 属性                                                                          |
+| `apis`                       | object               | `{}`       | 查询、详情、保存、更新、删除接口                                                                   |
+| `params`                     | object/Ref           | `{}`       | 响应式附加查询参数                                                                                 |
+| `beforeQuery` / `afterQuery` | function             | —          | 请求前后转换                                                                                       |
+| `on*`                        | function             | —          | `onLoaded` 等表格事件                                                                              |
+| `searchForm`                 | object               | —          | 查询表单配置                                                                                       |
+| `rowEditor`                  | object               | —          | 行内或弹窗编辑配置                                                                                 |
+| `buttons` / `rowButtons`     | array/object/boolean | —          | 工具栏与操作列                                                                                     |
+| `tabs`                       | object/boolean       | —          | 表格顶部标签筛选                                                                                   |
+| `columnProps`                | object               | `{}`       | 所有列的公共属性                                                                                   |
+| `columns`                    | array                | 必填       | 表格列，未声明 `type` 时为只读文本列                                                               |
 
 ## 远程与本地数据对比
 
@@ -86,22 +88,21 @@ const [register, table] = useTable({
 ### 本地数组
 
 ```ts
-const rows = ref([{ id: 1, name: '本地记录' }])
-const [register, table] = useTable({ attrs: { rowKey: 'id' }, columns }, rows)
+const rows = ref([{ id: 1, name: "本地记录" }]);
+const [register, table] = useTable({ attrs: { rowKey: "id" }, columns }, rows);
 ```
 
 也可以使用根 `dataSource` 或 `table.setData(rows)`。本地模式不会自动执行后端分页。
 
 ## apis 完整契约
 
-| 属性     | 调用形式               | 用途                   |
-| -------- | ---------------------- | ---------------------- |
-| `query`  | `(params, { signal })` | 查询数据               |
-| `info`   | `(rowKeyValue, row)`   | 弹窗编辑前读取详情     |
-| `save`   | `(newData)`            | 新增                   |
-| `update` | `(updatedData)`        | 更新                   |
-| `delete` | `(keys, rows)`         | 删除选择行或当前行     |
-| `export` | 类型保留但运行时未消费 | 使用自定义按钮显式调用 |
+| 属性     | 类型     | 默认值 | 调用形式               | 用途               |
+| -------- | -------- | ------ | ---------------------- | ------------------ |
+| `query`  | function | —      | `(params, { signal })` | 查询数据           |
+| `info`   | function | —      | `(rowKeyValue, row)`   | 弹窗编辑前读取详情 |
+| `save`   | function | —      | `(newData)`            | 新增               |
+| `update` | function | —      | `(updatedData)`        | 更新               |
+| `delete` | function | —      | `(keys, rows)`         | 删除选择行或当前行 |
 
 接口适配见[后端接口约定](/manual/backend-contracts)。
 
@@ -157,29 +158,27 @@ searchForm: {
 ```ts
 searchForm: {
   subSpan: 'auto',
-  limit: 4,
-  advanced: true,
-  teleport: '#table-search-area',
-  searchOnChange: false,
+  limit: 4, // 默认展示前 4 项，其余条件由“展开/收起”按钮控制
+  teleport: '#table-search-area', // 可选：把查询表单渲染到页面指定区域
+  searchOnChange: false, // 默认值；保留“查询”和“重置”按钮
   subItems: [
     {
       type: 'DateRange',
       field: 'startDate',
-      endField: 'endDate',
+      endField: 'endDate', // 起止日期分别绑定到两个字段
       label: '创建时间',
     },
   ],
 }
 ```
 
-| 属性             | 行为                                                |
-| ---------------- | --------------------------------------------------- |
-| `subItems`       | 字段 Schema 或列字段名                              |
-| `searchOnChange` | 搜索模型变化后自动查询                              |
-| `limit`          | 超出数量的条件折叠                                  |
-| `advanced`       | 开启高级查询模式                                    |
-| `teleport`       | 将搜索表单传送到 CSS 选择器目标                     |
-| 其他 Form 属性   | `subSpan`、`attrs`、`buttons`、`compact` 等继续有效 |
+| 属性             | 类型                               | 默认值  | 行为                                                |
+| ---------------- | ---------------------------------- | ------- | --------------------------------------------------- |
+| `subItems`       | array                              | 必填    | 字段 Schema 或列字段名                              |
+| `searchOnChange` | boolean                            | `false` | 搜索模型变化后自动查询                              |
+| `limit`          | number                             | —       | 超出数量的条件折叠                                  |
+| `teleport`       | string                             | —       | 将搜索表单传送到 CSS 选择器目标                     |
+| 其他 Form 属性   | string/number/boolean/object/array | 继承    | `subSpan`、`attrs`、`buttons`、`compact` 等继续有效 |
 
 ### 查询触发方式怎么选
 
@@ -222,10 +221,10 @@ searchForm: {
 #### 混合查询：文本手动提交，选择项即时生效
 
 ```ts
-import { reactive, toRef } from 'vue'
+import { reactive, toRef } from "vue";
 
-const filterState = reactive<{ status?: number }>({})
-const status = toRef(filterState, 'status')
+const filterState = reactive<{ status?: number }>({});
+const status = toRef(filterState, "status");
 
 const [register] = useTable({
   apis: { query: api.page },
@@ -233,21 +232,21 @@ const [register] = useTable({
   searchForm: {
     // 不开启 searchOnChange，因此仍保留查询、重置按钮
     subItems: [
-      { type: 'Input', field: 'keyword', label: '关键词' },
+      { type: "Input", field: "keyword", label: "关键词" },
       {
-        type: 'Select',
-        field: 'status',
-        label: '状态',
+        type: "Select",
+        field: "status",
+        label: "状态",
         value: status,
         options: [
-          { label: '启用', value: 1 },
-          { label: '停用', value: 0 },
+          { label: "启用", value: 1 },
+          { label: "停用", value: 0 },
         ],
       },
     ],
   },
   columns,
-})
+});
 ```
 
 选择字段通过 `value` 与 `params` 中的同一 Ref 双向绑定：选择变化会更新动态参数并自动查询；普通 Input 仍等待用户点击“查询”。这比同时开启 `searchOnChange` 更精确，也避免同一个选择值从搜索模型和动态参数产生两条重复触发链路。
@@ -257,21 +256,21 @@ const [register] = useTable({
 ### 主从表联动：外部状态驱动 params
 
 ```ts
-import { ref } from 'vue'
+import { ref } from "vue";
 
-const departmentId = ref<number>()
+const departmentId = ref<number>();
 
 const [registerDetail] = useTable({
   immediate: false,
-  attrs: { rowKey: 'userId' },
+  attrs: { rowKey: "userId" },
   apis: { query: api.queryUsers },
   params: { departmentId },
   columns: userColumns,
-})
+});
 
 // 左表选择部门时执行
 function selectDepartment(record: { departmentId: number }) {
-  departmentId.value = record.departmentId
+  departmentId.value = record.departmentId;
 }
 ```
 
@@ -291,7 +290,7 @@ pagination: {
 }
 ```
 
-当前运行时省略 `pagination` 时会启用标准分页，初始页为 `1`、每页 `10` 条；这与 AI 指南中“默认不分页”的描述存在偏差。业务代码应显式表达意图：不分页写 `pagination: false`，分页则传入配置对象。默认请求字段为 `current` 和 `size`；可在全局 `tableApiSetting` 改名。
+省略 `pagination` 时启用标准分页，初始页为 `1`、每页 `10` 条。不分页写 `pagination: false`，分页策略有业务差异时传入配置对象。默认请求字段为 `current` 和 `size`；可在全局 `tableApiSetting` 改名。
 
 | 动作                     | 页码       | 参数               | 返回         |
 | ------------------------ | ---------- | ------------------ | ------------ |
@@ -337,13 +336,11 @@ tabs: {
 }
 ```
 
-`options` 也支持 `dictName`、`labelAsValue`；旧 `valueToLabel` 攁用 `labelAsValue`。`activeKey` 可与外部 Ref 双向控制。设置 `tabs: false` 关闭。
+`options` 也支持 `dictName`、`labelAsValue`；`activeKey` 可与外部 Ref 双向控制。设置 `tabs: false` 关闭。
 
 ## 编辑与弹窗属性
 
-编辑能力来自底层 Table，完整配置见[数组与表格：Table](/manual/fields/collections#table-数组容器)。根级 `modalProps` 配置编辑弹窗，`descriptionsProps.modalProps` 配置详情弹窗；`rowEditor.modalProps` 是当前推荐的编辑弹窗入口。
-
-旧根属性 `edit`、`editMode`、`addMode`、`editForm` 已废弃，分别迁移到 `editable` 或 `rowEditor`。
+编辑能力来自底层 Table，完整配置见[数组与表格：Table](/manual/fields/collections#table-数组容器)。根级 `modalProps` 配置编辑弹窗，`descriptionsProps.modalProps` 配置详情弹窗；编辑弹窗优先集中配置在 `rowEditor.modalProps`。
 
 ## 页面容器与高度策略
 
@@ -378,13 +375,13 @@ tabs: {
 
 ### 高度配置总览
 
-| 属性                 | 当前内置默认 | 实际控制范围                                         | 典型场景                 |
-| -------------------- | ------------ | ---------------------------------------------------- | ------------------------ |
-| `isScanHeight`       | `true`       | 从表格位置计算到视口底部的剩余高度                   | 独立列表页、页面最后区域 |
-| `inheritHeight`      | `false`      | 从父容器取得可用高度                                 | Flex、Tabs 内部填充      |
-| `maxHeight`          | 未设置       | 当前实现中作为表格行滚动区域的最大高度               | 页面上下还有其他内容     |
-| `isFixedHeight`      | `false`      | 固定表格外观高度，数据较少时保留空白，分页保持在底部 | 多个列表对齐、固定工作区 |
-| `resizeHeightOffset` | `0`          | 在自动计算结果上额外扣除的底部距离                   | 页脚、底部安全间距       |
+| 属性                 | 类型    | 默认值  | 实际控制范围                                         | 典型场景                 |
+| -------------------- | ------- | ------- | ---------------------------------------------------- | ------------------------ |
+| `isScanHeight`       | boolean | `true`  | 从表格位置计算到视口底部的剩余高度                   | 独立列表页、页面最后区域 |
+| `inheritHeight`      | boolean | `false` | 从父容器取得可用高度                                 | Flex、Tabs 内部填充      |
+| `maxHeight`          | number  | —       | 当前实现中作为表格行滚动区域的最大高度               | 页面上下还有其他内容     |
+| `isFixedHeight`      | boolean | `false` | 固定表格外观高度，数据较少时保留空白，分页保持在底部 | 多个列表对齐、固定工作区 |
+| `resizeHeightOffset` | number  | `0`     | 在自动计算结果上额外扣除的底部距离                   | 页脚、底部安全间距       |
 
 > `isFixedHeight: true` 和 `resizeHeightOffset: 36` 是常见的业务推荐值，但不是当前源码内置默认值。项目希望所有列表保持一致时，可通过全局 `defaultProps.Table` 统一设置。
 
@@ -417,7 +414,7 @@ const [register] = useTable({
   inheritHeight: true,
   apis: { query: api.page },
   columns,
-})
+});
 </script>
 
 <style scoped>
@@ -458,7 +455,7 @@ const [register] = useTable({
 ### 全局统一底部修正与固定高度
 
 ```ts
-import superForm from 'antdv-superform'
+import superForm from "antdv-superform";
 
 app.use(superForm, {
   defaultProps: {
@@ -467,10 +464,10 @@ app.use(superForm, {
       resizeHeightOffset: 36,
     },
   },
-})
+});
 ```
 
-全局默认适合统一页面壳的底部留白。个别嵌入式表格仍可在 Schema 根级使用 `isFixedHeight: false`、`resizeHeightOffset: 0` 覆盖。当前类型也允许把部分高度属性写入 `attrs`，但运行时只会提升其中一部分；新代码统一使用根级配置。
+全局默认适合统一页面壳的底部留白。个别嵌入式表格仍可在 Schema 根级使用 `isFixedHeight: false`、`resizeHeightOffset: 0` 覆盖。
 
 ## useTable 动作与状态
 

@@ -7,7 +7,7 @@ export default defineConfig({
     '基于 Vue 3 和 Ant Design Vue 的配置式表单与表格组件库。用一份配置，统一表单、表格与详情，让中后台开发更高效',
   lang: 'zh-CN',
   base: '/antdv-superform/',
-  srcExclude: ['README.md', 'SOURCE_REVIEW.md'],
+  srcExclude: ['README.md', 'SOURCE_REVIEW.md', 'manual/_partials/**'],
   cleanUrls: true,
   lastUpdated: true,
   head: [
@@ -67,14 +67,10 @@ export default defineConfig({
           text: '核心设计',
           items: [
             { text: 'Schema 与数据模型', link: '/manual/schema' },
-            { text: '字段与数据路径', link: '/manual/fields-and-paths' },
-            { text: '布局与嵌套', link: '/manual/layout' },
-            { text: '响应式配置', link: '/manual/reactivity' },
+            { text: '布局与结构', link: '/manual/layout' },
+            { text: '响应式与联动', link: '/manual/reactivity' },
             { text: '校验机制', link: '/manual/validation' },
-            { text: '事件与上下文', link: '/manual/events-and-context' },
-            { text: '数据源与双向绑定', link: '/manual/data-binding' },
-            { text: '字段状态与联动', link: '/manual/field-state' },
-            { text: '插槽与自定义渲染', link: '/manual/rendering' },
+            { text: '渲染与插槽', link: '/manual/rendering' },
           ],
         },
         {
@@ -102,13 +98,13 @@ export default defineConfig({
         {
           text: '扩展与定制',
           items: [
-            { text: '后端接口契约', link: '/manual/backend-contracts' },
+            { text: '后端接口约定', link: '/manual/backend-contracts' },
             { text: '全局默认配置', link: '/manual/global-config' },
             {
               text: '字典与权限接入',
               link: '/manual/dictionaries-and-permissions',
             },
-            { text: '替换底层组件', link: '/manual/component-overrides' },
+            { text: '底层组件扩展', link: '/manual/component-overrides' },
             { text: '注册自定义字段', link: '/manual/custom-fields' },
           ],
         },
@@ -121,11 +117,14 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/nicefan/antdv-superform' }],
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/nicefan/antdv-superform' },
+    ],
     search: { provider: 'local' },
     outline: { level: [2, 3] },
     editLink: {
-      pattern: 'https://github.com/nicefan/antdv-superform/edit/docs/docs/:path',
+      pattern:
+        'https://github.com/nicefan/antdv-superform/edit/docs/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
     footer: { message: '基于 MIT 许可发布', copyright: 'Antdv SuperForm' },
@@ -133,7 +132,9 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        'antdv-superform': fileURLToPath(new URL('../../src/index.ts', import.meta.url)),
+        'antdv-superform': fileURLToPath(
+          new URL('../../src/index.ts', import.meta.url)
+        ),
       },
     },
     ssr: { noExternal: ['@vue/repl'] },

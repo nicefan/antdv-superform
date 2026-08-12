@@ -107,16 +107,16 @@ const showReason = ({ current }) => current.result === 'reject'
 
 支持的规则能力包括：
 
-| 配置          | 作用                              |
-| ------------- | --------------------------------- |
-| `required`    | 必填，并基于 `label` 生成默认提示 |
-| `type`        | 内置类型或扩展格式                |
-| `pattern`     | 正则校验                          |
-| `len`         | 固定长度或数值                    |
-| `min` / `max` | 字符长度或数值范围                |
-| `trigger`     | `blur` 或 `change`                |
-| `message`     | 覆盖默认提示                      |
-| `validator`   | 访问上下文的业务校验              |
+| 配置          | 类型             | 默认值     | 作用                              |
+| ------------- | ---------------- | ---------- | --------------------------------- |
+| `required`    | boolean/function | `false`    | 必填，并基于 `label` 生成默认提示 |
+| `type`        | string           | 自动推断   | 内置类型或扩展格式                |
+| `pattern`     | RegExp           | —          | 正则校验                          |
+| `len`         | number           | —          | 固定长度或数值                    |
+| `min` / `max` | number           | —          | 字符长度或数值范围                |
+| `trigger`     | string/array     | 组件默认值 | `blur` 或 `change`                |
+| `message`     | string           | 自动生成   | 覆盖默认提示                      |
+| `validator`   | function         | —          | 访问上下文的业务校验              |
 
 内置扩展类型为 `email`、`integer`、`number`、`idcard`、`phone`、`mobile`、`twoDecimal` 和 `word`。其中 `integer`、`number` 会在校验时转换为 Number 判断；它们不会因此改变模型中原本的存储类型。
 
@@ -150,9 +150,9 @@ SuperForm 将 Ant Design Vue 校验器包装为更符合 Schema 回调习惯的�
 
 ```ts
 validator: async (_effectData, value) => {
-  const exists = await api.checkCode(value)
-  return exists ? new Error('编码已存在') : true
-}
+  const exists = await api.checkCode(value);
+  return exists ? new Error("编码已存在") : true;
+};
 ```
 
 不要在校验器里修正字段值；值转换或派生应使用输入事件、`onUpdate` 或 `computed`，避免一次校验意外触发另一轮校验。

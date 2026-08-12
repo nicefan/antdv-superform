@@ -44,33 +44,33 @@
 ## 1. 创建 Schema
 
 ```ts
-import { defineForm } from 'antdv-superform'
+import { defineForm } from "antdv-superform";
 
 const schema = defineForm({
   subSpan: 12,
-  buttons: { actions: ['submit', 'reset'] },
+  buttons: { actions: ["submit", "reset"] },
   subItems: [
-    { type: 'Hidden', field: 'id' },
+    { type: "Hidden", field: "id" },
     {
-      type: 'Input',
-      field: 'name',
-      label: '姓名',
+      type: "Input",
+      field: "name",
+      label: "姓名",
       required: true,
       // Input 会根据 label 自动生成 placeholder: '请输入姓名'
     },
     {
-      type: 'Select',
-      field: 'status',
-      label: '状态',
+      type: "Select",
+      field: "status",
+      label: "状态",
       initialValue: 1,
       options: [
-        { label: '启用', value: 1 },
-        { label: '停用', value: 0 },
+        { label: "启用", value: 1 },
+        { label: "停用", value: 0 },
       ],
       // Select 会根据 label 自动生成 placeholder: '请选择状态'
     },
   ],
-})
+});
 ```
 
 这份 Schema 会建立模型 `{ id, name, status }`，并让 `required: true` 自动生成“姓名不能为空！”规则。
@@ -85,17 +85,17 @@ const schema = defineForm({
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from "antdv-superform";
 
-const [register, form] = useForm(schema)
+const [register, form] = useForm(schema);
 
 async function save() {
-  const data = await form.submit()
-  await api.save(data)
+  const data = await form.submit();
+  await api.save(data);
 }
 
 function handleSubmitted(data) {
-  console.log('通过校验的数据副本', data)
+  console.log("通过校验的数据副本", data);
 }
 </script>
 ```
@@ -116,16 +116,16 @@ function handleSubmitted(data) {
 
 ```ts
 // 整条记录回填：缺少字段时回退到 Schema 初始值
-form.resetFields({ id: 8, name: '张三' })
+form.resetFields({ id: 8, name: "张三" });
 
 // 只更新传入且模型中已经建立的字段
-form.setFieldsValue({ status: 0 })
+form.setFieldsValue({ status: 0 });
 
 // 读取当前模型引用
-const current = form.getData()
+const current = form.getData();
 
 // 校验并取得深拷贝结果
-const result = await form.submit()
+const result = await form.submit();
 ```
 
 `resetFields()` 无参数时恢复 Schema 标准初始模型。模型外字段不会被动作自动加入；需要提交的主键应声明为 Hidden。
@@ -142,11 +142,11 @@ const result = await form.submit()
 }
 ```
 
-同一个条件同时控制显示和必填。字段隐藏时值不会自动清除；需要清除时在状态字段的 `onUpdate` 中显式处理。详见[字段状态与联动](/manual/field-state)。
+同一个条件同时控制显示和必填。字段隐藏时值不会自动清除；需要清除时在状态字段的 `onUpdate` 中显式处理。详见[响应式与联动](/manual/reactivity#字段状态与联动)。
 
 ## 5. 下一步
 
-- 理解模型初始化：[字段与数据路径](/manual/fields-and-paths)。
+- 理解模型初始化：[Schema 与数据模型](/manual/schema#字段与数据路径)。
 - 掌握完整动作：[表单 SuperForm](/manual/super-form)。
 - 查具体字段：[基础输入](/manual/fields/basic-inputs)与[选择输入](/manual/fields/selections)。
 - 修改运行代码：[基础表单示例](/examples?example=form-basics)。

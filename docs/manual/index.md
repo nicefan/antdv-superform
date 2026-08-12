@@ -8,12 +8,12 @@ Antdv SuperForm 是面向 Vue 3 与 Ant Design Vue 的 Schema 驱动界面库。
 
 ```ts
 const statusField = {
-  type: 'Select',
-  field: 'status',
-  label: '状态',
-  dictName: 'enabled_status',
+  type: "Select",
+  field: "status",
+  label: "状态",
+  dictName: "enabled_status",
   required: true,
-}
+};
 ```
 
 这项定义可以同时提供：
@@ -68,9 +68,9 @@ Schema 不是为了取代 Vue，而是把重复、结构化的部分标准化。
 ## 推荐阅读路径
 
 1. [安装](/manual/installation)：完成插件与样式接入。
-2. [快速开始](/manual/quick-start)：运行第一个表单并理解两种使用方式。
-3. [Schema 与数据模型](/manual/schema)：理解配置如何形成模型、界面和规则。
-4. 按需求进入“页面组件”或“字段组件”。
-5. 在[示例](/examples)中修改完整可运行代码。
+2. [快速开始](/manual/quick-start)：体验一张包含查询和 CRUD 的完整 SuperTable 页面。
+3. [Schema 与数据模型](/manual/schema)：理解配置、字段路径、初始模型和双向绑定。
+4. 根据当前问题阅读[布局与结构](/manual/layout)、[响应式与联动](/manual/reactivity)、[校验机制](/manual/validation)或[渲染与插槽](/manual/rendering)。
+5. 按需求进入“页面组件”或“字段组件”，再到[示例](/examples)中修改完整可运行代码。
 
 准备把组件库交给 AI 编码工具时，再阅读 [AI 编码指引](/manual/ai-guide)和 [Schema 诊断](/manual/schema-diagnostics)。

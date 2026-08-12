@@ -11,7 +11,7 @@ app.use(SuperFormPlugin, {
     Table: ProjectTable,
     Modal: ProjectModal,
   },
-})
+});
 ```
 
 ## 可替换名称
@@ -34,7 +34,11 @@ app.use(SuperFormPlugin, {
 
 ```vue
 <template>
-  <AInput v-bind="$attrs" :value="value" @update:value="emit('update:value', $event)">
+  <AInput
+    v-bind="$attrs"
+    :value="value"
+    @update:value="emit('update:value', $event)"
+  >
     <template v-for="(_, name) in $slots" #[name]="slotProps">
       <slot :name="name" v-bind="slotProps || {}" />
     </template>

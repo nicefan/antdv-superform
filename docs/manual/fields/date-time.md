@@ -104,7 +104,7 @@ attrs: {
 { validPeriod: '2026-08-01,2026-08-31' }
 ```
 
-仅用于兼容字符串接口，不支持值内逗号转义。`endField` 与 `stringifyValue` 同时存在时优先双字段模式。旧 `keepField` 已废弃，改用 `endField`。
+字符串模式不支持值内逗号转义。`endField` 与 `stringifyValue` 同时存在时优先双字段模式。
 
 ## DateRange 常用 attrs
 

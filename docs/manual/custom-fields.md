@@ -5,10 +5,10 @@
 ## 注册与命名
 
 ```ts
-import SuperFormPlugin from 'antdv-superform'
-import UserPicker from './UserPicker.vue'
+import SuperFormPlugin from "antdv-superform";
+import UserPicker from "./UserPicker.vue";
 
-SuperFormPlugin.registerComponent('UserPicker', UserPicker)
+SuperFormPlugin.registerComponent("UserPicker", UserPicker);
 ```
 
 Schema 类型自动增加 Ext 前缀：
@@ -21,22 +21,26 @@ Schema 类型自动增加 Ext 前缀：
 }
 ```
 
-不要写 `type: 'UserPicker'`。旧方法 `registComponent` 已废弃。
+Schema 类型必须使用 `Ext` 前缀，不要写 `type: 'UserPicker'`。
 
 ## 组件接收参数
 
 ```ts
 defineProps<{
-  option: object
-  effectData: object
-  value?: unknown
-  disabled?: boolean
-  isView?: boolean
-  labelValue?: unknown
-  selectedItems?: unknown[]
-}>()
+  option: object;
+  effectData: object;
+  value?: unknown;
+  disabled?: boolean;
+  isView?: boolean;
+  labelValue?: unknown;
+  selectedItems?: unknown[];
+}>();
 
-const emit = defineEmits(['update:value', 'update:labelValue', 'update:selectedItems'])
+const emit = defineEmits([
+  "update:value",
+  "update:labelValue",
+  "update:selectedItems",
+]);
 ```
 
 | 参数                                 | 来源                                             |
@@ -54,11 +58,11 @@ const emit = defineEmits(['update:value', 'update:labelValue', 'update:selectedI
 
 ```vue
 <script setup lang="ts">
-const props = defineProps<{ value?: string; disabled?: boolean }>()
-const emit = defineEmits<{ 'update:value': [value?: string] }>()
+const props = defineProps<{ value?: string; disabled?: boolean }>();
+const emit = defineEmits<{ "update:value": [value?: string] }>();
 
 function selectUser(user) {
-  emit('update:value', user.id)
+  emit("update:value", user.id);
 }
 </script>
 ```
@@ -78,8 +82,8 @@ function selectUser(user) {
 组件选中时同时发出：
 
 ```ts
-emit('update:value', user.id)
-emit('update:labelValue', user.name)
+emit("update:value", user.id);
+emit("update:labelValue", user.name);
 ```
 
 模型得到 `{ userId, userName }`，只读模式也可直接使用 userName。
@@ -143,7 +147,7 @@ vModelFields: {
 
 ```vue
 <template>
-  <span v-if="isView">{{ labelValue || value || '-' }}</span>
+  <span v-if="isView">{{ labelValue || value || "-" }}</span>
   <UserPickerInput v-else v-bind="$attrs" />
 </template>
 ```

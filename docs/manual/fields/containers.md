@@ -41,16 +41,16 @@ Group 是通用分组容器：
 }
 ```
 
-| 属性                | 说明                          |
-| ------------------- | ----------------------------- |
-| `title`             | 标题，字符串或上下文函数      |
-| `label`             | 兼容字段/容器标签语义         |
-| `buttons`           | 标题区或底部按钮              |
-| `subItems`          | 子节点                        |
-| `component`         | 用业务组件包装当前分组        |
-| `contentAttrs`      | 内容区域 HTML 属性            |
-| `ignoreTableTitle`  | Schema 用于表格时忽略分组表头 |
-| `descriptionsProps` | 只读详情布局                  |
+| 属性                | 类型            | 默认值     | 说明                          |
+| ------------------- | --------------- | ---------- | ----------------------------- |
+| `title`             | string/function | —          | 标题                          |
+| `label`             | string/function | —          | 字段或容器标签语义            |
+| `buttons`           | array/object    | —          | 标题区或底部按钮              |
+| `subItems`          | array           | —          | 子节点                        |
+| `component`         | Component       | 内置 Group | 用业务组件包装当前分组        |
+| `contentAttrs`      | object          | `{}`       | 内容区域 HTML 属性            |
+| `ignoreTableTitle`  | boolean         | `false`    | Schema 用于表格时忽略分组表头 |
+| `descriptionsProps` | object          | —          | 只读详情布局                  |
 
 `component` 适合项目统一 Section 外壳；只想换全局基础组件时使用[底层组件包装扩展](/manual/component-overrides)。
 
@@ -98,22 +98,18 @@ const activeTab = ref('base')
 {
   type: 'Tabs',
   activeKey: activeTab,
-  forceRender: true,
   buttons: { actions: [{ label: '新增页签', onClick: addTab }] },
   attrs: { tabPosition: 'top' },
   subItems: [],
 }
 ```
 
-| 属性          | 说明                                      |
-| ------------- | ----------------------------------------- |
-| `activeKey`   | 外部 Ref，双向控制当前页签                |
-| `forceRender` | 类型声明中的强制预渲染开关                |
-| `buttons`     | 页签栏右侧 `add` / `refresh` 或自定义动作 |
-| `subItems`    | ExtTabItem 数组                           |
-| `attrs`       | Tabs 底层属性                             |
-
-当前源码没有把 `forceRender` 传给底层 TabPane；它虽在类型中声明，但目前不能依赖其生效。该问题已记录在仓库的 `docs/SOURCE_REVIEW.md`。
+| 属性        | 类型         | 默认值       | 说明                                      |
+| ----------- | ------------ | ------------ | ----------------------------------------- |
+| `activeKey` | Ref          | 首个可用页签 | 双向控制当前页签                          |
+| `buttons`   | array/object | —            | 页签栏右侧 `add` / `refresh` 或自定义动作 |
+| `subItems`  | array        | 必填         | ExtTabItem 数组                           |
+| `attrs`     | object       | `{}`         | Tabs 底层属性                             |
 
 ### 页签项 ExtTabItem
 
@@ -182,18 +178,20 @@ Descriptions 在其他 Schema 中嵌入只读信息；独立详情页面优先 S
 }
 ```
 
-| 属性                              | 说明                                      |
-| --------------------------------- | ----------------------------------------- |
-| `title`                           | 详情区标题                                |
-| `dataSource`                      | 独立只读对象；省略时使用当前上下文        |
-| `buttons`                         | 详情操作按钮                              |
-| `mode`                            | `default`、`table`、`form`                |
-| `attrs`                           | ExtDescriptionsProps 与 DescriptionsProps |
-| `isContainer`                     | 是否使用页面容器样式                      |
-| `subItems`                        | 详情字段，必填                            |
-| `subSpan` / `gutter` / `rowProps` | 详情布局                                  |
+| 属性          | 类型            | 默认值      | 说明                                      |
+| ------------- | --------------- | ----------- | ----------------------------------------- |
+| `title`       | string/function | —           | 详情区标题                                |
+| `dataSource`  | object/Ref      | 当前上下文  | 独立只读对象                              |
+| `buttons`     | array/object    | —           | 详情操作按钮                              |
+| `mode`        | string          | `'default'` | `default`、`table`、`form`                |
+| `attrs`       | object          | `{}`        | ExtDescriptionsProps 与 DescriptionsProps |
+| `isContainer` | boolean         | `false`     | 是否使用页面容器样式                      |
+| `subItems`    | array           | 必填        | 详情字段                                  |
+| `subSpan`     | number/string   | `12`        | 详情项默认栅格                            |
+| `gutter`      | number          | `16`        | 详情栅格间距                              |
+| `rowProps`    | object          | `{}`        | 详情 Row 属性                             |
 
-`attrs.wrapperCol`、`labelCol`、`labelAlign`、`tableLayout`、`noInput`、`span` 的差异见[详情 SuperDetail](/manual/super-detail#extdescriptionsprops-细节)。旧 `labelBgColor`、`borderColor` 不应继续使用。
+`attrs.wrapperCol`、`labelCol`、`labelAlign`、`tableLayout`、`noInput`、`span` 的差异见[详情 SuperDetail](/manual/super-detail#extdescriptionsprops-细节)。
 
 ## 布局选择
 

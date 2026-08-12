@@ -12,7 +12,7 @@ List、ListGroup、InputList 和 Table 都用 `field` 绑定数组，用 `column
 | Table     | 字段多、列结构明确、选择或编辑复杂 | 对象数组             | 允许为空     |
 
 ```ts
-initialValue: () => []
+initialValue: () => [];
 ```
 
 数组初始值建议使用函数，避免多个表单实例共享引用。
@@ -47,15 +47,17 @@ InputList 将每个数组元素排成紧凑输入行，适合联系人、价格�
 }
 ```
 
-| 属性                              | 说明                           |
-| --------------------------------- | ------------------------------ |
-| `field`                           | 数组字段，继承自表单项         |
-| `columns`                         | 行内字段，必填                 |
-| `title`                           | 列表标题                       |
-| `attrs.labelIndex`                | `labelIndex`：标签后追加行序号 |
-| `rowButtons`                      | `delete` / `add`；`false` 关闭 |
-| `subSpan` / `gutter` / `rowProps` | 行内布局                       |
-| `rules` / `required`              | 整个数组级 FormItem 校验       |
+| 属性                 | 类型                          | 默认值       | 说明                     |
+| -------------------- | ----------------------------- | ------------ | ------------------------ |
+| `field`              | string                        | 必填         | 数组字段，继承自表单项   |
+| `columns`            | array                         | 必填         | 行内字段                 |
+| `title`              | string/function               | —            | 列表标题                 |
+| `attrs.labelIndex`   | boolean                       | `false`      | 标签后追加行序号         |
+| `rowButtons`         | boolean/array/object          | 内置增删按钮 | 行操作按钮；`false` 关闭 |
+| `subSpan`            | number/string                 | `'auto'`     | 行内字段默认栅格         |
+| `gutter`             | number                        | `16`         | 行内栅格间距             |
+| `rowProps`           | object                        | `{}`         | 行内 Row 属性            |
+| `rules` / `required` | object/array/boolean/function | —            | 数组字段校验配置         |
 
 ### 原始值数组
 
@@ -106,7 +108,7 @@ ListGroup 把每项渲染成独立 Group，适合地址、合同分段等多行�
 
 除 `field`、`columns`、`attrs.labelIndex`（`labelIndex`）、`attrs.rowKey`、`rowButtons` 外，它还继承 Group 的 `title`、`buttons`、`component`、`ignoreTableTitle`、`contentAttrs`、布局和 `descriptionsProps`。
 
-`rowKey` 用于保持行身份；应选稳定业务字段。ListGroup 空数组会补成 `[{}]`。容器自身的数组级 rules 当前不生成独立 FormItem，应把必填规则放到列字段，或选用 InputList。
+`rowKey` 用于保持行身份，应选择稳定业务字段。ListGroup 空数组会补成 `[{}]`；需要校验每一项时，把规则配置在对应列字段上。
 
 ## List
 
@@ -130,16 +132,18 @@ List 使用 Ant Design Vue List 外观，允许空数组，适合内容块和顶
 }
 ```
 
-| 属性                              | 说明                                   |
-| --------------------------------- | -------------------------------------- |
-| `field`                           | 数组字段，必填                         |
-| `title`                           | 列表标题                               |
-| `attrs`                           | ListProps；运行时也读取 `rowKey`       |
-| `buttons`                         | 顶部 `add` / `refresh`，无默认动作列表 |
-| `rowButtons`                      | 每项 `delete` / `edit`，无默认动作列表 |
-| `columns`                         | 每项字段                               |
-| `subSpan` / `gutter` / `rowProps` | 每项内部布局                           |
-| `descriptionsProps`               | 只读项布局                             |
+| 属性                | 类型            | 默认值 | 说明                                   |
+| ------------------- | --------------- | ------ | -------------------------------------- |
+| `field`             | string          | 必填   | 数组字段                               |
+| `title`             | string/function | —      | 列表标题                               |
+| `attrs`             | object          | `{}`   | ListProps；可通过 `rowKey` 指定行主键  |
+| `buttons`           | array/object    | —      | 顶部 `add` / `refresh`，无默认动作列表 |
+| `rowButtons`        | array/object    | —      | 每项 `delete` / `edit`，无默认动作列表 |
+| `columns`           | array           | 必填   | 每项字段                               |
+| `subSpan`           | number/string   | `8`    | 每项内部默认栅格                       |
+| `gutter`            | number          | `16`   | 每项内部栅格间距                       |
+| `rowProps`          | object          | `{}`   | 每项内部 Row 属性                      |
+| `descriptionsProps` | object          | —      | 只读项布局                             |
 
 List 允许删除最后一项。`rowKey` 缺失时默认读取 `id`，再回退内部 key；业务数据应显式设置稳定字段。
 
@@ -176,7 +180,7 @@ Table 是绑定模型数组的 Schema 容器，负责列、选择、展开、编
 }
 ```
 
-列拥有普通字段全部配置，并增加 `columnProps`。未声明 `type` 时是只读文本列；需要进入编辑表单必须指定字段类型。旧 `hideInTable` 改用 `exclude: ['table']`。
+列拥有普通字段全部配置，并增加 `columnProps`。未声明 `type` 时是只读文本列；需要进入编辑表单必须指定字段类型。使用 `exclude` 控制字段参与表格、表单和详情的场景。
 
 表格级 `columnProps` 是公共默认，列级同名属性覆盖：
 
@@ -254,8 +258,6 @@ rowEditor: {
 
 `editMode` 和 `addMode` 可独立选择。`form` 省略或未提供 `subItems` 时复用 columns；显式 `subItems` 适合编辑字段与列表列不同。`onSave` 返回 `false` 阻止内置保存；`onCancel` 在取消前执行。
 
-表格根级 `edit`、`editMode`、`addMode`、`editForm` 已废弃，分别迁移到 `editable` 或 `rowEditor`。
-
 ### modalProps 与 descriptionsProps
 
 ```ts
@@ -263,7 +265,7 @@ rowEditor: {
   rowEditor: {
     modalProps: { width: 800 },
   },
-  // 兼容的表格级编辑弹窗属性
+  // 表格级编辑弹窗的公共属性
   modalProps: { centered: true },
   // 详情布局以及详情弹窗
   descriptionsProps: {
@@ -277,7 +279,7 @@ rowEditor: {
 
 ### tabs 表格标签
 
-`tabs` 接受 TabsHeader 或 `false`，用于在表格顶部以选项切换过滤值。它包含 `field`、`initialValue`、`bordered`、`options`、`dictName`、`labelAsValue`、`activeKey`、`slots`、`customTab`；详例见[SuperTable：tabs 标签筛选](/manual/super-table#tabs-标签筛选)。旧 `valueToLabel` 改用 `labelAsValue`。
+`tabs` 接受 TabsHeader 或 `false`，用于在表格顶部以选项切换过滤值。它包含 `field`、`initialValue`、`bordered`、`options`、`dictName`、`labelAsValue`、`activeKey`、`slots`、`customTab`；详例见[SuperTable：tabs 标签筛选](/manual/super-table#tabs-标签筛选)。
 
 ### CRUD 接口
 

@@ -1,6 +1,8 @@
-# Schema：用一份配置连接界面与数据
+# Schema 与数据模型
 
 Schema 不只是“组件配置列表”。它同时描述字段如何显示、数据存在哪里、初始模型是什么形状、如何校验，以及字段之间如何联动。SuperForm 会据此建立数据模型，再让输入、只读展示和页面组件共享同一份业务定义。
+
+本章按“配置声明 → 字段路径 → 数据绑定”的顺序展开。第一次阅读建议顺序浏览；查阅具体能力时可直接使用右侧目录定位 `field`、`labelField`、`endField`、`dataSource` 或字段级 Ref。
 
 ```text
 Schema 声明
@@ -128,7 +130,7 @@ SuperForm 根 Schema
 - `table`：不生成表格列。
 - `description`：不进入详情展示。
 
-需要回显和提交、但不应显示的主键或上下文字段，建议声明为 `Hidden`，不要只把它留在外部对象中。旧配置 `hideInTable`、`hideInForm`、`hideInDescription` 已废弃。
+需要回显和提交、但不应显示的主键或上下文字段，建议声明为 `Hidden`，不要只把它留在外部对象中。
 
 ## 何时拆分 Schema
 
@@ -136,17 +138,17 @@ SuperForm 根 Schema
 
 ```ts
 const statusField = {
-  type: 'Select',
-  field: 'status',
-  label: '状态',
+  type: "Select",
+  field: "status",
+  label: "状态",
   options: statusOptions,
-}
+};
 
 const editStatus = {
   ...statusField,
   required: true,
   disabled: ({ formData }) => !formData.canEditStatus,
-}
+};
 ```
 
 这样保留字段名、选项和值语义的一致性，又不会强行把所有场景塞进大量条件函数。
@@ -154,13 +156,17 @@ const editStatus = {
 ## 类型辅助
 
 ```ts
-import { defineDetail, defineForm, defineTable } from 'antdv-superform'
+import { defineDetail, defineForm, defineTable } from "antdv-superform";
 
 const schema = defineForm({
-  subItems: [{ type: 'Input', field: 'name', label: '名称' }],
-})
+  subItems: [{ type: "Input", field: "name", label: "名称" }],
+});
 ```
 
 类型辅助函数只约束输入并改善编辑器提示，不改变运行时结果。动态 Schema 仍可以使用函数或异步函数交给相应组合函数。
 
-下一步可继续了解[字段与数据路径](/manual/fields-and-paths)，它解释 Schema 如何真正形成提交模型。
+下面继续从字段路径和数据绑定两个角度展开模型细节。前者解释 Schema 如何确定数据坐标与结构，后者解释业务对象如何成为当前模型并参与重置、提交和双向同步。
+
+<!--@include: ./_partials/fields-and-paths.md-->
+
+<!--@include: ./_partials/data-binding.md-->

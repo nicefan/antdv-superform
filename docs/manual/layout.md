@@ -1,4 +1,4 @@
-# 布局与嵌套
+# 布局与结构
 
 布局配置描述的是“业务字段之间的空间关系”，而不是写死 DOM。SuperForm 根据连续字段自动生成 Row/Col，容器再负责分组语义，因此同一份 Schema 可以在保持数据结构不变的前提下调整页面密度。
 
@@ -54,10 +54,10 @@
 
 ```ts
 subItems: [
-  { type: 'Input', field: 'code', label: '编码', span: 8, breakAfter: true },
-  { type: 'Input', field: 'name', label: '名称', span: 8 }, // 从新 Row 开始
-  { type: 'InfoSlot', block: true, render: () => '整行说明' },
-]
+  { type: "Input", field: "code", label: "编码", span: 8, breakAfter: true },
+  { type: "Input", field: "name", label: "名称", span: 8 }, // 从新 Row 开始
+  { type: "InfoSlot", block: true, render: () => "整行说明" },
+];
 ```
 
 未设置 `span` 的布局容器默认独立成块，因此 Card、Tabs、Collapse 等通常无需重复写 `block: true`。给容器设置 `span` 后，它可以像普通字段一样进入栅格。
@@ -111,12 +111,12 @@ Fragment 用于把一组字段插入当前位置，不产生 Card、Row 标题�
 
 ```ts
 const auditFields = {
-  type: 'Fragment',
+  type: "Fragment",
   subItems: [
-    { type: 'Text', field: 'createdBy', label: '创建人' },
-    { type: 'Text', field: 'createdAt', label: '创建时间' },
+    { type: "Text", field: "createdBy", label: "创建人" },
+    { type: "Text", field: "createdAt", label: "创建时间" },
   ],
-}
+};
 ```
 
 它适合复用字段集合或给一组直接子项统一加 `hidden` / `disabled`，不适合表达有独立数据边界的对象；后者应使用带 `field` 的 Group。
