@@ -1,0 +1,42 @@
+import { readFileSync, readdirSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import ts from 'typescript'
+
+const docsRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const repoRoot = resolve(docsRoot, '..')
+const typeSource = readFileSync(join(repoRoot, 'src/exaTypes.d.ts'), 'utf8')
+
+const typeFile = ts.createSourceFile('exaTypes.d.ts', typeSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+const propertyNames = new Set()
+
+function collectPropertyNames(node) {
+  if (ts.isPropertySignature(node) && node.name) {
+    const name = node.name.getText(typeFile).replace(/^['"]|['"]$/g, '')
+    if (/^[A-Za-z_$][\w$]*$/.test(name)) propertyNames.add(name)
+  }
+  ts.forEachChild(node, collectPropertyNames)
+}
+
+collectPropertyNames(typeFile)
+
+let manualSource = ''
+function collectMarkdown(directory) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const file = join(directory, entry.name)
+    if (entry.isDirectory()) collectMarkdown(file)
+    else if (entry.name.endsWith('.md')) manualSource += `\n${readFileSync(file, 'utf8')}`
+  }
+}
+
+collectMarkdown(join(docsRoot, 'manual'))
+
+const missing = [...propertyNames].filter((name) => !manualSource.includes(`\`${name}\``)).sort()
+
+if (missing.length) {
+  console.error(`exaTypes.d.ts 中有 ${missing.length} 个属性未在手册中以配置名出现：`)
+  console.error(missing.join('\n'))
+  process.exitCode = 1
+} else {
+  console.log(`类型属性覆盖校验通过，共 ${propertyNames.size} 个属性`)
+}

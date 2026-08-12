@@ -6,17 +6,25 @@
 }
 
 .VPDoc .container,
-.VPDoc .content,
-.VPDoc .content-container,
-.VPDoc.has-aside .content-container {
+.VPDoc .content {
   max-width: none;
 }
 
-.VPDoc .content-container { margin: 0; }
-.VPContent:not(.is-home) { width: 100%; }
+.VPContent .VPDoc .content-container,
+.VPContent .VPDoc.has-aside .content-container {
+  max-width: 960px;
+  margin: 0;
+}
+.VPContent:not(.is-home) {
+  width: 100%;
+}
 
-.playable-code { position: relative; }
-.playable-code > div[class*='language-'] { margin-top: 0; }
+.playable-code {
+  position: relative;
+}
+.playable-code > div[class*="language-"] {
+  margin-top: 0;
+}
 
 .playable-code__button {
   position: absolute;
@@ -42,12 +50,18 @@
 
 .playground-page .VPDoc,
 .playground-page .VPDoc .content,
-.playground-page .VPDoc .container {
+.playground-page .VPDoc .container,
+.examples-page .VPDoc,
+.examples-page .VPDoc .content,
+.examples-page .VPDoc .container {
   margin: 0;
   padding: 0;
 }
 
-.playground-page .VPDocFooter { display: none; }
+.playground-page .VPDocFooter,
+.examples-page .VPDocFooter {
+  display: none;
+}
 
 .feature-grid {
   display: grid;
@@ -64,9 +78,159 @@
   border-radius: 14px;
 }
 
-.feature-card strong { display: block; margin-bottom: 6px; }
-.feature-card p { margin: 0; color: var(--vp-c-text-2); }
+.feature-card strong {
+  display: block;
+  margin-bottom: 6px;
+}
+.feature-card p {
+  margin: 0;
+  color: var(--vp-c-text-2);
+}
+
+.VPHome .vp-doc {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px 72px;
+}
+
+.VPHome .vp-doc > h2 {
+  margin-top: 56px;
+  border-top: 0;
+}
+
+.VPHome .VPHero .image-bg {
+  background: radial-gradient(
+      circle at 58% 45%,
+      rgb(105 255 218 / 48%) 0 9%,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle,
+      rgb(22 119 255 / 62%) 0,
+      rgb(64 150 255 / 30%) 48%,
+      transparent 82%
+    );
+  filter: blur(48px);
+  opacity: 0.88;
+  animation: home-icon-glow 3.6s ease-in-out infinite;
+}
+
+.VPHome .VPHero .VPImage {
+  filter: drop-shadow(0 0 14px rgb(64 150 255 / 52%))
+    drop-shadow(0 0 52px rgb(22 119 255 / 34%));
+}
+
+.dark .VPHome .VPHero .image-bg {
+  opacity: 1;
+}
+
+@keyframes home-icon-glow {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.28);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .VPHome .VPHero .image-bg {
+    animation: none;
+  }
+}
+
+.VPHome .VPFeature .box {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 14px;
+}
+
+.VPHome .VPFeature .icon {
+  grid-column: 1;
+  margin-bottom: 0;
+}
+
+.VPHome .VPFeature .title {
+  grid-column: 2;
+}
+
+.VPHome .VPFeature .details,
+.VPHome .VPFeature .link-text {
+  grid-column: 1 / -1;
+}
+
+.home-quick-start {
+  margin-top: 56px;
+}
+
+.home-section-heading {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.home-section-heading > span {
+  color: var(--vp-c-brand-1);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.home-section-heading h2 {
+  margin: 8px 0;
+  border: 0;
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.25;
+}
+
+.home-section-heading p {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: 16px;
+}
+
+.home-demo-stage {
+  height: 620px;
+  overflow: hidden;
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgb(31 35 41 / 8%);
+}
+
+.home-demo-stage .iframe-container,
+.home-demo-stage iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.home-feature-grid .feature-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, var(--vp-c-bg-soft), var(--vp-c-bg));
+}
+
+.home-feature-grid .feature-card::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--vp-c-brand-1), #69b1ff);
+  content: "";
+}
+
+@media (max-width: 640px) {
+  .VPHome .vp-doc {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
 
 @media (min-width: 960px) {
-  .VPDoc:not(.has-aside) .content { padding-right: 64px; }
+  .VPDoc:not(.has-aside) .content {
+    padding-right: 64px;
+  }
 }

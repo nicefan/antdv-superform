@@ -1,0 +1,148 @@
+# 详情 SuperDetail
+
+SuperDetail 使用与表单、表格相同的字段 Schema 渲染只读详情。它会复用字段路径、字典映射、关联字段、Tag、范围和自定义展示，因此无需再维护一份“详情专用文案逻辑”。
+
+## 两种使用方式
+
+### 声明式
+
+```vue
+<SuperDetail :schema="detailSchema" :data-source="record" />
+```
+
+适合数据由父组件控制的详情页。
+
+### 注册模式
+
+```vue
+<SuperDetail @register="register" />
+
+<script setup lang="ts">
+import { SuperDetail, useDetail } from 'antdv-superform'
+
+const [register, detail] = useDetail(detailSchema, initialData)
+detail.setData(record)
+</script>
+```
+
+Schema 可以是对象、函数或 Promise；需要在同一详情实例中切换记录时使用 `setData()`。
+
+## 根配置
+
+```ts
+import { defineDetail } from 'antdv-superform'
+
+const detailSchema = defineDetail({
+  title: '用户信息',
+  mode: 'table',
+  subSpan: 12,
+  attrs: {
+    bordered: true,
+    labelAlign: 'right',
+  },
+  buttons: {
+    visibleIn: 'detail',
+    actions: [{ label: '返回', onClick: () => router.back() }],
+  },
+  subItems: [],
+})
+```
+
+| 属性                              | 作用                        |
+| --------------------------------- | --------------------------- |
+| `subItems`                        | 详情字段和嵌套容器，必填    |
+| `dataSource`                      | 当前详情对象                |
+| `title`                           | 页面或分组标题              |
+| `mode`                            | `default`、`table`、`form`  |
+| `attrs`                           | Descriptions 与详情布局属性 |
+| `subSpan` / `gutter` / `rowProps` | 详情栅格配置                |
+| `buttons`                         | 详情操作按钮                |
+| `isContainer`                     | 页面容器样式                |
+
+字段可以省略 `type`，此时直接展示值。使用 `exclude: ['description']` 排除详情字段。
+
+## 三种布局模式
+
+| 模式      | 特点                        | 适合场景                   |
+| --------- | --------------------------- | -------------------------- |
+| `default` | 标准 Descriptions 布局      | 常规键值详情               |
+| `table`   | 分组按表格式结构展示        | 对齐要求高、分组较多       |
+| `form`    | 接近表单 label/control 布局 | 查看态与编辑态需要视觉一致 |
+
+```ts
+// 标准两列详情
+{ mode: 'default', subSpan: 12, attrs: { bordered: true } }
+
+// 表单式详情
+{
+  mode: 'form',
+  attrs: {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
+    noInput: false,
+  },
+}
+```
+
+## ExtDescriptionsProps 细节
+
+| 属性                              | 说明                                |
+| --------------------------------- | ----------------------------------- |
+| `mode`                            | 当前详情布局模式                    |
+| `wrapperCol`                      | 内容列属性；传空对象可清空继承值    |
+| `labelCol`                        | 标签列属性；传空对象可清空继承值    |
+| `labelAlign`                      | `left`、`center`、`right`           |
+| `tableLayout`                     | 表格式分组的 `fixed` / `auto`       |
+| `noInput`                         | `form` 模式不使用输入框风格包裹内容 |
+| `span`                            | 当前详情项跨度                      |
+| `subSpan` / `gutter` / `rowProps` | 内部布局                            |
+| 其他属性                          | 传给 Ant Design Vue Descriptions    |
+
+`labelBgColor`、`borderColor` 已废弃，应通过项目主题或样式变量实现。
+
+`attrs` 用于详情根；字段或容器的 `descriptionsProps` 用于局部覆盖：
+
+```ts
+{
+  type: 'Group',
+  title: '审计信息',
+  descriptionsProps: {
+    mode: 'table',
+    tableLayout: 'fixed',
+    subSpan: 12,
+  },
+  subItems: [],
+}
+```
+
+## 字段展示优先级
+
+1. `viewRender` 自定义显示。
+2. `labelField` 关联文本。
+3. `endField` 范围组合。
+4. `options` / `dictName` 值到标签映射和 `tagViewer`。
+5. Upload 或 Ext\* 组件的 `isView: true` 模式。
+6. 默认文本值。
+
+```ts
+subItems: [
+  { field: 'departmentId', label: '部门', labelField: 'departmentName' },
+  { field: 'startDate', endField: 'endDate', label: '有效期' },
+  { field: 'status', label: '状态', dictName: 'status' },
+]
+```
+
+详细映射见[插槽与自定义渲染](/manual/rendering#默认只读映射)。
+
+## 当前数据更新
+
+```ts
+const [register, detail] = useDetail(schema, firstRecord)
+
+// 之后切换记录
+detail.setData(nextRecord)
+```
+
+声明式模式则直接更新 `dataSource`。需要注意：详情数据用于读取，不提供表单式 `setFieldsValue` 或 `resetFields` 语义。
+
+完整效果见[详情示例](/examples?example=detail)。
