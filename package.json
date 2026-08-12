@@ -1,10 +1,15 @@
 {
   "name": "antdv-superform",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "author": {
     "name": "nicefan",
     "email": "covien@msn.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicefan/antdv-superform.git"
+  },
+  "homepage": "https://nicefan.github.io/antdv-superform/",
   "files": [
     "bin",
     "shared",

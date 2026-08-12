@@ -14,7 +14,7 @@
 1. 只从包根入口导入公共 API：
 
    ```ts
-   import { SuperForm, useForm, SuperTable, useTable } from 'antdv-superform'
+   import { SuperForm, useForm, SuperTable, useTable } from "antdv-superform";
    ```
 
    不要从 `antdv-superform/lib/...` 或包内源码路径导入。
@@ -33,15 +33,15 @@
 
 包根入口公开以下运行时 API：
 
-| 分类 | API | 用途 |
-| --- | --- | --- |
-| 表单 | `SuperForm`、`useForm`、`defineForm` | 配置式表单、表单动作、schema 类型收窄 |
-| 表格 | `SuperTable`、`useTable`、`defineTable` | 查询表格、CRUD、选择、动态列 |
-| 详情 | `SuperDetail`、`useDetail`、`defineDetail` | 只读详情 |
-| 弹窗 | `createModal`、`useModal`、`useModalForm` | 命令式弹窗和弹窗表单 |
-| 按钮 | `SuperButtons`、`useButtons` | 独立按钮组 |
-| 插件 | 默认导出 `superForm` | 全局安装、默认值、组件替换、扩展字段注册 |
-| 诊断 | `diagnoseSchema` | 返回 schema 的错误、警告和冗余配置建议 |
+| 分类 | API                                        | 用途                                     |
+| ---- | ------------------------------------------ | ---------------------------------------- |
+| 表单 | `SuperForm`、`useForm`、`defineForm`       | 配置式表单、表单动作、schema 类型收窄    |
+| 表格 | `SuperTable`、`useTable`、`defineTable`    | 查询表格、CRUD、选择、动态列             |
+| 详情 | `SuperDetail`、`useDetail`、`defineDetail` | 只读详情                                 |
+| 弹窗 | `createModal`、`useModal`、`useModalForm`  | 命令式弹窗和弹窗表单                     |
+| 按钮 | `SuperButtons`、`useButtons`               | 独立按钮组                               |
+| 插件 | 默认导出 `superForm`                       | 全局安装、默认值、组件替换、扩展字段注册 |
+| 诊断 | `diagnoseSchema`                           | 返回 schema 的错误、警告和冗余配置建议   |
 
 常用公开类型包括：
 
@@ -54,7 +54,7 @@ import type {
   RootTableOption,
   ButtonItem,
   ExtButtons,
-} from 'antdv-superform'
+} from "antdv-superform";
 ```
 
 ## 3. 应用级安装
@@ -62,13 +62,13 @@ import type {
 最小安装：
 
 ```ts
-import { createApp } from 'vue'
-import superForm from 'antdv-superform'
-import App from './App.vue'
+import { createApp } from "vue";
+import superForm from "antdv-superform";
+import App from "./App.vue";
 
-const app = createApp(App)
-app.use(superForm)
-app.mount('#app')
+const app = createApp(App);
+app.use(superForm);
+app.mount("#app");
 ```
 
 常用全局能力：
@@ -80,23 +80,23 @@ app.use(superForm, {
   customIcon: (name) => renderProjectIcon(name),
   buttonRoles: () => permissionStore.currentRoles,
   defaultButtons: {
-    add: { label: '新增' },
-    edit: { label: '编辑' },
+    add: { label: "新增" },
+    edit: { label: "编辑" },
   },
-  tagViewer: { 0: 'default', 1: 'green' },
+  tagViewer: { 0: "default", 1: "green" },
   tableApiSetting: {
-    currentField: 'pageNum',
-    sizeField: 'pageSize',
+    currentField: "pageNum",
+    sizeField: "pageSize",
     resultTransform: (result) => result.data,
   },
   defaultProps: {
-    Form: { layout: 'horizontal' },
-    Table: { size: 'small', bordered: true },
+    Form: { layout: "horizontal" },
+    Table: { size: "small", bordered: true },
     Modal: { centered: true },
     Upload: { maxSize: 20 },
-    rowButtons: { labelMode: 'icon' },
+    rowButtons: { labelMode: "icon" },
   },
-})
+});
 ```
 
 说明：
@@ -148,19 +148,19 @@ app.use(superForm, {
 
 以下是库的内置默认值。生成代码前应先检查消费项目是否通过安装配置、`setDefaultProps()` 或二次封装覆盖了它们；没有覆盖且默认行为满足需求时，省略对应配置。
 
-| 场景 | 内置默认行为 | 通常不需要生成 |
-| --- | --- | --- |
-| 表单栅格 | 子项 `span` 默认 `8`，即一行 3 项；`gutter` 默认 `16` | `subSpan: 8`、逐项 `span: 8`、`gutter: 16` |
-| 容器布局 | 未设置 `span` 的容器默认独占一块 | 仅为独占一行而生成 `block: true` |
-| 输入占位符 | `Input`、`InputNumber`、`Textarea`、`AutoComplete` 默认“请输入 + label” | 与默认文案相同的 `attrs.placeholder` |
-| 选择占位符 | `Select`、`TreeSelect` 默认“请选择 + label” | 与默认文案相同的 `attrs.placeholder` |
-| 表单校验 | `FormItem.validateFirst` 默认 `true` | `formItemProps: { validateFirst: true }` |
-| 输入组合 | `InputGroup` 默认使用紧凑布局 | `attrs: { compact: true }` |
-| 日期时间值 | `DatePicker`、`DateRange` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRange` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat` |
-| 选项只读展示 | 配置 `options` 后默认按 Tag 展示，并使用内置颜色组 | `tagViewer: true` |
-| 表格首次查询 | `immediate` 默认 `true` | `immediate: true` |
-| 表格分页 | 默认不分页；启用分页后 `current` 默认 `1`、`pageSize` 默认 `10` | 无分页时的 `pagination: false`；标准分页时重复写页码和每页数量 |
-| 查询表单按钮 | 未启用 `searchOnChange` 时默认生成 `search`、`reset` | `buttons: { actions: ['search', 'reset'] }` |
+| 场景         | 内置默认行为                                                                           | 通常不需要生成                                                 |
+| ------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 表单栅格     | 子项 `span` 默认 `8`，即一行 3 项；`gutter` 默认 `16`                                  | `subSpan: 8`、逐项 `span: 8`、`gutter: 16`                     |
+| 容器布局     | 未设置 `span` 的容器默认独占一块                                                       | 仅为独占一行而生成 `block: true`                               |
+| 输入占位符   | `Input`、`InputNumber`、`Textarea`、`AutoComplete` 默认“请输入 + label”                | 与默认文案相同的 `attrs.placeholder`                           |
+| 选择占位符   | `Select`、`TreeSelect` 默认“请选择 + label”                                            | 与默认文案相同的 `attrs.placeholder`                           |
+| 表单校验     | `FormItem.validateFirst` 默认 `true`                                                   | `formItemProps: { validateFirst: true }`                       |
+| 输入组合     | `InputGroup` 默认使用紧凑布局                                                          | `attrs: { compact: true }`                                     |
+| 日期时间值   | `DatePicker`、`DateRange` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRange` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat`                                     |
+| 选项只读展示 | 配置 `options` 后默认按 Tag 展示，并使用内置颜色组                                     | `tagViewer: true`                                              |
+| 表格首次查询 | `immediate` 默认 `true`                                                                | `immediate: true`                                              |
+| 表格分页     | 默认不分页；启用分页后 `current` 默认 `1`、`pageSize` 默认 `10`                        | 无分页时的 `pagination: false`；标准分页时重复写页码和每页数量 |
+| 查询表单按钮 | 未启用 `searchOnChange` 时默认生成 `search`、`reset`                                   | `buttons: { actions: ['search', 'reset'] }`                    |
 
 生成时还应遵循：
 
@@ -276,30 +276,30 @@ Descriptions, Table, InputGroup, InputList
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from "antdv-superform";
 
 const [register, form] = useForm({
   subSpan: 12,
-  attrs: { layout: 'horizontal' },
-  buttons: { actions: ['submit', 'reset'] },
+  attrs: { layout: "horizontal" },
+  buttons: { actions: ["submit", "reset"] },
   subItems: [
-    { type: 'Hidden', field: 'id' },
-    { type: 'Input', label: '名称', field: 'name', required: true },
+    { type: "Hidden", field: "id" },
+    { type: "Input", label: "名称", field: "name", required: true },
     {
-      type: 'Select',
-      label: '状态',
-      field: 'status',
+      type: "Select",
+      label: "状态",
+      field: "status",
       options: [
-        { label: '启用', value: 1 },
-        { label: '停用', value: 0 },
+        { label: "启用", value: 1 },
+        { label: "停用", value: 0 },
       ],
     },
   ],
-})
+});
 
 async function save() {
-  const data = await form.submit()
-  await api.save(data)
+  const data = await form.submit();
+  await api.save(data);
 }
 </script>
 ```
@@ -346,9 +346,9 @@ form.dataSource
 
 ```ts
 options: [
-  { label: '管理员', value: 'admin' },
-  { label: '普通用户', value: 'user' },
-]
+  { label: "管理员", value: "admin" },
+  { label: "普通用户", value: "user" },
+];
 ```
 
 原始值数组强制使用元素本身作为 label 和 value。配置 `valueToNumber: true` 时，为兼容旧用法，改用数字下标作为 value。原始值数组含义不如对象数组明确，一般不要生成；当前也不支持 Select 分组选项。
@@ -398,11 +398,15 @@ options: [
 </template>
 
 <script setup lang="ts">
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from "antdv-superform";
 
 const [register, table] = useTable({
   isContainer: true,
   pagination: { pageSize: 20 },
+  attrs: {
+    rowKey: "userId",
+    rowSelection: {},
+  },
   apis: {
     query: api.page,
     info: api.detail,
@@ -410,35 +414,40 @@ const [register, table] = useTable({
     update: api.edit,
     delete: (keys, rows) => api.remove(keys),
   },
-  attrs: {
-    rowKey: 'userId',
-    rowSelection: {},
-  },
   params: {
     departmentId: selectedDepartmentId,
   },
   searchForm: {
-    subSpan: 'auto',
-    subItems: ['name', 'status'],
+    subSpan: "auto",
+    subItems: ["name", "status"],
   },
-  columns: [
-    { type: 'Input', label: '姓名', field: 'name', required: true },
-    { type: 'Select', label: '状态', field: 'status', dictName: 'status' },
-  ],
   rowEditor: {
-    editMode: 'modal',
-    addMode: 'modal',
+    editMode: "modal",
+    addMode: "modal",
     form: { subSpan: 12 },
     modalProps: { width: 800 },
   },
-  buttons: { actions: ['add', 'delete'] },
+  buttons: { actions: ["add", "delete"] },
   rowButtons: {
-    actions: ['detail', 'edit', 'delete'],
+    actions: ["detail", "edit", "delete"],
     columnProps: { width: 140 },
   },
-})
+  columns: [
+    { type: "Input", label: "姓名", field: "name", required: true },
+    { type: "Select", label: "状态", field: "status", dictName: "status" },
+  ],
+});
 </script>
 ```
+
+表格 Schema 推荐按以下顺序组织，不存在的分组直接省略：
+
+```text
+顶层单属性 → attrs → apis → params → beforeQuery / afterQuery → on* 事件
+→ searchForm → rowEditor → buttons → rowButtons → tabs → columnProps → columns
+```
+
+顶层单属性包括 `title`、`dataSource`、`immediate`、`pagination`、`editable`、`indexColumn` 和高度策略等独立值。`columns` 固定放在最后，避免较长的列定义打断请求、查询和操作配置。
 
 ### 查询契约
 
@@ -460,25 +469,25 @@ const [register, table] = useTable({
 查询表单控件可以通过 `value` 与 `params` 共用同一个 Ref。控件变化会更新 `params`，从而立即触发表格查询，无需配置 `searchForm.searchOnChange`：
 
 ```ts
-const status = ref()
+const status = ref();
 
 const [register, table] = useTable({
   params: { status },
   searchForm: {
     subItems: [
       {
-        type: 'Select',
-        field: 'status',
-        label: '状态',
+        type: "Select",
+        field: "status",
+        label: "状态",
         value: status,
         options: [
-          { label: '启用', value: 1 },
-          { label: '停用', value: 0 },
+          { label: "启用", value: 1 },
+          { label: "停用", value: 0 },
         ],
       },
     ],
   },
-})
+});
 ```
 
 ```ts
@@ -487,10 +496,10 @@ afterQuery: (result) => ({
   size: result.pageSize,
   total: result.totalCount,
   records: result.list,
-})
+});
 ```
 
-`searchForm.subItems` 可以引用同名列字段；查询字段与编辑字段配置不同时，应写完整查询项。列字段未指定type时，默认是`Input`。
+`searchForm.subItems` 可以引用同名列字段；查询字段与编辑字段配置不同时，应写完整查询项。列字段未指定 type 时，默认是`Input`。
 
 `searchForm.searchOnChange: true` 会监听搜索数据并自动查询；否则默认生成 `search`、`reset` 按钮。`limit` 用于折叠超出数量的搜索项，`teleport` 可把搜索表单传送到指定选择器。
 
@@ -533,12 +542,12 @@ table.validate()
 
 ### 编辑方式选择
 
-| 编辑方式 | 配置入口 | 适用场景 |
-| --- | --- | --- |
-| 单列编辑 | 列配置 `editable: true` | 适合 `Switch` 开关等单个字段的即时操作 |
-| 全表编辑 | 表格配置 `editable: true` | 适合编辑多行、多列，完成整表校验后整体保存 |
-| 行内编辑 | `rowEditor.editMode: 'inline'` | 适合少量内容的单行编辑、单行校验或单行提交保存 |
-| 弹窗编辑 | `rowEditor.editMode: 'modal'` | 适合存在交互逻辑，或需要编辑、校验较多未在表格展示的数据 |
+| 编辑方式 | 配置入口                       | 适用场景                                                 |
+| -------- | ------------------------------ | -------------------------------------------------------- |
+| 单列编辑 | 列配置 `editable: true`        | 适合 `Switch` 开关等单个字段的即时操作                   |
+| 全表编辑 | 表格配置 `editable: true`      | 适合编辑多行、多列，完成整表校验后整体保存               |
+| 行内编辑 | `rowEditor.editMode: 'inline'` | 适合少量内容的单行编辑、单行校验或单行提交保存           |
+| 弹窗编辑 | `rowEditor.editMode: 'modal'`  | 适合存在交互逻辑，或需要编辑、校验较多未在表格展示的数据 |
 
 - 单列编辑直接修改当前记录，通常在字段的 `onChange` 中调用接口保存。
 - 全表编辑使用 `table.validate()` 完成整表校验，再通过 `table.getData()` 获取数据并整体保存。
@@ -618,24 +627,24 @@ buttons: {
 ```
 
 ```ts
-import { defineDetail } from 'antdv-superform'
+import { defineDetail } from "antdv-superform";
 
 const detailSchema = defineDetail({
-  mode: 'table',
+  mode: "table",
   subSpan: 12,
   attrs: { bordered: true },
   subItems: [
-    { field: 'name', label: '名称' },
-    { field: 'status', label: '状态', dictName: 'status' },
+    { field: "name", label: "名称" },
+    { field: "status", label: "状态", dictName: "status" },
   ],
-})
+});
 ```
 
 需要命令式更新时：
 
 ```ts
-const [register, detail] = useDetail(detailSchema, initialData)
-detail.setData(record)
+const [register, detail] = useDetail(detailSchema, initialData);
+detail.setData(record);
 ```
 
 详情会复用字段的 `labelField`、`endField`、options/dict、`tagViewer`、`viewRender` 和扩展组件只读展示逻辑。用 `exclude: ['description']` 排除字段。
@@ -647,11 +656,11 @@ detail.setData(record)
 ```ts
 const modal = useModalForm(
   {
-    title: '编辑用户',
+    title: "编辑用户",
     subSpan: 24,
     subItems: [
-      { type: 'Hidden', field: 'id' },
-      { type: 'Input', label: '姓名', field: 'name', required: true },
+      { type: "Hidden", field: "id" },
+      { type: "Input", label: "姓名", field: "name", required: true },
     ],
   },
   {
@@ -659,12 +668,12 @@ const modal = useModalForm(
     maskClosable: false,
     onOk: (data) => api.save(data),
   }
-)
+);
 
-modal.openModal({ data: record })
-modal.closeModal()
-modal.setModal({ title: '修改用户' })
-modal.formActions.resetFields()
+modal.openModal({ data: record });
+modal.closeModal();
+modal.setModal({ title: "修改用户" });
+modal.formActions.resetFields();
 ```
 
 `onOk` 成功 resolve 后关闭；抛错或 reject 时保留弹窗。`openModal({ data })` 会先把数据写入表单。
@@ -672,12 +681,9 @@ modal.formActions.resetFields()
 ### 自定义内容弹窗
 
 ```ts
-const modal = useModal(
-  () => h(CustomPanel),
-  { title: '预览', width: 900 }
-)
+const modal = useModal(() => h(CustomPanel), { title: "预览", width: 900 });
 
-await modal.openModal()
+await modal.openModal();
 ```
 
 `useModal`/`createModal` 直接使用 DOM，只能在浏览器环境和 Vue setup 生命周期中使用，不要在 SSR 服务端执行。
@@ -686,13 +692,13 @@ await modal.openModal()
 
 支持的 `uploadMode`：
 
-| 模式 | 行为 |
-| --- | --- |
-| `auto` | 选中文件后立即调用 `apis.upload` |
-| `submit` | 表单提交时统一上传等待中的文件 |
+| 模式     | 行为                               |
+| -------- | ---------------------------------- |
+| `auto`   | 选中文件后立即调用 `apis.upload`   |
+| `submit` | 表单提交时统一上传等待中的文件     |
 | `custom` | 不调用上传 API，由业务读取原始文件 |
-| `base64` | 读取成 base64 |
-| `text` | 读取成文本 |
+| `base64` | 读取成 base64                      |
+| `text`   | 读取成文本                         |
 
 导入文件推荐：
 
@@ -701,26 +707,26 @@ const importModal = useModalForm(
   {
     subItems: [
       {
-        type: 'Upload',
-        label: '导入文件',
-        field: 'file',
+        type: "Upload",
+        label: "导入文件",
+        field: "file",
         required: true,
         attrs: {
-          accept: '.xlsx',
+          accept: ".xlsx",
           isSingle: true,
-          uploadMode: 'custom',
+          uploadMode: "custom",
         },
       },
     ],
   },
   {
     onOk: ({ file }) => {
-      const data = new FormData()
-      data.append('file', file.originFileObj)
-      return api.import(data)
+      const data = new FormData();
+      data.append("file", file.originFileObj);
+      return api.import(data);
     },
   }
-)
+);
 ```
 
 关键属性：
@@ -738,10 +744,10 @@ const importModal = useModalForm(
 ## 12. 扩展字段
 
 ```ts
-import superForm from 'antdv-superform'
-import ModalSelect from './ModalSelect.vue'
+import superForm from "antdv-superform";
+import ModalSelect from "./ModalSelect.vue";
 
-superForm.registerComponent('ModalSelect', ModalSelect)
+superForm.registerComponent("ModalSelect", ModalSelect);
 ```
 
 使用：
@@ -775,30 +781,30 @@ superForm.registerComponent('ModalSelect', ModalSelect)
 
 ## 13. 不要生成的旧 API
 
-| 不要使用 | 现行写法 |
-| --- | --- |
-| `hideInTable` | `exclude: ['table']` |
-| `hideInForm` | `exclude: ['form']` |
-| `hideInDescription` | `exclude: ['description']` |
-| 表格根级 `editMode` / `addMode` | `rowEditor.editMode` / `rowEditor.addMode` |
-| `editForm` | `rowEditor.form` |
-| 表格 `edit` | `editable`，或按场景使用 `rowEditor` |
-| `searchSchema` | `searchForm` |
-| TreeSelect `data` | `treeData`；当前版本优先使用返回数据的函数 |
-| `validOn` | `visibleIn` |
-| `invalidDisabled: true` | `unauthorized: 'disable'` |
-| `roleMode: 'hidden' \| 'disable'` | `unauthorized: 'hide' \| 'disable'` |
-| `form.setData(data)` | `form.resetFields(data)` |
-| `table.request(params)` | `table.query(params)` 或 `table.reload()` |
-| `labelBgColor` / `borderColor` | 使用项目主题或样式变量 |
-| 安装配置 `tagColors` | `tagViewer` |
-| `valueToLabel` | `labelAsValue` |
-| `valueToString` | `stringifyValue` |
-| `blocked` | `block` |
-| `wrapping` | `breakAfter` |
-| 按钮配置 `forSlot` | `targetSlot` |
-| `registComponent` | `registerComponent` |
-| DateRange `keepField` | `endField` |
+| 不要使用                          | 现行写法                                   |
+| --------------------------------- | ------------------------------------------ |
+| `hideInTable`                     | `exclude: ['table']`                       |
+| `hideInForm`                      | `exclude: ['form']`                        |
+| `hideInDescription`               | `exclude: ['description']`                 |
+| 表格根级 `editMode` / `addMode`   | `rowEditor.editMode` / `rowEditor.addMode` |
+| `editForm`                        | `rowEditor.form`                           |
+| 表格 `edit`                       | `editable`，或按场景使用 `rowEditor`       |
+| `searchSchema`                    | `searchForm`                               |
+| TreeSelect `data`                 | `treeData`；当前版本优先使用返回数据的函数 |
+| `validOn`                         | `visibleIn`                                |
+| `invalidDisabled: true`           | `unauthorized: 'disable'`                  |
+| `roleMode: 'hidden' \| 'disable'` | `unauthorized: 'hide' \| 'disable'`        |
+| `form.setData(data)`              | `form.resetFields(data)`                   |
+| `table.request(params)`           | `table.query(params)` 或 `table.reload()`  |
+| `labelBgColor` / `borderColor`    | 使用项目主题或样式变量                     |
+| 安装配置 `tagColors`              | `tagViewer`                                |
+| `valueToLabel`                    | `labelAsValue`                             |
+| `valueToString`                   | `stringifyValue`                           |
+| `blocked`                         | `block`                                    |
+| `wrapping`                        | `breakAfter`                               |
+| 按钮配置 `forSlot`                | `targetSlot`                               |
+| `registComponent`                 | `registerComponent`                        |
+| DateRange `keepField`             | `endField`                                 |
 
 以下内容也不要假定存在：
 

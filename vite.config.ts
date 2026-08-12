@@ -24,8 +24,8 @@ export default defineConfig(({ command, mode }) =>
     ? {
         build: {
           lib: {
-            entry: resolve(__dirname, 'src/index.ts'),
-            name:'antdv-superform',
+            entry: resolve(__dirname, 'scripts/repl-entry.ts'),
+            name: 'antdv-superform',
             formats: ['es'],
           },
           outDir: 'dist',
