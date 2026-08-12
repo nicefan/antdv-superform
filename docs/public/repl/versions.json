@@ -1,6 +1,20 @@
 {
-  "latest": "0.7.0",
+  "latest": "0.7.1",
   "versions": [
+    {
+      "version": "0.7.1",
+      "vue": "3.3.13",
+      "path": "repl/0.7.1",
+      "createdAt": "2026-08-12T15:14:16.779Z",
+      "hashes": {
+        "antd.js": "sha256-4WEQsnh+Zsr9vD6DG82ME248vcpVyZEZX8VPvbUgn0E=",
+        "antd.css": "sha256-q/sVZXp2VdoxHm2Bb17/wvqf4M9lPZxSXIcXnWg/ONE=",
+        "antdv-superform.js": "sha256-1q1Qa3mYyttz1mgzNiX7/hNRO+pSV8UerlGYaSigohk=",
+        "style.css": "sha256-vjzoPRmv0ORbMvYuYs7j1LJlxgVXtnEho+4v1b0amyA=",
+        "vue.runtime.esm-browser.js": "sha256-Gy07uzwsCRI8fb920I9KW1kxF2zudJgOYwVRpvmhUvk=",
+        "vue.runtime.esm-browser.prod.js": "sha256-EFux37S8RWMmwTMBc44xcKw0yT3rq5OYCNO/PGX7toM="
+      }
+    },
     {
       "version": "0.7.0",
       "vue": "3.3.13",

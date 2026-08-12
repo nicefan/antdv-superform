@@ -364,6 +364,7 @@ export declare interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
 
 declare interface ExtInputList extends ExtFormItemOption, ExtRow {
     title?: VSlot
+    compact?: boolean
     attrs?: {
         /** 标签后加序号 */
         labelIndex?: boolean
