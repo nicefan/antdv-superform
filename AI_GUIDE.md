@@ -240,6 +240,36 @@ Descriptions, Table, InputGroup, InputList
 
 内置扩展校验类型包括 `email`、`integer`、`number`、`idcard`、`phone`、`mobile`、`twoDecimal`、`word`。自定义校验器返回 `false`、`Error` 或 rejected Promise 时校验失败。
 
+`required` 与 `rules` 同时配置时，如果 `rules` 已包含规则，库不会再把顶层 `required` 自动合并进去；需要必填校验时，应在 `rules` 中明确配置 `required`。没有实际规则时，才由顶层 `required` 生成默认必填规则。
+
+`InputList` 的 `rules` 作用于整个数组，新增或删除行后会重新触发该字段校验。需要校验对象数组中“一行内多个字段至少填写一个”等交叉字段条件时，可将单个列配置为带 `subItems` 的 `InputGroup`，并把行级校验写在该 `InputGroup.rules` 中：
+
+```ts
+{
+  type: 'InputList',
+  field: 'list',
+  label: '至少填写一项',
+  columns: [
+    {
+      type: 'InputGroup',
+      rules: {
+        validator: (_, row) => {
+          const value1 = String(row?.value1 || '').trim()
+          const value2 = String(row?.value2 || '').trim()
+          return value1 || value2 || new Error('value1 或 value2 至少填写一项')
+        },
+      },
+      subItems: [
+        { type: 'Input', field: 'value1', label: '值一' },
+        { type: 'Input', field: 'value2', label: '值二' },
+      ],
+    },
+  ],
+}
+```
+
+`InputGroup` 默认使用紧凑布局；在对象数组场景中，`InputGroup.rules` 校验当前行对象，`subItems` 中各字段的 `rules` 仍会分别执行。若同时使用两者，校验器的第二个参数是当前字段值；上述示例中即整行对象。
+
 ### 只读展示与插槽
 
 - 普通字段使用 `viewRender(effectData)` 自定义表格或详情展示。

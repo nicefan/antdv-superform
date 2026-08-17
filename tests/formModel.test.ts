@@ -23,4 +23,32 @@ describe('Form 数据模型初始化', () => {
     resetFields(modelData.value, {}, initialData)
     expect(modelData.value).toEqual(initialData)
   })
+
+  it('空规则数组不抛错，并保留无字段模型规则', () => {
+    const data = ref<Obj>({ name: '' })
+    const group = {
+      type: 'InputGroup',
+      rules: { validator: () => true },
+      subItems: [{ field: 'name' }],
+    }
+    const emptyRules = { field: 'optional', rules: [] }
+
+    expect(() => buildModelsMap([group, emptyRules], data)).not.toThrow()
+    expect(buildModelsMap([group], data).modelsMap.get(group)?.rules).toHaveLength(1)
+  })
+
+  it('已有 rules 配置时不处理 required', () => {
+    const data = ref<Obj>({ name: '' })
+    const option = {
+      field: 'name',
+      required: true,
+      rules: { validator: () => true },
+    }
+
+    const model = buildModelsMap([option], data).modelsMap.get(option)
+
+    expect(model).toBeDefined()
+    expect(model?.rules?.[0]).not.toHaveProperty('required')
+    expect(model?.rules).toHaveLength(1)
+  })
 })

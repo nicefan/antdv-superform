@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, shallowRef, toRef, watch, toRaw, computed } from 'vue'
+import { type PropType, defineComponent, h, reactive, shallowRef, toRef, watch, toRaw, computed, ref } from 'vue'
 import { cloneModels } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -44,8 +44,9 @@ export default defineComponent({
     const methods = {
       add: {
         onClick({ index }) {
-          orgList.value.splice(index + 1, 0, isSingle ? undefined : {})
-          orgList.value = [...toRaw(orgList.value)]
+          const list = [...toRaw(orgList.value)]
+          list.splice(index + 1, 0, isSingle ? undefined : {})
+          orgList.value = list
         },
         icon: () => h(PlusOutlined),
       },
@@ -54,8 +55,9 @@ export default defineComponent({
         confirmText: '',
         icon: () => h(MinusOutlined),
         onClick({ index }) {
-          orgList.value.splice(index, 1)
-          orgList.value = [...toRaw(orgList.value)]
+          const list = [...toRaw(orgList.value)]
+          list.splice(index, 1)
+          orgList.value = list
         },
       },
     }
@@ -96,6 +98,15 @@ export default defineComponent({
         if (isSingle && previousItems.length !== list.length) {
           singleVersion += 1
         }
+        const movedRows = list.map((record, idx) => {
+          const rawRecord = toRaw(record)
+          return (
+            !isView &&
+            rawRecord !== null &&
+            typeof rawRecord === 'object' &&
+            previousItems.some((item) => item.record === rawRecord && item.index !== idx)
+          )
+        })
         const keys = list.map((record, idx) => {
           const rawRecord = toRaw(record)
           if (rawRecord !== null && typeof rawRecord === 'object') {
@@ -108,6 +119,7 @@ export default defineComponent({
           return previousItems[idx]?.baseKey ?? nanoid(12)
         })
         listItems.value = list.map((record, idx) => {
+          const rawRecord = toRaw(record)
           const refData = toRef(orgList.value, idx)
           const propChain = [...model.propChain, idx]
           const newModel: Obj = {
@@ -163,7 +175,12 @@ export default defineComponent({
             model: { parent: orgList, children: ghostModel, index: idx },
             refData,
             baseKey: keys[idx],
-            key: isSingle ? `${String(keys[idx])}:${idx}:${singleVersion}` : keys[idx],
+            key: isSingle
+              ? `${String(keys[idx])}:${idx}:${singleVersion}`
+              : movedRows[idx]
+              ? `${String(keys[idx])}:${idx}`
+              : keys[idx],
+            record: rawRecord,
             // effectData: reactive({ parent: effectData, current: orgList, index: idx, record: refData }),
           }
         })
@@ -175,7 +192,7 @@ export default defineComponent({
 
     const render = () => {
       return listItems.value.map(({ model, key }) => {
-        return h(Collections, { model, option, effectData, key })
+        return h(Collections, { model, option: { subSpan: 'auto', ...option }, effectData, key })
       })
     }
 
@@ -228,10 +245,20 @@ export default defineComponent({
           ...attrs,
         })
     } else if (isFormItem) {
+      const formItemContext = ref()
+      if (option.rules) {
+        watch(
+          () => orgList.value.length,
+          () => {
+            formItemContext.value?.onFieldChange()
+          }
+        )
+      }
       const children = new Map([
         [
           {
             ..._option,
+            formItemProps: { ..._option.formItemProps, ref: formItemContext, style: 'margin: 0' },
             label,
             labelSlot,
             type: 'InfoSlot',

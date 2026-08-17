@@ -103,10 +103,14 @@ export default defineComponent({
         const label = createLabelNode(option, effectData)
 
         node = () =>
-          h(base.FormItem, reactive({ ...formItemAttrs, name: subData.propChain, rules, colon: !!label }), {
-            default: innerNode,
-            label,
-          })
+          h(
+            base.FormItem,
+            { ...formItemAttrs, name: subData.propChain, rules: rules.value, colon: !!label },
+            {
+              default: innerNode,
+              label,
+            }
+          )
       }
       if (independent) {
         // 容器组件转递继承属性

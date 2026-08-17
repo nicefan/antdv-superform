@@ -25,21 +25,15 @@ export default defineComponent({
     let _propChain = model.propChain
     const extProps: Obj = {}
     // InputGroup 表单校验
-    if (ruleObj) {
-      watch(
-        () => model.refData,
-        () => formItemContext.value?.onFieldChange(),
-        { deep: true }
-      )
-    } else if (model.children && compact) {
-      const rule = {
-        type: 'object',
-        required: false,
-        fields: {} as Obj,
-      }
+    const objectRule = {
+      type: 'object',
+      required: false,
+      fields: {} as Obj,
+    }
+    if (model.children && compact) {
       for (const val of model.children.values()) {
-        if (val.rules && val.fieldName) {
-          if (val.rules[0].required) rule.required = true
+        if (val.rules?.length && val.fieldName) {
+          if (val.rules[0].required) objectRule.required = true
           const effectData = reactive({
             ...props.effectData,
             parent: props.effectData,
@@ -48,11 +42,11 @@ export default defineComponent({
             value: val.refData,
           })
 
-          rule.fields[val.fieldName] = formatRule(val.rules, effectData)
+          const rule = (objectRule.fields[val.fieldName] = formatRule(val.rules, effectData))
           if (!model.refName) {
             // Group 未绑定字段，取第一个子项的字段作为校验字段
             _propChain = val.propChain
-            ruleObj = rule.fields[val.fieldName]
+            ruleObj = rule
             watch(
               () => unref(val.refData),
               () => formItemContext.value?.onFieldChange()
@@ -61,18 +55,19 @@ export default defineComponent({
           }
         }
       }
-      if (model.refName) {
-        ruleObj = [rule]
-        watch(
-          () => model.refData,
-          () => formItemContext.value?.onFieldChange(),
-          { deep: true }
-        )
-      }
     } else {
       extProps.style = 'margin: 0'
     }
-    extProps.required = !!ruleObj[0]?.required
+
+    if (model.refName) {
+      ruleObj = (ruleObj || []).concat([objectRule])
+      extProps.required = !!ruleObj[0]?.required
+      watch(
+        () => model.refData,
+        () => formItemContext.value?.onFieldChange(),
+        { deep: true }
+      )
+    }
     const inheritAttrs = inject<Obj>('inheritOptions', {})
 
     // 生成FormItem

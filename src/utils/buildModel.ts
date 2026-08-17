@@ -65,24 +65,24 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
     const subModel: ModelData = buildModelData(child, currentData, propChain)
     const { required, label, subItems, columns } = child
 
-    if ((child.rules || required) && subModel.propChain.length) {
-      const _rules = child.rules || [] 
+    if (child.rules || required) {
+      const _rules = child.rules || []
       const _r = Array.isArray(_rules) ? _rules : [_rules]
-      if (required) {
-        const first = _r[0]
-        if (first) {
-          first.required = required
-        } else {
-          _r.push({ required })
-        }
+      if (!_r.length && required) {
+        _r.push({ required: true })
       }
       let ruleType = 'string'
       if (subModel.refData) {
         const baseType = typeof subModel.refData
         ruleType = baseType === 'object' && Array.isArray(subModel.refData) ? 'array' : baseType
       }
-      subModel.rules = _r.map((item) => buildRule({ type: ruleType, ...item }, label)).flat()
-      rules[subModel.propChain.join('.')] = subModel.rules
+      if (_r[0] && 'required' in _r[0]) {
+        _r[0].type ??= ruleType
+      }
+      subModel.rules = _r.map((item) => buildRule(item, label)).flat()
+      if (subModel.propChain.length) {
+        rules[subModel.propChain.join('.')] = subModel.rules
+      }
     }
     if (subItems) {
       const children = buildModelsMap(subItems, toRef(subModel, 'refData'), subModel.propChain)
