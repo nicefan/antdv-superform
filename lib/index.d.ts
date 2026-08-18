@@ -130,7 +130,7 @@ export declare function diagnoseSchema(schema: Obj, kind?: SchemaKind): SchemaDi
 declare type Dict = {
     label: string;
     value: string | number;
-    [k: string]: string | number;
+    [k: string]: unknown;
 };
 
 declare type EffectData =
@@ -362,15 +362,12 @@ export declare interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
     subItems: UniOption[]
 }
 
-declare interface ExtInputList extends ExtFormItemOption, ExtRow {
-    title?: VSlot
+declare interface ExtInputList extends ExtFormItemOption, ListCommon {
     compact?: boolean
     attrs?: {
         /** 标签后加序号 */
         labelIndex?: boolean
     }
-    rowButtons?: false | ExtButtons<'delete' | 'add'>
-    columns: UniWidgetOption[]
 }
 
 export declare interface ExtInputOption extends ExtFormItemOption {
@@ -381,26 +378,22 @@ export declare interface ExtInputOption extends ExtFormItemOption {
 
 declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
 
-export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
-    field: string
+export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'>, ListCommon {
     attrs?: {
         /** 标签后加序号 */
         labelIndex?: boolean
         rowKey?: string
     }
-    rowButtons?: false | ExtButtons<'delete' | 'add'>
-    columns: UniWidgetOption[]
 }
 
-export declare interface ExtListOption extends ExtBaseOption, ExtRow {
-    field: string
-    title?: VSlot
-    attrs?: ListProps | Obj
+export declare interface ExtListOption extends ListCommon {
+    attrs?:
+    | (ListProps & {
+        /** 列表项业务主键字段 */
+        rowKey?: string
+    })
+    | Obj
     buttons?: ExtButtons<'add' | 'refresh'>
-    columns: UniWidgetOption[]
-    /** 列表元素右边按钮 */
-    rowButtons?: ExtButtons<'delete' | 'edit'>
-    descriptionsProps?: ExtDescriptionsProps
 }
 
 declare type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & {
@@ -509,7 +502,6 @@ export declare interface ExtTableOption extends ExtBaseOption {
 
 export declare interface ExtTabsOption extends ExtBaseOption {
     activeKey?: Ref_2<string | undefined>
-    forceRender?: boolean
     buttons?: ExtButtons<'add' | 'refresh'>
     subItems: ExtTabItem[]
 }
@@ -618,6 +610,15 @@ declare interface InstallConfig extends GlobalConfig {
     defaultProps?: Obj;
 }
 
+declare interface ListCommon extends ExtBaseOption, ExtRow {
+    field: string
+    title?: VSlot
+    columns: UniOption[]
+    /** 列表元素右边按钮 */
+    rowButtons?: false | ExtButtons<'delete' | 'add'>
+    descriptionsProps?: ExtDescriptionsProps
+}
+
 export declare type OptionType = WrapperTypes & WidgetTypes
 
 /** @deprecated 使用 `registerComponent` */
@@ -662,8 +663,6 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
         teleport?: string
         /** 超出限制显示展开 */
         limit?: number
-        /** 开启高级查询 */
-        advanced?: boolean
     }
     pagination?: PaginationProps | false
     attrs?: ExtTableOption['attrs'] | (TableProps & TableScanHight) | Obj
@@ -824,7 +823,6 @@ export declare type TableApis = {
     save?: Fn<Promise<any>>
     update?: Fn<Promise<any>>
     delete?: Fn<Promise<any>>
-    export?: Fn<Promise<any>>
 }
 
 declare interface TableScanHight {
@@ -933,11 +931,11 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
     readonly getData: () => any;
     readonly dataSource: ComputedRef<any>;
     /** 跳转到指定页 */
-    readonly goPage: (page: number) => void;
+    readonly goPage: (page: number) => Promise<any>;
     /** 设置表格列 */
     readonly setColumns: (cols: RootTableOption['columns']) => void;
     /** 刷新数据，不改动查询条件与当前页 */
-    readonly reload: () => any;
+    readonly reload: () => Promise<any>;
     /** 手动执行条件查询，不覆盖搜索表单参数 */
     readonly query: (param?: Obj) => Promise<any>;
     /** 查询完成，返回结果回调 */
@@ -975,7 +973,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         record?: Obj<any> | undefined;
         meta?: ModalFuncProps | undefined;
     } | undefined) => any;
-    readonly asyncCall: (key?: string, param?: any) => Promise<any>;
+    readonly asyncCall: (key?: string, ...params: any[]) => Promise<any>;
     /** `editable`模式下进行表单校验 */
     readonly validate: () => Promise<any>;
 }];

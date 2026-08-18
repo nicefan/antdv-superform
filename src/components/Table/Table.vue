@@ -10,6 +10,7 @@ import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
 import { buildColumns } from './buildColumns'
+import { findRowIndex } from './rowUtils'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -144,7 +145,8 @@ export default defineComponent({
           selectedRows.value = selectedRows.value.filter((item) => !keys.includes(rowKey(item)))
         }
         items.forEach((item) => {
-          orgList.value.splice(list.value.indexOf(item), 1)
+          const index = findRowIndex(orgList.value, item, rowKey)
+          if (index > -1) orgList.value.splice(index, 1)
         })
         return reload?.()
       },

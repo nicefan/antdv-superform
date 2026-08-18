@@ -1,7 +1,8 @@
 import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRaw } from 'vue'
 import { Col, Row } from 'ant-design-vue'
 import { defaults, isFunction } from 'lodash-es'
-import Controls, { containers, formItemTypes } from './index'
+import Controls from './index'
+import { containers, formItemTypes, independentTypes } from './componentTypes'
 import { ButtonGroup } from './buttons'
 import base from './base'
 import { getEffectData, getViewNode, useControl, useInnerSlots, useVModel } from '../utils'
@@ -91,7 +92,7 @@ export default defineComponent({
 
       let node = innerNode
       /** 容器组件 */
-      const independent = [...containers, 'InputList', 'InputGroup'].includes(type)
+      const independent = independentTypes.includes(type)
       // const isListFormItem = type === 'InputList' && (labelSlot || label) && !option.attrs?.labelIndex
       if (!independent && (!block || (option.field && option.label))) {
         // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
@@ -175,20 +176,21 @@ export default defineComponent({
 })
 
 export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
-  const { type, render } = option
+  const { type, viewRender, render = viewRender } = option
   if (!type) return
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const slots = useInnerSlots(option.slots, effectData)
-  const renderSlot = render ? (typeof render === 'function' ? render : rootSlots[render]) : Controls[type]
+  const renderSlot = render && (typeof render === 'function' ? render : rootSlots[render])
 
+  const renderNode = renderSlot && (() => renderSlot({ props: attrs, ...effectData }))
   let node
   if (type === 'InfoSlot') {
-    node = renderSlot && (() => renderSlot({ props: attrs, ...effectData }))
+    node = renderNode
   } else if (type === 'Text') {
-    node = () => h('span', attrs, model.refData)
+    node = renderNode || (() => h('span', attrs, model.refData))
   } else if (type === 'HTML') {
-    node = () => h('span', { ...attrs, innerHTML: model.refData })
+    node = renderNode || (() => h('span', { ...attrs, innerHTML: model.refData }))
   } else if (type === 'Buttons') {
     node = () => h(ButtonGroup, { option, effectData, ...attrs })
   } else if (containers.includes(type) || type === 'InputList') {
@@ -198,14 +200,16 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     // 表单输入组件
     const valueProps = useVModel({ option, model, effectData })
     const allAttrs = { ...attrs, ...valueProps }
-    if (!renderSlot) {
-      console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
-    } else if (type === 'InputSlot') {
+    if (type === 'InputSlot') {
       node = () => renderSlot?.(reactive({ props: allAttrs, ...effectData }))
+    }
+    const component = Controls[type]
+    if (!component) {
+      console.error(`组件 '${type}' 配置错误，请检查名称是否正确！`)
     } else if (type.startsWith('Ext')) {
-      node = () => h(renderSlot, reactive({ option, effectData, ...allAttrs }), slots)
+      node = () => h(component, reactive({ option, effectData, ...allAttrs }), slots)
     } else {
-      node = () => h(renderSlot, reactive({ option, model, effectData, ...allAttrs }), slots)
+      node = () => h(component, reactive({ option, model, effectData, ...allAttrs }), slots)
     }
   }
   return node

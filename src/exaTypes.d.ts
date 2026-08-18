@@ -39,10 +39,10 @@ interface HelpMessage {
   color: 'success' | 'info' | 'warning' | 'error'
 }
 
-type VColumnProps = TableColumnProps & {
-  /** 是否隐藏 */
-  defaultHidden?: boolean
-}
+// type VColumnProps = TableColumnProps & {
+//   /** 是否隐藏 */
+//   defaultHidden?: boolean
+// }
 type EffectData =
   | (Obj & {
       /**整个表单数据 */
@@ -223,7 +223,6 @@ type TableApis = {
   save?: Fn<Promise<any>>
   update?: Fn<Promise<any>>
   delete?: Fn<Promise<any>>
-  export?: Fn<Promise<any>>
 }
 interface ExtButtonGroup<T extends string = string> {
   attrs?: SpaceProps & HTMLAttributes
@@ -372,41 +371,40 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
     teleport?: string
     /** 超出限制显示展开 */
     limit?: number
-    /** 开启高级查询 */
-    advanced?: boolean
   }
   pagination?: PaginationProps | false
   attrs?: ExtTableOption['attrs'] | (TableProps & TableScanHight) | Obj
 }
-interface ExtListOption extends ExtBaseOption, ExtRow {
+interface ListCommon extends ExtBaseOption, ExtRow {
   field: string
   title?: VSlot
-  attrs?: ListProps | Obj
-  buttons?: ExtButtons<'add' | 'refresh'>
-  columns: UniWidgetOption[]
+  columns: UniOption[]
   /** 列表元素右边按钮 */
-  rowButtons?: ExtButtons<'delete' | 'edit'>
+  rowButtons?: false | ExtButtons<'delete' | 'add'>
   descriptionsProps?: ExtDescriptionsProps
 }
-interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
-  field: string
+interface ExtListOption extends ListCommon {
+  attrs?:
+    | (ListProps & {
+        /** 列表项业务主键字段 */
+        rowKey?: string
+      })
+    | Obj
+  buttons?: ExtButtons<'add' | 'refresh'>
+}
+interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'>, ListCommon {
   attrs?: {
     /** 标签后加序号 */
     labelIndex?: boolean
     rowKey?: string
   }
-  rowButtons?: false | ExtButtons<'delete' | 'add'>
-  columns: UniWidgetOption[]
 }
-interface ExtInputList extends ExtFormItemOption, ExtRow {
-  title?: VSlot
+interface ExtInputList extends ExtFormItemOption, ListCommon {
   compact?: boolean
   attrs?: {
     /** 标签后加序号 */
     labelIndex?: boolean
   }
-  rowButtons?: false | ExtButtons<'delete' | 'add'>
-  columns: UniWidgetOption[]
 }
 interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
   subItems: UniOption[]
@@ -417,7 +415,6 @@ interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
 // }
 interface ExtTabsOption extends ExtBaseOption {
   activeKey?: Ref<string | undefined>
-  forceRender?: boolean
   buttons?: ExtButtons<'add' | 'refresh'>
   subItems: ExtTabItem[]
 }

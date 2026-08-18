@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, shallowRef, toRef, watch, toRaw, computed, ref } from 'vue'
+import { type PropType, defineComponent, h, shallowRef, toRef, watch, toRaw, computed, ref } from 'vue'
 import { cloneModels } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -8,6 +8,7 @@ import { Space } from 'ant-design-vue'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { globalProps } from '../plugin'
 import { nanoid } from 'nanoid'
+import { independentTypes } from './componentTypes'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -32,8 +33,10 @@ export default defineComponent({
     const { columns, rowButtons, label, labelSlot, compact, slots: _optionSlots, ..._option } = option
     const { modelsMap: childrenMap } = model.listData
 
+    const fristItem = columns[0] as MixOption & { type: string }
+
     // 普通数组，值对应下标
-    const isSingle = columns.length === 1 && columns[0].field === '$index'
+    const isSingle = columns.length === 1 && fristItem.field === '$index'
 
     const isFormItem = !labelIndex && (label || labelSlot)
 
@@ -131,14 +134,14 @@ export default defineComponent({
           const ghostModel = new Map()
           let itemOption: Obj
           if (isSingle) {
-            itemOption = { ...columns[0] }
+            itemOption = { ...fristItem }
             ghostModel.set(itemOption, {
-              ...childrenMap.get(columns[0]),
+              ...childrenMap.get(fristItem),
               ...newModel,
             })
           } else {
-            if (childrenMap.size === 1 || !columns[0].field) {
-              itemOption = { subSpan: 'auto', ...columns[0], field: String(idx) }
+            if (childrenMap.size === 1 && !fristItem.field && independentTypes.includes(fristItem.type)) {
+              itemOption = { subSpan: 'auto', ...fristItem, field: String(idx) }
               const oldModel = [...childrenMap.values()][0]
               ghostModel.set(itemOption, {
                 ...oldModel,
@@ -199,8 +202,8 @@ export default defineComponent({
     if (isView) {
       if (isFormItem) {
         if (isSingle) {
-          const { label, labelSlot = label } = columns[0]
-          const breakAfter = columns[0].breakAfter ?? columns[0].wrapping
+          const { label, labelSlot = label } = fristItem
+          const breakAfter = fristItem.breakAfter ?? fristItem.wrapping
           return () =>
             h(Space, { direction: breakAfter ? 'vertical' : 'horizontal' }, () =>
               listItems.value.map(({ refData, key }, index) => {
@@ -208,7 +211,7 @@ export default defineComponent({
                   ...effectData,
                   parent: effectData,
                   current: orgList.value,
-                  field: columns[0].field,
+                  field: fristItem.field,
                   value: refData.value,
                   index,
                   record: refData.value,

@@ -1,11 +1,11 @@
 <template>
   <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
     <template
-      v-for="({ attrs, icon, label, tooltipTitle, dropdownProp, menu, render, onClick }, index) of btns"
+      v-for="({ attrs, icon, label, tooltipTitle, dropdownProps, menu, render, onClick }, index) of btns"
       :key="label"
     >
       <Tooltip :title="tooltipTitle">
-        <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
+        <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProps">
           <template #overlay>
             <Menu @click="onClick">
               <menu-item v-for="item of menu" :key="item.value" :disabled="item.disabled">

@@ -51,4 +51,16 @@ describe('Form 数据模型初始化', () => {
     expect(model?.rules?.[0]).not.toHaveProperty('required')
     expect(model?.rules).toHaveLength(1)
   })
+
+  it('数组字段规则类型使用解包后的数组值', () => {
+    const data = ref<Obj>({ items: [] })
+    const option = {
+      field: 'items',
+      rules: { required: true },
+    }
+
+    buildModelsMap([option], data)
+
+    expect(option.rules.type).toBe('array')
+  })
 })

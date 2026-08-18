@@ -73,8 +73,9 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
       }
       let ruleType = 'string'
       if (subModel.refData) {
-        const baseType = typeof subModel.refData
-        ruleType = baseType === 'object' && Array.isArray(subModel.refData) ? 'array' : baseType
+        const refValue = toValue(subModel.refData)
+        const baseType = typeof refValue
+        ruleType = baseType === 'object' && Array.isArray(refValue) ? 'array' : baseType
       }
       if (_r[0] && 'required' in _r[0]) {
         _r[0].type ??= ruleType

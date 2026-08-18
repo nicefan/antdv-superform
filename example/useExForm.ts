@@ -226,7 +226,8 @@ export default function exampleForm() {
             type: 'Switch',
             label: '是否注册',
             field: 'isReg',
-            valueLabels: ['否', '是'],
+            options: [{label:'否',value:false},{label:'是',value:true}],
+            // valueLabels: ['否', '是'],
             // options: () =>
             //   new Promise((resolve) => {
             //     setTimeout(() => {

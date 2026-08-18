@@ -14,8 +14,16 @@ export default defineComponent({
   emits: ['register'],
   setup(props, ctx) {
     const option: Obj = shallowRef(props.schema || {})
-    if (globalConfig.schemaDiagnostics && props.schema) reportSchemaDiagnostics(props.schema, 'detail', 'SuperDetail')
     const dataRef = ref(props.schema?.dataSource || {})
+    watch(
+      () => props.schema,
+      (schema) => {
+        if (globalConfig.schemaDiagnostics && schema) reportSchemaDiagnostics(schema, 'detail', 'SuperDetail')
+        option.value = schema || {}
+        if (schema?.dataSource) dataRef.value = schema.dataSource
+      },
+      { immediate: true }
+    )
     watch(
       () => props.dataSource,
       (data) => {
@@ -40,7 +48,10 @@ export default defineComponent({
     watch(
       option,
       (opt) => {
-        if (!opt?.subItems) return
+        if (!opt?.subItems) {
+          modelsMap.value = undefined
+          return
+        }
         const data = buildModelsMap(opt.subItems, dataRef)
         modelsMap.value = data.modelsMap
       },

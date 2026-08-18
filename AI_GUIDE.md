@@ -1,6 +1,5 @@
 # antdv-superform AI 使用指南
 
-> 适用版本：`antdv-superform@0.6.16`  
 > 技术栈：Vue 3.3+、Ant Design Vue 3.2+、TypeScript
 
 本文只提供使用 `antdv-superform` 编写业务代码时需要遵守的公开 API 和配置规则，不描述组件库内部实现。
@@ -101,7 +100,7 @@ app.use(superForm, {
 
 说明：
 
-- `dictApi(name)` 必须返回 `Promise<{ label, value }[]>` 或兼容选项数组。
+- `dictApi(name)` 必须返回 `Promise<{ label: string; value: string | number; disabled?: boolean; [key: string]: unknown }[]>` 或兼容选项数组；标准选项属性及其他附加属性可以随结果返回。
 - `buttonRoles()` 返回当前权限字符串数组。
 - `tableApiSetting.resultTransform` 应返回数组，或 `{ current, size, total, records }`。
 - `components` 可替换库使用的底层组件，例如 `Table`、`Modal`。
@@ -159,7 +158,7 @@ app.use(superForm, {
 | 日期时间值   | `DatePicker`、`DateRange` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRange` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat`                                     |
 | 选项只读展示 | 配置 `options` 后默认按 Tag 展示，并使用内置颜色组                                     | `tagViewer: true`                                              |
 | 表格首次查询 | `immediate` 默认 `true`                                                                | `immediate: true`                                              |
-| 表格分页     | 默认不分页；启用分页后 `current` 默认 `1`、`pageSize` 默认 `10`                        | 无分页时的 `pagination: false`；标准分页时重复写页码和每页数量 |
+| 表格分页     | 默认显示分页；`current` 默认 `1`、`pageSize` 默认 `10`                                   | 默认分页时不要重复配置 `pagination`                     |
 | 查询表单按钮 | 未启用 `searchOnChange` 时默认生成 `search`、`reset`                                   | `buttons: { actions: ['search', 'reset'] }`                    |
 
 生成时还应遵循：
@@ -197,6 +196,7 @@ Descriptions, Table, InputGroup, InputList
 - 字段较少，并且一项内容可以在一行内排下：优先使用 `InputList`。
 - 一项内容需要多行展示：使用 `List` 或 `ListGroup`。
 - 字段更多、列结构更明确，或需要更复杂的行级展示与操作：使用 `Table`。
+- `List` 和 `ListGroup` 的数组项都支持通过 `attrs.rowKey` 指定业务主键字段，例如 `attrs: { rowKey: 'userId' }`；应使用稳定且唯一的字段，避免数组重排时行状态错位。`InputList` 依赖数组索引绑定表单字段，不配置 `rowKey`。
 
 ### 校验
 
@@ -432,10 +432,10 @@ import { SuperTable, useTable } from "antdv-superform";
 
 const [register, table] = useTable({
   isContainer: true,
-  pagination: { pageSize: 20 },
   attrs: {
     rowKey: "userId",
     rowSelection: {},
+    pagination: { pageSize: 20 },
   },
   apis: {
     query: api.page,
@@ -477,7 +477,7 @@ const [register, table] = useTable({
 → searchForm → rowEditor → buttons → rowButtons → tabs → columnProps → columns
 ```
 
-顶层单属性包括 `title`、`dataSource`、`immediate`、`pagination`、`editable`、`indexColumn` 和高度策略等独立值。`columns` 固定放在最后，避免较长的列定义打断请求、查询和操作配置。
+顶层单属性包括 `title`、`dataSource`、`immediate`、`editable`、`indexColumn` 和高度策略等独立值；分页配置写在 `attrs.pagination` 中。`columns` 固定放在最后，避免较长的列定义打断请求、查询和操作配置。
 
 ### 查询契约
 
@@ -488,7 +488,8 @@ const [register, table] = useTable({
 ```
 
 - 默认分页参数是 `{ current, size }`，可通过全局 `tableApiSetting` 改名。
-- `pagination` 默认是 `false`；需要分页时必须显式配置。
+- 分页默认开启，`current` 默认 `1`、`pageSize` 默认 `10`；默认行为满足需求时不要显式配置。
+- 需要隐藏分页时配置 `attrs: { pagination: false }`；需要修改分页参数时配置 `attrs.pagination`，例如 `attrs: { pagination: { pageSize: 20 } }`。
 - `immediate` 必须放在表格 schema 顶层。`immediate: false` 禁止首次自动查询。
 - `params` 支持普通对象、reactive/ref/computed 组合；变化后会自动从第一页查询。
 - `beforeQuery(params)` 可返回新的请求参数。
@@ -634,7 +635,7 @@ buttons: {
 }
 ```
 
-不要对 `export`、`import`、`download` 等自定义名字调用第二个 `action`；库没有提供这些内置动作。
+除内置的按钮名称外，`name`可引用全局`defaultButtons`中的按钮配置。
 
 其他规则：
 
@@ -648,7 +649,6 @@ buttons: {
 - 行按钮上下文包含 `record`、`index` 等列渲染信息。
 - 工具栏按钮上下文包含 `selectedRows`、`selectedRowKeys`、`tableRef`。
 
-`apis.export` 虽然仍出现在类型声明中，但当前运行时没有消费它。导出必须写成自定义按钮并显式调用接口。
 
 ## 9. SuperDetail
 
@@ -678,6 +678,8 @@ detail.setData(record);
 ```
 
 详情会复用字段的 `labelField`、`endField`、options/dict、`tagViewer`、`viewRender` 和扩展组件只读展示逻辑。用 `exclude: ['description']` 排除字段。
+
+`SuperDetail` 支持运行时整体替换 `schema`（替换 schema 对象引用）；替换后会按新的 `subItems` 重建详情字段模型。`detail.setOption()` 仍可命令式更新当前详情配置；之后父组件再次替换 `schema` 时，以新的 prop 为准。
 
 ## 10. 弹窗
 
@@ -838,9 +840,6 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 
 以下内容也不要假定存在：
 
-- `apis.export` 的自动导出行为
-- `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 内置字段
-- `rowSelection: true` 的正式类型支持；使用 `{}`
 - 未注册的任意 `Ext*` 组件
 
 ## 14. 生成完成后的自检
@@ -848,7 +847,7 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 1. 所有 import 都来自包根入口或消费项目已有封装。
 2. 字段类型在内置列表中，或已确认存在对应 `registerComponent`。
 3. 表格显式设置了稳定 `attrs.rowKey`。
-4. 分页需求明确配置了 `pagination`。
+4. 只有需要隐藏或调整默认分页参数时，才配置 `attrs.pagination`；默认分页无需重复声明。
 5. `immediate`、`params`、`searchForm` 位于表格 schema 正确层级。
 6. 新代码没有使用第 13 节中的旧 API。
 7. 新增、编辑、删除接口签名符合第 7 节契约。

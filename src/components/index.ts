@@ -25,6 +25,7 @@ import Upload from './Upload.vue'
 import TagInput from './TagInput.vue'
 import TagSelect from './TagSelect.vue'
 import base, { override } from './base'
+import { containers, formItemTypes } from './componentTypes'
 
 export { ButtonGroup } from './buttons'
 export { default as Collections } from './Collections'
@@ -63,8 +64,7 @@ const formItems = {
   TagSelect,
 }
 
-export const containers = Object.keys(components)
-export const formItemTypes = Object.keys(formItems)
+export { containers, formItemTypes }
 const allItems: any = { ...formItems, ...components }
 
 export function addComponent(name, component) {

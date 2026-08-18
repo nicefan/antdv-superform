@@ -37,7 +37,7 @@ type BaseComps =
   | 'CheckboxGroup'
   | 'TreeSelect'
 
-type Dict = { label: string; value: string | number; [k: string]: string | number }
+type Dict = { label: string; value: string | number; [k: string]: unknown }
 interface InstallConfig extends GlobalConfig {
   locale?: Locale
   components?: { [k in BaseComps]?: Component }

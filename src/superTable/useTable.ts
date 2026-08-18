@@ -28,11 +28,11 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
     }
   }
 
-  const asyncCall = async (key?: string, param?: any) => {
+  const asyncCall = async (key?: string, ...params: any[]) => {
     const form = await getTable()
     if (key && key in form) {
       if (typeof form[key] === 'function') {
-        return form[key](param)
+        return form[key](...params)
       } else {
         return form[key]
       }
@@ -69,7 +69,7 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       dataSource: computed(() => tableRef.value?.dataRef),
       /** 跳转到指定页 */
       goPage(page: number) {
-        tableRef.value?.goPage(page)
+        return asyncCall('goPage', page)
       },
       /** 设置表格列 */
       setColumns(cols: RootTableOption['columns']) {
@@ -77,11 +77,11 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       },
       /** 刷新数据，不改动查询条件与当前页 */
       reload() {
-        return tableRef.value?.reload()
+        return asyncCall('reload')
       },
       /** 手动执行条件查询，不覆盖搜索表单参数 */
       query(param?: Obj): Promise<any> {
-        return tableRef.value?.query(param)
+        return asyncCall('query', param)
       },
       /** 查询完成，返回结果回调 */
       onLoaded(callback: (data: any) => void) {
