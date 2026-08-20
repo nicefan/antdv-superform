@@ -115,7 +115,7 @@ export default function useVModel({ option, model, effectData }: Param, defaultV
       refValue.value = value
       raw = value
     }
-    watch(refValue, updateValue, { flush: 'sync' })
+    watch(refValue, updateValue)
   }
 
   // 表单数据变化同步源数据

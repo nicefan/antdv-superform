@@ -52,6 +52,7 @@ export default {
       data: readonly(modelData),
       attrs,
       onSubmit: submitRegister,
+      formRef,
     })
     provide('inheritOptions', {
       disabled: attrs.disabled,

@@ -81,7 +81,6 @@ const [register, form] = useForm({
       type: 'InputList',
       field: 'plainList',
       label: '普通数组行校验',
-      initialValue: () => [''],
       rowButtons: {
         actions: [
           { name: 'add', attrs: { 'data-testid': 'array-add' } },

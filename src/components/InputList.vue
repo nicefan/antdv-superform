@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, shallowRef, toRef, watch, toRaw, computed, ref } from 'vue'
+import { type PropType, defineComponent, h, shallowRef, toRef, watch, computed, ref, inject, nextTick } from 'vue'
 import { cloneModels } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -42,14 +42,13 @@ export default defineComponent({
 
     // const { propChain } = model
     const orgList = toRef(model, 'refData')
-    let singleVersion = 0
-
+    const extProvider = inject<Obj>('exaProvider') || {}
     const methods = {
       add: {
         onClick({ index }) {
-          const list = [...toRaw(orgList.value)]
-          list.splice(index + 1, 0, isSingle ? undefined : {})
-          orgList.value = list
+          // const list = [...orgList.value]
+          orgList.value.splice(index + 1, 0, isSingle ? undefined : {})
+          // orgList.value = list
         },
         icon: () => h(PlusOutlined),
       },
@@ -58,9 +57,7 @@ export default defineComponent({
         confirmText: '',
         icon: () => h(MinusOutlined),
         onClick({ index }) {
-          const list = [...toRaw(orgList.value)]
-          list.splice(index, 1)
-          orgList.value = list
+          orgList.value.splice(index, 1)
         },
       },
     }
@@ -78,53 +75,34 @@ export default defineComponent({
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
       }
 
-    //将配置选项下沉
-    // const groupOption = {
-    //   ..._option,
-    //   type: 'InputGroup',
-    //   label,
-    //   labelSlot,
-    //   subSpan: option.subSpan ?? 'auto',
-    // }
-
-    const keyMap = new WeakMap<object, PropertyKey>()
     const listItems = shallowRef<any[]>([])
     // 监听数据变化
     watch(
-      () => orgList.value.map((record) => toRaw(record)),
-      (currentList) => {
-        if (currentList.length === 0) {
-          orgList.value.push(isSingle ? undefined : {})
+      [orgList, () => orgList.value.length],
+      ([list]) => {
+        if (list.length === 0) {
+          list.push(isSingle ? undefined : {})
+          return
         }
-        const list = currentList.length ? currentList : orgList.value.map((record) => toRaw(record))
-        const previousItems = listItems.value
-        if (isSingle && previousItems.length !== list.length) {
-          singleVersion += 1
-        }
-        const movedRows = list.map((record, idx) => {
-          const rawRecord = toRaw(record)
-          return (
-            !isView &&
-            rawRecord !== null &&
-            typeof rawRecord === 'object' &&
-            previousItems.some((item) => item.record === rawRecord && item.index !== idx)
-          )
-        })
-        const keys = list.map((record, idx) => {
-          const rawRecord = toRaw(record)
-          if (rawRecord !== null && typeof rawRecord === 'object') {
-            if (!keyMap.has(rawRecord)) {
-              keyMap.set(rawRecord, nanoid(12))
-            }
-            return keyMap.get(rawRecord)
-          }
-          // $index 模式按索引槽位绑定普通数组，字段值变化不应改变行 key
-          return previousItems[idx]?.baseKey ?? nanoid(12)
-        })
         listItems.value = list.map((record, idx) => {
-          const rawRecord = toRaw(record)
-          const refData = toRef(orgList.value, idx)
           const propChain = [...model.propChain, idx]
+
+          if (listItems.value.length && extProvider.formRef) {
+            nextTick(() => {
+              extProvider.formRef.value?.validate([propChain])
+            })
+          }
+
+          const oldItem = listItems.value[idx]
+          if (oldItem) {
+            oldItem.refData.value = record
+            return oldItem
+          }
+
+          const refData = computed({
+            get: () => orgList.value[idx],
+            set: (val) => (orgList.value[idx] = val),
+          })
           const newModel: Obj = {
             index: idx,
             parent: orgList,
@@ -141,13 +119,13 @@ export default defineComponent({
             })
           } else {
             if (childrenMap.size === 1 && !fristItem.field && independentTypes.includes(fristItem.type)) {
-              itemOption = { subSpan: 'auto', ...fristItem, field: String(idx) }
+              itemOption = { ...fristItem, field: String(idx) }
               const oldModel = [...childrenMap.values()][0]
               ghostModel.set(itemOption, {
                 ...oldModel,
                 ...newModel,
                 refName: String(idx),
-                children: cloneModels(oldModel.children || new Map(), record, propChain).modelsMap,
+                children: cloneModels(oldModel.children || new Map(), refData, propChain).modelsMap,
               })
             } else {
               itemOption = compact
@@ -155,7 +133,6 @@ export default defineComponent({
                     ..._option,
                     type: 'InputGroup',
                     initialValue: undefined,
-                    subSpan: option.subSpan ?? 'auto',
                     field: String(idx),
                   }
                 : { type: 'Group', span: 'auto' }
@@ -163,7 +140,7 @@ export default defineComponent({
               ghostModel.set(itemOption, {
                 ...newModel,
                 refName: String(idx),
-                children: cloneModels(childrenMap, record, propChain).modelsMap,
+                children: cloneModels(childrenMap, refData, propChain).modelsMap,
               })
             }
           }
@@ -177,13 +154,7 @@ export default defineComponent({
             children: ghostModel,
             model: { parent: orgList, children: ghostModel, index: idx },
             refData,
-            baseKey: keys[idx],
-            key: isSingle
-              ? `${String(keys[idx])}:${idx}:${singleVersion}`
-              : movedRows[idx]
-              ? `${String(keys[idx])}:${idx}`
-              : keys[idx],
-            record: rawRecord,
+            key: nanoid(),
             // effectData: reactive({ parent: effectData, current: orgList, index: idx, record: refData }),
           }
         })

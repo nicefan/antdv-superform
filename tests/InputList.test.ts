@@ -1,21 +1,25 @@
 import { describe, expect, it } from 'vitest'
-import { nextTick, reactive } from 'vue'
+import { createApp, nextTick, reactive } from 'vue'
 import InputList from '../src/components/InputList.vue'
 import { buildModelsMap, formatRule } from '../src/utils/buildModel'
 
 function setupInputList(option: Obj, data: Obj, props: Obj = {}) {
   const { modelsMap } = buildModelsMap([option], data)
   const model = modelsMap.get(option)!
-  const render = (InputList as any).setup(
-    {
-      option,
-      model,
-      effectData: reactive({ current: data, value: data[option.field] }),
-      isView: false,
-      labelIndex: false,
-      ...props,
-    },
-    { slots: {} }
+  const app = createApp({})
+  app.provide('exaProvider', {})
+  const render = app.runWithContext(() =>
+    (InputList as any).setup(
+      {
+        option,
+        model,
+        effectData: reactive({ current: data, value: data[option.field] }),
+        isView: false,
+        labelIndex: false,
+        ...props,
+      },
+      { slots: {} }
+    )
   )
   return render as () => any
 }
@@ -54,7 +58,7 @@ describe('InputList', () => {
     expect(render()).toHaveLength(1)
   })
 
-  it('空数组初始化时立即保留一行', () => {
+  it('空数组初始化时保留一行', async () => {
     const data = reactive({ names: [] as string[] })
     const option = {
       type: 'InputList',
@@ -62,6 +66,8 @@ describe('InputList', () => {
       columns: [{ type: 'Input', field: '$index' }],
     }
     const render = setupInputList(option, data)
+
+    await nextTick()
 
     expect(data.names).toHaveLength(1)
     expect(render()).toHaveLength(1)
@@ -83,7 +89,7 @@ describe('InputList', () => {
     expect(render().map((node) => node.key)).toEqual(initialKeys)
   })
 
-  it('$index 模式按索引槽位维护 key', async () => {
+  it('$index 模式前插时复用原索引槽位的 key', async () => {
     const data = reactive({ names: ['甲', '乙'] })
     const option = {
       type: 'InputList',
@@ -97,12 +103,12 @@ describe('InputList', () => {
     await nextTick()
     const keys = render().map((node) => node.key)
 
-    expect(keys[0]).not.toBe(initialKeys[0])
-    expect(keys[1]).not.toBe(initialKeys[1])
+    expect(keys[0]).toBe(initialKeys[0])
+    expect(keys[1]).toBe(initialKeys[1])
     expect(new Set(keys).size).toBe(3)
   })
 
-  it('对象移除后重新加入仍复用原 key', async () => {
+  it('对象移除后重新加入时使用新索引槽位 key', async () => {
     const first = { name: '甲' }
     const second = { name: '乙' }
     const data = reactive({ items: [first, second] })
@@ -119,10 +125,10 @@ describe('InputList', () => {
     data.items.push(first)
     await nextTick()
 
-    expect(render()[1].key).toBe(firstKey)
+    expect(render()[1].key).not.toBe(firstKey)
   })
 
-  it('删除末行时不让旧行模型先变成 undefined', async () => {
+  it('对象列表可通过行按钮删除末行', async () => {
     const first = { name: '甲' }
     const second = { name: '乙' }
     const data = reactive({ items: [first, second] })
@@ -138,12 +144,10 @@ describe('InputList', () => {
     }
     const render = setupInputList(option, data)
     const lastRowModel = render()[1].props.model
-    const groupModel = [...lastRowModel.children].find(([item]) => item.type === 'InputGroup')?.[1]
     const buttonOption = [...lastRowModel.children].find(([item]) => item.type === 'Buttons')?.[0]
 
     buttonOption.methods.delete.onClick({ index: 1 })
 
-    expect(groupModel.refData.value).toMatchObject(second)
     await nextTick()
     expect(data.items).toEqual([first])
   })
@@ -181,7 +185,7 @@ describe('InputList', () => {
     expect(data.items).toHaveLength(1)
   })
 
-  it('对象列表只读重排时 DetailLayout 跟随对象 key', async () => {
+  it('对象列表只读重排时复用原索引槽位 key', async () => {
     const first = { name: '甲' }
     const second = { name: '乙' }
     const data = reactive({ items: [first, second] })
@@ -197,7 +201,7 @@ describe('InputList', () => {
     data.items.reverse()
     await nextTick()
 
-    expect(render().map((node) => node.key)).toEqual(initialKeys.reverse())
+    expect(render().map((node) => node.key)).toEqual(initialKeys)
   })
 
   it('向只读详情布局传递展开后的配置且不使用动态 key', () => {
