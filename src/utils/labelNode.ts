@@ -1,5 +1,5 @@
-import { InfoCircleOutlined } from '@ant-design/icons-vue'
-import { Tooltip } from 'ant-design-vue'
+import { InfoCircleOutlined } from '../compat/icons'
+import { Tooltip } from '../compat/antdv'
 import { isPlainObject } from 'lodash-es'
 import { h } from 'vue'
 import { toNode } from './toNode'

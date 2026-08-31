@@ -1,10 +1,10 @@
-import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, onUnmounted, inject } from 'vue'
+import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, onUnmounted } from 'vue'
 import type { VNode, VNodeTypes } from 'vue'
-import base from '../components/base'
+import base from '../compat/antdv'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
-import type { ModalProps, ModalFuncProps } from 'ant-design-vue'
-import { ConfigProvider } from 'ant-design-vue'
+import type { ModalProps, ModalFuncProps } from '../compat/antdv'
+import { ConfigProvider, useAntdvConfig } from '../compat/antdv'
 
 import type { ExtButtons, ExtFormOption } from '../exaTypes'
 import { useForm } from '../superForm'
@@ -74,11 +74,12 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
   const ins: any = getCurrentInstance() // || currentInstance
   const wrap: any = document.createDocumentFragment()
   let vm
-  const global = inject('configProvider') as any
+  const configContext = useAntdvConfig()
   const Wrapper = (props) => {
+    const global = configContext.value
     const rootPrefixCls = global?.getPrefixCls?.()
-    const prefixCls = props.prefixCls || ''.concat(rootPrefixCls, '-modal')
-    return h(ConfigProvider, { ...global, 'notUpdateGlobalConfig': true, 'prefixCls': rootPrefixCls }, () =>
+    const prefixCls = props.prefixCls || `${rootPrefixCls}-modal`
+    return h(ConfigProvider, { ...global, prefixCls: rootPrefixCls }, () =>
       modalSlot({ ...props, rootPrefixCls, prefixCls }, {})
     )
   }
@@ -87,11 +88,9 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
     render(null, wrap)
     vm = null
   }
-  if (global) {
-    onUnmounted(() => {
-      vm && destroy()
-    })
-  }
+  onUnmounted(() => {
+    vm && destroy()
+  })
 
   const open = (option?: ModalFuncProps | Obj) => {
     if (modalRef.value) {

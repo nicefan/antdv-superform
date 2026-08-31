@@ -1,9 +1,9 @@
-import { ref, shallowReactive, toRaw, watch, reactive, h, toRef, toRefs, defineComponent, unref, computed } from 'vue'
+import { ref, shallowReactive, toRaw, watch, reactive, h, toRefs, defineComponent, unref, computed } from 'vue'
 import { cloneDeep, isFunction } from 'lodash-es'
-import { message, Form } from 'ant-design-vue'
+import { message } from '../../compat/antdv'
 import Controls, { ButtonGroup } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
-import base from '../base'
+import base from '../../compat/antdv'
 import { buildInnerNode } from '../Collections'
 import { formatRule } from '../../utils/buildModel'
 import { merge } from '../../utils/merge'
@@ -25,10 +25,8 @@ function createEditCache(childrenMap) {
     const editInfo = getEditInfo(data)
     if (!editInfo.editData) {
       const editData = reactive(cloneDeep(data))
-      const { modelsMap, rules } = cloneModelsFlat(toRaw(childrenMap), editData)
-      const form = Form.useForm(editData, ref(rules))
-      form.clearValidate()
-      Object.assign(editInfo, { ...info, form, modelsMap, editData })
+      const { modelsMap } = cloneModelsFlat(toRaw(childrenMap), editData)
+      Object.assign(editInfo, { ...info, forms: shallowReactive({}), modelsMap, editData })
     } else {
       resetFields(editInfo.editData, data)
       Object.assign(editInfo, info)
@@ -100,10 +98,9 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       onClick: async (args) => {
         const { record } = args
         const editInfo = getEditInfo(record)
-        return editInfo.form
-          .validate()
+        return Promise.all(Object.values(editInfo.forms).map((form: any) => form.validate()))
           .then(async () => {
-            const raw = toRaw(editInfo.form.modelRef)
+            const raw = toRaw(editInfo.editData)
             const custom = await rowEditor?.onSave?.({ ...args, isNew: editInfo.isNew })
             if (custom === false) return false
             if (editInfo.isNew) {
@@ -156,7 +153,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
 
     setup({ option, editInfo, viewRender }) {
       const { editable = true } = option
-      const { modelsMap, form } = editInfo
+      const { modelsMap, forms } = editInfo
       const model = modelsMap.get(toRaw(option))
       const { index, parent, refData } = toRefs(model)
 
@@ -167,18 +164,29 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
 
       const inputSlot = buildInnerNode(option, model, effectData, attrs)
       const rules = formatRule(model.rules, effectData)
-      if (rules) {
-        form.rulesRef.value[ruleName] = computed(() => (unref(attrs.disabled) || unref(hidden) ? [] : rules))
-      }
+      const activeRules = computed(() => (unref(attrs.disabled) || unref(hidden) ? [] : rules))
       return () =>
         editableRef.value
           ? h(
-              base.FormItem,
+              base.Form,
               {
-                wrapperCol: {},
-                ...form.validateInfos[ruleName],
+                ref: (instance) => {
+                  if (instance) forms[ruleName] = instance
+                },
+                model: editInfo.editData,
               },
-              inputSlot
+              {
+                default: () =>
+                  h(
+                    base.FormItem,
+                    {
+                      name: model.propChain,
+                      rules: activeRules.value,
+                      wrapperCol: {},
+                    },
+                    inputSlot
+                  ),
+              }
             )
           : viewRender
           ? viewRender({ ...effectData, isView: true })

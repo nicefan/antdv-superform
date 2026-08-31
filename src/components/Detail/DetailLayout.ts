@@ -1,5 +1,5 @@
 import { type PropType, defineComponent, h, inject, unref, toRefs, reactive, toRaw, mergeProps } from 'vue'
-import { Col, Row, Space } from 'ant-design-vue'
+import { Col, Row, Space } from '../../compat/antdv'
 import { getEffectData, getViewNode, toNode, useControl, useInnerSlots } from '../../utils'
 import Controls, { containers } from '../index'
 import Descriptions from './Descriptions'

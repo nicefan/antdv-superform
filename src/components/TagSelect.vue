@@ -15,7 +15,7 @@
 </template>
 <script lang="ts" setup>
 import { computed } from 'vue'
-import baseComps from './base'
+import baseComps from '../compat/antdv'
 import { useOptions } from '../utils/useOptions'
 
 const { CheckableTag } = baseComps

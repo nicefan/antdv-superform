@@ -2,7 +2,7 @@ import { computed, h, toValue, type VNode } from 'vue'
 import SuperTable from './SuperTable.vue'
 import { useGetRef } from '../utils'
 import type { RootTableOption } from '../exaTypes'
-import type { ModalFuncProps } from 'ant-design-vue'
+import type { ModalFuncProps } from '../compat/antdv'
 
 type RegisterMethod = {
   (): () => VNode

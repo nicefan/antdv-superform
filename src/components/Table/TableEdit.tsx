@@ -2,7 +2,7 @@ import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, sh
 import { isFunction } from 'lodash-es'
 import Controls from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
-import base from '../base'
+import base from '../../compat/antdv'
 import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
 import { formatRule } from '../../utils/buildModel'

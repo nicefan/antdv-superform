@@ -36,12 +36,12 @@ export default defineConfig(({ command, mode }) =>
               exports: 'named',
               globals: {
                 // vue: 'vue',
-                'ant-design-vue': 'antd',
+                'antdv-next': 'antd',
               },
               chunkFileNames: '[name].js',
               minifyInternalExports: false,
               manualChunks(id) {
-                if (id.includes('ant-design-vue')) {
+                if (id.includes('antdv-next')) {
                   return 'antd'
                 }
               }
@@ -52,6 +52,15 @@ export default defineConfig(({ command, mode }) =>
       }
     : {
         resolve: {},
+        server: {
+          host: '127.0.0.1',
+          open: '/index.html',
+        },
+        test: {
+          deps: {
+            inline: [/antdv-next/, /@v-c/],
+          },
+        },
         build: {
           lib: {
             entry: resolve(__dirname, 'src/index.ts'),
@@ -65,7 +74,7 @@ export default defineConfig(({ command, mode }) =>
             // input: {
             //   main: resolve(__dirname, 'example/index.html'),
             // },
-            external: ['vue', /moment/, 'nanoid', /dayjs/, /lodash/, /ant-design-vue/, /@ant-design/, '@vueuse/core'],
+            external: ['vue', /moment/, 'nanoid', /dayjs/, /lodash/, /antdv-next/, /@antdv-next/, '@vueuse/core'],
             // input: [`dist/index.d.ts`],
             // output: {
             //   format: 'es',
@@ -76,16 +85,6 @@ export default defineConfig(({ command, mode }) =>
 
             output: {
               intro: 'import "./style.css";',
-              // https://rollupjs.org/guide/en/#outputmanualchunks
-              // manualChunks: {
-              //   vele: ['ant-design-vue'],
-              //   vlib: ['vue', 'vue-router', 'vuex'],
-              // },
-
-              // globals: {
-              //   vue: 'vue',
-              //   'ant-design-vue': 'ant-design-vue',
-              // }
             },
           },
         },

@@ -1,5 +1,5 @@
 import { type PropType, computed, defineComponent, h, inject, mergeProps, unref } from 'vue'
-import { Col, Row } from 'ant-design-vue'
+import { Col, Row } from '../../compat/antdv'
 
 export default defineComponent({
   props: {

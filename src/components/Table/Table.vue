@@ -2,9 +2,9 @@
 import { h, ref, reactive, unref, type PropType, defineComponent, toRaw, toRef, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { createButtons } from '../buttons'
-import base from '../base'
+import base from '../../compat/antdv'
 import { buildData } from './buildData'
-import { Col, Row } from 'ant-design-vue'
+import { Col, Row } from '../../compat/antdv'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
@@ -57,10 +57,10 @@ export default defineComponent({
       fixed: true,
       ...__rowSelection,
       selectedRowKeys,
-      onChange: (_selectedRowKeys, _selectedRows) => {
+      onChange: (_selectedRowKeys, _selectedRows, info) => {
         selectedRowKeys.value = _selectedRowKeys
         selectedRows.value = _selectedRows
-        __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows)
+        __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows, info)
       },
       ...(editInline && {
         getCheckboxProps: (record) => ({

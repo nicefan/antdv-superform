@@ -1,6 +1,6 @@
 {
   "name": "antdv-superform",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "author": {
     "name": "nicefan",
     "email": "covien@msn.com"
@@ -39,12 +39,12 @@
     "serve": "vite preview"
   },
   "peerDependencies": {
-    "ant-design-vue": ">=3.2.20",
-    "vue": ">=3.3.13"
+    "@antdv-next/icons": ">=1.1.1",
+    "antdv-next": ">=1.5.0",
+    "vue": ">=3.5.0"
   },
   "devDependencies": {
-    "@ant-design/icons-svg": "^4.3.1",
-    "@ant-design/icons-vue": "^6.1.0",
+    "@antdv-next/icons": "1.1.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/lodash-es": "^4.17.10",
@@ -53,11 +53,11 @@
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-vue": "^4.4.0",
     "@vitejs/plugin-vue-jsx": "^3.0.2",
-    "@vue/compiler-sfc": "~3.3.13",
-    "@vue/runtime-core": "~3.3.13",
+    "@vue/compiler-sfc": "~3.5.41",
+    "@vue/runtime-core": "~3.5.41",
     "@vueuse/core": "^10.5.0",
-    "ant-design-vue": "^3.2.20",
-    "dayjs": "^1.11.13",
+    "antdv-next": "1.5.0",
+    "dayjs": "^1.11.21",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^4.2.1",
@@ -78,7 +78,7 @@
     "vite-plugin-dts": "^3.6.0",
     "vite-svg-symbol-loader": "^1.0.0",
     "vitest": "^0.29.8",
-    "vue": "~3.3.13",
+    "vue": "~3.5.41",
     "vue-tsc": "^1.8.20"
   }
 }

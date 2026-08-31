@@ -2,8 +2,8 @@ import { createApp, defineComponent, h } from 'vue'
 import App from './App.vue'
 import superForm from '../src'
 import type { ButtonItem } from '../src'
-import 'ant-design-vue/dist/antd.css'
-import { Button, InputNumber, Table, Textarea } from 'ant-design-vue'
+import 'antdv-next/dist/antd.css'
+import { Button, InputNumber, Table } from 'antdv-next'
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -12,7 +12,7 @@ import {
   SendOutlined,
   SearchOutlined,
   ReloadOutlined,
-} from '@ant-design/icons-vue'
+} from '@antdv-next/icons'
 const app = createApp(App)
 // const InNumber = defineComponent({
 //   setup(_, {attrs}) {

@@ -1,7 +1,7 @@
 import { h, ref } from 'vue'
 import { defineTable } from '../../src'
-import { EditOutlined } from '@ant-design/icons-vue'
-import { Modal } from 'ant-design-vue'
+import { EditOutlined } from '@antdv-next/icons'
+import { Modal } from 'antdv-next'
 
 export const getTableOption = () => {
   const typeDict = [

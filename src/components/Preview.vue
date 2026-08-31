@@ -11,7 +11,7 @@
   </Image.PreviewGroup>
 </template>
 <script setup lang="ts">
-import { Image } from 'ant-design-vue'
+import { Image } from '../compat/antdv'
 const emit = defineEmits(['update:value'])
 const props = defineProps<{
   images?: string[]

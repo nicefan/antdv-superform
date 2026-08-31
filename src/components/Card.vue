@@ -3,7 +3,7 @@ import Collections from './Collections'
 import { ButtonGroup } from './buttons'
 import { DetailLayout } from './Detail'
 import { defineComponent, h } from 'vue'
-import base from './base'
+import base from '../compat/antdv'
 import { toNode } from '../utils'
 
 export default defineComponent({

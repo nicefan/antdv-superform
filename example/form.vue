@@ -14,11 +14,11 @@
 </template>
 <script setup lang="ts">
 import { inject, reactive, ref, watch } from 'vue'
-import { Row, Button, Image, Modal } from 'ant-design-vue'
+import { Row, Button, Image, Modal } from 'antdv-next'
 import useOption from './useExForm'
 import { useDetail, useForm, useModal, SuperForm } from '../src'
 import { useButtons } from '../src/superButtons'
-import {DatePicker} from 'ant-design-vue'
+import { DatePicker } from 'antdv-next'
 import dayjs from 'dayjs'
 // const props = defineProps<{
 //   msg: string

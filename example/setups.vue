@@ -21,7 +21,7 @@ import { SuperButtons } from '../src/superButtons'
 import { useModal, useModalForm } from '../src'
 import { getTableOption } from './fristTable/formOption'
 import { nanoid } from 'nanoid'
-import { SyncOutlined } from '@ant-design/icons-vue'
+import { SyncOutlined } from '@antdv-next/icons'
 
 export default defineComponent({
   components: {

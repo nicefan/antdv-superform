@@ -1,6 +1,5 @@
 <script lang="ts">
-import { FormItemRest } from 'ant-design-vue'
-import base from './base'
+import base from '../compat/antdv'
 import Collections from './Collections'
 import { computed, defineComponent, h, inject, mergeProps, reactive, ref, unref, watch } from 'vue'
 import { globalProps } from '../plugin'
@@ -91,10 +90,8 @@ export default defineComponent({
           default:
             slots?.default ||
             (() =>
-              h(FormItemRest, () =>
-                h(base.InputGroup, mergeProps({ compact, style: compact && { display: 'flex' } }, attrs), () =>
-                  h(Collections, { option, model, effectData: props.effectData })
-                )
+              h(compact ? base.SpaceCompact : base.Space, mergeProps(compact ? { block: true } : {}, attrs), () =>
+                h(Collections, { option, model, effectData: props.effectData })
               )),
         }
       )

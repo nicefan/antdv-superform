@@ -2,26 +2,29 @@
   <ConfigProvider :locale="zhCN">
     <h1>关于</h1>
     <Tabs v-model:active-key="tab">
-      <Tabs.TabPane v-for="(item, index) of tabs" :key="String(index)" :tab="item.label">
+      <TabPane v-for="(item, index) of tabs" :key="String(index)" :tab="item.label">
         <component :is="item.comp" msg="about" />
-      </Tabs.TabPane>
+      </TabPane>
     </Tabs>
   </ConfigProvider>
 </template>
 
 <script lang="ts" setup>
-import { ConfigProvider } from 'ant-design-vue'
+import { ConfigProvider } from 'antdv-next'
+import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import zhCN from 'antdv-next/locale/zh_CN'
 
 import { ref, watch } from 'vue'
-import { Tabs } from 'ant-design-vue'
+import { TabPane, Tabs } from 'antdv-next'
 import Setups from './setups.vue'
 import FirstForm from './form.vue'
 import FristTable from './fristTable/index.vue'
 import Detail from './Detail.vue'
 import RowKeyTest from './RowKeyTest.vue'
 import InputListTest from './InputListTest.vue'
+
+dayjs.locale('zh-cn')
 
 const tabs = [
   { comp: Setups, label: '弹窗' },

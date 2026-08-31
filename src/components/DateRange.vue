@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, h } from 'vue'
-import base from './base'
+import base from '../compat/antdv'
 
 export default defineComponent({
   props: {
@@ -14,7 +14,7 @@ export default defineComponent({
       return props.disabledDate?.(currentDate, props.effectData)
     }
 
-    return () => h(base.RangePicker, { valueFormat: 'YYYY-MM-DD', disabledDate }, ctx.slots)
+    return () => h(base.DateRangePicker, { valueFormat: 'YYYY-MM-DD', disabledDate }, ctx.slots)
   },
 })
 </script>

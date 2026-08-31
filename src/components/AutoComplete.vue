@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, h } from 'vue'
-import baseComps from './base'
+import baseComps from '../compat/antdv'
 import { useOptions } from '../utils/useOptions'
 
 export default defineComponent({

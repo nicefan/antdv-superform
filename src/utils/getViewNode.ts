@@ -6,7 +6,7 @@ import { isPlainObject, get as objectGet } from 'lodash-es'
 import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
-import { Tag } from 'ant-design-vue'
+import { Tag } from '../compat/antdv'
 import { getIconNode } from './'
 
 const getVModelProps = (options, parent: Obj) => {

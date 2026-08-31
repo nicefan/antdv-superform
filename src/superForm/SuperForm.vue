@@ -1,31 +1,20 @@
 <script lang="ts">
-import { defineComponent, ref, h, mergeProps, watchEffect, onMounted, computed, shallowReactive, provide } from 'vue'
-import { merge, defaults } from 'lodash-es'
+import { defineComponent, ref, h, mergeProps, onMounted, computed, shallowReactive, provide, type PropType } from 'vue'
+import { defaults } from 'lodash-es'
 import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
-import type { FormProps } from 'ant-design-vue'
 import { getEffectData, reportSchemaDiagnostics, useInnerSlots } from '../utils'
-
-type SuperFormProps = FormProps & {
-  /** 是否为容器包装 */
-  isContainer?: boolean
-  schema?: ExtFormOption
-  /** 减少行距 */
-  compact?: boolean
-  /** 不做校验 */
-  ignoreRules?: boolean
-  dataSource?: Obj
-  onRegister?: () => void
-}
-export default defineComponent<SuperFormProps, any, unknown>({
+export default defineComponent({
   name: 'SuperForm',
   props: {
-    schema: Object,
-    model: Object,
-    dataSource: Object,
+    schema: Object as PropType<ExtFormOption>,
+    model: Object as PropType<Obj>,
+    dataSource: Object as PropType<Obj>,
     isContainer: Boolean,
-  } as any,
+    compact: { type: Boolean, default: undefined },
+    ignoreRules: { type: Boolean, default: undefined },
+  },
   emits: ['register'],
   setup(props, ctx) {
     const formRef = ref()
@@ -78,6 +67,8 @@ export default defineComponent<SuperFormProps, any, unknown>({
           option: formOption,
           // dataSource: formData.value,
           onRegister: register,
+          compact: props.compact,
+          ignoreRules: props.ignoreRules,
           class: { 'sup-container': isContainer.value },
         },
         useInnerSlots(formOption.slots, getEffectData(), ctx.slots)

@@ -29,7 +29,7 @@ import { DataProvider } from '../dataProvider'
 import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
-import base from '../components/base'
+import base from '../compat/antdv'
 import { nanoid } from 'nanoid'
 import { set as setObject } from 'lodash-es'
 

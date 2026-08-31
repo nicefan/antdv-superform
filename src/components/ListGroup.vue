@@ -3,7 +3,7 @@ import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw }
 import { cloneModels } from '../utils/buildModel'
 import Controls from '.'
 import { nanoid } from 'nanoid'
-import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { MinusOutlined, PlusOutlined } from '../compat/icons'
 import { globalProps } from '../plugin'
 
 export default defineComponent({

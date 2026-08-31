@@ -4,7 +4,7 @@ import { ref, reactive, h, toRaw, watch, nextTick } from 'vue'
 import Controls from '../components'
 import { getEffectData } from '../utils'
 import type { RootTableOption } from 'src/exaTypes'
-import { DownOutlined, UpOutlined } from '@ant-design/icons-vue'
+import { DownOutlined, UpOutlined } from '../compat/icons'
 import { omit } from 'lodash-es'
 
 export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) {

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import baseComps from './base'
+import baseComps from '../compat/antdv'
 
 const { InputNumber } = baseComps
 

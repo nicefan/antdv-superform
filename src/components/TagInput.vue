@@ -25,8 +25,8 @@
 </template>
 <script lang="ts" setup>
 import { computed, nextTick, ref, type Slot } from 'vue'
-import baseComps from './base'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import baseComps from '../compat/antdv'
+import { PlusOutlined } from '../compat/icons'
 import { toNode } from '../utils'
 
 const { Input, Tooltip, Tag } = baseComps

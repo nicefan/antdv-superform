@@ -1,4 +1,4 @@
-import { Modal } from 'ant-design-vue'
+import { Modal } from '../../compat/antdv'
 import type { ButtonItem } from '../../exaTypes'
 import { globalProps, globalConfig } from '../../plugin'
 import { defaults, merge } from 'lodash-es'

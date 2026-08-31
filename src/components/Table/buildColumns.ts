@@ -1,5 +1,5 @@
 import { computed, defineComponent, h, mergeProps, reactive, unref, watch } from 'vue'
-import type { TableColumnProps } from 'ant-design-vue'
+import type { TableColumnType } from '../../compat/antdv'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
 import Controls from '../index'
@@ -128,7 +128,7 @@ export function buildColumns({ childrenMap, context, option, attrs, isView, effe
     defaults(actionColumn, option.columnProps, globalProps.Column)
     columns.push(actionColumn)
   }
-  return columns as TableColumnProps[]
+  return columns as TableColumnType[]
 }
 
 function parseRender(viewRender, editRender, effectData) {
