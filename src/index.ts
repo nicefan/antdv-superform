@@ -9,6 +9,9 @@ export * from './superDetail'
 export * from './superModal'
 export { diagnoseSchema } from './utils/diagnoseSchema'
 export type { SchemaDiagnostic, SchemaDiagnosticLevel, SchemaKind } from './utils/diagnoseSchema'
+export { registerFormComponents } from './components'
+export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'
+export type { InstallConfig } from './plugin'
 
 export default plugin
 

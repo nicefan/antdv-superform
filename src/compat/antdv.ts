@@ -142,6 +142,10 @@ export type BaseComponents = Record<BaseComponentName, any>
 
 const base: BaseComponents = baseComponents
 
+export function isBaseComponentName(name: string): name is BaseComponentName {
+  return name in baseComponents
+}
+
 export function override(comps: Partial<BaseComponents>) {
   Object.keys(comps).forEach((key) => {
     const name = key as BaseComponentName

@@ -468,6 +468,12 @@ interface ExtFormItemOption extends ExtBaseOption {
   editable?: boolean | Fn<boolean>
 }
 
+/**
+ * 自定义 UI 字段的 attrs 类型映射。应用可通过模块扩展增加 type 与组件 Props 的对应关系。
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface CustomFormComponentProps {}
+
 interface ExtInputOption extends ExtFormItemOption {
   // enterButton?: (effectData: Obj) => Component
   onSearch?: (effectData: Obj, value: string) => void
@@ -655,10 +661,18 @@ type WidgetTypes = {
   TagInput: ExtTagInputOption
   TagSelect: ExtTagSelectOption
 }
-export type OptionType = WrapperTypes & WidgetTypes
+type CustomWidgetTypes = {
+  [K in keyof CustomFormComponentProps]: ExtFormItemOption & {
+    attrs?: CustomFormComponentProps[K] & HTMLAttributes
+  }
+}
+export type OptionType = WrapperTypes & WidgetTypes & CustomWidgetTypes
 export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
 export type UniWidgetOption =
   | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
+  | {
+      [K in keyof CustomWidgetTypes]: { type: K } & CustomWidgetTypes[K]
+    }[keyof CustomWidgetTypes]
   | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
 
 export type UniOption = UniWrapperOption | UniWidgetOption

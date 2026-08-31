@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, ref, reactive, unref, type PropType, defineComponent, toRaw, toRef, watch } from 'vue'
+import { h, ref, reactive, type PropType, defineComponent, toRaw, toRef, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { createButtons } from '../buttons'
 import base from '../../compat/antdv'
@@ -238,7 +238,11 @@ export default defineComponent({
           tableLayout: 'fixed',
           pagination: false,
           ...attrs,
-          rowSelection,
+          // antdv-next 不会解包嵌套配置中的 Ref，需在组件边界传入实际数组。
+          rowSelection: rowSelection && {
+            ...rowSelection,
+            selectedRowKeys: selectedRowKeys.value,
+          },
           rowKey,
           expandedRowKeys: expandedRowKeys.value,
           'onUpdate:expandedRowKeys': updateExpand,

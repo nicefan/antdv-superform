@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import dts from 'rollup-plugin-dts'
 import viteDts from 'vite-plugin-dts'
+import SuperFormComponents, { createLibraryResolver } from './src/unplugin/vite'
 // import ViteComponents, { AntDesignVueResolver } from 'vite-plugin-components'
 // import svgSprite from 'vite-plugin-svg-sprite'
 // import resolvePlugin from '@rollup/plugin-node-resolve'
@@ -44,9 +45,9 @@ export default defineConfig(({ command, mode }) =>
                 if (id.includes('antdv-next')) {
                   return 'antd'
                 }
-              }
+              },
             },
-          }
+          },
         },
         plugins: [vue(), vueJsx()],
       }
@@ -63,10 +64,15 @@ export default defineConfig(({ command, mode }) =>
         },
         build: {
           lib: {
-            entry: resolve(__dirname, 'src/index.ts'),
+            entry: {
+              index: resolve(__dirname, 'src/index.ts'),
+              'unplugin/vite': resolve(__dirname, 'src/unplugin/vite.ts'),
+              'unplugin/rollup': resolve(__dirname, 'src/unplugin/rollup.ts'),
+              'unplugin/webpack': resolve(__dirname, 'src/unplugin/webpack.ts'),
+            },
             formats: ['es'],
             name: 'MyLib',
-            fileName: 'index',
+            fileName: (_, entryName) => `${entryName}.js`,
           },
           outDir: 'lib',
           minify: false,
@@ -74,7 +80,18 @@ export default defineConfig(({ command, mode }) =>
             // input: {
             //   main: resolve(__dirname, 'example/index.html'),
             // },
-            external: ['vue', /moment/, 'nanoid', /dayjs/, /lodash/, /antdv-next/, /@antdv-next/, '@vueuse/core'],
+            external: [
+              'vue',
+              'unplugin',
+              /^node:/,
+              /moment/,
+              'nanoid',
+              /dayjs/,
+              /lodash/,
+              /antdv-next/,
+              /@antdv-next/,
+              '@vueuse/core',
+            ],
             // input: [`dist/index.d.ts`],
             // output: {
             //   format: 'es',
@@ -84,7 +101,7 @@ export default defineConfig(({ command, mode }) =>
             // plugins: [dts()],
 
             output: {
-              intro: 'import "./style.css";',
+              intro: (chunk) => (chunk.name === 'index' ? 'import "./style.css";' : ''),
             },
           },
         },
@@ -92,6 +109,15 @@ export default defineConfig(({ command, mode }) =>
           target: 'es2020',
         },
         plugins: [
+          SuperFormComponents({
+            dirs: ['example'],
+            entry: 'example/main.ts',
+            dts: 'example/superform-components.d.ts',
+            superFormImport: '/src/components/index.ts',
+            dtsModule: '../src/exaTypes',
+            typesImport: '../src',
+            resolvers: [createLibraryResolver({ from: 'antdv-next', components: ['Rate'] })],
+          }),
           vue(),
           vueJsx(),
           viteDts({
@@ -103,8 +129,8 @@ export default defineConfig(({ command, mode }) =>
             // cleanVueFileName: true,
             copyDtsFiles: true,
             compilerOptions: {
-              charset: 'utf8'
-            }
+              charset: 'utf8',
+            },
           }),
         ],
         css: {

@@ -37,6 +37,8 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
+    "example/superform-components.d.ts",
+    "example/superform-components.typecheck.ts",
   ],
   "exclude": [
     "dist",

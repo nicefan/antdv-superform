@@ -35,9 +35,9 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
       base.Modal,
       {
         ref: modalRef,
-        visible: visible.value,
+        open: visible.value,
         class: 'sup-modal',
-        'onUpdate:visible': updateVisible,
+        'onUpdate:open': updateVisible,
         confirmLoading: confirmLoading.value,
         ...config,
         title: undefined,

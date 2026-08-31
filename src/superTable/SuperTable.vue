@@ -122,7 +122,8 @@ export default defineComponent({
 
     const tableRef = ref({ ...exposed })
     const register = (comp) => {
-      Object.assign(tableRef.value, toRefs(comp), exposed)
+      // 组件公开实例不是 reactive 对象，先包装后再保留其属性响应性。
+      Object.assign(tableRef.value, toRefs(reactive(comp)), exposed)
       ctx.emit('register', tableRef.value)
     }
 

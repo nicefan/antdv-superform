@@ -1,7 +1,7 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRefs, defineComponent, unref, computed } from 'vue'
 import { cloneDeep, isFunction } from 'lodash-es'
 import { message } from '../../compat/antdv'
-import Controls, { ButtonGroup } from '../index'
+import { ButtonGroup, hasFormComponent } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
 import base from '../../compat/antdv'
 import { buildInnerNode } from '../Collections'
@@ -195,8 +195,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
   })
 
   const getEditRender = (option, viewRender) => {
-    const component = Controls[option.type]
-    if (component || option.type === 'InputSlot') {
+    if (hasFormComponent(option.type) || option.type === 'InputSlot') {
       return ({ record }) => {
         const editInfo = getEditInfo(record)
         if (editInfo.isEdit) {

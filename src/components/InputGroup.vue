@@ -17,7 +17,7 @@ export default defineComponent({
   },
   setup(props, { attrs }) {
     const { option, model, compact } = props
-    const { field, slots } = option
+    const { slots } = option
 
     const formItemContext = ref()
     let ruleObj = formatRule(model.rules, props.effectData)
@@ -27,7 +27,7 @@ export default defineComponent({
     if (ruleObj) {
       watch(
         () => model.refData,
-        () => formItemContext.value?.onFieldChange(),
+        () => formItemContext.value?.onFieldChange?.(),
         { deep: true }
       )
     } else if (model.children && compact) {
@@ -54,7 +54,7 @@ export default defineComponent({
             ruleObj = rule.fields[val.fieldName]
             watch(
               () => unref(val.refData),
-              () => formItemContext.value?.onFieldChange()
+              () => formItemContext.value?.onFieldChange?.()
             )
             break
           }
@@ -64,7 +64,7 @@ export default defineComponent({
         ruleObj = [rule]
         watch(
           () => model.refData,
-          () => formItemContext.value?.onFieldChange(),
+          () => formItemContext.value?.onFieldChange?.(),
           { deep: true }
         )
       }

@@ -131,7 +131,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
   ;[...modelsMap].forEach(([option, model], idx) => {
     const { type = '', field, hideInDescription, viewRender, exclude } = option
     if (type === 'Hidden' || hideInDescription || exclude?.includes('description')) return
-    const { parent, refData } = toRefs(model)
+    const { parent, refData } = toRefs(reactive(model))
     const effectData = getEffectData({
       parent: parentEffect,
       current: parent,
@@ -221,7 +221,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
 }
 
 function getContent(option, model: ModelData, parentEffect) {
-  const { parent, refData } = toRefs(model)
+  const { parent, refData } = toRefs(reactive(model))
   const value = model.refName ? refData : undefined
   const effectData =
     toRaw(parent.value) === toRaw(parentEffect.current)
