@@ -112,7 +112,7 @@ ListGroup 把每项渲染成独立 Group，适合地址、合同分段等多行�
 
 ## List
 
-List 使用 Ant Design Vue List 外观，允许空数组，适合内容块和顶部操作。
+List 使用 1.0 内置的轻量列表外观，允许空数组，适合内容块和顶部操作。
 
 ```ts
 {
@@ -120,9 +120,9 @@ List 使用 Ant Design Vue List 外观，允许空数组，适合内容块和顶
   field: 'members',
   title: '成员',
   attrs: {
-    bordered: true,
-    size: 'small',
     rowKey: 'id',
+    itemClass: 'member-item',
+    itemStyle: { minHeight: '56px' },
   },
   buttons: { actions: ['add', 'refresh'] },
   rowButtons: { actions: ['edit', 'delete'] },
@@ -136,7 +136,9 @@ List 使用 Ant Design Vue List 外观，允许空数组，适合内容块和顶
 | ------------------- | --------------- | ------ | -------------------------------------- |
 | `field`             | string          | 必填   | 数组字段                               |
 | `title`             | string/function | —      | 列表标题                               |
-| `attrs`             | object          | `{}`   | ListProps；可通过 `rowKey` 指定行主键  |
+| `attrs.rowKey`      | string          | `'id'` | 指定行主键                             |
+| `attrs.itemClass`   | string/object   | —      | 每个列表项的 class                     |
+| `attrs.itemStyle`   | string/object   | —      | 每个列表项的 style                     |
 | `buttons`           | array/object    | —      | 顶部 `add` / `refresh`，无默认动作列表 |
 | `rowButtons`        | array/object    | —      | 每项 `delete` / `edit`，无默认动作列表 |
 | `columns`           | array           | 必填   | 每项字段                               |
@@ -144,6 +146,8 @@ List 使用 Ant Design Vue List 外观，允许空数组，适合内容块和顶
 | `gutter`            | number          | `16`   | 每项内部栅格间距                       |
 | `rowProps`          | object          | `{}`   | 每项内部 Row 属性                      |
 | `descriptionsProps` | object          | —      | 只读项布局                             |
+
+`itemClass` 和 `itemStyle` 分别设置每个列表项的 class 与 style，二者都放在 `attrs` 中。
 
 List 允许删除最后一项。`rowKey` 缺失时默认读取 `id`，再回退内部 key；业务数据应显式设置稳定字段。
 

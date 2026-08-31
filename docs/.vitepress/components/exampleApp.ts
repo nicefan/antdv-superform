@@ -1,4 +1,4 @@
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import zhCN from 'antdv-next/locale/zh_CN'
 import type { ReplProps } from '@vue/repl'
 
 export const exampleAppCode = `<template>
@@ -8,7 +8,7 @@ export const exampleAppCode = `<template>
 </template>
 
 <script>
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import zhCN from 'antdv-next/locale/zh_CN'
 
 // antdv-superform 的插件安装配置，可继续加入 dictApi、defaultProps 等全局策略。
 export const superFormConfig = {
@@ -18,8 +18,8 @@ export const superFormConfig = {
 </script>
 
 <script setup>
-import { ConfigProvider } from 'ant-design-vue'
-import zhCN from 'ant-design-vue/es/locale/zh_CN'
+import { ConfigProvider } from 'antdv-next'
+import zhCN from 'antdv-next/locale/zh_CN'
 import Example from './Example.vue'
 </script>`
 

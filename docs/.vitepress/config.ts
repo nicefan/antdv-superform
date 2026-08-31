@@ -118,6 +118,7 @@ export default defineConfig({
           items: [
             { text: 'AI 编码指引', link: '/manual/ai-guide' },
             { text: 'Schema 诊断', link: '/manual/schema-diagnostics' },
+            { text: 'antdv-next 升级支持', link: '/manual/antdv-next-upgrade' },
           ],
         },
       ],

@@ -256,12 +256,12 @@ const [register, form] = useForm({
     {
       type: 'Switch',
       field: 'status',
-      label: '枚举开关',
+      label: '枚举开关 + 标签同步',
+      labelField: 'statusName',
       options: [
         { label: '停用', value: 0 },
         { label: '启用', value: 1 },
       ],
-      valueLabels: ['停用', '启用'],
     },
     { type: 'TagSelect', field: 'team', label: '标签单选', options },
     { type: 'TagSelect', field: 'teams', label: '标签多选', options, attrs: { multiple: true } },

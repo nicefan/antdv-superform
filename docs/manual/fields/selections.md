@@ -221,6 +221,8 @@ Checkbox 对应 Checkbox.Group，字段通常是 value 数组：
 
 配置 `options` 时，组件直接使用第一项作为未选中状态、第二项作为选中状态，同时取得各自的 `label` 和 `value`。因此通常只写 `options` 即可，不要重复配置 `valueLabels`、`checkedChildren`、`unCheckedChildren` 或默认值为 `false` 的 `firstIsChecked`。
 
+配置 `labelField` 时，Switch 会在初始化、外部值变化和用户切换时，将当前 options 对应的 label 同步写入该字段。异步 options 加载完成前不会先写入临时的 `false` 值。
+
 只有业务明确要求“第一项表示选中”时才反转顺序：
 
 ```ts

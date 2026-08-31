@@ -9,9 +9,9 @@
 ```ts
 // src/main.ts
 import { createApp } from "vue";
-import Antdv from "ant-design-vue";
-import zhCN from "ant-design-vue/es/locale/zh_CN";
-import "ant-design-vue/dist/antd.css";
+import Antdv from "antdv-next";
+import zhCN from "antdv-next/locale/zh_CN";
+import "antdv-next/dist/antd.css";
 import SuperFormPlugin from "antdv-superform";
 import App from "./App.vue";
 
@@ -40,8 +40,8 @@ createApp(App)
 </template>
 
 <script setup lang="ts">
-import { ConfigProvider } from "ant-design-vue";
-import zhCN from "ant-design-vue/es/locale/zh_CN";
+import { ConfigProvider } from "antdv-next";
+import zhCN from "antdv-next/locale/zh_CN";
 </script>
 ```
 

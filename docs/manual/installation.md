@@ -11,7 +11,7 @@ pnpm add antdv-superform
 Vue 与 Ant Design Vue 是 peer dependency。如果项目尚未安装它们，再一并添加：
 
 ```bash
-pnpm add vue ant-design-vue antdv-superform
+pnpm add vue@^3.5 antdv-next@^1.5 @antdv-next/icons@^1.1 antdv-superform@^1
 ```
 
 也可以使用 npm 或 yarn。
@@ -20,8 +20,8 @@ pnpm add vue ant-design-vue antdv-superform
 
 ```ts
 import { createApp } from "vue";
-import Antdv from "ant-design-vue";
-import "ant-design-vue/dist/antd.css";
+import Antdv from "antdv-next";
+import "antdv-next/dist/antd.css";
 import SuperFormPlugin from "antdv-superform";
 import App from "./App.vue";
 

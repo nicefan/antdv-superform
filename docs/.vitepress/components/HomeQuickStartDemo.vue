@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Modal } from 'ant-design-vue'
+import { Modal } from 'antdv-next'
 import { SuperTable, useTable } from 'antdv-superform'
 import { contractApi, initialContracts } from './homeQuickStartMock'
 

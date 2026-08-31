@@ -37,10 +37,12 @@ const snippetId = new URLSearchParams(location.search).get('snippet')
 const snippet = snippetId
   ? readJson<{ code: string }>(`${storagePrefix}:snippet:${snippetId}`)
   : null
+const latestMajor = manifest.latest.split('.')[0]
+const canRestoreVersion =
+  saved?.version.split('.')[0] === latestMajor &&
+  manifest.versions.some((item) => item.version === saved.version)
 const selectedVersion = shallowRef(
-  manifest.versions.some((item) => item.version === saved?.version)
-    ? saved!.version
-    : manifest.latest,
+  canRestoreVersion ? saved!.version : manifest.latest,
 )
 const replStore = shallowRef<ReplStore>()
 const saveLabel = shallowRef('准备就绪')
@@ -109,7 +111,7 @@ async function loadStore(seed?: { files: Record<string, string>; mainFile: strin
   next.setImportMap({
     imports: {
       vue: asset('vue.runtime.esm-browser.js'),
-      'ant-design-vue': asset('antd.js'),
+      'antdv-next': asset('antd.js'),
       'antdv-superform': asset('antdv-superform.js'),
     },
   })

@@ -59,8 +59,8 @@ body { margin: 0; padding: 20px; color: #1f2329; background: #fff; }`,
 store.setImportMap({
   imports: {
     vue: asset("vue.runtime.esm-browser.js"),
-    "ant-design-vue": asset("antd.js"),
-    "ant-design-vue/es/locale/zh_CN": exampleLocaleUrl,
+    "antdv-next": asset("antd.js"),
+    "antdv-next/locale/zh_CN": exampleLocaleUrl,
     "antdv-superform": asset("antdv-superform.js"),
   },
 });
