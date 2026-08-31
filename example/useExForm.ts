@@ -171,6 +171,15 @@ export default function exampleForm() {
             },
           },
           {
+            type: 'Rate',
+            field: 'rating',
+            label: '评分',
+            initialValue: 3,
+            attrs: {
+              allowHalf: true,
+            },
+          },
+          {
             type: 'Input',
             field: 'name',
             // value: valname,

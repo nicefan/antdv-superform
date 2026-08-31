@@ -1,46 +1,14 @@
 import { merge } from 'lodash-es'
 import type { App, Component, VNode } from 'vue'
-import { override, addComponent } from './components'
-import type { Locale } from './compat/antdv'
+import { configureComponents, addComponent, type FormComponent } from './components'
+import type { BaseComponentName, Locale } from './compat/antdv'
 import type { ButtonItem } from './exaTypes'
-type BaseComps =
-  | 'Divider'
-  | 'SpaceCompact'
-  | 'FormItem'
-  | 'Tooltip'
-  | 'Button'
-  | 'MenuItem'
-  | 'Menu'
-  | 'Dropdown'
-  | 'Space'
-  | 'Card'
-  | 'SuperListItem'
-  | 'SuperList'
-  | 'Modal'
-  | 'Table'
-  | 'Tabs'
-  | 'TabPane'
-  | 'CollapsePanel'
-  | 'Collapse'
-  | 'Input'
-  | 'InputNumber'
-  | 'InputSearch'
-  | 'Select'
-  | 'Switch'
-  | 'DateRangePicker'
-  | 'DatePicker'
-  | 'TimePicker'
-  | 'RadioButton'
-  | 'Radio'
-  | 'RadioGroup'
-  | 'Checkbox'
-  | 'CheckboxGroup'
-  | 'TreeSelect'
 
 type Dict = { label: string; value: string | number; [k: string]: string | number }
-interface InstallConfig extends GlobalConfig {
+export interface InstallConfig extends GlobalConfig {
   locale?: Locale
-  components?: { [k in BaseComps]?: Component }
+  /** UI 组件注册表；非内置名称可直接作为 schema type。 */
+  components?: Partial<Record<BaseComponentName, FormComponent>> & Record<string, FormComponent | undefined>
   /** 组件默认参数 */
   defaultProps?: Obj
 }
@@ -98,7 +66,7 @@ const install = async (app: App, config: InstallConfig = {}) => {
   const { locale, components, defaultProps, ..._config } = config
   app.provide('localeData', { locale: locale, exist: true })
   Object.assign(globalConfig, _config)
-  components && override(components)
+  components && configureComponents(components)
   defaultProps && setDefaultProps(defaultProps)
 }
 

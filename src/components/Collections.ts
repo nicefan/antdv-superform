@@ -1,7 +1,7 @@
 import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRaw } from 'vue'
 import { Col, Row } from '../compat/antdv'
 import { defaults, isFunction } from 'lodash-es'
-import Controls, { containers, formItemTypes } from './index'
+import Controls, { containers, getFormComponent, hasFormComponent, mapFormComponentModel } from './index'
 import { ButtonGroup } from './buttons'
 import base from '../compat/antdv'
 import { getEffectData, getViewNode, useControl, useInnerSlots, useVModel } from '../utils'
@@ -70,7 +70,7 @@ export default defineComponent({
       }
       let innerNode = buildInnerNode(option, subData, effectData, attrs)
       if (!innerNode) continue
-      if (formItemTypes.includes(type) && editable !== undefined && editable !== true) {
+      if (hasFormComponent(type) && editable !== undefined && editable !== true) {
         const inputNode = innerNode
         const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
         const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
@@ -176,6 +176,7 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const slots = useInnerSlots(option.slots, effectData)
+  const definition = getFormComponent(type)
   const renderSlot = render ? (typeof render === 'function' ? render : rootSlots[render]) : Controls[type]
 
   let node
@@ -198,7 +199,9 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
     } else if (type === 'InputSlot') {
       node = () => renderSlot?.(reactive({ props: allAttrs, ...effectData }))
-    } else if (type.startsWith('Ext')) {
+    } else if (definition?.source === 'custom') {
+      node = () => h(renderSlot, reactive(mapFormComponentModel(definition, allAttrs)), slots)
+    } else if (definition?.source === 'legacy' || type.startsWith('Ext')) {
       node = () => h(renderSlot, reactive({ option, effectData, ...allAttrs }), slots)
     } else {
       node = () => h(renderSlot, reactive({ option, model, effectData, ...allAttrs }), slots)

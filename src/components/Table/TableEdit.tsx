@@ -1,6 +1,6 @@
 import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive, toRef, ref } from 'vue'
 import { isFunction } from 'lodash-es'
-import Controls from '../index'
+import { hasFormComponent } from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
 import base from '../../compat/antdv'
 import { buildInnerNode } from '../Collections'
@@ -99,8 +99,7 @@ export default function ({ model, orgList, rowKey, setRowKey, editableRef }) {
   })
 
   const getEditRender = (option) => {
-    const component = Controls[option.type]
-    if (component || (option.type === 'InputSlot' && option.editable !== false)) {
+    if (hasFormComponent(option.type) || (option.type === 'InputSlot' && option.editable !== false)) {
       return (args) => h(InputNode, { option, ...args })
     }
   }

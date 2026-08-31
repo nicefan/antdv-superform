@@ -2,7 +2,7 @@ import { computed, defineComponent, h, mergeProps, reactive, unref, watch } from
 import type { TableColumnType } from '../../compat/antdv'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
-import Controls from '../index'
+import { hasFormComponent } from '../index'
 import { buildInnerNode } from '../Collections'
 import { defaults, isFunction, isPlainObject, get as objGet, set as objSet } from 'lodash-es'
 import { globalConfig, globalProps } from '../../plugin'
@@ -49,8 +49,7 @@ const getEditNode = (option) => {
   const roles = (globalConfig.buttonRoles && globalConfig.buttonRoles()) || []
   const isFree = !option.roleName || roles.includes(option.roleName)
 
-  const component = Controls[option.type]
-  if (isFree && (component || option.type === 'InputSlot')) {
+  if (isFree && (hasFormComponent(option.type) || option.type === 'InputSlot')) {
     return (param) => {
       // param为函数组件props对象，所以需要解构响应内部变化
       return h(InputNode, { option, effectData: { ...param } })
