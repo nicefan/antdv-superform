@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { Alert, Button, Space } from 'ant-design-vue'
+import { Alert, Button, Space } from 'antdv-next'
 import { SuperForm, useForm } from '../src'
 
 const dataSource = reactive({

@@ -1,6 +1,6 @@
 import { defineComponent, ref, render, getCurrentInstance, createVNode, provide, onMounted } from 'vue'
-import type { ModalFuncProps } from 'ant-design-vue'
-import base from '../components/base'
+import type { ModalFuncProps } from '../compat/antdv'
+import base from '../compat/antdv'
 
 const comp = defineComponent({
   props: {

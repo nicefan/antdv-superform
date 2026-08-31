@@ -19,7 +19,7 @@ const files = {
   "antd.css": join(
     projectRoot,
     "node_modules",
-    "ant-design-vue",
+    "antdv-next",
     "dist",
     "antd.css"
   ),

@@ -1,8 +1,8 @@
 <script lang="ts">
 import { type PropType, defineComponent, h } from 'vue'
-import base from './base'
+import base from '../compat/antdv'
 import { useOptions } from '../utils/useOptions'
-import { Radio, RadioButton } from 'ant-design-vue'
+import { Radio, RadioButton } from '../compat/antdv'
 import { toNode } from '../utils'
 
 export default defineComponent({

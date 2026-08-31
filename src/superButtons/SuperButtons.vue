@@ -7,7 +7,7 @@ import type { ButtonItem } from '../exaTypes'
 export default defineComponent({
   props: {
     limit: Number,
-    buttonType: String as PropType<'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'>,
+    buttonType: String as PropType<'primary' | 'link' | 'text' | 'dashed' | 'default'>,
     buttonShape: String as PropType<'circle' | 'round' | 'default'>,
     size: String as PropType<'large' | 'middle' | 'small'>,
     /** 按钮显示方式icon/label */

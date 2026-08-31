@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, h } from 'vue'
-import base from './base'
+import base from '../compat/antdv'
 
 export default defineComponent({
   props: {
@@ -11,7 +11,7 @@ export default defineComponent({
 
   setup(props) {
     return () =>
-      h(base.Textarea, { style: 'width: 100%', allowClear: true, placeholder: `请输入${props.option.label}` })
+      h(base.TextArea, { style: 'width: 100%', allowClear: true, placeholder: `请输入${props.option.label}` })
   },
 })
 </script>

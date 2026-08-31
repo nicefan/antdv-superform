@@ -1,5 +1,5 @@
 <script lang="ts">
-import baseComps from '../base'
+import baseComps from '../../compat/antdv'
 
 import { useOptions } from '../../utils/useOptions'
 import { h, computed, defineComponent, ref, toRef } from 'vue'

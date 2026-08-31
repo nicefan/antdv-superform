@@ -24,7 +24,7 @@ import TreeSelect from './TreeSelect.vue'
 import Upload from './Upload.vue'
 import TagInput from './TagInput.vue'
 import TagSelect from './TagSelect.vue'
-import base, { override } from './base'
+import base, { override } from '../compat/antdv'
 
 export { ButtonGroup } from './buttons'
 export { default as Collections } from './Collections'

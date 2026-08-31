@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, h } from 'vue'
-import base from './base'
+import base from '../compat/antdv'
 
 export default defineComponent({
   props: {

@@ -2,7 +2,7 @@
 import { reactive, ref, toRef, unref } from 'vue'
 import { useControl, getEffectData, toNode } from '../utils'
 import { ButtonGroup } from './buttons'
-import base from './base'
+import base from '../compat/antdv'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 

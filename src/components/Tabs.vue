@@ -10,7 +10,7 @@ export default {
 
 <script setup lang="tsx">
 import { getIconNode, useControl, getEffectData, toNode } from '../utils'
-import base from './base'
+import base from '../compat/antdv'
 import Collections from './Collections'
 import { ButtonGroup } from './buttons'
 

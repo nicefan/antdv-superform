@@ -21,7 +21,7 @@
 </template>
 <script setup lang="ts">
 import { watch, reactive, ref, toRef, h } from 'vue'
-import { Button, Space } from 'ant-design-vue'
+import { Button, Space } from 'antdv-next'
 import { getTableOption } from './formOption'
 import { useForm, useTable, SuperTable, defineTable } from '../../src'
 

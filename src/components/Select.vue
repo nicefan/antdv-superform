@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { useAttrs } from 'vue'
-import baseComps from './base'
+import baseComps from '../compat/antdv'
 import { throttle } from 'lodash-es'
 import { useOptions } from '../utils/useOptions'
 const { Select } = baseComps

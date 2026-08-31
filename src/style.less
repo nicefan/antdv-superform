@@ -218,3 +218,31 @@
     font-weight: 700;
   }
 }
+
+.sup-list-header {
+  padding: 12px 0;
+  border-block-end: 1px solid rgba(5, 5, 5, 0.06);
+}
+
+.sup-list-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sup-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-block-end: 1px solid rgba(5, 5, 5, 0.06);
+
+  > .ant-list-item-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  > .ant-list-item-action {
+    margin-inline-start: 24px;
+  }
+}

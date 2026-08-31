@@ -8,7 +8,7 @@ import type {
   SelectProps,
   FormProps,
   PaginationProps,
-  TableColumnProps,
+  TableColumnType,
   ModalFuncProps,
   ColProps,
   RowProps,
@@ -17,7 +17,7 @@ import type {
   DescriptionsProps,
   TableProps,
   RadioGroupProps,
-  ListProps,
+  CheckboxGroupProps,
   UploadProps,
   TabsProps,
   TreeSelectProps,
@@ -27,7 +27,13 @@ import type {
   TooltipProps,
   DropdownProps,
   AutoCompleteProps,
-} from 'ant-design-vue'
+  DatePickerProps,
+  InputNumberProps,
+  RangePickerProps,
+  TextAreaProps,
+  TimePickerProps,
+  TimeRangePickerProps,
+} from './compat/antdv'
 
 import { RuleConfig } from './utils/buildRule'
 
@@ -39,7 +45,7 @@ interface HelpMessage {
   color: 'success' | 'info' | 'warning' | 'error'
 }
 
-type VColumnProps = TableColumnProps & {
+type VColumnProps = TableColumnType & {
   /** 是否隐藏 */
   defaultHidden?: boolean
 }
@@ -228,7 +234,7 @@ type TableApis = {
 interface ExtButtonGroup<T extends string = string> {
   attrs?: SpaceProps & HTMLAttributes
   limit?: number
-  buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'ghost' | 'default'
+  buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'default'
   buttonShape?: 'circle' | 'round' | 'default'
   size?: 'large' | 'middle' | 'small'
   align?: 'right' | 'left' | 'center'
@@ -294,7 +300,7 @@ type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
   hideInTable?: boolean
   /** 表格内容渲染 */
   viewRender?: VSlot
-  columnProps?: TableColumnProps
+  columnProps?: TableColumnType
 }
 interface ExtTableOption extends ExtBaseOption {
   field: string
@@ -325,12 +331,12 @@ interface ExtTableOption extends ExtBaseOption {
   columns: ExtColumnsItem[]
   tabs?: TabsHeader | false
   /** 公共列配置 */
-  columnProps?: TableColumnProps
+  columnProps?: TableColumnType
   /**序号列*/
-  indexColumn?: boolean | TableColumnProps
+  indexColumn?: boolean | TableColumnType
   buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
   /** 列表元素右边按钮 */
-  rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnProps })
+  rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnType })
   /** 弹窗属性 */
   modalProps?: ModalFuncProps | Obj
   descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
@@ -381,7 +387,11 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
 interface ExtListOption extends ExtBaseOption, ExtRow {
   field: string
   title?: VSlot
-  attrs?: ListProps | Obj
+  attrs?: HTMLAttributes & {
+    rowKey?: string
+    itemClass?: HTMLAttributes['class']
+    itemStyle?: HTMLAttributes['style']
+  }
   buttons?: ExtButtons<'add' | 'refresh'>
   columns: UniWidgetOption[]
   /** 列表元素右边按钮 */
@@ -463,6 +473,18 @@ interface ExtInputOption extends ExtFormItemOption {
   onSearch?: (effectData: Obj, value: string) => void
   attrs?: InputProps & { enterButton?: any } & HTMLAttributes
 }
+interface ExtTextareaOption extends ExtFormItemOption {
+  attrs?: TextAreaProps & HTMLAttributes
+}
+interface ExtInputNumberOption extends ExtFormItemOption {
+  attrs?: InputNumberProps & HTMLAttributes
+}
+interface ExtDatePickerOption extends ExtFormItemOption {
+  attrs?: DatePickerProps & HTMLAttributes
+}
+interface ExtTimePickerOption extends ExtFormItemOption {
+  attrs?: TimePickerProps & HTMLAttributes
+}
 type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
 type SelectOptions =
   | DefaultOptionsType
@@ -535,6 +557,7 @@ interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
 }
 
 interface ExtDateRange extends ExtFormItemOption {
+  attrs?: RangePickerProps & HTMLAttributes
   /** 绑定结束日期字段 */
   endField?: string
   /** @deprecated 使用 `endField` */
@@ -542,8 +565,14 @@ interface ExtDateRange extends ExtFormItemOption {
   /** 未配置 `endField` 时，将日期范围转换为逗号分隔字符串后写回字段 */
   stringifyValue?: boolean
 }
+interface ExtTimeRange extends Omit<ExtDateRange, 'attrs'> {
+  attrs?: TimeRangePickerProps & HTMLAttributes
+}
 interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
   attrs?: RadioGroupProps & HTMLAttributes
+}
+interface ExtCheckboxOption extends ExtFormItemOption, ExtSelect {
+  attrs?: CheckboxGroupProps & HTMLAttributes
 }
 interface ExtAutoCompleteOption extends ExtFormItemOption {
   options?: SelectOptions
@@ -607,18 +636,18 @@ type WidgetTypes = {
   InfoSlot: ExtInfoSlotOption
   Text: ExtFormItemOption
   HTML: ExtFormItemOption
-  Textarea: ExtFormItemOption
+  Textarea: ExtTextareaOption
   Input: ExtInputOption
   AutoComplete: ExtAutoCompleteOption
-  InputNumber: ExtFormItemOption
-  DatePicker: ExtFormItemOption
-  TimePicker: ExtFormItemOption
+  InputNumber: ExtInputNumberOption
+  DatePicker: ExtDatePickerOption
+  TimePicker: ExtTimePickerOption
   DateRange: ExtDateRange
-  TimeRange: ExtDateRange
+  TimeRange: ExtTimeRange
   Select: ExtSelectOption
   TreeSelect: ExtTreeOption
   Radio: ExtRadioOption
-  Checkbox: ExtRadioOption
+  Checkbox: ExtCheckboxOption
   Switch: ExtSwitchOption
   Upload: ExtUpload
   InputGroup: ExtInputGroupOption

@@ -6,7 +6,7 @@
     >
       <Tooltip :title="tooltipTitle">
         <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
-          <template #overlay>
+          <template #popupRender>
             <Menu @click="onClick">
               <menu-item v-for="item of menu" :key="item.value" :disabled="item.disabled">
                 <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
@@ -32,7 +32,7 @@
       <Button v-bind="defaultAttrs">
         <component v-if="moreLabel" :is="() => toNode(moreLabel, effectData)" /><ellipsis-outlined v-else />
       </Button>
-      <template #overlay>
+      <template #popupRender>
         <Menu>
           <menu-item
             v-for="{ attrs, icon, label, tooltipTitle, onClick } of moreBtns"
@@ -53,8 +53,8 @@
 </template>
 <script setup lang="ts">
 import { ref, watchEffect, reactive, toValue, inject, computed } from 'vue'
-import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from 'ant-design-vue'
-import { EllipsisOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from '../../compat/antdv'
+import { EllipsisOutlined, DownOutlined } from '../../compat/icons'
 import { getComputedStatus, useDisabled, getIconNode, toNode } from '../../utils'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'

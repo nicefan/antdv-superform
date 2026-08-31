@@ -3,7 +3,7 @@ import { h, defineComponent, toRaw, mergeProps } from 'vue'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { createButtons } from './buttons'
-import { Row, Col } from 'ant-design-vue'
+import { Row, Col } from '../compat/antdv'
 import { createLabelNode } from '../utils/labelNode'
 export default defineComponent({
   inheritAttrs: false,

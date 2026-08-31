@@ -1,6 +1,6 @@
 <script lang="ts">
 import { h, type PropType, defineComponent, toRef } from 'vue'
-import base from './base'
+import base from '../compat/antdv'
 import { useOptions } from '../utils/useOptions'
 
 export default defineComponent({

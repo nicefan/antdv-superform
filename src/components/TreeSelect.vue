@@ -1,7 +1,7 @@
 
 <script lang="ts">
 import { ref, unref, watchPostEffect, watch, defineComponent, h, toRef } from 'vue'
-import base from './base'
+import base from '../compat/antdv'
 export default defineComponent({
   props: {
     option: { type: Object, required: true },

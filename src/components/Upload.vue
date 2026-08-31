@@ -19,9 +19,9 @@ import {
   SyncOutlined,
   PlusOutlined,
   CloseCircleOutlined,
-} from '@ant-design/icons-vue'
-import base from './base'
-import { message, Modal, Upload } from 'ant-design-vue'
+} from '../compat/icons'
+import base from '../compat/antdv'
+import { message, Modal, Upload } from '../compat/antdv'
 import { globalProps } from '../plugin'
 import usePreview from './usePreview'
 import { isArray, isFunction } from 'lodash-es'

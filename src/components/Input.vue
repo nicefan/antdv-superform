@@ -1,5 +1,5 @@
 <script lang="ts">
-import base from './base'
+import base from '../compat/antdv'
 import { toNode, getIconNode } from '../utils'
 import { defineComponent, h, reactive, ref, toRef, type PropType } from 'vue'
 import { isFunction, isObject, isString } from 'lodash-es'

@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Alert, Button, Space } from 'ant-design-vue'
+import { Alert, Button, Space } from 'antdv-next'
 import { SuperTable, useTable } from '../src'
 
 type TestRow = {

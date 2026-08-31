@@ -3,10 +3,10 @@ import { type PropType, defineComponent, h, reactive, ref, toRaw, toRef, useAttr
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../utils/buildModel'
 import { createButtons } from './buttons'
-import base from './base'
+import base from '../compat/antdv'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { Row, Col } from 'ant-design-vue'
+import { Row, Col } from '../compat/antdv'
 import { toNode } from '../utils'
 import { globalProps } from '../plugin'
 
@@ -36,6 +36,13 @@ export default defineComponent({
 
     const attrs: Obj = useAttrs()
     const rowKey = attrs.rowKey || 'id'
+    const getListAttrs = () => {
+      const listAttrs = { ...attrs }
+      delete listAttrs.rowKey
+      delete listAttrs.itemClass
+      delete listAttrs.itemStyle
+      return listAttrs
+    }
 
     const methods = {
       add() {
@@ -109,8 +116,8 @@ export default defineComponent({
 
     __slots.renderItem = ({ item }) =>
       h(
-        base.ListItem,
-        { key: item.hash },
+        base.SuperListItem,
+        { key: item.hash, class: attrs.itemClass, style: attrs.itemStyle },
         {
           default: () => [
             isView
@@ -126,7 +133,7 @@ export default defineComponent({
           ],
         }
       )
-    return () => h(base.List, { dataSource: listItems.value }, __slots)
+    return () => h(base.SuperList, { ...getListAttrs(), dataSource: listItems.value }, __slots)
   },
 })
 </script>

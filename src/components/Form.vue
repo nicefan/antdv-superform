@@ -4,8 +4,8 @@ import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
-import base from './base'
-import { message } from 'ant-design-vue'
+import base from '../compat/antdv'
+import { message } from '../compat/antdv'
 import { ButtonGroup } from './buttons'
 
 export default {
