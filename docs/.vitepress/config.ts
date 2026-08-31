@@ -109,6 +109,8 @@ export default defineConfig({
         {
           text: '扩展开发',
           items: [
+            { text: 'UI 组件解耦', link: '/manual/ui-decoupling' },
+            { text: 'Schema 组件自动导入', link: '/manual/auto-components' },
             { text: '自定义字段', link: '/manual/custom-fields' },
             { text: '替换底层组件', link: '/manual/component-overrides' },
           ],

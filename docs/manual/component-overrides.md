@@ -1,6 +1,6 @@
 # 替换底层组件
 
-`components` 用于全局替换组件库内部依赖的 Ant Design Vue 基础组件，适合统一埋点、主题、可访问性或企业级二次封装。它与注册业务字段不同：替换 Input 会影响所有 Input Schema。
+`components` 同时是 UI 基础组件和普通字段的注册入口。内置名称用于替换增强器或布局使用的底层组件；其他名称会直接成为可用的 Schema `type`。
 
 ## 安装时替换
 
@@ -10,6 +10,7 @@ app.use(SuperFormPlugin, {
     Input: ProjectInput,
     Table: ProjectTable,
     Modal: ProjectModal,
+    Rate,
   },
 });
 ```
@@ -28,7 +29,7 @@ app.use(SuperFormPlugin, {
 | 日期时间      | `DatePicker`、`RangePicker`、`TimePicker`                         |
 | 单复选        | `Radio`、`RadioButton`、`RadioGroup`、`Checkbox`、`CheckboxGroup` |
 
-名称区分大小写，并表示组件库内部槽位，不等同于 Schema `type`。
+名称区分大小写。表格中的内置名称表示组件库内部槽位；未被核心占用的名称（例如 `Rate`）则直接等同于 Schema `type`。
 
 ## 包装组件必须保持的契约
 
@@ -60,7 +61,8 @@ app.use(SuperFormPlugin, {
 | 所有 Input 自动埋点          | `components.Input`             |
 | 所有 Table 统一空状态        | `components.Table`             |
 | 单个页面自定义一次输入       | InputSlot                      |
-| 多页面复用“用户选择器”       | `registerComponent` 注册 Ext\* |
+| 标准 Rate、Slider 字段       | `components` 直接注册          |
+| 多页面复用“用户选择器”       | `registerComponent`            |
 | 只改一个 Schema 的底层 props | 当前节点 `attrs`               |
 
 替换范围很大，建议为包装组件写 v-model、事件、插槽和 ref 冒烟测试。业务字段扩展见[注册自定义字段](/manual/custom-fields)。
