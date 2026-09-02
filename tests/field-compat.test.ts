@@ -1,4 +1,5 @@
-import { describe, expect, expectTypeOf, it } from 'vitest'
+import { beforeAll, describe, expect, expectTypeOf, it } from 'vitest'
+import { createApp, defineComponent } from 'vue'
 import * as AntdvNext from 'antdv-next'
 import base from '../src/compat/antdv'
 import {
@@ -16,8 +17,12 @@ import {
   override,
 } from '../src/compat/antdv'
 import type { OptionType } from '../src/exaTypes'
-import DateRangeField from '../src/components/DateRange.vue'
-import TextareaField from '../src/components/Textarea.vue'
+import { antdvAdapter, getUIFieldAdapter, resolveUIComponent } from '../src/adapter'
+import plugin from '../src/plugin'
+
+beforeAll(async () => {
+  await plugin.install(createApp(defineComponent(() => () => null)), { adapter: antdvAdapter })
+})
 
 function expectProps(component: any, names: string[]) {
   const props = component.props || component.__vccOpts?.props || {}
@@ -45,14 +50,9 @@ describe('antdv-next 导出边界', () => {
   })
 
   it('字段渲染器使用新导出', () => {
-    const renderDateRange = (DateRangeField as any).setup(
-      { disabledDate: undefined, effectData: {} },
-      { slots: {} }
-    )
-    const renderTextarea = (TextareaField as any).setup({ option: { label: '备注' } })
-
-    expect(renderDateRange().type).toBe(AntdvNext.DateRangePicker)
-    expect(renderTextarea().type).toBe(AntdvNext.TextArea)
+    expect(resolveUIComponent('DateRangePicker')).toBe(AntdvNext.DateRangePicker)
+    expect(resolveUIComponent('TextArea')).toBe(AntdvNext.TextArea)
+    expect(getUIFieldAdapter('DateRangePicker')?.processors).toEqual(['picker'])
   })
 
   it('在同一兼容边界维护底层组件覆盖', () => {
@@ -99,17 +99,17 @@ describe('字段使用的规范属性', () => {
 
 describe('字段 schema 类型', () => {
   it('为各字段暴露对应的 antdv-next 属性类型', () => {
-    const textarea: OptionType['Textarea'] = { type: 'Textarea', attrs: { variant: 'filled' } }
+    const textarea: OptionType['TextArea'] = { type: 'TextArea', attrs: { variant: 'filled' } }
     const inputNumber: OptionType['InputNumber'] = { type: 'InputNumber', attrs: { variant: 'underlined' } }
-    const dateRange: OptionType['DateRange'] = {
-      type: 'DateRange',
+    const dateRange: OptionType['DateRangePicker'] = {
+      type: 'DateRangePicker',
       attrs: { variant: 'borderless', needConfirm: true },
     }
-    const timeRange: OptionType['TimeRange'] = {
-      type: 'TimeRange',
+    const timeRange: OptionType['TimeRangePicker'] = {
+      type: 'TimeRangePicker',
       attrs: { variant: 'outlined', renderExtraFooter: () => 'footer' },
     }
-    const radio: OptionType['Radio'] = { type: 'Radio', attrs: { orientation: 'vertical' } }
+    const radio: OptionType['RadioGroup'] = { type: 'RadioGroup', attrs: { orientation: 'vertical' } }
 
     expectTypeOf(textarea.attrs).toMatchTypeOf<Record<string, any> | undefined>()
     expectTypeOf(inputNumber.attrs).toMatchTypeOf<Record<string, any> | undefined>()

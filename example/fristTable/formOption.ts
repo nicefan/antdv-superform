@@ -98,7 +98,7 @@ export const getTableOption = () => {
         rules: { required: true },
       },
       {
-        type: 'DateRange',
+        type: 'DateRangePicker',
         label: '日期',
         field: 'date',
         endField: 'date2',
@@ -171,7 +171,7 @@ export const getTableOption = () => {
         //  vModelFields: {fileList: 'files'}
       },
       {
-        type: 'Textarea',
+        type: 'TextArea',
         label: '说明',
         field: 'tip',
         span: 24,

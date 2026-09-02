@@ -37,6 +37,8 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
+    "upgrade-dev/**/*.ts",
+    "upgrade-dev/**/*.vue",
     "example/superform-components.d.ts",
     "example/superform-components.typecheck.ts",
   ],

@@ -1,5 +1,13 @@
 # 本项目协作约束
 
+## UI 适配器升级工程
+
+- 升级工程资料统一放在 `upgrade/`，不要放入作为 VitePress 站点的 `docs/`。
+- 开始升级相关工作前，依次阅读 `upgrade/ARCHITECTURE.md`、`upgrade/status/CURRENT.md`、相关设计与决策文档，以及 `upgrade/plans/MASTER.md` 中的当前阶段。
+- 不得静默改变已接受的架构决策；确需改变时，先更新或新增 ADR 并说明影响。
+- 完成阶段任务后同步更新计划勾选项、`upgrade/status/CURRENT.md`、相关验证记录；产生用户可见的不兼容变化时同步更新迁移记录。
+- 阶段完成后出现新增或调整需求时，先分析其影响并取得确认：影响已完成阶段的，新增该阶段回补子任务；必须在下一阶段前处理的，新增前置子任务；明确属于后续阶段的，只更新对应阶段计划。未经用户明确指令，不得开始实施下一阶段。
+
 - 以正确性、完整性和可维护性为优先；需求相关时可以进行必要重构、补充类型和完善测试，不以改动行数最少为目标。
 - 发现当前需求之外的问题、风险或改进建议时，先告知用户；未经确认不要顺手修改。
 - 日常修改只运行与本次变更相关的测试和 lint；`build` 仅在用户确认提交、准备提交时执行。
@@ -38,6 +46,6 @@
 - 原始值 options 数组强制使用元素本身作为 label 和 value；配置 `valueToNumber` 时改用数字下标作为兼容 value。不要把 `labelAsValue: false` 解释为关闭此规则。
 - options 支持扁平的对象数组、原始值数组、`{ value: label }` 对象、Ref、函数和标准字典结果，当前不支持 Select 分组选项或 `fieldNames.options`。
 - Select 消费 `fieldNames.label/value` 后将选项归一化为标准 `label/value` 再传给底层组件；表单和详情的同步、异步 options 应保持一致的归一化语义。`dictApi` 按公开契约返回标准 `{ label, value }[]`。
-- `TimeRange` 使用 Ant Design Vue 的 `TimeRangePicker`，默认 `valueFormat` 为 `HH:mm:ss`；带 `endField` 的范围控件按开始、结束两个模型字段拆分。
+- `TimeRangePicker` 使用 UI 组件真实名称，默认 `valueFormat` 为 `HH:mm:ss`；带 `endField` 的范围控件按开始、结束两个模型字段拆分。不保留 `TimeRange` 别名。
 - 表格弹窗编辑时先等待可选的 `apis.info`，再按当前行、接口结果、`resetData` 的顺序合并到表单数据源；未配置 `info` 时不得报错。
 - `searchForm.subItems` 使用列字段名时，会复制同名 column 配置，移除 `span`、`disabled`、`hidden`，并设置为可编辑查询字段。

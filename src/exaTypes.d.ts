@@ -479,7 +479,7 @@ interface ExtInputOption extends ExtFormItemOption {
   onSearch?: (effectData: Obj, value: string) => void
   attrs?: InputProps & { enterButton?: any } & HTMLAttributes
 }
-interface ExtTextareaOption extends ExtFormItemOption {
+interface ExtTextAreaOption extends ExtFormItemOption {
   attrs?: TextAreaProps & HTMLAttributes
 }
 interface ExtInputNumberOption extends ExtFormItemOption {
@@ -562,7 +562,7 @@ interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
     HTMLAttributes
 }
 
-interface ExtDateRange extends ExtFormItemOption {
+interface ExtDateRangePicker extends ExtFormItemOption {
   attrs?: RangePickerProps & HTMLAttributes
   /** 绑定结束日期字段 */
   endField?: string
@@ -571,13 +571,13 @@ interface ExtDateRange extends ExtFormItemOption {
   /** 未配置 `endField` 时，将日期范围转换为逗号分隔字符串后写回字段 */
   stringifyValue?: boolean
 }
-interface ExtTimeRange extends Omit<ExtDateRange, 'attrs'> {
+interface ExtTimeRangePicker extends Omit<ExtDateRangePicker, 'attrs'> {
   attrs?: TimeRangePickerProps & HTMLAttributes
 }
-interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
+interface ExtRadioGroupOption extends ExtFormItemOption, ExtSelect {
   attrs?: RadioGroupProps & HTMLAttributes
 }
-interface ExtCheckboxOption extends ExtFormItemOption, ExtSelect {
+interface ExtCheckboxGroupOption extends ExtFormItemOption, ExtSelect {
   attrs?: CheckboxGroupProps & HTMLAttributes
 }
 interface ExtAutoCompleteOption extends ExtFormItemOption {
@@ -642,18 +642,18 @@ type WidgetTypes = {
   InfoSlot: ExtInfoSlotOption
   Text: ExtFormItemOption
   HTML: ExtFormItemOption
-  Textarea: ExtTextareaOption
+  TextArea: ExtTextAreaOption
   Input: ExtInputOption
   AutoComplete: ExtAutoCompleteOption
   InputNumber: ExtInputNumberOption
   DatePicker: ExtDatePickerOption
   TimePicker: ExtTimePickerOption
-  DateRange: ExtDateRange
-  TimeRange: ExtTimeRange
+  DateRangePicker: ExtDateRangePicker
+  TimeRangePicker: ExtTimeRangePicker
   Select: ExtSelectOption
   TreeSelect: ExtTreeOption
-  Radio: ExtRadioOption
-  Checkbox: ExtCheckboxOption
+  RadioGroup: ExtRadioGroupOption
+  CheckboxGroup: ExtCheckboxGroupOption
   Switch: ExtSwitchOption
   Upload: ExtUpload
   InputGroup: ExtInputGroupOption

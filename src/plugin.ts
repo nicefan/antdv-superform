@@ -2,71 +2,37 @@ import { merge } from 'lodash-es'
 import type { App, Component, VNode } from 'vue'
 import { configureComponents, addComponent, type FormComponent } from './components'
 import type { BaseComponentName, Locale } from './compat/antdv'
-import type { ButtonItem } from './exaTypes'
+import { initializeUIAdapter, type UIAdapter } from './adapter'
+import { globalConfig, type GlobalConfig } from './config'
 
-type Dict = { label: string; value: string | number; [k: string]: string | number }
 export interface InstallConfig extends GlobalConfig {
   locale?: Locale
+  /** 当前应用使用的 UI 框架适配器；初始化时必须显式传入，之后不可切换。 */
+  adapter: UIAdapter
   /** UI 组件注册表；非内置名称可直接作为 schema type。 */
   components?: Partial<Record<BaseComponentName, FormComponent>> & Record<string, FormComponent | undefined>
   /** 组件默认参数 */
   defaultProps?: Obj
 }
-interface GlobalConfig {
-  /** 是否在组件接收 schema 时输出诊断信息 */
-  schemaDiagnostics?: boolean
-  dictApi?: (name: string) => Promise<Dict[]>
-  /** 自定义图标处理组件 */
-  customIcon?: (name: string) => VNode
-  /** 动态传递按钮权限 */
-  buttonRoles?: () => string[]
-  /** 内置默认按钮配置 */
-  defaultButtons?: Obj<ButtonItem>
-  /**tag显示时默认颜色组 */
-  tagViewer?: Obj<string> | string[] | false | Fn<string>
-  /** 接口返回数据结构处理 */
-  tableApiSetting?: {
-    /** 当前页请求参数名 */
-    currentField?: string
-    /** 当前每页数量请求参数名 */
-    sizeField?: string
-    /** 返回结果格式转换，无分页时直接返回数组 */
-    resultTransform?: (result: any) =>
-      | any[]
-      | {
-          current: number
-          size: number
-          total: number
-          records: any[]
-        }
+const globalProps: Obj = {}
+
+function applyAdapter(adapter: UIAdapter) {
+  initializeUIAdapter(adapter)
+  // 同一 Adapter 重复安装时重新以其默认值为基线，避免用户默认值跨安装残留。
+  Object.keys(globalProps).forEach((name) => delete globalProps[name])
+  merge(globalProps, adapter.defaults || {})
+}
+
+const install = async (app: App, config: InstallConfig) => {
+  if (!config?.adapter) {
+    throw new Error('初始化 SuperForm 时必须显式传入 adapter')
   }
-  /** 全局按钮权限过滤 */
-  // buttonsAuth?: (actions: ButtonItem[]) => ButtonItem[]
-}
-const globalConfig: GlobalConfig = {
-  tagViewer: ['pink', 'red', 'orange', 'green', 'cyan', 'blue', 'purple'],
-}
-
-const globalProps: Obj = {
-  FormItem: {
-    validateFirst: true,
-  },
-  Table: {
-    size: 'small',
-  },
-  TimePicker: {
-    valueFormat: 'HH:mm:ss',
-  },
-  TimeRange: {
-    valueFormat: 'HH:mm:ss',
-  },
-}
-
-const install = async (app: App, config: InstallConfig = {}) => {
-  const { locale, components, defaultProps, ..._config } = config
+  const { locale, adapter, components, defaultProps, ..._config } = config
   app.provide('localeData', { locale: locale, exist: true })
+  applyAdapter(adapter)
   Object.assign(globalConfig, _config)
   components && configureComponents(components)
+  // 用户默认值始终覆盖当前 Adapter 默认值。
   defaultProps && setDefaultProps(defaultProps)
 }
 

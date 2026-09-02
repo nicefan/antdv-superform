@@ -322,7 +322,7 @@ export default function exampleForm() {
             // rules: { type: 'number', min: 150 },
           },
           {
-            type: 'DateRange',
+            type: 'DateRangePicker',
             label: '起止日期',
             field: 'startDate',
             endField: 'endDate',
@@ -378,7 +378,7 @@ export default function exampleForm() {
             ],
           },
           {
-            type: 'Textarea',
+            type: 'TextArea',
             field: 'memo',
             label: '备注',
             breakAfter: true,
@@ -600,7 +600,7 @@ export default function exampleForm() {
             render: 'test',
           },
           {
-            type: 'Radio',
+            type: 'RadioGroup',
             field: 'radio',
             label: '天气',
             attrs: {
@@ -612,7 +612,7 @@ export default function exampleForm() {
             },
           },
           {
-            type: 'Checkbox',
+            type: 'CheckboxGroup',
             field: 'food',
             label: '食物',
             initialValue: [],
@@ -919,7 +919,7 @@ export default function exampleForm() {
                 label: 'tab4',
               },
               {
-                type: 'TimeRange',
+                type: 'TimeRangePicker',
                 label: '有效期',
                 field: 'startDate',
                 endField: 'endDate',

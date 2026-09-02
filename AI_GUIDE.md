@@ -63,11 +63,11 @@ import type {
 
 ```ts
 import { createApp } from "vue";
-import superForm from "antdv-superform";
+import superForm, { antdvAdapter } from "antdv-superform";
 import App from "./App.vue";
 
 const app = createApp(App);
-app.use(superForm);
+app.use(superForm, { adapter: antdvAdapter });
 app.mount("#app");
 ```
 
@@ -75,6 +75,7 @@ app.mount("#app");
 
 ```ts
 app.use(superForm, {
+  adapter: antdvAdapter,
   schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => fetchDictionary(name),
   customIcon: (name) => renderProjectIcon(name),
@@ -152,11 +153,11 @@ app.use(superForm, {
 | ------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | 表单栅格     | 子项 `span` 默认 `8`，即一行 3 项；`gutter` 默认 `16`                                  | `subSpan: 8`、逐项 `span: 8`、`gutter: 16`                     |
 | 容器布局     | 未设置 `span` 的容器默认独占一块                                                       | 仅为独占一行而生成 `block: true`                               |
-| 输入占位符   | `Input`、`InputNumber`、`Textarea`、`AutoComplete` 默认“请输入 + label”                | 与默认文案相同的 `attrs.placeholder`                           |
+| 输入占位符   | `Input`、`InputNumber`、`TextArea`、`AutoComplete` 默认“请输入 + label”                | 与默认文案相同的 `attrs.placeholder`                           |
 | 选择占位符   | `Select`、`TreeSelect` 默认“请选择 + label”                                            | 与默认文案相同的 `attrs.placeholder`                           |
 | 表单校验     | `FormItem.validateFirst` 默认 `true`                                                   | `formItemProps: { validateFirst: true }`                       |
 | 输入组合     | `InputGroup` 默认使用紧凑布局                                                          | `attrs: { compact: true }`                                     |
-| 日期时间值   | `DatePicker`、`DateRange` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRange` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat`                                     |
+| 日期时间值   | `DatePicker`、`DateRangePicker` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRangePicker` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat`                                     |
 | 选项只读展示 | 配置 `options` 后默认按 Tag 展示，并使用内置颜色组                                     | `tagViewer: true`                                              |
 | 表格首次查询 | `immediate` 默认 `true`                                                                | `immediate: true`                                              |
 | 表格分页     | 默认不分页；启用分页后 `current` 默认 `1`、`pageSize` 默认 `10`                        | 无分页时的 `pagination: false`；标准分页时重复写页码和每页数量 |
@@ -174,8 +175,8 @@ app.use(superForm, {
 表单字段：
 
 ```text
-Input, Textarea, InputNumber, AutoComplete, Select, TreeSelect,
-DatePicker, DateRange, TimePicker, TimeRange, Switch, Radio, Checkbox,
+Input, TextArea, InputNumber, AutoComplete, Select, TreeSelect,
+DatePicker, DateRangePicker, TimePicker, TimeRangePicker, Switch, RadioGroup, CheckboxGroup,
 Upload, TagInput, TagSelect, Text, HTML, Hidden, InputSlot, InfoSlot
 ```
 
@@ -333,7 +334,7 @@ form.dataSource
 
 ## 6. 选项、字典和值映射
 
-`Select`、`Radio`、`Checkbox`、`Switch` 等选项型字段支持：
+`Select`、`RadioGroup`、`CheckboxGroup`、`Switch` 等选项型字段支持：
 
 - `{ label, value }[]`
 - 原始值数组
@@ -375,18 +376,18 @@ options: [
 
 远程搜索使用函数形式的 `options(effectData, keyword)`；需要自行控制搜索事件时配置 `onSearch`。
 
-`DateRange` 和 `TimeRange` 可把范围拆到两个字段：
+`DateRangePicker` 和 `TimeRangePicker` 可把范围拆到两个字段：
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   label: '创建时间',
   field: 'startTime',
   endField: 'endTime',
 }
 ```
 
-`field` 保存开始值，`endField` 保存结束值；`DateRange` 默认格式为 `YYYY-MM-DD`，`TimePicker` 和 `TimeRange` 默认格式为 `HH:mm:ss`。不配置 `endField` 时，可设置 `stringifyValue: true`，将范围作为逗号分隔字符串保存到 `field`。`endField` 与 `stringifyValue` 同时配置时优先拆分到两个字段。
+`field` 保存开始值，`endField` 保存结束值；`DateRangePicker` 默认格式为 `YYYY-MM-DD`，`TimePicker` 和 `TimeRangePicker` 默认格式为 `HH:mm:ss`。不配置 `endField` 时，可设置 `stringifyValue: true`，将范围作为逗号分隔字符串保存到 `field`。`endField` 与 `stringifyValue` 同时配置时优先拆分到两个字段。
 
 ## 7. SuperTable
 
@@ -804,7 +805,7 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 | `wrapping`                        | `breakAfter`                               |
 | 按钮配置 `forSlot`                | `targetSlot`                               |
 | `registComponent`                 | `registerComponent`                        |
-| DateRange `keepField`             | `endField`                                 |
+| DateRangePicker `keepField`       | `endField`                                 |
 
 以下内容也不要假定存在：
 

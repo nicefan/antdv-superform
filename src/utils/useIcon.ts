@@ -1,5 +1,5 @@
 import { h, toRaw } from 'vue'
-import { globalConfig } from '../plugin'
+import { globalConfig } from '../config'
 
 export function getIconNode(icon) {
   if (typeof icon === 'string') {

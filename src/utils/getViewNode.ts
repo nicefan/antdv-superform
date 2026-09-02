@@ -1,4 +1,4 @@
-import { globalConfig } from '../plugin'
+import { globalConfig } from '../config'
 import { ref, unref, h, reactive, inject, computed, mergeProps, toValue } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls from '../components'
@@ -170,7 +170,7 @@ export function getViewNode(option, effectData: Obj = {}) {
       const attrs = mergeProps({ ...option.attrs, innerHTML: param.value }, dynamicAttrs)
       return h('span', attrs)
     }
-  } else if (colType === 'Textarea') {
+  } else if (colType === 'TextArea') {
     return (param: Obj = effectData) => {
       return h('pre', { style: 'white-space: break-spaces;' }, param.value ?? toValue(initialValue))
     }

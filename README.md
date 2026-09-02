@@ -65,12 +65,13 @@ npm install antdv-superform ant-design-vue
 
 ```ts
 import { createApp } from 'vue'
-import AntdvSuperForm from 'antdv-superform'
+import AntdvSuperForm, { antdvAdapter } from 'antdv-superform'
 import App from './App.vue'
 
 const app = createApp(App)
 
 app.use(AntdvSuperForm, {
+  adapter: antdvAdapter,
   schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => api.getDictionary(name),
   buttonRoles: () => permissionStore.roles,
@@ -258,8 +259,8 @@ table.detail({ record })
 当前常用字段类型：
 
 ```text
-Input, Textarea, InputNumber, AutoComplete, Select, TreeSelect,
-DatePicker, DateRange, TimePicker, TimeRange, Switch, Radio, Checkbox,
+Input, TextArea, InputNumber, AutoComplete, Select, TreeSelect,
+DatePicker, DateRangePicker, TimePicker, TimeRangePicker, Switch, RadioGroup, CheckboxGroup,
 Upload, TagInput, TagSelect, Text, HTML, Hidden, InputSlot, InfoSlot
 ```
 
@@ -274,7 +275,7 @@ Descriptions, Table, InputGroup, InputList
 
 ## 选项和值
 
-Select、Radio、Checkbox、Switch 等选项型字段支持对象数组、原始值数组、对象字典、Ref、函数和 `dictName`。
+Select、RadioGroup、CheckboxGroup、Switch 等选项型字段支持对象数组、原始值数组、对象字典、Ref、函数和 `dictName`。
 
 推荐使用对象数组：
 
@@ -293,7 +294,7 @@ options: [
 - `stringifyValue`：把多值结果转换为逗号分隔字符串。
 - `tagViewer`：控制只读模式的 Tag 展示。
 
-`DateRange` 和 `TimeRange` 可以通过 `endField` 把开始值和结束值分别保存到两个字段。
+`DateRangePicker` 和 `TimeRangePicker` 可以通过 `endField` 把开始值和结束值分别保存到两个字段。
 
 ## 数组对象编辑
 

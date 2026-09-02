@@ -8,29 +8,18 @@ import List from './List.vue'
 import ListGroup from './ListGroup.vue'
 import Tabs from './Tabs.vue'
 import Table from './Table'
-import Textarea from './Textarea.vue'
 import Collapse from './Collapse.vue'
-import Input from './Input.vue'
-import InputNumber from './InputNumber.vue'
-import Select from './Select.vue'
-import Switch from './Switch.vue'
-import DateRange from './DateRange.vue'
-import DatePicker from './DatePicker.vue'
-// import TimePicker from './TimePicker.vue'
-import AutoComplete from './AutoComplete.vue'
-import Radio from './Radio.vue'
-import Checkbox from './Checkbox.vue'
-import TreeSelect from './TreeSelect.vue'
 import Upload from './Upload.vue'
 import TagInput from './TagInput.vue'
 import TagSelect from './TagSelect.vue'
-import base, { isBaseComponentName, override } from '../compat/antdv'
+import { isBaseComponentName, override } from '../compat/antdv'
+import type { ComponentModelConfig } from '../adapter'
 
 export { ButtonGroup } from './buttons'
 export { default as Collections } from './Collections'
 export { override }
 
-const components = {
+const containerComponents = {
   Form,
   Group,
   Card,
@@ -42,37 +31,20 @@ const components = {
   Descriptions: Group,
   Fragment: Group,
 }
-const formItems = {
-  Textarea,
-  Input,
-  InputNumber,
+const coreFields = {
   InputGroup,
   InputList,
-  AutoComplete,
-  Select,
-  Switch,
-  DateRange,
-  TimeRange: (props, { slots }) => h(base.TimeRangePicker, props, slots),
-  DatePicker,
-  TimePicker: (props, { slots }) => h(base.TimePicker, props, slots),
-  Radio,
-  Checkbox,
-  TreeSelect,
   Upload,
   TagInput,
   TagSelect,
 }
+const enhancedFields = {}
 
-export const containers = Object.keys(components)
-const reservedSchemaTypes = new Set([...Object.keys(formItems), ...containers])
-const allItems: Record<string, Component> = { ...formItems, ...components }
+export const containers = Object.keys(containerComponents)
+const controls: Record<string, Component> = { ...containerComponents, ...coreFields }
+const reservedSchemaTypes = new Set([...Object.keys(controls), ...Object.keys(enhancedFields)])
 
-export interface ComponentModelConfig {
-  /** 组件接收主值的属性名，默认 value */
-  prop?: string
-  /** 组件更新主值时触发的事件名，默认 update:value */
-  event?: string
-}
+export type { ComponentModelConfig } from '../adapter'
 
 export interface FormComponentConfig {
   component: Component
@@ -87,14 +59,15 @@ export type FormComponentProps<T> = T extends new (...args: any[]) => { $props: 
   ? P
   : Obj
 
-type ComponentSource = 'enhanced' | 'custom' | 'legacy'
+type ComponentSource = 'core' | 'enhanced' | 'custom' | 'legacy'
 export interface FormComponentDefinition extends FormComponentConfig {
   source: ComponentSource
 }
 
-const definitions: Record<string, FormComponentDefinition> = Object.fromEntries(
-  Object.entries(formItems).map(([name, component]) => [name, { component, source: 'enhanced' as const }])
-)
+const definitions: Record<string, FormComponentDefinition> = Object.fromEntries([
+  ...Object.entries(coreFields).map(([name, component]) => [name, { component, source: 'core' as const }]),
+  ...Object.entries(enhancedFields).map(([name, component]) => [name, { component, source: 'enhanced' as const }]),
+])
 
 function normalizeComponent(component: FormComponent): FormComponentConfig {
   if (typeof component === 'object' && component && 'component' in component) return component as FormComponentConfig
@@ -105,7 +78,6 @@ function normalizeComponent(component: FormComponent): FormComponentConfig {
 export function addFormComponent(name: string, config: FormComponent, source: ComponentSource = 'custom') {
   const definition = { ...normalizeComponent(config), source }
   definitions[name] = definition
-  allItems[name] = definition.component
 }
 
 export function configureComponents(components: Record<string, FormComponent | undefined>) {
@@ -155,4 +127,4 @@ export function addComponent(name, component) {
   addFormComponent(customName, legacyComponent, 'legacy')
 }
 
-export default allItems
+export default controls

@@ -1,30 +1,37 @@
-import { describe, expect, it, vi } from 'vitest'
-import { nextTick, ref, shallowReactive } from 'vue'
-import SwitchField from '../src/components/Switch.vue'
-import base from '../src/compat/antdv'
+import { beforeAll, describe, expect, it } from 'vitest'
+import { createApp, defineComponent, effectScope, nextTick, ref } from 'vue'
+import { buildModelsMap } from '../src/utils/buildModel'
+import { resolveFieldProcessors } from '../src/processors'
+import { antdvAdapter, mapUIFieldProps } from '../src/adapter'
+import plugin from '../src/plugin'
+
+beforeAll(async () => {
+  await plugin.install(createApp(defineComponent(() => () => null)), { adapter: antdvAdapter })
+})
 
 function setupSwitch(option: Obj, value?: string | number | boolean, attrs: Obj = {}) {
-  const emit = vi.fn()
-  const props = shallowReactive({
-    option,
-    model: {},
-    effectData: {},
-    value,
-    options: undefined,
-    dictName: undefined,
-    valueToNumber: false,
-    labelAsValue: false,
-    valueToLabel: false,
-    firstIsChecked: false,
-    defaultChecked: false,
-  })
-  const render = (SwitchField as any).setup(props, { attrs, emit })
-  return { emit, props, render }
+  const parent: Obj = value === undefined ? {} : { [option.field]: value }
+  const { modelsMap } = buildModelsMap([option], parent)
+  const model = modelsMap.get(option)
+  if (!model) throw new Error('Switch 测试模型创建失败')
+  const effectData = { current: parent }
+  const scope = effectScope()
+  const processor = scope.run(() => resolveFieldProcessors(['switch'], { option, effectData, attrs, model }))
+  if (!processor) throw new Error('Switch 测试处理器创建失败')
+  const render = (extra: Obj = {}) => {
+    const normalized = processor.transformProps({
+      value: model.refData,
+      'onUpdate:value': (nextValue) => (model.refData = nextValue),
+      ...extra,
+    })
+    return mapUIFieldProps('Switch', normalized, { option, effectData })
+  }
+  return { parent, render, scope }
 }
 
-describe('Switch options', () => {
+describe('Switch processor', () => {
   it('使用 options 同步未选中和选中状态的值与标签', async () => {
-    const { emit, render } = setupSwitch({
+    const { parent, render, scope } = setupSwitch({
       type: 'Switch',
       field: 'status',
       options: [
@@ -34,20 +41,19 @@ describe('Switch options', () => {
     })
 
     await nextTick()
-    const node = render()
-
-    expect(node.type).toBe(base.Switch)
-    expect(node.props).toMatchObject({
+    expect(parent.status).toBe(0)
+    expect(render()).toMatchObject({
+      checked: 0,
       checkedChildren: '启用',
       unCheckedChildren: '停用',
       checkedValue: 1,
       unCheckedValue: 0,
     })
-    expect(emit).toHaveBeenCalledWith('update:value', 0)
+    scope.stop()
   })
 
   it('值变化时同步 options 中对应的 labelField', async () => {
-    const { emit, render } = setupSwitch(
+    const { parent, render, scope } = setupSwitch(
       {
         type: 'Switch',
         field: 'status',
@@ -61,15 +67,15 @@ describe('Switch options', () => {
     )
 
     await nextTick()
-    render().props['onUpdate:checked'](1)
-
-    expect(emit).toHaveBeenCalledWith('update:value', 1)
-    expect(emit).toHaveBeenCalledWith('update:labelValue', '启用')
+    render()['onUpdate:checked'](1)
+    expect(parent.status).toBe(1)
+    expect(parent.statusName).toBe('启用')
+    scope.stop()
   })
 
   it('等待异步 options 后再写入对应的默认值和标签', async () => {
     const options = ref<any[]>([])
-    const { emit } = setupSwitch({
+    const { parent, scope } = setupSwitch({
       type: 'Switch',
       field: 'status',
       labelField: 'statusName',
@@ -77,7 +83,7 @@ describe('Switch options', () => {
     })
 
     await nextTick()
-    expect(emit).not.toHaveBeenCalledWith('update:value', false)
+    expect(parent.status).toBeUndefined()
 
     options.value = [
       { label: '停用', value: 0 },
@@ -85,20 +91,18 @@ describe('Switch options', () => {
     ]
     await nextTick()
 
-    expect(emit).toHaveBeenCalledWith('update:value', 0)
-    expect(emit).toHaveBeenCalledWith('update:labelValue', '停用')
+    expect(parent.status).toBe(0)
+    expect(parent.statusName).toBe('停用')
+    scope.stop()
   })
 
-  it('向底层 Switch 透传标准属性', async () => {
-    const { render } = setupSwitch({ type: 'Switch', field: 'enabled' }, true, {
-      loading: true,
-      classes: { root: 'custom-switch' },
-    })
+  it('向底层 Switch 透传标准属性', () => {
+    const { render, scope } = setupSwitch({ type: 'Switch', field: 'enabled' }, true)
 
-    await nextTick()
-    expect(render().props).toMatchObject({
+    expect(render({ loading: true, classes: { root: 'custom-switch' } })).toMatchObject({
       loading: true,
       classes: { root: 'custom-switch' },
     })
+    scope.stop()
   })
 })

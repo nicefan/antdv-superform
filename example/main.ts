@@ -1,6 +1,6 @@
 import { createApp, defineComponent, h } from 'vue'
 import App from './App.vue'
-import superForm from '../src'
+import superForm, { antdvAdapter } from '../src'
 import type { ButtonItem } from '../src'
 import 'antdv-next/dist/antd.css'
 import { Button, InputNumber, Table } from 'antdv-next'
@@ -88,6 +88,7 @@ const tagColorList = ['pink', 'cyan', 'red', 'green', 'blue', 'orange', 'purple'
 
 app
   .use(superForm, {
+    adapter: antdvAdapter,
     // 覆盖Antd组件，
     components: {
       Table: Table,
