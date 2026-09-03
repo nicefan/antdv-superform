@@ -355,9 +355,11 @@ P010 发布与迁移
 
 - [x] 启动 P004 前解决当前声明打包失败，并验证 Adapter 新增公开类型可以生成稳定的 d.ts。
 - [x] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
-- [ ] 定义框架无关的稳定 Props 子集。
+- [x] 提取 Form、FormItem、Row、Col 和 Space 的第一批框架无关稳定 Props。
+- [ ] 完成 Container、Action、Modal、Table 和 Upload 的稳定 Props。
 - [x] 设计 UI 专属扩展属性的类型扩展机制。
-- [ ] 直接删除公共 Schema 对旧 AntDV Props 的继承和兼容别名。
+- [x] 删除 Form、Field 和 Layout 公共 Schema 对旧 AntDV Props 的直接继承和兼容别名。
+- [ ] 删除剩余公共 Schema 对旧 AntDV Props 的直接继承。
 - [ ] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
 - [ ] 记录每项不兼容类型变化和迁移示例。
 - [ ] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留稳定扩展契约，其余收为内部 API 或明确标记实验状态。
@@ -369,6 +371,14 @@ P010 发布与迁移
 - 设计影响：普通输入默认使用 `value/onUpdate:value`，只有非默认 model 或存在转换时才声明字段协议；类型完整支持不等于运行时完整导入。
 - 兼容性：`antdv-superform/unplugin/rollup` 和 `antdv-superform/unplugin/webpack` 不再提供，已同步迁移记录。
 - 后续：提取第一批 Form、Field、Layout 稳定 Props，并建立 AntDV UI 类型扩展入口。
+
+#### 2026-09-03：完成 Form、Field 与 Layout 类型分层
+
+- 完成：新增表单与布局稳定 Props；普通 UI 字段改由 `UIFormComponentProps` 生成类型，AntDV Adapter 在私有类型目录中预先声明实际组件 Props 和 Core 增强关系。
+- 设计影响：新增 `UIContainerComponentProps`、`UIFormComponentProps` 和 `UIFormComponentOptionExtensions`；类型目录不产生运行时组件导入。
+- 兼容性：AntDV Schema 仍有完整字段、表单和布局 Props 提示；不再导出 `ExtInputOption` 和 `ExtTreeOption` 兼容别名，改用 `OptionType['Input']` 和 `OptionType['TreeSelect']`。
+- 验证：类型 fixture 通过；相关字段与 Vite 插件测试 2 个文件、11 项通过。
+- 后续：继续拆分 Container、Action 类型及安装配置，再处理 Modal、Table 和 Upload。
 
 ### 验收条件
 

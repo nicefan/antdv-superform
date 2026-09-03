@@ -13,6 +13,7 @@ import { globalConfig } from '../config'
 import type { IconAdapterContext, UIAdapter } from './types'
 import AntdvDescriptions from './antdv/Descriptions'
 import { SuperList, SuperListItem } from './antdv/List'
+import './antdv/schemaTypes'
 
 function renderAntdvIcon(icon: unknown, { customIcon }: IconAdapterContext = {}) {
   if (typeof icon === 'string') return customIcon?.(icon) || h('span', { class: `anticon ${icon}` })

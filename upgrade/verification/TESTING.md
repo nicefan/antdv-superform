@@ -167,4 +167,14 @@ P005–P007 随各能力迁移逐步建立以下自动检查：
 - 执行：`pnpm build`。
 - 结果：类型检查、JavaScript、声明和样式构建成功；本轮仅调整文档，未运行业务单测。
 
+### P004：Form、Field 与 Layout 类型分层
+
+- 类型 fixture：`example/schema-types.typecheck.ts` 验证 Core 稳定 Props、AntDV Adapter Props 目录、字段增强合并及明确排除的 Core 属性。
+- 执行：`pnpm vitest run tests/packageDeclarations.test.ts tests/field-compat.test.ts tests/superFormUnplugin.test.ts --threads false --reporter=dot`。
+- 结果：3 个测试文件、13 项通过。
+- 执行：变更文件 ESLint、`pnpm exec vue-tsc --noEmit` 和 `git diff --check`。
+- 结果：均通过。
+- 执行：`pnpm build`。
+- 结果：完整构建成功；汇总声明包含稳定命名类型注册表，不包含指向源码 `exaTypes` 的相对模块扩展。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

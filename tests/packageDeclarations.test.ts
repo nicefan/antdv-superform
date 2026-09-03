@@ -22,7 +22,13 @@ describe('发布声明', () => {
     const declaration = await readFile(path.join(workspace, 'lib/index.d.ts'), 'utf8')
 
     expect(declaration).toContain('export declare interface UIAdapter')
+    expect(declaration).toContain('export declare type UIFormComponentProps')
+    expect(declaration).toContain('export declare type UIContainerComponentProps')
+    expect(declaration).toContain('export declare interface FormSchemaProps')
+    expect(declaration).toContain('export declare interface LayoutColProps')
     expect(declaration).not.toContain('declare module "../src/exaTypes"')
+    expect(declaration).not.toContain("declare module '../../exaTypes'")
+    expect(declaration).not.toContain("from './compat/antdv'")
     expect(declaration).not.toContain('InternalFormItemProps')
     expect(declaration).not.toContain('node_modules')
   })

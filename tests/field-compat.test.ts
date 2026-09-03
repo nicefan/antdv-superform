@@ -16,7 +16,7 @@ import {
   Upload,
   override,
 } from '../src/compat/antdv'
-import type { OptionType } from '../src/exaTypes'
+import type { OptionType, UIFormComponentProps } from '../src/exaTypes'
 import { antdvAdapter, getUIFieldAdapter, resolveUIComponent } from '../src/adapter'
 import plugin from '../src/plugin'
 
@@ -98,7 +98,7 @@ describe('字段使用的规范属性', () => {
 })
 
 describe('字段 schema 类型', () => {
-  it('为各字段暴露对应的 antdv-next 属性类型', () => {
+  it('由 AntDV Adapter 类型目录提供真实组件属性', () => {
     const textarea: OptionType['TextArea'] = { type: 'TextArea', attrs: { variant: 'filled' } }
     const inputNumber: OptionType['InputNumber'] = { type: 'InputNumber', attrs: { variant: 'underlined' } }
     const dateRange: OptionType['DateRangePicker'] = {
@@ -110,11 +110,13 @@ describe('字段 schema 类型', () => {
       attrs: { variant: 'outlined', renderExtraFooter: () => 'footer' },
     }
     const radio: OptionType['RadioGroup'] = { type: 'RadioGroup', attrs: { orientation: 'vertical' } }
+    const inputProps: UIFormComponentProps['Input'] = { variant: 'filled' }
 
     expectTypeOf(textarea.attrs).toMatchTypeOf<Record<string, any> | undefined>()
     expectTypeOf(inputNumber.attrs).toMatchTypeOf<Record<string, any> | undefined>()
     expect(dateRange.attrs?.needConfirm).toBe(true)
     expect(timeRange.attrs?.variant).toBe('outlined')
     expect(radio.attrs?.orientation).toBe('vertical')
+    expect(inputProps.variant).toBe('filled')
   })
 })

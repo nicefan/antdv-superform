@@ -3,36 +3,18 @@
 /* eslint-disable no-use-before-define */
 import Vue from 'vue'
 
-import type { Component, HTMLAttributes, VNode, VNodeChild, VNodeTypes, Ref } from 'vue'
+import type { Component, HTMLAttributes, VNodeTypes, Ref } from 'vue'
 import type {
-  SelectProps,
-  FormProps,
   PaginationProps,
   TableColumnType,
   ModalFuncProps,
-  ColProps,
-  RowProps,
-  FormItemProps,
-  InputProps,
   DescriptionsProps,
   TableProps,
-  RadioGroupProps,
-  CheckboxGroupProps,
   UploadProps,
   TabsProps,
-  TreeSelectProps,
-  SpaceProps,
-  SwitchProps,
   ButtonProps,
   TooltipProps,
   DropdownProps,
-  AutoCompleteProps,
-  DatePickerProps,
-  InputNumberProps,
-  RangePickerProps,
-  TextAreaProps,
-  TimePickerProps,
-  TimeRangePickerProps,
 } from './compat/antdv'
 
 import { RuleConfig } from './utils/buildRule'
@@ -74,6 +56,83 @@ export interface DefaultOptionType {
   [name: string]: any
 }
 
+type ResponsiveValue<T> = Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', T>>
+type LayoutGutter = number | ResponsiveValue<number>
+
+/** Core 保证的栅格列语义，UI 专属断点与外观属性不在此扩展。 */
+export interface LayoutColProps extends HTMLAttributes {
+  flex?: string | number
+  offset?: number
+  order?: number
+  pull?: number
+  push?: number
+  span?: number
+}
+
+/** Core 保证的栅格行语义。 */
+export interface LayoutRowProps extends HTMLAttributes {
+  align?: 'top' | 'middle' | 'bottom' | 'stretch'
+  gutter?: LayoutGutter | [LayoutGutter, LayoutGutter]
+  justify?: 'start' | 'end' | 'center' | 'space-around' | 'space-between' | 'space-evenly'
+  wrap?: boolean
+}
+
+/** Core 保证的间距布局语义。 */
+export interface LayoutSpaceProps extends HTMLAttributes {
+  align?: 'start' | 'end' | 'center' | 'baseline'
+  direction?: 'horizontal' | 'vertical'
+  size?: number | 'small' | 'middle' | 'large' | [number, number]
+  wrap?: boolean
+}
+
+/** SuperForm 稳定的表单容器属性。 */
+export interface FormSchemaProps extends HTMLAttributes {
+  colon?: boolean
+  disabled?: boolean
+  hideRequiredMark?: boolean
+  labelAlign?: 'left' | 'right'
+  labelCol?: LayoutColProps
+  layout?: 'horizontal' | 'vertical' | 'inline'
+  scrollToFirstError?: boolean | Obj
+  validateOnRuleChange?: boolean
+  validateTrigger?: string | string[]
+  wrapperCol?: LayoutColProps
+}
+
+/** SuperForm 稳定的表单项属性。 */
+export interface FormItemSchemaProps extends HTMLAttributes {
+  colon?: boolean
+  extra?: VSlot
+  hasFeedback?: boolean
+  help?: VSlot
+  htmlFor?: string
+  labelAlign?: 'left' | 'right'
+  labelCol?: LayoutColProps
+  required?: boolean
+  validateStatus?: '' | 'success' | 'warning' | 'error' | 'validating'
+  validateTrigger?: string | string[] | false
+  wrapperCol?: LayoutColProps
+}
+
+declare global {
+  /** Adapter 类型目录的合并入口，带命名空间以避免污染业务全局类型。 */
+  namespace SuperFormTypeRegistry {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIContainerComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIFormComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIFormComponentOptionExtensions {}
+  }
+}
+
+/** Adapter 对 Core 容器和布局节点提供的 UI Props 类型映射。 */
+export type UIContainerComponentProps = SuperFormTypeRegistry.UIContainerComponentProps
+
+type UIContainerProps<K extends string> = K extends keyof UIContainerComponentProps
+  ? UIContainerComponentProps[K]
+  : unknown
+
 interface ExtBaseOption {
   type: string
   field?: string
@@ -100,7 +159,7 @@ interface ExtBaseOption {
   disabled?: boolean | Fn
   on?: Obj<Fn>
   // row?: boolean
-  colProps?: ColProps & HTMLAttributes
+  colProps?: LayoutColProps & UIContainerProps<'Col'>
   /** 快捷实现col span */
   span?: number | 'auto'
   /** 当前节点脱离前后栅格组，独立成块；分组元素默认为 true */
@@ -128,16 +187,16 @@ interface ExtBaseOption {
 
 interface ExtRow {
   /** 行间排版属性 */
-  rowProps?: RowProps & HTMLAttributes
+  rowProps?: LayoutRowProps & UIContainerProps<'Row'>
   subSpan?: number | 'auto'
   gutter?: number
 }
 type ExtDescriptionsProps = {
   mode?: 'table' | 'form' | 'default'
   /** 输入框列属性，置为空对象将清空继承属性 */
-  wrapperCol?: ColProps & HTMLAttributes
+  wrapperCol?: LayoutColProps & UIContainerProps<'Col'>
   /** 标题列属性，置为空对象将清空继承属性 */
-  labelCol?: ColProps & HTMLAttributes
+  labelCol?: LayoutColProps & UIContainerProps<'Col'>
   labelAlign?: 'left' | 'center' | 'right'
   /**分组数据表格模式展示时，设为fixed,让列宽一致 */
   tableLayout?: 'fixed' | 'auto'
@@ -176,7 +235,7 @@ interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
   // type?: 'Form'
   dataSource?: Obj
-  attrs?: FormProps & HTMLAttributes
+  attrs?: FormSchemaProps & UIContainerProps<'Form'>
   isContainer?: boolean
   /** 减少行距 */
   compact?: boolean
@@ -231,7 +290,7 @@ type TableApis = {
   export?: Fn<Promise<any>>
 }
 interface ExtButtonGroup<T extends string = string> {
-  attrs?: SpaceProps & HTMLAttributes
+  attrs?: LayoutSpaceProps & UIContainerProps<'Space'>
   limit?: number
   buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'default'
   buttonShape?: 'circle' | 'round' | 'default'
@@ -461,42 +520,39 @@ interface ExtFormItemOption extends ExtBaseOption {
     | string[]
     | { label?: string; value: any; color: string; icon?: Fn }[]
     | Fn<string | { label: string; color?: string; icon?: Fn }>
-  formItemProps?: FormItemProps
+  formItemProps?: FormItemSchemaProps & UIContainerProps<'FormItem'>
   descriptionsProps?: ExtDescriptionsProps
   /**是否可编辑 */
   editable?: boolean | Fn<boolean>
 }
 
 /**
- * 自定义 UI 字段的 attrs 类型映射。应用可通过模块扩展增加 type 与组件 Props 的对应关系。
+ * Adapter UI 字段的 attrs 类型映射。具体 Adapter 预先声明它支持的真实组件名和 Props。
  */
+export type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps
+
+/** Adapter 为字段组件关联的 Core 增强配置。 */
+export type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormComponentOptionExtensions
+
+/** 自定义 UI 字段的 attrs 类型映射。 */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface CustomFormComponentProps {}
 
-interface ExtInputOption extends ExtFormItemOption {
-  // enterButton?: (effectData: Obj) => Component
+export interface InputFieldOption {
   onSearch?: (effectData: Obj, value: string) => void
-  attrs?: InputProps & { enterButton?: any } & HTMLAttributes
 }
-interface ExtTextAreaOption extends ExtFormItemOption {
-  attrs?: TextAreaProps & HTMLAttributes
+
+export interface InputFieldAttrs {
+  enterButton?: any
 }
-interface ExtInputNumberOption extends ExtFormItemOption {
-  attrs?: InputNumberProps & HTMLAttributes
-}
-interface ExtDatePickerOption extends ExtFormItemOption {
-  attrs?: DatePickerProps & HTMLAttributes
-}
-interface ExtTimePickerOption extends ExtFormItemOption {
-  attrs?: TimePickerProps & HTMLAttributes
-}
+
 type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
 type SelectOptions =
   | DefaultOptionsType
   | Readonly<DefaultOptionsType>
   | Ref<DefaultOptionsType>
   | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
-interface ExtSelect {
+export interface SelectFieldOption {
   options?: SelectOptions
   /** 字典名称 */
   dictName?: string
@@ -517,10 +573,7 @@ interface ExtSelect {
    */
   valueToString?: boolean
 }
-interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
-  attrs?: SelectProps & HTMLAttributes
-}
-interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
+interface ExtTagSelectOption extends ExtFormItemOption, SelectFieldOption {
   attrs?: {
     multiple?: boolean
     /** 将多选结果转换为逗号分隔字符串后写回字段 */
@@ -537,28 +590,27 @@ interface ExtTagInputOption extends ExtFormItemOption {
     closable?: boolean | ((tag: string, index: number) => boolean)
   }
 }
-interface ExtTreeOption extends ExtFormItemOption {
+export interface TreeFieldOption<TreeData = unknown> {
   labelField?: string
-  attrs?: TreeSelectProps & HTMLAttributes
   /**
    * @deprecated 使用`treeData`
    */
-  data?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
-  treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>> | Fn<TreeSelectProps['treeData']>
-}
-interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
-  valueLabels?: [string, string]
-  attrs?: {
-    /** 第一个选项为选中值 */
-    firstIsChecked?: boolean
-    /** 默认是否选中 */
-    defaultChecked?: boolean
-  } & SwitchProps &
-    HTMLAttributes
+  data?: TreeData | Fn<Promise<TreeData>>
+  treeData?: TreeData | Fn<Promise<TreeData>> | Fn<TreeData>
 }
 
-interface ExtDateRangePicker extends ExtFormItemOption {
-  attrs?: RangePickerProps & HTMLAttributes
+export interface SwitchFieldOption extends SelectFieldOption {
+  valueLabels?: [string, string]
+}
+
+export interface SwitchFieldAttrs {
+  /** 第一个选项为选中值 */
+  firstIsChecked?: boolean
+  /** 默认是否选中 */
+  defaultChecked?: boolean
+}
+
+export interface RangeFieldOption {
   /** 绑定结束日期字段 */
   endField?: string
   /** @deprecated 使用 `endField` */
@@ -566,19 +618,10 @@ interface ExtDateRangePicker extends ExtFormItemOption {
   /** 未配置 `endField` 时，将日期范围转换为逗号分隔字符串后写回字段 */
   stringifyValue?: boolean
 }
-interface ExtTimeRangePicker extends Omit<ExtDateRangePicker, 'attrs'> {
-  attrs?: TimeRangePickerProps & HTMLAttributes
-}
-interface ExtRadioGroupOption extends ExtFormItemOption, ExtSelect {
-  attrs?: RadioGroupProps & HTMLAttributes
-}
-interface ExtCheckboxGroupOption extends ExtFormItemOption, ExtSelect {
-  attrs?: CheckboxGroupProps & HTMLAttributes
-}
-interface ExtAutoCompleteOption extends ExtFormItemOption {
+
+export interface AutoCompleteFieldOption {
   options?: SelectOptions
   dictName?: string
-  attrs?: AutoCompleteProps & HTMLAttributes
 }
 interface ExtUpload extends ExtFormItemOption {
   vModelFields?: {
@@ -630,37 +673,35 @@ type WrapperTypes = {
   Collapse: ExtCollapseOption
   Descriptions: ExtDescriptionsOption | ExtGroupOption
 }
-type WidgetTypes = {
+type CoreWidgetTypes = {
   Buttons: ExtBaseOption & ExtButtonGroup
   Hidden: ExtFormItemOption
   InputSlot: ExtInputSlotOption
   InfoSlot: ExtInfoSlotOption
   Text: ExtFormItemOption
   HTML: ExtFormItemOption
-  TextArea: ExtTextAreaOption
-  Input: ExtInputOption
-  AutoComplete: ExtAutoCompleteOption
-  InputNumber: ExtInputNumberOption
-  DatePicker: ExtDatePickerOption
-  TimePicker: ExtTimePickerOption
-  DateRangePicker: ExtDateRangePicker
-  TimeRangePicker: ExtTimeRangePicker
-  Select: ExtSelectOption
-  TreeSelect: ExtTreeOption
-  RadioGroup: ExtRadioGroupOption
-  CheckboxGroup: ExtCheckboxGroupOption
-  Switch: ExtSwitchOption
   Upload: ExtUpload
   InputGroup: ExtInputGroupOption
   InputList: ExtInputList
   TagInput: ExtTagInputOption
   TagSelect: ExtTagSelectOption
 }
+
+type UIFormComponentOption<K extends keyof UIFormComponentProps> = ExtFormItemOption &
+  (K extends keyof UIFormComponentOptionExtensions ? UIFormComponentOptionExtensions[K] : unknown) & {
+    attrs?: UIFormComponentProps[K] & HTMLAttributes
+  }
+
+type AdapterWidgetTypes = {
+  [K in keyof UIFormComponentProps]: UIFormComponentOption<K>
+}
+
 type CustomWidgetTypes = {
   [K in keyof CustomFormComponentProps]: ExtFormItemOption & {
     attrs?: CustomFormComponentProps[K] & HTMLAttributes
   }
 }
+type WidgetTypes = CoreWidgetTypes & AdapterWidgetTypes
 export type OptionType = WrapperTypes & WidgetTypes & CustomWidgetTypes
 export type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
 export type UniWidgetOption =
@@ -722,8 +763,6 @@ export {
   ExtButtons,
   ButtonItem,
   ExtButtonGroup,
-  ExtTreeOption,
-  ExtInputOption,
   ExtTabItem,
   TableApis,
   ExtColumnsItem,

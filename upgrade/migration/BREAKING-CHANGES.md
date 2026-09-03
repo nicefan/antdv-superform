@@ -273,3 +273,36 @@ Collapse 标题、轻量 List 内容和操作区复用了 `.ant-descriptions-hea
 ### 迁移
 
 Vite 项目无需修改。直接使用 Rollup 或 Webpack 的项目需要自行接入 Schema 组件注册，或迁移到 Vite 构建入口；本次不保留兼容代理包。
+
+## Form、Field 与 Layout 公共类型分层
+
+阶段：P004
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+`exaTypes.d.ts` 直接继承 AntDV 的 Form、FormItem、Row、Col、Space 和各普通输入组件 Props，并单独导出 `ExtInputOption`、`ExtTreeOption` 等 UI 名称类型。
+
+### 现在
+
+- Core 导出 `FormSchemaProps`、`FormItemSchemaProps`、`LayoutRowProps`、`LayoutColProps` 和 `LayoutSpaceProps` 稳定类型。
+- AntDV Adapter 通过 `UIContainerComponentProps`、`UIFormComponentProps` 和 `UIFormComponentOptionExtensions` 预声明它支持的真实组件 Props 与 Core 增强配置。
+- 类型目录只影响类型提示；Vite 插件仍只导入 Schema 实际使用的普通 UI 组件。
+
+### 影响
+
+AntDV 用户的 Form、Layout 和普通字段 `attrs` 提示保持，但直接导入 `ExtInputOption` 或 `ExtTreeOption` 的代码需要更换类型写法。Adapter 实现者需要显式声明支持的字段类型目录。
+
+### 迁移
+
+```ts
+type InputOption = OptionType['Input']
+type TreeSelectOption = OptionType['TreeSelect']
+```
+
+新 Adapter 通过 `SuperFormTypeRegistry` 声明合并注册 UI Props；需要 Select、Range 等 SuperForm 增强时，同时映射对应的 `SelectFieldOption`、`RangeFieldOption` 等稳定类型。
+
+### 兼容策略
+
+不保留 `ExtInputOption`、`ExtTreeOption` 别名或新旧双路径。组件实际 Props 始终以当前 Adapter 类型目录为准。

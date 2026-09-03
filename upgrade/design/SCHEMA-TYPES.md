@@ -31,11 +31,17 @@ interface CoreSchemaTypeMap {
   TagInput: TagInputOption
 }
 
-export interface UIFormComponentProps {}
+namespace SuperFormTypeRegistry {
+  interface UIFormComponentProps {}
+  interface UIFormComponentOptionExtensions {}
+  interface UIContainerComponentProps {}
+}
 export interface CustomFormComponentProps {}
 ```
 
-`UniOption` 由上述映射生成可辨识联合。Adapter 通过模块扩展预先提供全部受支持 UI 组件的 Props，应用或 Vite 插件扩展项目组件；二者只影响类型提示，不导入组件代码。
+`UniOption` 由上述映射生成可辨识联合。Adapter 通过命名类型注册表的声明合并预先提供全部受支持 UI 组件的 Props；`UIFormComponentOptionExtensions` 将 Select、Range 等组件关联到 Core 增强配置，避免 Core 根据组件名猜测能力。应用或 Vite 插件只扩展项目组件；这些类型映射都不导入运行时组件代码。
+
+Form、FormItem、Row、Col 和 Space 是 Core 固定语义名，它们先接收 Core 稳定 Props，再与当前 Adapter 在 `UIContainerComponentProps` 中声明的 Props 合并。这保留单根组件的自然 attrs 能力，同时不让 Core 类型直接引用具体 UI 包。
 
 当 UI 组件名与 Core 名称冲突时，Core 固定语义和增强类型优先，UI 扩展必须排除这些保留名称。Vite 插件也必须按 ADR-0002 的解析顺序排除 Core 和增强类型。
 
