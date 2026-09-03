@@ -62,11 +62,11 @@ fields: {
 ## 用户扩展
 
 - `adapter`：通过 `app.use(superForm, { adapter })` 在初始化时显式指定应用级 UI 框架实现；该参数必传，初始化后不可切换。
-- `components`：目标职责是注册消费项目自己的 Schema 组件；P001 兼容期仍保留原有底层组件替换行为，后续再按迁移记录拆分。
+- `components`：目标职责是注册消费项目自己的 Schema 组件；P001 为保持施工连续性暂时留下的底层组件替换行为，由 P005 直接删除。
 - `defaultProps`：覆盖当前适配器提供的默认值；合并顺序需在 P001 定义并补测试。
-- 兼容期可以保留旧 `components` 替换入口，但应标明兼容层和移除计划。
+- 新版本不保留旧 `components` 底层替换语义，也不增加废弃警告或双路径。
 
-P001 期间旧 `components`、`registerComponent` 和 `registerFormComponents` 行为保持不变，职责彻底分离留到对应兼容清理阶段。
+P001 期间旧 `components`、`registerComponent` 和 `registerFormComponents` 行为保持不变，职责分离与旧接口删除在 P005 同时完成。
 
 ## P001 已确认决策
 

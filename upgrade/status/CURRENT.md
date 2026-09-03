@@ -13,7 +13,7 @@ P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完�
 - 已完成 UI 组件、服务、协议和公开类型的初步依赖审计。
 - 已确认 Schema 类型只保留 Core 内置语义和 Core 增强语义，普通 UI 组件走自动导入。
 - 已确认 UI 组件映射、model/事件转换和 UI 默认值归 Adapter。
-- 已建立 `upgrade/` 工程文档体系和 P000-P010 总计划。
+- 已建立 `upgrade/` 工程文档体系和总计划。
 - 已建立最小 `UIAdapter`、`FieldAdapter` 和内置 AntDV Adapter 实现。
 - 安装 SuperForm 时必须显式传入应用级 Adapter；首次初始化后锁定，不允许切换为其他实例。
 - 已明确默认值按“Adapter 默认值 → 用户 `defaultProps`”合并，并保持旧组件注册入口兼容。
@@ -38,6 +38,8 @@ P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完�
 - Collapse、List 和按钮分隔线已移除 Core 中残留的 AntDV 私有 class；轻量 List 兼容实现已移入 AntDV Adapter 私有目录。
 - 声明构建已恢复：公共导出使用可命名类型，unplugin 子路径指向独立汇总声明，发布声明不再包含 dev/example 扩展或指向未发布 `src/` 的代理入口。
 - 已完成公共 Schema 类型分类和扩展机制设计；构建插件按产品范围收缩为仅支持 Vite。
+- 已确认 compat 只作为未迁移能力的内部施工依赖，旧类型、注册和解析规则不保留过渡期。
+- 原 P008 compat 清理已分别并入 P004–P007；原 P009 验证已并入 P005 Element Plus Adapter 和 P007 简单 Table。
 
 ## 下一步
 
@@ -45,8 +47,8 @@ P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完�
 
 ## 当前临时状态
 
-- `compat/antdv.ts` 和 `compat/icons.ts` 仍为 Adapter 及未迁移复杂能力提供迁移桥梁。
-- `components/index.ts` 的容器、Core 复合字段和兼容注册职责仍在同一入口，P005 将继续收缩解析职责。
+- `compat/antdv.ts` 和 `compat/icons.ts` 仍为未迁移复杂能力提供内部施工支持；对应能力完成时当轮删除，不作为新版兼容层。
+- `components/index.ts` 的容器、Core 复合字段和旧注册职责仍在同一入口，P005 将分离职责并直接删除旧解析规则。
 - `globalProps` 仍包含 FormItem、Table 等 AntDV 默认值；字段和容器的实际组件渲染已迁入 Adapter。
 - Adapter 默认值已经成为 `globalProps` 的初始来源，默认值类型解耦留待 P004。
 - `exaTypes.d.ts` 仍直接暴露大量 AntDV Props 类型。
@@ -64,6 +66,4 @@ P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完�
 
 ## 后续阶段待确认问题
 
-- 旧 `components` 底层覆盖能力的废弃时间。
-- UI 专属 Props 类型通过模块扩展、泛型还是独立 Adapter 类型导出。
 - Form、Table、Upload 等复杂能力采用统一 `services` 还是独立 capability。

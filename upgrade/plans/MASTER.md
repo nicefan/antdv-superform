@@ -1,7 +1,7 @@
 # UI 适配器升级总计划
 
 状态：活动
-当前状态：P002/P003 主任务已完成，先处理代码审查回补项；P004 尚未启动
+当前状态：P002/P003 及审查回补已完成；P004 正在进行公共 Schema 类型分层
 基线分支：`next-dev`
 
 ## 全局目标
@@ -14,7 +14,7 @@
 - 不在 Adapter 能力就绪前删除 `compat/antdv.ts`。
 - 不顺手修复与当前阶段无关的问题。
 - 不以首期完整支持第二 UI 框架为目标。
-- 不在未记录迁移方案时删除旧公共 API。
+- 移除旧公共 API 时必须记录直接迁移方式，不为此增加过渡接口。
 
 ## 精简原则
 
@@ -67,18 +67,13 @@ P000 文档基线
   ↓
 P001 Adapter 基础
   ↓
-P002 字段组件 ──→ P005 自动导入
-  ↓                  ↓
-P003 容器布局 ──→ P004 公共类型
-  ↓                  ↓
-P006 Upload/Modal/服务
-  ↓
-P007 Table
-  ↓
-P008 compat 清理
-  ↓
-P009 第二 UI 框架 PoC
-  ↓
+P002 字段组件 ─┬─→ P005 解析/自动导入/Element Plus
+  ↓            └─→ P003 容器布局 ─┬─→ P004 公共类型
+                              └─→ P006 Upload/Modal/服务
+                                      ↓
+                                  P007 Table/最终解耦
+P004 + P005 + P006 + P007
+              ↓
 P010 发布与迁移
 ```
 
@@ -362,7 +357,7 @@ P010 发布与迁移
 - [x] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
 - [ ] 定义框架无关的稳定 Props 子集。
 - [x] 设计 UI 专属扩展属性的类型扩展机制。
-- [ ] 为旧 AntDV Props 暴露提供兼容别名或过渡类型。
+- [ ] 直接删除公共 Schema 对旧 AntDV Props 的继承和兼容别名。
 - [ ] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
 - [ ] 记录每项不兼容类型变化和迁移示例。
 - [ ] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留稳定扩展契约，其余收为内部 API 或明确标记实验状态。
@@ -396,18 +391,22 @@ P010 发布与迁移
 
 - [ ] 明确定义 `coreTypes`、`enhancedTypes` 和保留类型。
 - [ ] 移除或收缩 `allItems` 的混合职责。
-- [ ] 为组件来源区分 `core`、`enhanced`、`auto`、`custom`、`legacy`。
+- [ ] 为组件来源区分 `core`、`enhanced`、`auto` 和 `custom`，不保留 `legacy` 分支。
 - [ ] unplugin 扫描时排除 Core 与增强类型，仅解析普通组件。
 - [ ] 调整虚拟模块注册方式，避免把自动导入组件误判为增强组件。
 - [ ] 保持动态 Schema 的显式 `types` 配置能力。
+- [ ] 直接移除 `configureComponents`、`registerFormComponents`、`registerComponent` 和 `Ext` 前缀等旧注册、解析规则。
+- [ ] 建立 Core UI 依赖架构保护测试，以当前未迁移的 Upload、Modal 和 Table 为显式暂时范围。
 - [ ] 更新生成的 d.ts 和对应测试。
 - [ ] 建立最小 Element Plus Adapter 和独立 dev 环境，覆盖 Form、布局、Input、Switch、Select、Tabs、ButtonGroup、TagInput 和 TagSelect，并验证类型声明与按需导入。
+- [ ] 为删除的旧注册和解析规则补充迁移记录。
 
 ### 验收条件
 
 - [ ] 解析优先级与 ADR-0002 一致。
 - [ ] 自动导入组件只接收标准组件属性，不被注入 `option/model/effectData`。
-- [ ] legacy 与 `Ext` 前缀兼容行为有明确测试和移除计划。
+- [ ] legacy 与 `Ext` 前缀解析已移除，无新旧双路径。
+- [ ] 同一份基础 Schema 可在不修改 Core 的前提下切换 AntDV 与 Element Plus Adapter。
 
 ---
 
@@ -432,7 +431,9 @@ P010 发布与迁移
 - [ ] 定义 message、confirm、info 的最小服务契约。
 - [ ] 迁移 Form 错误提示、按钮确认、Table 编辑消息到统一服务入口。
 - [ ] 迁移 `superModal` 的实例、上下文和生命周期协议。
+- [ ] 删除 Upload、Modal、message 和图标已被 Adapter 覆盖的 compat 导出、包装和重复默认值。
 - [ ] 补齐 auto/submit/custom/base64/text、单文件与预览行为测试。
+- [ ] 记录本阶段直接移除的 UI 专属接口及迁移方式。
 
 ### 验收条件
 
@@ -463,73 +464,27 @@ P010 发布与迁移
 - [ ] 消除嵌套 Ref 需要在 Core 适配 AntDV 的特殊逻辑。
 - [ ] 迁移列类型、分页类型和弹窗编辑的 UI 类型依赖。
 - [ ] 保持 AbortController、请求编号、分页和 CRUD 刷新约束。
+- [ ] 为最小 Element Plus Adapter 补充简单 Table 能力，记录必须模拟 AntDV 的契约并仅修正真正通用的抽象缺口。
+- [ ] 扫描 `src/` 中具体 UI 包、`compat/antdv` 和 `compat/icons` 导入，删除剩余 compat 文件及无调用导出。
+- [ ] 收紧架构保护测试，禁止 Core 回流具体 UI 框架的运行时和类型依赖。
 - [ ] 补充过期响应、选择、展开、分页和编辑回归测试。
+- [ ] 记录 Table 及最终 compat 删除项的迁移方式。
 
 ### 验收条件
 
 - [ ] Table Core 不直接 import AntDV 组件或类型。
 - [ ] 公开 query/reload/goPage Promise 与分页语义不变。
 - [ ] AntDV Adapter 下现有表格行为保持一致。
-
----
-
-## P008 compat 与旧接口清理
-
-状态：待开始
-依赖：P002 至 P007
-
-### 目标
-
-清理已被 Adapter 覆盖的 compat 导出和过渡接口，确认 Core 的 UI 依赖为零。
-
-### 任务
-
-- [ ] 扫描 `src/` 中 `compat/antdv`、`compat/icons` 和 UI 包导入。
-- [ ] 为 Core 增加架构保护测试，禁止直接导入具体 UI 框架。
-- [ ] 删除无调用的 compat 导出、包装组件和重复默认值。
-- [ ] 评估 `configureComponents`、`registerFormComponents`、`Ext` 前缀等兼容 API。
-- [ ] 对保留的旧接口标注兼容期限；对移除项补迁移记录。
-
-### 验收条件
-
-- [ ] Core 目录不含具体 UI 框架运行时和类型导入。
-- [ ] compat 只保留有明确兼容原因的最小表面，或已完全移除。
-- [ ] 架构保护测试能阻止依赖回流。
-
----
-
-## P009 第二 UI 框架 PoC
-
-状态：待开始
-依赖：P008
-
-### 目标
-
-用最小第二 UI 实现验证 Adapter 抽象，而不是仅把 AntDV API 换了命名空间。
-
-### 范围
-
-至少覆盖：基础 Form/FormItem、Input、Select、Switch、DatePicker、布局容器和一个简单 Table。Upload 与完整 Table 编辑可不纳入 PoC。
-
-### 任务
-
-- [ ] 选择 PoC UI 框架并记录选择理由。
-- [ ] 在不修改 Core 的前提下实现最小 Adapter。
-- [ ] 记录所有被迫模拟 AntDV 的接口，回看 Adapter 抽象。
-- [ ] 仅对确认是通用能力的缺口调整契约。
-
-### 验收条件
-
-- [ ] 同一份基础 Schema 可切换两个 Adapter 运行。
-- [ ] 切换 UI 框架不需要修改 Core 代码。
-- [ ] PoC 结论和必要的架构修订已记录。
+- [ ] Core 目录不含具体 UI 框架运行时和类型导入，compat 已完全移除。
+- [ ] 架构保护测试能阻止具体 UI 依赖回流。
+- [ ] Element Plus 下的简单 Table 不需要修改 Core 代码。
 
 ---
 
 ## P010 发布与迁移
 
 状态：待开始
-依赖：P009
+依赖：P004、P005、P006、P007
 
 ### 目标
 
@@ -539,13 +494,13 @@ P010 发布与迁移
 
 - [ ] 汇总 `BREAKING-CHANGES.md`，按用户场景整理迁移步骤。
 - [ ] 更新 README、AI_GUIDE 和文档站的公开用法。
-- [ ] 标明旧 API 的兼容期和计划移除版本。
+- [ ] 确认所有删除的旧 API 均有直接迁移方式，不遗留过渡入口。
 - [ ] 运行完整 test、typecheck 和 build。
 - [ ] 检查发布产物、exports、peerDependencies 和 d.ts。
 - [ ] 完成真实消费项目的升级演练。
 
 ### 验收条件
 
-- [ ] 新旧用法、影响、迁移方式和兼容策略均有文档。
+- [ ] 新用法、旧能力移除影响和直接迁移方式均有文档。
 - [ ] 完整验证通过，构建产物不包含意外 UI 依赖。
 - [ ] `CURRENT.md` 标记工程完成，活动计划归档。

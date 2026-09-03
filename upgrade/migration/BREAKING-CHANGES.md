@@ -2,7 +2,7 @@
 
 当前状态：已开始记录 P002 实施的不兼容 Schema 类型命名调整。
 
-本文件只记录用户可观察的 API、类型或行为变化，不重复 Git diff。每项变化必须包含影响、迁移方式、兼容策略和计划移除版本。
+本文件只记录用户可观察的 API、类型或行为变化，不重复 Git diff。每项变化必须包含影响、迁移方式和兼容策略；直接移除时明确记录不保留兼容即可。
 
 ## 记录模板
 
@@ -31,7 +31,7 @@
 
 ### 兼容策略
 
-兼容入口、警告方式和计划移除版本。
+是否保留兼容；不保留时说明直接移除的原因。
 ```
 
 ## 已知潜在变化
@@ -41,7 +41,7 @@
 - 安装配置可能从 `components` 同时承担底层替换和自定义注册，调整为 `adapter` 与用户组件注册分离。
 - `InputNumber`、`TextArea`、`TimePicker` 等纯 UI Schema 类型的解析来源将从 Core 包装改为 Adapter 或自动导入。
 - 公开 Schema Props 将从直接继承 AntDV 类型改为稳定通用类型加 Adapter 扩展类型。
-- `registerFormComponents`、`registerComponent`、`Ext` 前缀等兼容 API 可能进入废弃流程。
+- `registerFormComponents`、`registerComponent`、`Ext` 前缀等旧 API 将在 P005 直接移除，不设废弃期。
 - UI 默认属性的配置归属和索引名称可能调整。
 
 ## UI 组件 Schema 类型使用真实组件名

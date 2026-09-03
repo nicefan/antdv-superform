@@ -61,7 +61,7 @@ export interface CustomFormComponentProps {}
 | Table | `TableProps`、`TableColumnType`、`PaginationProps` | 查询、分页、列业务语义留在 Core，渲染协议留待 P007 |
 | Upload | `UploadProps` | 文件领域配置留在 Core，UI 列表和事件协议留待 P006 |
 
-P004 先建立稳定公共类型和扩展入口。Modal、Table、Upload 尚未完成运行时 capability 时，可以保留明确标记的临时 AntDV 类型别名，但不得继续扩散到新接口。
+P004 直接建立稳定公共类型和 Adapter 扩展入口。Modal、Table、Upload 的运行时 capability 虽然留待 P006/P007，公共类型也不因此保留 AntDV Props 兼容别名。
 
 ## 第二 Adapter 验证
 
