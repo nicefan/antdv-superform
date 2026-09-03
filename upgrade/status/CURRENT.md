@@ -35,10 +35,11 @@ P001 Adapter 生命周期回补及 P002/P003 主任务均已完成。P002 字段
 - 已完成首轮复合组件精简：TagInput/TagSelect 不再向内部 Tag 广播 attrs，ButtonGroup 不再生成 AntDV 颜色 class，Collections/Group 不再跨布局层扩散 attrs。
 - Action/Presentation 已改为粗粒度语义渲染入口，按钮树、下拉 slot、事件拦截和 Tag 的 UI 事件映射均收回 AntDV Adapter。
 - Descriptions 表格/表单兼容实现已移入 AntDV Adapter 私有目录，不再反向依赖公共 Adapter 入口。
+- Collapse、List 和按钮分隔线已移除 Core 中残留的 AntDV 私有 class；轻量 List 兼容实现已移入 AntDV Adapter 私有目录。
 
 ## 下一步
 
-继续 P003 精简回补：清理 Collapse/List 等剩余 AntDV 私有协议，再补 Tabs 及复合组件的最小非 AntDV 契约测试。完成后解决声明构建阻塞，再等待用户明确要求开始 P004。
+继续 P003 精简回补：补 Tabs、ButtonGroup、TagInput、TagSelect 的最小非 AntDV Adapter 契约测试。完成后解决声明构建阻塞，再等待用户明确要求开始 P004。
 
 ## 当前临时状态
 

@@ -149,7 +149,8 @@ describe('UIAdapter', () => {
       collapsible: 'disabled',
     })
     expect(renderUIContainer('card').type).toBe(antdvAdapter.components.Card)
-    expect(renderUIContainer('list').type).toBe(antdvAdapter.components.SuperList)
+    expect(renderUIContainer('list').type).toBe(antdvAdapter.containers?.list?.component)
+    expect(antdvAdapter.components).not.toHaveProperty('SuperList')
   })
 
   it('通过 Adapter 渲染动作、展示原语和语义图标', () => {

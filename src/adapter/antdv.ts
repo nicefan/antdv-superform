@@ -12,6 +12,7 @@ import { toNode } from '../utils/toNode'
 import { globalConfig } from '../config'
 import type { IconAdapterContext, UIAdapter } from './types'
 import AntdvDescriptions from './antdv/Descriptions'
+import { SuperList, SuperListItem } from './antdv/List'
 
 function renderAntdvIcon(icon: unknown, { customIcon }: IconAdapterContext = {}) {
   if (typeof icon === 'string') return customIcon?.(icon) || h('span', { class: `anticon ${icon}` })
@@ -95,7 +96,9 @@ function renderAntdvActionGroup(props: Obj) {
     props
   const content = buttons.flatMap((button, index) => [
     renderActionButton(button, effectData, labelOnly, iconOnly),
-    divider && index < buttons.length - 1 ? h(base.Divider, { type: 'vertical', class: 'buttons-divider' }) : undefined,
+    divider && index < buttons.length - 1
+      ? h(base.Divider, { type: 'vertical', class: 'sup-buttons-divider' })
+      : undefined,
   ])
   if (moreButtons.length) {
     content.push(
@@ -193,10 +196,10 @@ export const antdvAdapter: UIAdapter = {
     },
     // antdv-next 已移除旧 List，由 AntDV Adapter 保留当前兼容实现。
     list: {
-      component: 'SuperList',
+      component: SuperList,
     },
     listItem: {
-      component: 'SuperListItem',
+      component: SuperListItem,
     },
     descriptions: {
       // 保留现有表格/表单模式和 AntDV 样式协议，但由 Adapter 显式选择实现。

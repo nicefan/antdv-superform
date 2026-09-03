@@ -301,7 +301,7 @@ P010 发布与迁移
 - [x] 空图标不要求 Adapter 提供 Icon capability，并补充无图标场景测试。
 - [x] 保留 Card、Tabs、Form 等单根透明包装的自然 attrs fallthrough；清理 Collections、Group 等非透明组件中 attrs 向 Row、section 和内容节点的重复扩散，不新增成套 `rowProps/sectionProps/contentProps` API。
 - [x] TagInput、TagSelect 不再把通用 `$attrs` 复制到每个 Tag；保留组件自身声明的业务属性，删除无明确用途的内部节点透传，不为每个子节点新增独立 props 入口。
-- [ ] 清理 ButtonGroup、Collapse、Descriptions、List、TagSelect、labelNode 中残留的 AntDV class/protocol；Core 自有样式改用最少的 `sup-*` 语义 class，AntDV 私有结构随兼容实现进入 Adapter。
+- [x] 清理 ButtonGroup、Collapse、Descriptions、List、TagSelect、labelNode 中残留的 AntDV class/protocol；Core 自有样式改用最少的 `sup-*` 语义 class，AntDV 私有结构随兼容实现进入 Adapter。
 - [x] 删除无业务作用的内联视觉样式和冗余事件拦截，例如无链接语义的 `<a>`、根级重复 `click.stop`；布局所必需的动态样式保留。
 - [x] ButtonGroup 不再解析单个 UI 原语，统一交给 Action Adapter 按实际分支渲染，简单按钮不再要求 Core 感知 Dropdown、Menu 和 Divider。
 - [x] 合并 Field/Container 重复的 model 属性与事件映射逻辑，保持同一转换规则。
@@ -331,6 +331,14 @@ P010 发布与迁移
 - 兼容性：渲染行为和 Schema 协议不变。
 - 验证：Adapter 测试 14 项通过；类型检查通过；相关 ESLint 0 错误、0 警告；提交前 build 的 JavaScript 转换完成，声明汇总仍被已记录问题阻塞。
 - 后续：清理 Collapse/List 等剩余 AntDV 私有协议，再补 Tabs 及复合组件的最小非 AntDV 渲染测试。
+
+#### 2026-09-03：完成容器私有样式与 List 归位
+
+- 完成：Collapse 标题改用已有 `sup-titlebar/sup-title` 语义样式；List 内容、操作区和按钮分隔线统一使用 `sup-*` class，并删除已经失效的 AntDV List 样式。
+- 设计影响：`SuperList/SuperListItem` 移入 AntDV Adapter 私有目录，不再污染公共基础组件注册表；Core List 只通过 Container capability 使用兼容实现。
+- 兼容性：依赖 `.ant-list-item-meta`、`.ant-list-item-action`、`.ant-descriptions-header` 或 `.buttons-divider` 修改内部节点样式的代码需要迁移到新的语义 class。
+- 验证：相关测试 3 个文件、24 项通过；类型检查通过；相关 ESLint 与差异格式检查通过；提交前 build 的 JavaScript 转换完成，声明汇总仍被已记录问题阻塞。
+- 后续：补 Tabs、ButtonGroup、TagInput、TagSelect 的最小非 AntDV Adapter 渲染测试，再处理声明构建阻塞。
 
 ---
 

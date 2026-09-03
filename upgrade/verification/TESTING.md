@@ -128,4 +128,15 @@ P008 前逐步建立以下自动检查：
 - 提交前执行：`pnpm build`。
 - 结果：JavaScript 和样式转换完成，但声明生成仍因已记录的不可命名推断类型及 API Extractor `WebpackPluginInstance` 内部错误而失败；失败产生的临时 `lib` 文件未纳入提交。
 
+### P003 容器私有样式与 List 归位
+
+- 执行：`pnpm vitest run tests/adapter.test.ts tests/InputList.test.ts tests/ListGroup.test.ts --threads false --reporter=dot`。
+- 结果：3 个测试文件、24 项测试通过；确认 List 私有实现不再依赖公共基础组件注册表。
+- 执行：`pnpm exec vue-tsc --noEmit`。
+- 结果：类型检查通过。
+- 执行：相关源码与测试 ESLint、`git diff --check`。
+- 结果：0 个错误、0 个警告；差异格式检查通过。
+- 提交前执行：`pnpm build`。
+- 结果：JavaScript 和样式转换完成，但声明生成仍因已记录的不可命名推断类型及 API Extractor `WebpackPluginInstance` 内部错误而失败；失败产生的临时 `lib` 文件未纳入提交。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

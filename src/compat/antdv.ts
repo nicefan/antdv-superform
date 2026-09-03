@@ -54,8 +54,6 @@ export {
   message,
 }
 
-export { SuperList, SuperListItem }
-
 export type {
   AutoCompleteProps,
   ButtonProps,
@@ -109,8 +107,6 @@ const baseComponents = {
   Card,
   Descriptions,
   DescriptionsItem,
-  SuperList,
-  SuperListItem,
   Modal,
   Table,
   Tabs,
@@ -212,4 +208,3 @@ import {
   Upload,
   message,
 } from 'antdv-next'
-import { SuperList, SuperListItem } from './list'

@@ -28,7 +28,7 @@ export default defineComponent({
   setup({ model, option, isView, effectData }, ctx) {
     const { buttons: buttonsConfig, rowButtons, label, title = label } = option
     // 先构建一个数据结构
-    const { modelsMap: childrenMap, rules } = model.listData
+    const { modelsMap: childrenMap } = model.listData
 
     const { propChain } = model
     const orgList = toRef(model, 'refData')
@@ -147,7 +147,7 @@ export default defineComponent({
               : h(Collections, {
                   model: item.model,
                   option,
-                  class: 'ant-list-item-meta',
+                  class: 'sup-list-item-content',
                   effectData: item.effectData,
                 }),
             rowButtonsConfig &&
@@ -156,7 +156,7 @@ export default defineComponent({
                 methods,
                 effectData: item.effectData,
                 isView,
-              })?.({ class: 'ant-list-item-action' }),
+              })?.({ class: 'sup-list-item-actions' }),
           ],
         }
       )

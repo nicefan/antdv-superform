@@ -43,7 +43,7 @@ export default defineComponent({
     const activeKey = ref(props.option.activeKey || panels[0]?.key)
 
     return () => [
-      title && h('div', { class: 'sup-title ant-descriptions-header' }, toNode(title, props.effectData)),
+      title && h('div', { class: ['sup-titlebar', 'sup-title'] }, toNode(title, props.effectData)),
       renderUIContainer(
         'collapse',
         {

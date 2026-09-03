@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
 
-/** antdv-next 已移除旧 List；1.0 用项目内的轻量列表承载表单行。 */
+/** antdv-next 已移除旧 List；由 AntDV Adapter 私有兼容组件承载表单行。 */
 export const SuperListItem = defineComponent({
   name: 'SuperListItem',
   inheritAttrs: false,

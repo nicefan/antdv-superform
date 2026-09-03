@@ -230,3 +230,24 @@ Core 不再生成这两个 UI 专属属性。需要按钮样式或原生名称�
 ### 兼容策略
 
 这些 API 属于升级分支中的过渡设计，不保留兼容层；粗粒度接口可避免 Core 固化某个 UI 库的内部组件树。
+
+## 容器内部样式改用 Core 语义 class
+
+阶段：P003 审查回补
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+Collapse 标题、轻量 List 内容和操作区复用了 `.ant-descriptions-header`、`.ant-list-item-meta`、`.ant-list-item-action`，按钮分隔线使用无命名空间的 `.buttons-divider`；`SuperList` 还暴露在公共基础组件覆盖表中。
+
+### 现在
+
+- Collapse 标题使用 `.sup-titlebar.sup-title`。
+- List 内容和操作区分别使用 `.sup-list-item-content`、`.sup-list-item-actions`。
+- 按钮分隔线使用 `.sup-buttons-divider`。
+- `SuperList/SuperListItem` 是 AntDV Adapter 私有兼容实现，不再作为公共基础组件覆盖项。
+
+### 迁移
+
+如有针对旧内部 class 的样式覆盖，请改用对应的 `sup-*` 语义 class。不要再通过安装配置覆盖 `SuperList/SuperListItem`；需要替换完整列表渲染时，应实现 Adapter 的 `list/listItem` Container capability。

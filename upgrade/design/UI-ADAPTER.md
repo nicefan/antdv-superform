@@ -93,7 +93,7 @@ P001 期间旧 `components`、`registerComponent` 和 `registerFormComponents` �
 - 存在受控状态的 Tabs、Collapse 等容器先使用 `value/onUpdate:value`，再由 Container capability 映射为具体 UI model 协议。
 - Action capability 只暴露 `group/tooltip` 粗粒度渲染入口，Presentation capability 只暴露 `tag/checkableTag` 语义入口；具体 Button、Dropdown、Menu、Divider 和 UI 事件协议留在 Adapter 内部。
 - Icon capability 同时提供 Schema 图标渲染和 `add/remove/more/expand/collapse/info` 语义图标；Upload 专属图标留待 P006。
-- `SuperList` 和当前 Descriptions 表格/表单模式不是 Core 通用组件，由 AntDV Adapter 作为兼容实现显式提供；Descriptions 实现位于 Adapter 私有目录并直接消费可覆盖的 AntDV 基础组件，不反向依赖公共 Adapter 入口。
+- `SuperList` 和当前 Descriptions 表格/表单模式不是 Core 通用组件，由 AntDV Adapter 私有兼容实现显式提供；Descriptions 直接消费可覆盖的 AntDV 基础组件且不反向依赖公共 Adapter 入口，List 也不进入公共基础组件注册表。
 - 单根且语义透明的包装保留 Vue attrs fallthrough；多根、跨层扩散、受控状态冲突或协议转换场景才显式接管。
 - ButtonGroup、TagInput、TagSelect 等复合组件优先收缩旧 UI 属性和内部节点透传，再以最小业务视图模型连接 Adapter，不为每个内部原语建立独立扩展面。
 - 允许删除升级前缺少明确业务价值的能力和规则；产生用户可见影响时同步更新迁移记录，不额外建立长期兼容层。
