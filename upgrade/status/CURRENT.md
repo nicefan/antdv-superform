@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-P001 Adapter 生命周期回补及 P002/P003 主任务均已完成。P002 字段精简、P003 首轮复合组件精简及 Action/Presentation 能力收缩已经完成；P004 尚未获得明确实施指令。
+P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完成。P004 的声明构建前置阻塞已经解除，下一轮可以正式开始公共 Schema 类型解耦。
 
 ## 已完成
 
@@ -36,10 +36,11 @@ P001 Adapter 生命周期回补及 P002/P003 主任务均已完成。P002 字段
 - Action/Presentation 已改为粗粒度语义渲染入口，按钮树、下拉 slot、事件拦截和 Tag 的 UI 事件映射均收回 AntDV Adapter。
 - Descriptions 表格/表单兼容实现已移入 AntDV Adapter 私有目录，不再反向依赖公共 Adapter 入口。
 - Collapse、List 和按钮分隔线已移除 Core 中残留的 AntDV 私有 class；轻量 List 兼容实现已移入 AntDV Adapter 私有目录。
+- 声明构建已恢复：公共导出使用可命名类型，unplugin 子路径指向独立汇总声明，发布声明不再包含 dev/example 扩展或指向未发布 `src/` 的代理入口。
 
 ## 下一步
 
-继续 P003 精简回补：补 Tabs、ButtonGroup、TagInput、TagSelect 的最小非 AntDV Adapter 契约测试。完成后解决声明构建阻塞，再等待用户明确要求开始 P004。
+正式开始 P004 公共 Schema 类型解耦。最小非 AntDV 假 Adapter 测试已取消，真实 Element Plus Adapter 与独立 dev 环境后置到 P005。
 
 ## 当前临时状态
 
@@ -51,7 +52,7 @@ P001 Adapter 生命周期回补及 P002/P003 主任务均已完成。P002 字段
 - Table、Upload、Modal、message 和预览 Image 仍直接使用 AntDV 协议，分别留待 P006/P007。
 - `globalConfig` 按应用初始化配置使用，不增加重复安装时的重置语义。
 - 外部 options/search 回调的并发、取消和异常处理仍由调用方负责，不纳入本轮回补。
-- 当前声明打包仍存在已记录的不可命名类型问题，需作为 P004 启动前置处理。
+- 当前声明可稳定构建；公共 Schema 仍直接暴露 AntDV Props，留待 P004 按能力分层解耦。
 - 本轮回补以逻辑清晰和实现简单为优先，允许删除升级前缺少明确业务价值的能力或规则，不通过增加大量细粒度边界维持表面兼容。
 
 ## 重要约束

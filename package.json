@@ -31,15 +31,15 @@
       "import": "./lib/index.js"
     },
     "./unplugin/vite": {
-      "types": "./lib/unplugin/vite.d.ts",
+      "types": "./lib/vite.d.ts",
       "import": "./lib/unplugin/vite.js"
     },
     "./unplugin/rollup": {
-      "types": "./lib/unplugin/rollup.d.ts",
+      "types": "./lib/rollup.d.ts",
       "import": "./lib/unplugin/rollup.js"
     },
     "./unplugin/webpack": {
-      "types": "./lib/unplugin/webpack.d.ts",
+      "types": "./lib/webpack.d.ts",
       "import": "./lib/unplugin/webpack.js"
     }
   },

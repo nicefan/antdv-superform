@@ -139,4 +139,14 @@ P008 前逐步建立以下自动检查：
 - 提交前执行：`pnpm build`。
 - 结果：JavaScript 和样式转换完成，但声明生成仍因已记录的不可命名推断类型及 API Extractor `WebpackPluginInstance` 内部错误而失败；失败产生的临时 `lib` 文件未纳入提交。
 
+### P004 前置：声明构建恢复
+
+- 执行：`pnpm vitest run tests/field-compat.test.ts tests/superFormUnplugin.test.ts --threads false --reporter=dot`。
+- 结果：2 个测试文件、11 项测试通过。
+- 执行：`pnpm build`。
+- 结果：源码、样式和四个入口的声明汇总全部成功；unplugin 子路径使用 `lib/vite.d.ts`、`lib/rollup.d.ts`、`lib/webpack.d.ts`。
+- 补充检查：发布声明不包含 `node_modules` 推断路径、未发布 `src/` 代理入口或 example 的 `Rate` 类型扩展。
+- 补充执行：`pnpm vitest run tests/packageDeclarations.test.ts tests/field-compat.test.ts tests/superFormUnplugin.test.ts --threads false --reporter=dot`。
+- 结果：3 个测试文件、13 项测试通过；发布声明回归测试固定了子路径入口与主声明边界。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

@@ -93,7 +93,10 @@ export { useConfig as useAntdvConfig } from 'antdv-next/config-provider/context'
  * 可覆盖的底层组件注册表。字段组件统一读取此对象，安装配置中的 components
  * 也只修改此处，避免再维护独立的 components/base 层。
  */
-const baseComponents = {
+export type BaseComponentName = string
+export type BaseComponents = Record<BaseComponentName, any>
+
+const baseComponents: BaseComponents = {
   SpaceCompact,
   Form,
   FormItem,
@@ -136,9 +139,6 @@ const baseComponents = {
   CheckableTag,
   AutoComplete,
 }
-
-export type BaseComponentName = keyof typeof baseComponents
-export type BaseComponents = Record<BaseComponentName, any>
 
 const base: BaseComponents = baseComponents
 

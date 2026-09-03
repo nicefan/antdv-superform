@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import dts from 'rollup-plugin-dts'
 import viteDts from 'vite-plugin-dts'
 import SuperFormComponents, { createLibraryResolver } from './src/unplugin/vite'
 // import ViteComponents, { AntDesignVueResolver } from 'vite-plugin-components'
@@ -9,18 +8,9 @@ import SuperFormComponents, { createLibraryResolver } from './src/unplugin/vite'
 // import resolvePlugin from '@rollup/plugin-node-resolve'
 
 import { resolve } from 'path'
-
-const types = {
-  input: [`dist/index.d.ts`],
-  output: {
-    format: 'es',
-    dir: '.',
-    entryFileNames: 'lib/[name].ts',
-  },
-  plugins: [dts()],
-}
+import { readFile, rm, writeFile } from 'node:fs/promises'
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode }) =>
+export default defineConfig(({ mode }) =>
   mode === 'dist'
     ? {
         build: {
@@ -98,8 +88,6 @@ export default defineConfig(({ command, mode }) =>
             //   dir: '.',
             //   entryFileNames: 'lib/[name].ts',
             // },
-            // plugins: [dts()],
-
             output: {
               intro: (chunk) => (chunk.name === 'index' ? 'import "./style.css";' : ''),
             },
@@ -121,13 +109,30 @@ export default defineConfig(({ command, mode }) =>
           vue(),
           vueJsx(),
           viteDts({
+            include: ['src'],
             // outDir: 'dist',
             staticImport: true,
             // declarationOnly: true,
             rollupTypes: true,
-            insertTypesEntry: true,
+            insertTypesEntry: false,
             // cleanVueFileName: true,
             copyDtsFiles: true,
+            async afterBuild() {
+              // 汇总过程需要代理声明作为入口，结束后只保留 package exports 指向的根声明。
+              await Promise.all(
+                ['vite', 'rollup', 'webpack'].map((name) =>
+                  rm(resolve(__dirname, `lib/unplugin/${name}.d.ts`), { force: true })
+                )
+              )
+              // API Extractor 在 Windows 下输出 CRLF，统一为仓库使用的 LF。
+              await Promise.all(
+                ['index', 'vite', 'rollup', 'webpack'].map(async (name) => {
+                  const file = resolve(__dirname, `lib/${name}.d.ts`)
+                  const content = await readFile(file, 'utf8')
+                  await writeFile(file, content.replace(/\r\n/g, '\n'), 'utf8')
+                })
+              )
+            },
             compilerOptions: {
               charset: 'utf8',
             },

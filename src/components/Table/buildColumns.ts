@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, mergeProps, reactive, unref, watch } from 'vue'
+import { computed, defineComponent, h, reactive, unref, watch } from 'vue'
 import type { TableColumnType } from '../../compat/antdv'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
@@ -72,8 +72,15 @@ interface BuildColumnsParam {
   isView: boolean
 }
 
-export function buildColumns({ childrenMap, context, option, attrs, isView, effectData: parentData }: BuildColumnsParam) {
-  const { list, methods, buttonMethods, getEditRender, editButtonsSlot } = context
+export function buildColumns({
+  childrenMap,
+  context,
+  option,
+  attrs,
+  isView,
+  effectData: parentData,
+}: BuildColumnsParam): TableColumnType[] {
+  const { methods, buttonMethods, getEditRender, editButtonsSlot } = context
   const effectData = getEffectData({ list: parentData.value, isView, parent: parentData })
 
   const columns = (function getColumns(_models = childrenMap) {
@@ -127,7 +134,7 @@ export function buildColumns({ childrenMap, context, option, attrs, isView, effe
     defaults(actionColumn, option.columnProps, globalProps.Column)
     columns.push(actionColumn)
   }
-  return columns as TableColumnType[]
+  return columns
 }
 
 function parseRender(viewRender, editRender, effectData) {

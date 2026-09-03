@@ -22,10 +22,6 @@
 .sup-form .ant-picker {
   width: 100%;
 }
-.sup-form .ant-list .ant-list-item {
-  padding-bottom: 0;
-  padding-top: 24px;
-}
 .sup-form .sup-upload-tip {
   color: #b7b7b7;
 }
@@ -142,8 +138,22 @@
   margin-right: 8px;
   font-size: 20px;
 }
-.sup-buttons .buttons-divider {
+.sup-buttons .sup-buttons-divider {
   margin: 0 2px;
+}
+.sup-tag-input {
+  width: 78px;
+}
+.sup-tag-add {
+  background: #fff;
+  border-style: dashed;
+}
+.sup-tag-select-empty {
+  color: rgba(0, 0, 0, 0.45);
+}
+.sup-label-tooltip {
+  margin-left: 4px;
+  color: rgba(0, 0, 0, 0.45);
 }
 .sup-container.sup-form-section,
 .sup-container > .sup-form-section {
@@ -186,10 +196,10 @@
   padding: 12px 0;
   border-block-end: 1px solid rgba(5, 5, 5, 0.06);
 }
-.sup-list-item > .ant-list-item-meta {
+.sup-list-item > .sup-list-item-content {
   flex: 1;
   min-width: 0;
 }
-.sup-list-item > .ant-list-item-action {
+.sup-list-item > .sup-list-item-actions {
   margin-inline-start: 24px;
 }

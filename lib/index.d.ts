@@ -1,54 +1,72 @@
 /// <reference types="../types" />
 
 import { App } from 'vue';
-import { AutoCompleteProps } from './compat/antdv';
-import { ButtonProps } from './compat/antdv';
-import { CheckboxGroupProps } from './compat/antdv';
-import { ColProps } from './compat/antdv';
+import { AutoCompleteProps } from 'antdv-next';
+import { ButtonProps } from 'antdv-next';
+import { CheckboxGroupProps } from 'antdv-next';
+import { ColProps } from 'antdv-next';
 import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
 import { ComputedRef } from 'vue';
-import { DatePickerProps } from './compat/antdv';
+import { DatePickerProps } from 'antdv-next';
 import { default as default_2 } from 'vue';
 import { DefineComponent } from 'vue';
-import { DescriptionsProps } from './compat/antdv';
-import { DropdownProps } from './compat/antdv';
+import { DescriptionsProps } from 'antdv-next';
+import { DropdownProps } from 'antdv-next';
 import { ExtractPropTypes } from 'vue';
-import { FormItemProps } from './compat/antdv';
-import { FormProps } from './compat/antdv';
+import { FormItemProps } from 'antdv-next';
+import { FormProps } from 'antdv-next';
 import { HTMLAttributes } from 'vue';
-import { InputNumberProps } from './compat/antdv';
-import { InputProps } from './compat/antdv';
-import { Locale } from './compat/antdv';
-import { ModalFuncProps } from './compat/antdv';
-import { ModalFuncProps as ModalFuncProps_2 } from '../compat/antdv';
-import { ModalProps } from '../compat/antdv';
-import { PaginationProps } from './compat/antdv';
+import { InputNumberProps } from 'antdv-next';
+import { InputProps } from 'antdv-next';
+import { Locale } from 'antdv-next/dist/locale/index';
+import { ModalFuncProps } from 'antdv-next/dist/modal/interface';
+import { ModalProps } from 'antdv-next/dist/modal/interface';
+import { PaginationProps } from 'antdv-next';
 import { PropType } from 'vue';
 import { PublicProps } from 'vue';
-import { RadioGroupProps } from './compat/antdv';
-import { RangePickerProps } from './compat/antdv';
+import { RadioGroupProps } from 'antdv-next';
+import { RangePickerProps } from 'antdv-next';
 import { Ref as Ref_2 } from 'vue';
 import { RendererElement } from 'vue';
 import { RendererNode } from 'vue';
-import { RowProps } from './compat/antdv';
-import { SelectProps } from './compat/antdv';
-import { SpaceProps } from './compat/antdv';
-import { SwitchProps } from './compat/antdv';
-import { TableColumnType } from './compat/antdv';
-import { TableProps } from './compat/antdv';
-import { TabsProps } from './compat/antdv';
-import { TextAreaProps } from './compat/antdv';
-import { TimePickerProps } from './compat/antdv';
-import { TimeRangePickerProps } from './compat/antdv';
-import { TooltipProps } from './compat/antdv';
-import { TreeSelectProps } from './compat/antdv';
-import { UploadProps } from './compat/antdv';
+import { RowProps } from 'antdv-next';
+import { SelectProps } from 'antdv-next';
+import { Slots } from 'vue';
+import { SpaceProps } from 'antdv-next';
+import { SwitchProps } from 'antdv-next';
+import { TableColumnType } from 'antdv-next';
+import { TableProps } from 'antdv-next';
+import { TabsProps } from 'antdv-next';
+import { TextAreaProps } from 'antdv-next';
+import { TimePickerProps } from 'antdv-next';
+import { TimeRangePickerProps } from 'antdv-next';
+import { TooltipProps } from 'antdv-next';
+import { TreeSelectProps } from 'antdv-next';
+import { UploadProps } from 'antdv-next';
 import { VNode } from 'vue';
+import { VNodeArrayChildren } from 'vue';
+import { VNodeChild } from 'vue';
 import { VNodeTypes } from 'vue';
 
-declare type BaseComps = 'Divider' | 'SpaceCompact' | 'FormItem' | 'Tooltip' | 'Button' | 'MenuItem' | 'Menu' | 'Dropdown' | 'Space' | 'Card' | 'SuperListItem' | 'SuperList' | 'Modal' | 'Table' | 'Tabs' | 'TabPane' | 'CollapsePanel' | 'Collapse' | 'Input' | 'InputNumber' | 'InputSearch' | 'Select' | 'Switch' | 'DateRangePicker' | 'DatePicker' | 'TimePicker' | 'RadioButton' | 'Radio' | 'RadioGroup' | 'Checkbox' | 'CheckboxGroup' | 'TreeSelect';
+export declare interface ActionAdapter {
+    /** 渲染按钮组或提示；具体按钮、菜单和下拉结构由 Adapter 内部处理。 */
+    render: (type: ActionRenderType, props: Obj, slots: Obj) => VNodeChild;
+}
+
+export declare type ActionRenderType = 'group' | 'tooltip';
+
+export declare type AdapterComponent = string | Component;
+
+/** 内置 AntDV Adapter 实现；调用方仍需在安装时显式传入。 */
+export declare const antdvAdapter: UIAdapter;
+
+/**
+ * 可覆盖的底层组件注册表。字段组件统一读取此对象，安装配置中的 components
+ * 也只修改此处，避免再维护独立的 components/base 层。
+ */
+declare type BaseComponentName = string;
 
 export declare interface ButtonItem {
     label?: VSlot
@@ -68,7 +86,6 @@ export declare interface ButtonItem {
     invalidDisabled?: boolean
     /** @deprecated 使用 `unauthorized` */
     roleMode?: 'hidden' | 'disable'
-    color?: 'success' | 'error' | 'warning' | 'primary' | string
     /** 按钮可见场景 */
     visibleIn?: 'form' | 'detail' | 'both'
     /** @deprecated 使用 `visibleIn` */
@@ -87,6 +104,8 @@ export declare interface ButtonItem {
     onClick?: Fn
 }
 
+export declare function clearUIFormValidation(instance: unknown): void;
+
 declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
     label: VSlot
     key?: string
@@ -95,18 +114,49 @@ declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
     buttons?: ExtButtons
 }
 
+export declare interface ComponentModelConfig {
+    /** 组件接收主值的属性名，默认 value */
+    prop?: string;
+    /** 组件更新主值时触发的事件名，默认 update:value */
+    event?: string;
+}
+
+declare function configureComponents(components: Record<string, FormComponent | undefined>): void;
+
+export declare interface ContainerAdapter {
+    component: AdapterComponent;
+    /** 容器存在受控状态时的 UI model 协议。 */
+    model?: ComponentModelConfig;
+    /** 将 Core 容器状态转换为 UI 组件属性。 */
+    transformProps?: (props: Obj) => Obj;
+    /** 容器的 slot 协议不同时自定义最终渲染。 */
+    render?: (component: Component, props: Obj, slots: Obj) => VNodeChild;
+}
+
 export declare function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
     modalRef: Ref_2<any, any>;
     modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
         [key: string]: any;
     }>;
-    setModal: (option?: ModalFuncProps_2 | Obj) => void;
+    setModal: (option?: ModalFuncProps | Obj) => void;
     closeModal: () => Promise<void>;
-    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
+    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
 };
 
+/**
+ * 自定义 UI 字段的 attrs 类型映射。应用可通过模块扩展增加 type 与组件 Props 的对应关系。
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export declare interface CustomFormComponentProps {}
+
+declare type CustomWidgetTypes = {
+    [K in keyof CustomFormComponentProps]: ExtFormItemOption & {
+        attrs?: CustomFormComponentProps[K] & HTMLAttributes
+    }
+}
+
 declare const _default: {
-    install: (app: App<any>, config?: InstallConfig) => Promise<void>;
+    install: (app: App<any>, config: InstallConfig) => Promise<void>;
     registerComponent: typeof registerComponent;
     registComponent: typeof registComponent;
     setDefaultProps: typeof setDefaultProps;
@@ -128,6 +178,8 @@ export declare function defineDetail(option: ExtDescriptionsOption): ExtDescript
 export declare function defineForm<T extends keyof OptionType = 'Form'>(option: OptionType[T]): OptionType[T];
 
 export declare function defineTable(option: RootTableOption): RootTableOption;
+
+export declare function defineUIAdapter<T extends UIAdapter>(adapter: T): T;
 
 declare type DetailOption = ExtDescriptionsOption | ExtFormOption | (() => ExtDescriptionsOption | ExtFormOption) | (() => Promise<ExtDescriptionsOption | ExtFormOption>);
 
@@ -259,7 +311,7 @@ export declare interface ExtButtonGroup<T extends string = string> {
 
 export declare type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 
-declare interface ExtCheckboxOption extends ExtFormItemOption, ExtSelect {
+declare interface ExtCheckboxGroupOption extends ExtFormItemOption, ExtSelect {
     attrs?: CheckboxGroupProps & HTMLAttributes
 }
 
@@ -284,7 +336,7 @@ declare interface ExtDatePickerOption extends ExtFormItemOption {
     attrs?: DatePickerProps & HTMLAttributes
 }
 
-declare interface ExtDateRange extends ExtFormItemOption {
+declare interface ExtDateRangePicker extends ExtFormItemOption {
     attrs?: RangePickerProps & HTMLAttributes
     /** 绑定结束日期字段 */
     endField?: string
@@ -426,12 +478,12 @@ export declare interface ExtListOption extends ExtBaseOption, ExtRow {
     descriptionsProps?: ExtDescriptionsProps
 }
 
-declare type ExtModalProps = (ModalFuncProps_2 & ModalProps) | (ModalFuncProps_2 & {
+declare type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & {
     buttons?: ExtButtons;
     [k: string]: any;
 });
 
-declare interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
+declare interface ExtRadioGroupOption extends ExtFormItemOption, ExtSelect {
     attrs?: RadioGroupProps & HTMLAttributes
 }
 
@@ -541,13 +593,11 @@ declare interface ExtTagInputOption extends ExtFormItemOption {
     attrs?: {
         /** 将标签数组转换为逗号分隔字符串后写回字段 */
         stringifyValue?: boolean
-        /** @deprecated 使用 `stringifyValue` */
-        valueToString?: boolean
         /**新增标签名 */
         newLabel?: VSlot
         /** 是否可删除, 默认为true */
         closable?: boolean | ((tag: string, index: number) => boolean)
-    } & HTMLAttributes
+    }
 }
 
 declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
@@ -555,12 +605,10 @@ declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
         multiple?: boolean
         /** 将多选结果转换为逗号分隔字符串后写回字段 */
         stringifyValue?: boolean
-        /** @deprecated 使用 `stringifyValue` */
-        valueToString?: boolean
-    } & HTMLAttributes
+    }
 }
 
-declare interface ExtTextareaOption extends ExtFormItemOption {
+declare interface ExtTextAreaOption extends ExtFormItemOption {
     attrs?: TextAreaProps & HTMLAttributes
 }
 
@@ -568,7 +616,7 @@ declare interface ExtTimePickerOption extends ExtFormItemOption {
     attrs?: TimePickerProps & HTMLAttributes
 }
 
-declare interface ExtTimeRange extends Omit<ExtDateRange, 'attrs'> {
+declare interface ExtTimeRangePicker extends Omit<ExtDateRangePicker, 'attrs'> {
     attrs?: TimeRangePickerProps & HTMLAttributes
 }
 
@@ -616,6 +664,60 @@ declare interface ExtUpload extends ExtFormItemOption {
     }
 }
 
+export declare interface FieldAdapter {
+    /** 实际组件或 adapter.components 中的组件名称 */
+    component: AdapterComponent;
+    /** 当前 UI 框架使用的受控值协议 */
+    model?: ComponentModelConfig;
+    /** 该字段在当前 UI 框架下的默认属性 */
+    defaultProps?: Obj;
+    /** 需要依次应用的 Core 字段处理器 */
+    processors?: string[];
+    /** 将核心字段状态转换为当前 UI 组件属性 */
+    transformProps?: (props: Obj, context: FieldAdapterContext) => Obj;
+    /** 当前 UI 框架需要特殊组件或 slot 协议时自定义最终渲染 */
+    render?: (component: Component, props: Obj, context: FieldAdapterContext, slots: Slots) => VNodeChild;
+}
+
+export declare interface FieldAdapterContext {
+    type: string;
+    option: Obj;
+    effectData: Obj;
+}
+
+export declare interface FormAdapter {
+    /** 表单容器组件 */
+    component: AdapterComponent;
+    /** 表单项组件 */
+    item: AdapterComponent;
+    /** 将 Core 表单状态转换为 UI 组件属性 */
+    transformProps?: (props: Obj) => Obj;
+    /** 将 Core 表单项状态转换为 UI 组件属性 */
+    transformItemProps?: (props: Obj) => Obj;
+    /** 执行当前 UI 表单实例的校验。 */
+    validate: (instance: any) => Promise<unknown>;
+    /** 清理当前 UI 表单实例的校验状态。 */
+    clearValidate: (instance: any) => void;
+}
+
+export declare type FormComponent = Component | FormComponentConfig;
+
+export declare interface FormComponentConfig {
+    component: Component;
+    /** 不同 UI 库的受控值协议 */
+    model?: ComponentModelConfig;
+}
+
+export declare type FormComponentProps<T> = T extends new (...args: any[]) => {
+    $props: infer P;
+} ? P : T extends (props: infer P, ...args: any[]) => any ? P : Obj;
+
+export declare function getUIAdapter(): UIAdapter;
+
+export declare function getUIContainerAdapter(type: string): ContainerAdapter | undefined;
+
+export declare function getUIFieldAdapter(type: string): FieldAdapter | undefined;
+
 declare interface GlobalConfig {
     /** 是否在组件接收 schema 时输出诊断信息 */
     schemaDiagnostics?: boolean;
@@ -626,7 +728,7 @@ declare interface GlobalConfig {
     buttonRoles?: () => string[];
     /** 内置默认按钮配置 */
     defaultButtons?: Obj<ButtonItem>;
-    /**tag显示时默认颜色组 */
+    /** tag 显示时默认颜色组 */
     tagViewer?: Obj<string> | string[] | false | Fn<string>;
     /** 接口返回数据结构处理 */
     tableApiSetting?: {
@@ -644,21 +746,61 @@ declare interface GlobalConfig {
     };
 }
 
-declare interface InstallConfig extends GlobalConfig {
+export declare interface IconAdapter {
+    /** Core 内置交互使用的语义图标。 */
+    semantic?: Record<string, AdapterComponent | undefined>;
+    /** 渲染 Schema 传入的字符串、组件或节点。 */
+    render: (icon: unknown, context: IconAdapterContext) => VNodeChild;
+}
+
+export declare interface IconAdapterContext {
+    /** 消费项目对字符串图标的自定义解析入口。 */
+    customIcon?: (name: string) => VNodeChild;
+}
+
+export declare interface InstallConfig extends GlobalConfig {
     locale?: Locale;
-    components?: {
-        [k in BaseComps]?: Component;
-    };
+    /** 当前应用使用的 UI 框架适配器；初始化时必须显式传入，之后不可切换。 */
+    adapter: UIAdapter;
+    /** UI 组件注册表；非内置名称可直接作为 schema type。 */
+    components?: Partial<Record<BaseComponentName, FormComponent>> & Record<string, FormComponent | undefined>;
     /** 组件默认参数 */
     defaultProps?: Obj;
 }
 
-export declare type OptionType = WrapperTypes & WidgetTypes
+export declare interface LayoutAdapter {
+    row: AdapterComponent;
+    col: AdapterComponent;
+    space: AdapterComponent;
+    /** 可选的紧凑空间容器；未提供时回退到普通 space。 */
+    compactSpace?: AdapterComponent;
+    /** 栅格和空间属性的 UI 协议转换。 */
+    transformProps?: Partial<Record<LayoutComponentName, (props: Obj) => Obj>>;
+}
+
+export declare type LayoutComponentName = 'row' | 'col' | 'space' | 'compactSpace';
+
+export declare function mapUIContainerProps(type: string, props: Obj): {
+    [x: string]: any;
+};
+
+export declare function mapUIFieldProps(type: string, props: Obj, context: Omit<FieldAdapterContext, 'type'>): Obj;
+
+export declare type OptionType = WrapperTypes & WidgetTypes & CustomWidgetTypes
+
+export declare interface PresentationAdapter {
+    /** 渲染轻量展示原语。 */
+    render: (type: PresentationRenderType, props: Obj, slots: Obj) => VNodeChild;
+}
+
+export declare type PresentationRenderType = 'tag' | 'checkableTag';
 
 /** @deprecated 使用 `registerComponent` */
 declare function registComponent(name: string, component: ((param: RegisterParam) => VNode) | Component): void;
 
 declare function registerComponent(name: string, component: ((param: RegisterParam) => VNode) | Component): void;
+
+export declare const registerFormComponents: typeof configureComponents;
 
 declare type RegisterMethod = {
     (): () => VNode;
@@ -673,6 +815,40 @@ declare interface RegisterParam {
     value?: any;
     [K: string]: any;
 }
+
+export declare function renderUIAction(type: ActionRenderType, props?: Obj, slots?: Obj): VNodeChild;
+
+export declare function renderUIContainer(type: string, props?: Obj, slots?: Obj): string | number | boolean | void | VNode<RendererNode, RendererElement, {
+    [key: string]: any;
+}> | VNodeArrayChildren | null;
+
+export declare function renderUIField(type: string, props: Obj, context: Omit<FieldAdapterContext, 'type'>, slots?: Slots): string | number | boolean | void | VNode<RendererNode, RendererElement, {
+    [key: string]: any;
+}> | VNodeArrayChildren | null;
+
+export declare function renderUIForm(props: Obj, slots?: Obj): VNode<RendererNode, RendererElement, {
+    [key: string]: any;
+}>;
+
+export declare function renderUIFormItem(props: Obj, slots?: Obj): VNode<RendererNode, RendererElement, {
+    [key: string]: any;
+}>;
+
+export declare function renderUIIcon(icon: unknown, context?: IconAdapterContext): VNodeChild;
+
+export declare function renderUILayout(type: LayoutComponentName, props?: Obj, slots?: Obj): VNode<RendererNode, RendererElement, {
+    [key: string]: any;
+}>;
+
+export declare function renderUIPresentation(type: PresentationRenderType, props?: Obj, slots?: Obj): VNodeChild;
+
+export declare function renderUISemanticIcon(name: string): VNode<RendererNode, RendererElement, {
+    [key: string]: any;
+}> | undefined;
+
+export declare function resolveUIComponent(type: string): Component | undefined;
+
+export declare function resolveUILayoutComponent(type: LayoutComponentName): Component;
 
 export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
     isContainer?: boolean
@@ -783,11 +959,11 @@ declare function setDefaultProps(props: Obj): void;
 
 export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"default" | "link" | "primary" | "text" | "dashed">;
+    buttonType: PropType<"link" | "default" | "primary" | "text" | "dashed">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "middle" | "large">;
     /** 按钮显示方式icon/label */
-    labelMode: PropType<"label" | "both" | "icon">;
+    labelMode: PropType<"label" | "icon" | "both">;
     hidden: PropType<boolean | Fn<boolean>>;
     /** 无权限时的展示方式，默认隐藏 */
     unauthorized: PropType<"hide" | "disable">;
@@ -800,11 +976,11 @@ export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     [key: string]: any;
 }>, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly< ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"default" | "link" | "primary" | "text" | "dashed">;
+    buttonType: PropType<"link" | "default" | "primary" | "text" | "dashed">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "middle" | "large">;
     /** 按钮显示方式icon/label */
-    labelMode: PropType<"label" | "both" | "icon">;
+    labelMode: PropType<"label" | "icon" | "both">;
     hidden: PropType<boolean | Fn<boolean>>;
     /** 无权限时的展示方式，默认隐藏 */
     unauthorized: PropType<"hide" | "disable">;
@@ -914,10 +1090,36 @@ declare interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
     customTab?: Fn
 }
 
+export declare interface UIAdapter {
+    /** 用于诊断和调试的适配器名称 */
+    name: string;
+    /** 当前 UI 框架提供的基础组件 */
+    components: Record<string, Component>;
+    /** SuperForm 增强字段到 UI 组件协议的映射 */
+    fields?: Record<string, FieldAdapter | undefined>;
+    /** 表单容器、表单项及实例协议。 */
+    form?: FormAdapter;
+    /** 栅格和空间容器协议。 */
+    layout?: LayoutAdapter;
+    /** Card、Tabs、Collapse、List 等容器渲染协议。 */
+    containers?: Record<string, ContainerAdapter | undefined>;
+    /** 语义图标和用户图标的渲染协议。 */
+    icons?: IconAdapter;
+    /** 按钮组使用的按钮、菜单、下拉和提示原语。 */
+    actions?: ActionAdapter;
+    /** 详情展示和 Core 复合字段使用的轻量展示原语。 */
+    presentation?: PresentationAdapter;
+    /** 当前 UI 框架的全局组件默认属性 */
+    defaults?: Obj<Obj>;
+}
+
 export declare type UniOption = UniWrapperOption | UniWidgetOption
 
 export declare type UniWidgetOption =
 | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
+| {
+    [K in keyof CustomWidgetTypes]: { type: K } & CustomWidgetTypes[K]
+}[keyof CustomWidgetTypes]
 | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
 
 export declare type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
@@ -948,16 +1150,16 @@ declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Prom
 
 export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any, any>;
-    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
+    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
     modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
+    setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
 };
 
 export declare function useModalForm(formOption: ExtFormOption, config?: ExtModalProps): {
-    openModal: ({ data, onOk, ...__config }?: ModalFuncProps_2 & {
+    openModal: ({ data, onOk, ...__config }?: ModalFuncProps & {
         data?: Obj<any> | undefined;
     }) => Promise<void>;
     formActions: {
@@ -975,7 +1177,7 @@ export declare function useModalForm(formOption: ExtFormOption, config?: ExtModa
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
+    setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
 };
 
 export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
@@ -1012,14 +1214,14 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         /** 初始化数据 */
         resetData?: Obj<any> | undefined;
         /** 弹窗标题 */
-        meta?: ModalFuncProps_2 | undefined;
+        meta?: ModalFuncProps | undefined;
     } | undefined) => any;
     /** 修改行，须判断是否已有选中行 */
     readonly edit: (param?: {
         /** 弹窗标题 */
         title?: string | undefined;
         record?: Obj<any> | undefined;
-        meta?: ModalFuncProps_2 | undefined;
+        meta?: ModalFuncProps | undefined;
     } | undefined) => any;
     /** 删除行，须判断是否已有选中行 */
     readonly delete: () => any;
@@ -1028,7 +1230,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         /** 弹窗标题 */
         title?: string | undefined;
         record?: Obj<any> | undefined;
-        meta?: ModalFuncProps_2 | undefined;
+        meta?: ModalFuncProps | undefined;
     } | undefined) => any;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
     /** `editable`模式下进行表单校验 */
@@ -1036,6 +1238,8 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
 }];
 
 declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);
+
+export declare function validateUIForm(instance: unknown): Promise<unknown>;
 
 declare type VSlot = string | Fn
 
@@ -1046,18 +1250,18 @@ declare type WidgetTypes = {
     InfoSlot: ExtInfoSlotOption
     Text: ExtFormItemOption
     HTML: ExtFormItemOption
-    Textarea: ExtTextareaOption
+    TextArea: ExtTextAreaOption
     Input: ExtInputOption
     AutoComplete: ExtAutoCompleteOption
     InputNumber: ExtInputNumberOption
     DatePicker: ExtDatePickerOption
     TimePicker: ExtTimePickerOption
-    DateRange: ExtDateRange
-    TimeRange: ExtTimeRange
+    DateRangePicker: ExtDateRangePicker
+    TimeRangePicker: ExtTimeRangePicker
     Select: ExtSelectOption
     TreeSelect: ExtTreeOption
-    Radio: ExtRadioOption
-    Checkbox: ExtCheckboxOption
+    RadioGroup: ExtRadioGroupOption
+    CheckboxGroup: ExtCheckboxGroupOption
     Switch: ExtSwitchOption
     Upload: ExtUpload
     InputGroup: ExtInputGroupOption

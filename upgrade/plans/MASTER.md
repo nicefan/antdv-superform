@@ -306,7 +306,7 @@ P010 发布与迁移
 - [x] ButtonGroup 不再解析单个 UI 原语，统一交给 Action Adapter 按实际分支渲染，简单按钮不再要求 Core 感知 Dropdown、Menu 和 Divider。
 - [x] 合并 Field/Container 重复的 model 属性与事件映射逻辑，保持同一转换规则。
 - [x] 合并 Layout 组件选择与 `compactSpace` 回退逻辑；不提取只使用一次或仅减少少量行数的 helper。
-- [ ] 增加最小非 AntDV Adapter 契约测试，覆盖 Tabs、ButtonGroup、TagInput 和 TagSelect 的基础渲染。
+- [x] 经确认不增加假 Adapter 契约测试；改由 P005 的最小 Element Plus Adapter 和独立 dev 环境进行真实集成验证。
 
 #### 2026-09-03：完成首轮复合组件精简
 
@@ -358,7 +358,7 @@ P010 发布与迁移
 
 ### 任务
 
-- [ ] 启动 P004 前解决当前声明打包失败，并验证 Adapter 新增公开类型可以生成稳定的 d.ts。
+- [x] 启动 P004 前解决当前声明打包失败，并验证 Adapter 新增公开类型可以生成稳定的 d.ts。
 - [ ] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
 - [ ] 定义框架无关的稳定 Props 子集。
 - [ ] 设计 UI 专属扩展属性的类型扩展机制。
@@ -393,6 +393,7 @@ P010 发布与迁移
 - [ ] 调整虚拟模块注册方式，避免把自动导入组件误判为增强组件。
 - [ ] 保持动态 Schema 的显式 `types` 配置能力。
 - [ ] 更新生成的 d.ts 和对应测试。
+- [ ] 建立最小 Element Plus Adapter 和独立 dev 环境，覆盖 Form、布局、Input、Switch、Select、Tabs、ButtonGroup、TagInput 和 TagSelect，并验证类型声明与按需导入。
 
 ### 验收条件
 
