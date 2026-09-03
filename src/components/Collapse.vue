@@ -1,70 +1,84 @@
-<script setup lang="ts">
-import { reactive, ref, toRef, unref } from 'vue'
+<script lang="tsx">
+import { defineComponent, h, reactive, ref, toRef, unref, type PropType } from 'vue'
 import { useControl, getEffectData, toNode } from '../utils'
 import { ButtonGroup } from './buttons'
-import base from '../compat/antdv'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
+import { renderUIContainer } from '../adapter'
 
-const { Collapse, CollapsePanel } = base
-defineOptions({
+export default defineComponent({
+  name: 'ExCollapse',
   inheritAttrs: false,
+  props: {
+    option: { type: Object as PropType<GetOption<'Collapse'>>, required: true },
+    model: { type: Object as PropType<ModelDataGroup>, required: true },
+    effectData: { type: Object as PropType<Obj>, required: true },
+    isView: Boolean,
+  },
+  setup(props, { attrs: rootAttrs }) {
+    const title = props.option.title || props.option.label
+    const panels = [...props.model.children].map(([option, model], idx) => {
+      const effectData = getEffectData({
+        parent: props.effectData,
+        current: toRef(props.model, 'parent'),
+        field: model.refName,
+        value: model.refData,
+      })
+      const {
+        hidden,
+        attrs: { disabled, ...attrs },
+      } = useControl({ option, effectData })
+      const { key, field } = option as typeof option & { key?: string }
+      return {
+        attrs: reactive(attrs),
+        option: { ...option, type: 'CollapsePanel' },
+        effectData,
+        model,
+        header: () => toNode(option.label),
+        key: key || field || String(idx),
+        hidden,
+        disabled,
+      }
+    })
+    const activeKey = ref(props.option.activeKey || panels[0]?.key)
+
+    return () => [
+      title && h('div', { class: 'sup-title ant-descriptions-header' }, toNode(title, props.effectData)),
+      renderUIContainer(
+        'collapse',
+        {
+          ...rootAttrs,
+          value: activeKey.value,
+          'onUpdate:value': (value) => (activeKey.value = value),
+        },
+        {
+          default: () =>
+            panels.map(
+              ({ attrs, hidden, option, disabled, model, header, effectData, key }) =>
+                !hidden.value &&
+                renderUIContainer(
+                  'collapsePanel',
+                  { ...attrs, key, disabled: unref(disabled) },
+                  {
+                    header,
+                    extra: () =>
+                      !props.isView && option.buttons
+                        ? h(ButtonGroup, { option: option.buttons, effectData })
+                        : undefined,
+                    default: () =>
+                      props.isView
+                        ? h(DetailLayout, {
+                            option,
+                            modelsMap: model.children,
+                            effectData,
+                          })
+                        : h(Collections, { option, model, effectData }),
+                  }
+                )
+            ),
+        }
+      ),
+    ]
+  },
 })
-
-const props = defineProps<{
-  option: GetOption<'Collapse'>
-  model: ModelDataGroup<any>
-  effectData: Obj
-  isView?: boolean
-}>()
-
-const title = props.option.title || props.option.label
-const panels = [...props.model.children].map(([option, model], idx) => {
-  const effectData = getEffectData({
-    parent: props.effectData,
-    current: toRef(props.model, 'parent'),
-    field: model.refName,
-    value: model.refData,
-  })
-  const {
-    hidden,
-    attrs: { disabled, ...attrs },
-  } = useControl({ option: option, effectData })
-
-  const { key, field } = option
-
-  return {
-    attrs: reactive(attrs),
-    option: { ...option, type: 'CollapsePanel' },
-    effectData,
-    model,
-    header: () => toNode(option.label),
-    key: key || field || String(idx),
-    hidden,
-    disabled,
-  }
-})
-const acKey = ref(props.option.activeKey || panels[0].key)
 </script>
-
-<template>
-  <div v-if="title" class="sup-title ant-descriptions-header">
-    <component :is="toNode(title, effectData)" />
-  </div>
-
-  <Collapse v-model:activeKey="acKey" v-bind="$attrs">
-    <template v-for="{ attrs, hidden, option, disabled, model, header, effectData, key } of panels" :key="key">
-      <CollapsePanel v-if="!hidden.value" :collapsible="unref(disabled) ? 'disabled' : undefined" v-bind="attrs">
-        <template #header>
-          <component :is="header" />
-        </template>
-        <template #extra v-if="!isView">
-          <ButtonGroup v-if="option.buttons" :option="option.buttons" :effectData="effectData" />
-        </template>
-
-        <DetailLayout v-if="isView" :option="option" :modelsMap="model.children" :effectData="effectData" />
-        <Collections v-else :option="option" :model="model" :effectData="effectData" />
-      </CollapsePanel>
-    </template>
-  </Collapse>
-</template>

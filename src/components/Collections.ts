@@ -1,15 +1,13 @@
 import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRaw } from 'vue'
-import { Col, Row } from '../compat/antdv'
 import { defaults, isFunction } from 'lodash-es'
 import Controls, { containers, getFormComponent, hasFormComponent, mapFormComponentModel } from './index'
 import { ButtonGroup } from './buttons'
-import base from '../compat/antdv'
 import { getEffectData, getViewNode, useControl, useInnerSlots, useVModel } from '../utils'
 import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
-import { getUIFieldAdapter, mapUIFieldProps, resolveUIComponent } from '../adapter'
+import { getUIFieldAdapter, mapUIFieldProps, renderUIFormItem, renderUILayout, resolveUIComponent } from '../adapter'
 import FieldProcessorRenderer from './processors/FieldProcessorRenderer'
 
 export default defineComponent({
@@ -105,8 +103,7 @@ export default defineComponent({
         const label = createLabelNode(option, effectData)
 
         node = () =>
-          h(
-            base.FormItem,
+          renderUIFormItem(
             reactive({
               ...formItemAttrs,
               name: subData.propChain,
@@ -157,7 +154,11 @@ export default defineComponent({
         if (!currentGroup) {
           nodes.push((currentGroup = []))
         }
-        currentGroup.push(() => !hidden.value && h(Col, mergeProps({ style: alignStyle, key: idx }, colProps), node))
+        currentGroup.push(
+          () =>
+            !hidden.value &&
+            renderUILayout('col', mergeProps({ style: alignStyle, key: idx }, colProps), { default: node })
+        )
         if (breakAfter) currentGroup = undefined
       }
     }
@@ -167,7 +168,9 @@ export default defineComponent({
       nodes.map((item) => {
         if (Array.isArray(item)) {
           hasWrap = true
-          return h(Row, rowProps, () => item.map((node) => node()))
+          return renderUILayout('row', rowProps, {
+            default: () => item.map((node) => node()),
+          })
         } else {
           return item()
         }

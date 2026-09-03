@@ -46,6 +46,5 @@
 - 原始值 options 数组强制使用元素本身作为 label 和 value；配置 `valueToNumber` 时改用数字下标作为兼容 value。不要把 `labelAsValue: false` 解释为关闭此规则。
 - options 支持扁平的对象数组、原始值数组、`{ value: label }` 对象、Ref、函数和标准字典结果，当前不支持 Select 分组选项或 `fieldNames.options`。
 - Select 消费 `fieldNames.label/value` 后将选项归一化为标准 `label/value` 再传给底层组件；表单和详情的同步、异步 options 应保持一致的归一化语义。`dictApi` 按公开契约返回标准 `{ label, value }[]`。
-- `TimeRangePicker` 使用 UI 组件真实名称，默认 `valueFormat` 为 `HH:mm:ss`；带 `endField` 的范围控件按开始、结束两个模型字段拆分。不保留 `TimeRange` 别名。
 - 表格弹窗编辑时先等待可选的 `apis.info`，再按当前行、接口结果、`resetData` 的顺序合并到表单数据源；未配置 `info` 时不得报错。
 - `searchForm.subItems` 使用列字段名时，会复制同名 column 配置，移除 `span`、`disabled`、`hidden`，并设置为可编辑查询字段。

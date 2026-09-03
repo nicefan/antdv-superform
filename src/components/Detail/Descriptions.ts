@@ -1,5 +1,5 @@
 import { type PropType, computed, defineComponent, h, inject, mergeProps, unref } from 'vue'
-import { Col, Row } from '../../compat/antdv'
+import { renderUILayout } from '../../adapter'
 
 export default defineComponent({
   props: {
@@ -40,10 +40,20 @@ export default defineComponent({
         const { span = option.span } = option.descriptionsProps || {}
         let ceil = Number(span) ? Math.ceil(span / (24 / colNum)) : 1
         ceil = ceil > colNum ? colNum : ceil
-        const attrs = { ...descriptionsProps, ...option.formItemProps, ...option.descriptionsProps }
-        const labelStyle = { ...(attrs.labelAlign && { textAlign: attrs.labelAlign }), ...attrs.labelStyle }
+        const attrs = {
+          ...descriptionsProps,
+          ...option.formItemProps,
+          ...option.descriptionsProps,
+        }
+        const labelStyle = {
+          ...(attrs.labelAlign && { textAlign: attrs.labelAlign }),
+          ...attrs.labelStyle,
+        }
         const item: Obj = {
-          labelCol: mergeProps(attrs.labelCol, { style: labelStyle, class: { 'sup-label-no-colon': attrs.noColon } }),
+          labelCol: mergeProps(attrs.labelCol, {
+            style: labelStyle,
+            class: { 'sup-label-no-colon': attrs.noColon },
+          }),
           wrapperCol: mergeProps(
             { style: layout === 'vertical' && { textAlign: attrs.labelAlign } },
             { style: attrs.contentStyle },
@@ -109,7 +119,10 @@ export default defineComponent({
                           colspan: item.colspan,
                           style: `width: ${((item.span / 24) * 100).toFixed(2)}%`,
                         },
-                        { class: item.labelCol.class, style: item.labelCol.style }
+                        {
+                          class: item.labelCol.class,
+                          style: item.labelCol.style,
+                        }
                       ),
                       item.label?.()
                     )
@@ -122,8 +135,14 @@ export default defineComponent({
                   h(
                     'td',
                     mergeProps(
-                      { class: 'ant-descriptions-item-content', colspan: item.colspan },
-                      { class: item.wrapperCol.class, style: item.wrapperCol.style }
+                      {
+                        class: 'ant-descriptions-item-content',
+                        colspan: item.colspan,
+                      },
+                      {
+                        class: item.wrapperCol.class,
+                        style: item.wrapperCol.style,
+                      }
                     ),
                     item.content()
                   )
@@ -153,7 +172,10 @@ export default defineComponent({
                           'th',
                           mergeProps(
                             { class: 'ant-descriptions-item-label' },
-                            { class: item.labelCol.class, style: item.labelCol.style }
+                            {
+                              class: item.labelCol.class,
+                              style: item.labelCol.style,
+                            }
                           ),
                           item.label()
                         ),
@@ -186,29 +208,58 @@ export default defineComponent({
     } else {
       const render = () =>
         rowGroup.value.map((group) =>
-          h(Row, { class: 'ant-descriptions-row', ...rowProps }, () =>
-            group.map(({ option, content, span, label, labelCol, wrapperCol, attrs }) => {
-              const colProps = { span, ...(attrs.colProps || option.colProps) }
-              if (colProps.span === 0 || colProps.flex) {
-                colProps.span = undefined
-              } else if (!Number(colProps.span)) {
-                colProps.span = gridConfig.column ? 24 / gridConfig.column : gridConfig.subSpan
-              }
+          renderUILayout(
+            'row',
+            { class: 'ant-descriptions-row', ...rowProps },
+            {
+              default: () =>
+                group.map(({ option, content, span, label, labelCol, wrapperCol, attrs }) => {
+                  const colProps = {
+                    span,
+                    ...(attrs.colProps || option.colProps),
+                  }
+                  if (colProps.span === 0 || colProps.flex) {
+                    colProps.span = undefined
+                  } else if (!Number(colProps.span)) {
+                    colProps.span = gridConfig.column ? 24 / gridConfig.column : gridConfig.subSpan
+                  }
 
-              return h(Col, colProps, () =>
-                h(Row, { class: ['ant-descriptions-item-container'] }, () => [
-                  label &&
-                    h(Col, mergeProps({ class: 'ant-descriptions-item-label' }, labelCol), () =>
-                      h('label', {}, label())
-                    ),
-                  h(Col, { class: 'ant-descriptions-item-content', ...wrapperCol }, () =>
-                    !attrs.noInput && mode === 'form' && label !== undefined
-                      ? h('div', { class: 'sup-descriptions-item-input' }, content())
-                      : content()
-                  ),
-                ])
-              )
-            })
+                  return renderUILayout('col', colProps, {
+                    default: () =>
+                      renderUILayout(
+                        'row',
+                        { class: ['ant-descriptions-item-container'] },
+                        {
+                          default: () => [
+                            label &&
+                              renderUILayout('col', mergeProps({ class: 'ant-descriptions-item-label' }, labelCol), {
+                                default: () => h('label', {}, label()),
+                              }),
+                            renderUILayout(
+                              'col',
+                              {
+                                class: 'ant-descriptions-item-content',
+                                ...wrapperCol,
+                              },
+                              {
+                                default: () =>
+                                  !attrs.noInput && mode === 'form' && label !== undefined
+                                    ? h(
+                                        'div',
+                                        {
+                                          class: 'sup-descriptions-item-input',
+                                        },
+                                        content()
+                                      )
+                                    : content(),
+                              }
+                            ),
+                          ],
+                        }
+                      ),
+                  })
+                }),
+            }
           )
         )
       return () =>

@@ -1,13 +1,111 @@
-import { h } from 'vue'
+import { h, toRaw } from 'vue'
 import base from '../compat/antdv'
-import { getIconNode } from '../utils/useIcon'
+import {
+  DownOutlined,
+  EllipsisOutlined,
+  InfoCircleOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  UpOutlined,
+} from '../compat/icons'
 import { toNode } from '../utils/toNode'
-import type { UIAdapter } from './types'
+import { globalConfig } from '../config'
+import type { IconAdapterContext, UIAdapter } from './types'
+import AntdvDescriptions from '../components/Detail/Descriptions'
+
+function renderAntdvIcon(icon: unknown, { customIcon }: IconAdapterContext = {}) {
+  if (typeof icon === 'string') return customIcon?.(icon) || h('span', { class: `anticon ${icon}` })
+  return icon ? h(toRaw(icon) as any) : undefined
+}
 
 /** 内置 AntDV Adapter 实现；调用方仍需在安装时显式传入。 */
 export const antdvAdapter: UIAdapter = {
   name: 'antdv-next',
   components: base,
+  form: {
+    component: 'Form',
+    item: 'FormItem',
+    validate: (instance) => instance.validate(),
+    clearValidate: (instance) => instance.clearValidate(),
+  },
+  layout: {
+    row: 'Row',
+    col: 'Col',
+    space: 'Space',
+    compactSpace: 'SpaceCompact',
+  },
+  containers: {
+    card: {
+      component: 'Card',
+    },
+    tabs: {
+      component: 'Tabs',
+      model: { prop: 'activeKey', event: 'update:activeKey' },
+      render(component, props, slots) {
+        const { extra, ...restSlots } = slots
+        return h(component, props, extra ? { ...restSlots, rightExtra: extra } : restSlots)
+      },
+    },
+    tab: {
+      component: 'TabPane',
+      transformProps(props) {
+        const { label, ...rest } = props
+        return { ...rest, tab: label }
+      },
+    },
+    collapse: {
+      component: 'Collapse',
+      model: { prop: 'activeKey', event: 'update:activeKey' },
+    },
+    collapsePanel: {
+      component: 'CollapsePanel',
+      transformProps(props) {
+        const { disabled, ...rest } = props
+        return { ...rest, collapsible: disabled ? 'disabled' : undefined }
+      },
+    },
+    // antdv-next 已移除旧 List，由 AntDV Adapter 保留当前兼容实现。
+    list: {
+      component: 'SuperList',
+    },
+    listItem: {
+      component: 'SuperListItem',
+    },
+    descriptions: {
+      // 保留现有表格/表单模式和 AntDV 样式协议，但由 Adapter 显式选择实现。
+      component: AntdvDescriptions,
+    },
+  },
+  icons: {
+    semantic: {
+      add: PlusOutlined,
+      remove: MinusOutlined,
+      more: EllipsisOutlined,
+      expand: DownOutlined,
+      collapse: UpOutlined,
+      info: InfoCircleOutlined,
+    },
+    render: renderAntdvIcon,
+  },
+  actions: {
+    components: {
+      button: 'Button',
+      tooltip: 'Tooltip',
+      dropdown: 'Dropdown',
+      menu: 'Menu',
+      menuItem: 'MenuItem',
+      divider: 'Divider',
+    },
+    slots: {
+      popup: 'popupRender',
+    },
+  },
+  presentation: {
+    components: {
+      tag: 'Tag',
+      checkableTag: 'CheckableTag',
+    },
+  },
   fields: {
     Input: {
       component: 'Input',
@@ -28,7 +126,13 @@ export const antdvAdapter: UIAdapter = {
             h(
               base.Button,
               { loading: searchLoading, ...buttonProps },
-              { icon: () => getIconNode(icon), default: () => toNode(label) }
+              {
+                icon: () =>
+                  renderAntdvIcon(icon, {
+                    customIcon: globalConfig.customIcon,
+                  }),
+                default: () => toNode(label),
+              }
             ),
           ]
         } else if (!enterButtonSlot && typeof enterButtonProp === 'function') {
@@ -36,7 +140,10 @@ export const antdvAdapter: UIAdapter = {
         }
         return h(
           base.InputSearch,
-          { ...rest, enterButton: enterButtonSlot ? undefined : enterButtonProp },
+          {
+            ...rest,
+            enterButton: enterButtonSlot ? undefined : enterButtonProp,
+          },
           enterButtonSlot ? { ...restSlots, enterButton: enterButtonSlot } : restSlots
         )
       },
@@ -67,14 +174,22 @@ export const antdvAdapter: UIAdapter = {
       component: 'AutoComplete',
       processors: ['autoComplete'],
       transformProps(props, { option }) {
-        return { filterOption: true, placeholder: `请输入${option.label ?? ''}`, ...props }
+        return {
+          filterOption: true,
+          placeholder: `请输入${option.label ?? ''}`,
+          ...props,
+        }
       },
     },
     Select: {
       component: 'Select',
       processors: ['select'],
       transformProps(props, { option }) {
-        return { optionFilterProp: 'label', placeholder: `请选择${option.label ?? ''}`, ...props }
+        return {
+          optionFilterProp: 'label',
+          placeholder: `请选择${option.label ?? ''}`,
+          ...props,
+        }
       },
     },
     Radio: {
@@ -119,7 +234,11 @@ export const antdvAdapter: UIAdapter = {
       component: 'TreeSelect',
       processors: ['treeSelect'],
       transformProps(props, { option }) {
-        return { allowClear: true, placeholder: `请选择${option.label ?? ''}`, ...props }
+        return {
+          allowClear: true,
+          placeholder: `请选择${option.label ?? ''}`,
+          ...props,
+        }
       },
     },
     Switch: {

@@ -3,8 +3,8 @@ import { h, defineComponent, toRaw, mergeProps } from 'vue'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { createButtons } from './buttons'
-import { Row, Col } from '../compat/antdv'
 import { createLabelNode } from '../utils/labelNode'
+import { renderUILayout } from '../adapter'
 export default defineComponent({
   inheritAttrs: false,
   props: {
@@ -22,7 +22,11 @@ export default defineComponent({
       if (type === 'Descriptions') {
         _buttons.visibleIn ??= _buttons.validOn ?? 'detail'
       }
-      buttonsSlot = createButtons({ config: _buttons, effectData, isView: _isView })
+      buttonsSlot = createButtons({
+        config: _buttons,
+        effectData,
+        isView: _isView,
+      })
     }
 
     const { style, class: _class, ...attrs } = ctx.attrs
@@ -54,13 +58,26 @@ export default defineComponent({
     if (buttonsSlot) {
       if (buttons.placement === 'bottom') {
         bottomButton = () =>
-          h('div', { class: 'sup-bottom-buttons', style: { textAlign: buttonAlign || 'center' } }, buttonsSlot())
+          h(
+            'div',
+            {
+              class: 'sup-bottom-buttons',
+              style: { textAlign: buttonAlign || 'center' },
+            },
+            buttonsSlot()
+          )
       } else {
         titleButton = () =>
-          h(
-            Col,
-            { class: 'sup-title-buttons', flex: 1, style: { textAlign: buttonAlign || (title ? 'right' : undefined) } },
-            buttonsSlot
+          renderUILayout(
+            'col',
+            {
+              class: 'sup-title-buttons',
+              flex: 1,
+              style: {
+                textAlign: buttonAlign || (title ? 'right' : undefined),
+              },
+            },
+            { default: buttonsSlot }
           )
       }
     }
@@ -70,10 +87,16 @@ export default defineComponent({
       return () =>
         h('div', mergeProps({ class: _class, style }, { class: 'sup-group' }), [
           (title || titleButton) &&
-            h(Row, { align: 'middle', class: 'sup-titlebar' }, () => [
-              title && h(Col, { class: 'sup-title' }, slots.title),
-              titleButton?.(),
-            ]),
+            renderUILayout(
+              'row',
+              { align: 'middle', class: 'sup-titlebar' },
+              {
+                default: () => [
+                  title && renderUILayout('col', { class: 'sup-title' }, { default: slots.title }),
+                  titleButton?.(),
+                ],
+              }
+            ),
           slots.default(),
           bottomButton && bottomButton(),
         ])

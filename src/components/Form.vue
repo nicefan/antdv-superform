@@ -4,9 +4,9 @@ import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
-import base from '../compat/antdv'
 import { message } from '../compat/antdv'
 import { ButtonGroup } from './buttons'
+import { clearUIFormValidation, renderUIForm, validateUIForm } from '../adapter'
 
 export default {
   name: 'SuperForm',
@@ -77,7 +77,7 @@ export default {
     const actions = {
       dataSource: modelData,
       submit: () => {
-        return formRef.value.validate().then((...args) => {
+        return validateUIForm(formRef.value).then((...args) => {
           return submitValidate(modelData.value).then(
             () => {
               const data = cloneDeep(modelData.value)
@@ -92,12 +92,12 @@ export default {
         })
       },
       setFieldsValue(data) {
-        formRef.value?.clearValidate()
+        formRef.value && clearUIFormValidation(formRef.value)
         return setFieldsValue(modelData.value, data, initialData)
       },
       resetFields(data: Obj = {}) {
         resetFields(modelData.value, data, initialData)
-        formRef.value?.clearValidate()
+        formRef.value && clearUIFormValidation(formRef.value)
         const cloneData = cloneDeep(modelData.value)
         onReset?.(cloneData as Obj)
         emit('reset', cloneData)
@@ -116,10 +116,18 @@ export default {
           render: () =>
             h(ButtonGroup, {
               option: buttonsConfig,
-              methods: { submit: actions.submit, reset: actions.resetFields, search: actions.submit },
+              methods: {
+                submit: actions.submit,
+                reset: actions.resetFields,
+                search: actions.submit,
+              },
               effectData,
             }),
-          ...(buttonsConfig.placement === 'inline' && { span: 'auto', block: false, align: buttonsConfig.align || 'right' }),
+          ...(buttonsConfig.placement === 'inline' && {
+            span: 'auto',
+            block: false,
+            align: buttonsConfig.align || 'right',
+          }),
         },
       ]
     }
@@ -130,7 +138,7 @@ export default {
       () => unref(props.dataSource ?? props.option.dataSource),
       (data) => {
         if (data) {
-          formRef.value?.clearValidate()
+          formRef.value && clearUIFormValidation(formRef.value)
           modelData.value = data
         }
       },
@@ -151,8 +159,7 @@ export default {
     expose(exposeData)
 
     return () =>
-      h(
-        base.Form,
+      renderUIForm(
         {
           ref: getForm,
           class: ['sup-form', compact && 'sup-form-compact', ignoreRules && 'sup-form-simple'],

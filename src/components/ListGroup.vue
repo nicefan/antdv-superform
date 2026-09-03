@@ -3,8 +3,8 @@ import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw }
 import { cloneModels } from '../utils/buildModel'
 import Controls from '.'
 import { nanoid } from 'nanoid'
-import { MinusOutlined, PlusOutlined } from '../compat/icons'
 import { globalProps } from '../plugin'
+import { getSemanticIconNode } from '../utils'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -35,7 +35,7 @@ export default defineComponent({
 
     const methods = {
       add: {
-        icon: () => h(PlusOutlined),
+        icon: () => getSemanticIconNode('add'),
         onClick({ index }) {
           orgList.value.splice(index + 1, 0, {})
           orgList.value = [...toRaw(orgList.value)]
@@ -45,7 +45,7 @@ export default defineComponent({
         hidden: () => orgList.value.length === 1,
         disabled: false,
         confirmText: '',
-        icon: () => h(MinusOutlined),
+        icon: () => getSemanticIconNode('remove'),
         onClick({ index }) {
           orgList.value = orgList.value.filter((_, idx) => idx !== index)
         },
@@ -85,7 +85,12 @@ export default defineComponent({
           return {
             key: keyMap.get(raw),
             model: { refData: ref(record), children: modelsMap, index: idx },
-            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
+            effectData: reactive({
+              parent: effectData,
+              current: orgList,
+              index: idx,
+              record,
+            }),
           }
         })
       },

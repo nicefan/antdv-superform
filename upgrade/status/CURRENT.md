@@ -1,10 +1,10 @@
 # 当前项目状态
 
-更新时间：2026-09-01
+更新时间：2026-09-03
 
 ## 当前阶段
 
-P001 Adapter 生命周期回补和 P002 均已完成并通过相关验证。P003 为下一个待启动阶段，尚未获得明确实施指令。
+P001 Adapter 生命周期回补、P002 和 P003 主任务均已完成并通过相关验证。2026-09-03 代码审查确认了 P002/P003 回补项，应先完成回补；P004 尚未获得明确实施指令。
 
 ## 已完成
 
@@ -24,37 +24,38 @@ P001 Adapter 生命周期回补和 P002 均已完成并通过相关验证。P003
 - Input、AutoComplete、Select、RadioGroup、CheckboxGroup、TreeSelect、Switch 的通用行为已迁入 Core 处理器，具体组件、model 映射、默认属性和特殊渲染归 AntDV Adapter。
 - 普通 UI 字段及增强字段均已退出 Core 字段注册表；对应旧包装组件已删除。
 - options 处理覆盖同步、异步、Ref、字典、原始值、`fieldNames`、标签同步和约 600ms 远程搜索。
-- `TagInput`、`TagSelect` 已确认保留为 Core 内置复合字段，其 UI 原语依赖留待后续 capability 解耦。
+- `TagInput`、`TagSelect` 保留为 Core 内置复合字段，底层 Input、Tag、CheckableTag 和 Tooltip 已通过 Adapter capability 解析。
 - 已补齐 P002 Dev 验证页面，覆盖真实组件名、范围拆分、options、Switch、TreeSelect 和 Input 搜索渲染。
+- 已定义 Form、Layout、Container、Action、Presentation 和 Icon capability，相关受控容器统一使用 `value/onUpdate:value` 状态。
+- Form/FormItem、Row/Col/Space、Group、Card、Tabs、Collapse、Descriptions、List 和 ButtonGroup 已迁入 Adapter 渲染边界。
+- 按钮、列表和搜索表单的通用图标已改用语义名；`SuperList` 明确归为 AntDV Adapter 兼容实现。
+- 已补齐 P003 Dev 验证页面，覆盖表单栅格、Card、Tabs、Collapse、Descriptions 和按钮图标。
 
 ## 下一步
 
-等待用户明确要求开始 P003。在此之前只处理已确认的回补任务、升级工程状态维护或后续阶段计划调整，不实施 P003 代码。
-
-P003 获得启动指令后的首个实现任务：
-
-1. 定义 Form、FormItem、栅格、空间、容器和图标 capability。
-2. 迁移 `Collections.ts` 中 FormItem、Row、Col 的直接 AntDV 渲染。
-3. 固定现有布局行为后，再迁移 Group、Card、Tabs、Collapse、Descriptions 等容器。
+先执行 P002/P003 精简回补：审计并删除无明确业务价值的历史字段规则和 UI 透传，以最小事件输入保留必要字段语义；收缩 ButtonGroup、TagInput、TagSelect 的属性/样式/事件能力，清理跨层 attrs 扩散和 AntDV 私有协议；随后处理 Descriptions 归属、Adapter 映射复用及最小非 AntDV 契约测试。完成后解决声明构建阻塞，再等待用户明确要求开始 P004。
 
 ## 当前临时状态
 
-- `compat/antdv.ts` 和 `compat/icons.ts` 仍是 Core 实际依赖边界，属于迁移桥梁。
+- `compat/antdv.ts` 和 `compat/icons.ts` 仍为 Adapter 及未迁移复杂能力提供迁移桥梁。
 - `components/index.ts` 的容器、Core 复合字段和兼容注册职责仍在同一入口，P005 将继续收缩解析职责。
-- `globalProps` 仍包含 FormItem、Table 等 AntDV 默认值；字段默认值已迁入 Adapter。
-- Adapter 默认值已经成为 `globalProps` 的初始来源，未迁移容器仍通过 `globalProps` 消费。
+- `globalProps` 仍包含 FormItem、Table 等 AntDV 默认值；字段和容器的实际组件渲染已迁入 Adapter。
+- Adapter 默认值已经成为 `globalProps` 的初始来源，默认值类型解耦留待 P004。
 - `exaTypes.d.ts` 仍直接暴露大量 AntDV Props 类型。
-- Form、Table、Upload、Modal、布局和图标仍直接使用 AntDV 协议。
+- Table、Upload、Modal、message 和预览 Image 仍直接使用 AntDV 协议，分别留待 P006/P007。
+- `globalConfig` 按应用初始化配置使用，不增加重复安装时的重置语义。
+- 外部 options/search 回调的并发、取消和异常处理仍由调用方负责，不纳入本轮回补。
+- 当前声明打包仍存在已记录的不可命名类型问题，需作为 P004 启动前置处理。
+- 本轮回补以逻辑清晰和实现简单为优先，允许删除升级前缺少明确业务价值的能力或规则，不通过增加大量细粒度边界维持表面兼容。
 
 ## 重要约束
 
 - 不在 P002 修改 Upload、Table 或公共 Schema 类型。
 - 保持根目录 `AGENTS.md` 中已经确认的 Form、Table、Select、TimeRangePicker 等行为约束。
-- `TagInput`、`TagSelect` 仍直接使用 compat 提供的 UI 原语，这是已记录的后续解耦项。
+- Upload 领域图标仍直接使用 compat，由 P006 随上传协议一并迁移。
 
 ## 后续阶段待确认问题
 
-- 容器和复杂字段的标准状态是否全部统一为 `value/onUpdateValue`，需结合后续 capability 继续确认。
 - 旧 `components` 底层覆盖能力的废弃时间。
 - UI 专属 Props 类型通过模块扩展、泛型还是独立 Adapter 类型导出。
 - Form、Table、Upload 等复杂能力采用统一 `services` 还是独立 capability。

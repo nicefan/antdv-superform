@@ -1,6 +1,7 @@
 import type { Component } from 'vue'
 import P001Adapter from './P001Adapter.vue'
 import P002RealComponentNames from './P002RealComponentNames.vue'
+import P003Containers from './P003Containers.vue'
 
 export interface UpgradeTestPage {
   id: string
@@ -25,5 +26,12 @@ export const upgradeTestPages: UpgradeTestPage[] = [
     title: '字段处理器与真实组件名',
     description: '验证真实 UI 名称、范围拆分、options、Switch、TreeSelect 和 Input 搜索渲染。',
     component: P002RealComponentNames,
+  },
+  {
+    id: 'p003-containers',
+    phase: 'P003',
+    title: '容器、布局与图标',
+    description: '验证 Form、栅格、Card、Tabs、Collapse、Descriptions 和按钮图标。',
+    component: P003Containers,
   },
 ]

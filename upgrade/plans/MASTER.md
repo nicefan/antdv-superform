@@ -1,12 +1,12 @@
 # UI 适配器升级总计划
 
 状态：活动
-当前状态：P002 已完成，等待明确指令启动 P003
+当前状态：P002/P003 主任务已完成，先处理代码审查回补项；P004 尚未启动
 基线分支：`next-dev`
 
 ## 全局目标
 
-在保持现有表单、详情、表格、弹窗和上传业务能力的前提下，使 SuperForm Core 不再依赖具体 UI 框架，并以 AntDV Adapter 保持现有用户行为。
+在保持主要表单、详情、表格、弹窗和上传业务能力的前提下，使 SuperForm Core 不再依赖具体 UI 框架。升级以逻辑清晰、实现简单和长期可维护为优先；没有明确业务价值的历史能力、透传规则和 UI 兼容行为允许删除，并记录为不兼容变化。
 
 ## 全局非目标
 
@@ -15,6 +15,14 @@
 - 不顺手修复与当前阶段无关的问题。
 - 不以首期完整支持第二 UI 框架为目标。
 - 不在未记录迁移方案时删除旧公共 API。
+
+## 精简原则
+
+- 先判断历史能力是否仍有业务价值，再决定删除或适配；不为保留旧行为而默认增加 capability、转换层或 `*Props` 配置。
+- 单根且语义透明的 Core 包装允许未声明 attrs 自然落到根 UI 组件；只有多根、跨层扩散、受控状态冲突或确需协议转换时才显式接管。
+- Core 只保留稳定业务语义。UI 专属属性、样式和原始事件若无必要直接删除；确需保留时采用最小 Adapter 契约。
+- 不把同一份 attrs、slots 或事件重复传给布局、容器和内容组件，也不为每个内部节点建立独立透传入口。
+- 删除用户可见能力或规则时同步更新迁移记录和验证用例，不以兼容旧测试为唯一目标。
 
 ## 进展记录规则
 
@@ -228,11 +236,19 @@ P010 发布与迁移
 - [x] 字段 Core 处理器不导入 AntDV 组件或类型。
 - [x] 普通 UI 字段可以由自动导入或 Adapter 映射解析。
 
+### 审查回补任务（2026-09-03）
+
+- [ ] 审计 Select、RadioGroup、CheckboxGroup、TreeSelect 的增强规则，先删除无明确业务价值的历史事件兼容和属性透传。
+- [ ] 对确认保留的标签同步等业务语义，仅定义最小标准事件输入；UI 事件参数由 Field Adapter 做一次归一化，Core 不解释原始 UI 事件。
+- [ ] 删除 `optionType` 等无通用价值的 UI 专属属性；只有仍被确认需要的能力才补 Adapter 转换。
+- [ ] 增加不依赖 AntDV 事件结构的最小 Field Adapter 契约测试。
+- [ ] 外部 options/search 回调的并发、取消和异常由调用方负责，本阶段不改变其执行语义。
+
 ---
 
 ## P003 容器、布局与图标解耦
 
-状态：待开始
+状态：已完成（审查回补待处理）
 依赖：P002
 
 ### 目标
@@ -246,18 +262,43 @@ P010 发布与迁移
 
 ### 任务
 
-- [ ] 定义 Form、FormItem、栅格、空间、容器和图标 capability。
-- [ ] 将 `Collections.ts` 中 Row/Col/FormItem 的直接渲染迁入 Adapter 边界。
-- [ ] 保持 `span`、`subSpan`、`block`、`breakAfter`、`gutter` 等布局语义。
-- [ ] 迁移 Group、Card、Tabs、Collapse、Descriptions、List 系列的 UI 依赖。
-- [ ] 为按钮图标定义语义名或渲染能力，避免 Core 导入 AntDV 图标。
-- [ ] 明确 `SuperList` 是 Core 内部组件还是 AntDV Adapter 的兼容实现。
+- [x] 定义 Form、FormItem、栅格、空间、容器和图标 capability。
+- [x] 将 `Collections.ts` 中 Row/Col/FormItem 的直接渲染迁入 Adapter 边界。
+- [x] 保持 `span`、`subSpan`、`block`、`breakAfter`、`gutter` 等布局语义。
+- [x] 迁移 Group、Card、Tabs、Collapse、Descriptions、List 系列的 UI 依赖。
+- [x] 为按钮图标定义语义名或渲染能力，避免 Core 导入 AntDV 图标。
+- [x] 明确 `SuperList` 是 Core 内部组件还是 AntDV Adapter 的兼容实现。
 
 ### 验收条件
 
-- [ ] Core 容器不直接渲染 AntDV 容器和栅格组件。
-- [ ] 现有表单布局、详情布局和按钮行为保持一致。
-- [ ] 内部组件与 Adapter 组件的归属有明确设计记录。
+- [x] Core 容器不直接渲染 AntDV 容器和栅格组件。
+- [x] 现有表单布局、详情布局和按钮行为保持一致。
+- [x] 内部组件与 Adapter 组件的归属有明确设计记录。
+
+### 进展记录
+
+#### 2026-09-02：完成容器、布局与图标解耦
+
+- 完成：新增 Form、Layout、Container、Action、Presentation 和 Icon capability，迁移 Form/FormItem、栅格、空间、Card、Tabs、Collapse、Descriptions、List、ButtonGroup 及 Core 复合 Tag 字段的 UI 原语。
+- 设计影响：受控容器使用 `value/onUpdate:value` 标准状态；`SuperList` 和现有 Descriptions 表格/表单渲染明确作为 AntDV Adapter 兼容实现。
+- 兼容性：无用户可见变化。
+- 验证：相关测试 7 个文件、35 项通过；类型检查通过；范围内 ESLint 0 错误，保留 17 个既有警告；未执行 build，因当前未进入提交阶段。
+- 后续：Upload、Modal/message、Table 和公共类型仍保留对 AntDV 协议的依赖，由 P004、P006 和 P007 继续处理。
+
+#### 2026-09-03：代码审查回补任务
+
+- [ ] 盘点 ButtonGroup、TagInput、TagSelect 当前支持的属性、样式、事件和 slot，形成“保留/删除”清单；优先删除仅为旧 UI 透传服务的规则，并将不兼容项写入迁移记录。
+- [ ] 收缩 Action/Presentation capability：Core 生成最小业务视图模型，Adapter 负责最终渲染；不为 Button、Menu、Dropdown、Tooltip、Tag、CheckableTag 的每个内部节点分别建立复杂转换边界。
+- [ ] 将 AntDV Descriptions 兼容实现移入 Adapter 私有目录，消除 `adapter -> Descriptions -> adapter` 循环依赖。
+- [ ] 空图标不要求 Adapter 提供 Icon capability，并补充无图标场景测试。
+- [ ] 保留 Card、Tabs、Form 等单根透明包装的自然 attrs fallthrough；清理 Collections、Group 等非透明组件中 attrs 向 Row、section 和内容节点的重复扩散，不新增成套 `rowProps/sectionProps/contentProps` API。
+- [ ] TagInput、TagSelect 不再把通用 `$attrs` 复制到每个 Tag；保留组件自身声明的业务属性，删除无明确用途的内部节点透传，不为每个子节点新增独立 props 入口。
+- [ ] 清理 ButtonGroup、Collapse、Descriptions、List、TagSelect、labelNode 中残留的 AntDV class/protocol；Core 自有样式改用最少的 `sup-*` 语义 class，AntDV 私有结构随兼容实现进入 Adapter。
+- [ ] 删除无业务作用的内联视觉样式和冗余事件拦截，例如无链接语义的 `<a>`、根级重复 `click.stop`；布局所必需的动态样式保留。
+- [ ] ButtonGroup 按实际渲染分支解析可选原语，避免简单按钮强制要求 Dropdown、Menu 和 Divider。
+- [ ] 合并 Field/Container 重复的 model 属性与事件映射逻辑，保持同一转换规则。
+- [ ] 合并 Layout 组件选择与 `compactSpace` 回退逻辑；不提取只使用一次或仅减少少量行数的 helper。
+- [ ] 增加最小非 AntDV Adapter 契约测试，覆盖 Tabs、ButtonGroup、TagInput 和 TagSelect 的基础渲染。
 
 ---
 
@@ -273,16 +314,18 @@ P010 发布与迁移
 ### 非目标
 
 - 不承诺一次移除所有 UI 专属 `attrs`。
-- 不在没有迁移层时破坏现有 TypeScript 用户代码。
+- 不为所有旧 UI 属性建立兼容类型或迁移层；确认删除的能力只记录替代方式或移除说明。
 
 ### 任务
 
+- [ ] 启动 P004 前解决当前声明打包失败，并验证 Adapter 新增公开类型可以生成稳定的 d.ts。
 - [ ] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
 - [ ] 定义框架无关的稳定 Props 子集。
 - [ ] 设计 UI 专属扩展属性的类型扩展机制。
 - [ ] 为旧 AntDV Props 暴露提供兼容别名或过渡类型。
 - [ ] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
 - [ ] 记录每项不兼容类型变化和迁移示例。
+- [ ] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留稳定扩展契约，其余收为内部 API 或明确标记实验状态。
 
 ### 验收条件
 

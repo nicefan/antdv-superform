@@ -11,14 +11,43 @@ export { diagnoseSchema } from './utils/diagnoseSchema'
 export type { SchemaDiagnostic, SchemaDiagnosticLevel, SchemaKind } from './utils/diagnoseSchema'
 export {
   antdvAdapter,
+  clearUIFormValidation,
   defineUIAdapter,
   getUIAdapter,
+  getUIActionSlot,
+  getUIContainerAdapter,
   getUIFieldAdapter,
+  mapUIContainerProps,
   mapUIFieldProps,
+  renderUIForm,
+  renderUIFormItem,
   renderUIField,
+  renderUIContainer,
+  renderUIIcon,
+  renderUISemanticIcon,
+  renderUILayout,
   resolveUIComponent,
+  resolveUIActionComponent,
+  resolveUILayoutComponent,
+  resolveUIPresentationComponent,
+  validateUIForm,
 } from './adapter'
-export type { FieldAdapter, FieldAdapterContext, UIAdapter } from './adapter'
+export type {
+  ActionAdapter,
+  ActionComponentName,
+  AdapterComponent,
+  ContainerAdapter,
+  FieldAdapter,
+  FieldAdapterContext,
+  FormAdapter,
+  IconAdapter,
+  IconAdapterContext,
+  LayoutAdapter,
+  LayoutComponentName,
+  PresentationAdapter,
+  PresentationComponentName,
+  UIAdapter,
+} from './adapter'
 export { registerFormComponents } from './components'
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'
 export type { InstallConfig } from './plugin'

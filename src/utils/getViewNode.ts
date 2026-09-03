@@ -6,8 +6,8 @@ import { isPlainObject, get as objectGet } from 'lodash-es'
 import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
-import { Tag } from '../compat/antdv'
 import { getIconNode } from './'
+import { resolveUIPresentationComponent } from '../adapter'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -47,6 +47,7 @@ const getOptions = (option, _effectData, optionsArr) => {
 }
 
 const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }: Obj) => {
+  const Tag = resolveUIPresentationComponent('tag')
   const item: Obj = { color, label, icon }
   if (tagViewer !== true || !color) {
     const tagOption = tagViewer === true ? globalConfig.tagViewer : tagViewer
@@ -67,7 +68,10 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
   return h(
     Tag,
     { color: item.color },
-    { default: () => item.label || value, icon: item.icon || (() => getIconNode(item.icon)) }
+    {
+      default: () => item.label || value,
+      icon: item.icon || (() => getIconNode(item.icon)),
+    }
   )
 }
 
@@ -151,7 +155,10 @@ export function getViewNode(option, effectData: Obj = {}) {
     return (param: Obj = effectData) => {
       const text = param.text ?? toValue(initialValue)
       if (typeof text === 'boolean' && tagViewer === true) {
-        return buildTagRender({ label: text ? '是' : '否', color: text ? 'success' : 'error' })
+        return buildTagRender({
+          label: text ? '是' : '否',
+          color: text ? 'success' : 'error',
+        })
       }
       const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
       const tags = arr.map((value) => buildTagRender({ value, tagViewer }))
@@ -184,7 +191,15 @@ export function getViewNode(option, effectData: Obj = {}) {
 
       return h(
         Controls[colType],
-        reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true, disabled }),
+        reactive({
+          option,
+          effectData: param,
+          ...attrs,
+          ...vModels,
+          value: param.value,
+          isView: true,
+          disabled,
+        }),
         slots
       )
     }

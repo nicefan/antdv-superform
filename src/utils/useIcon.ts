@@ -1,10 +1,8 @@
-import { h, toRaw } from 'vue'
 import { globalConfig } from '../config'
+import { renderUIIcon, renderUISemanticIcon } from '../adapter'
 
 export function getIconNode(icon) {
-  if (typeof icon === 'string') {
-    return globalConfig.customIcon?.(icon) || h('span', { class: 'anticon ' + icon })
-  } else {
-    return icon && h(toRaw(icon))
-  }
+  return renderUIIcon(icon, { customIcon: globalConfig.customIcon })
 }
+
+export const getSemanticIconNode = renderUISemanticIcon

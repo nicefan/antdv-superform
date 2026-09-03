@@ -3,11 +3,21 @@ import { createApp, defineComponent } from 'vue'
 import plugin, { globalProps } from '../src/plugin'
 import {
   antdvAdapter,
+  clearUIFormValidation,
   defineUIAdapter,
   getUIAdapter,
   getUIFieldAdapter,
+  mapUIContainerProps,
   mapUIFieldProps,
+  renderUIContainer,
+  renderUIForm,
+  renderUIFormItem,
+  renderUILayout,
+  renderUISemanticIcon,
+  resolveUIActionComponent,
+  resolveUIPresentationComponent,
   resolveUIComponent,
+  validateUIForm,
 } from '../src/adapter'
 import { getFormComponent } from '../src/components'
 
@@ -87,6 +97,48 @@ describe('UIAdapter', () => {
     expect(getUIAdapter()).toBe(antdvAdapter)
     expect(globalProps.FormItem).toEqual({ validateFirst: false })
     expect(globalProps.TimeRangePicker).toEqual({ valueFormat: 'HH:mm:ss' })
+  })
+
+  it('通过 Adapter 渲染表单、表单项和布局原语', () => {
+    expect(renderUIForm({ model: {} }).type).toBe(antdvAdapter.components.Form)
+    expect(renderUIFormItem({ name: ['name'] }).type).toBe(antdvAdapter.components.FormItem)
+    expect(renderUILayout('row', { gutter: 16 }).type).toBe(antdvAdapter.components.Row)
+    expect(renderUILayout('col', { span: 8 }).type).toBe(antdvAdapter.components.Col)
+    expect(renderUILayout('space').type).toBe(antdvAdapter.components.Space)
+    expect(renderUILayout('compactSpace').type).toBe(antdvAdapter.components.SpaceCompact)
+  })
+
+  it('通过 Form capability 调用 UI 表单实例', async () => {
+    const instance = {
+      validate: vi.fn().mockResolvedValue({ name: '张三' }),
+      clearValidate: vi.fn(),
+    }
+
+    await expect(validateUIForm(instance)).resolves.toEqual({ name: '张三' })
+    clearUIFormValidation(instance)
+    expect(instance.validate).toHaveBeenCalledOnce()
+    expect(instance.clearValidate).toHaveBeenCalledOnce()
+  })
+
+  it('通过容器 capability 转换受控状态和 UI 专属属性', () => {
+    const onUpdate = vi.fn()
+    expect(mapUIContainerProps('tabs', { value: 'base', 'onUpdate:value': onUpdate })).toEqual({
+      activeKey: 'base',
+      'onUpdate:activeKey': onUpdate,
+    })
+    expect(mapUIContainerProps('collapsePanel', { disabled: true })).toEqual({
+      collapsible: 'disabled',
+    })
+    expect(renderUIContainer('card').type).toBe(antdvAdapter.components.Card)
+    expect(renderUIContainer('list').type).toBe(antdvAdapter.components.SuperList)
+  })
+
+  it('通过 Adapter 解析按钮原语和语义图标', () => {
+    expect(resolveUIActionComponent('button')).toBe(antdvAdapter.components.Button)
+    expect(resolveUIActionComponent('dropdown')).toBe(antdvAdapter.components.Dropdown)
+    expect(renderUISemanticIcon('add')?.type).toBe(antdvAdapter.icons?.semantic?.add)
+    expect(renderUISemanticIcon('remove')?.type).toBe(antdvAdapter.icons?.semantic?.remove)
+    expect(resolveUIPresentationComponent('tag')).toBe(antdvAdapter.components.Tag)
   })
 
   it('初始化后拒绝切换为其他 Adapter', async () => {

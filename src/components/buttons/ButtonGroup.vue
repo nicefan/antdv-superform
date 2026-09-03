@@ -1,61 +1,62 @@
 <template>
-  <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
+  <component :is="Space" class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
     <template
       v-for="({ attrs, icon, label, tooltipTitle, dropdownProp, menu, render, onClick }, index) of btns"
       :key="label"
     >
-      <Tooltip :title="tooltipTitle">
-        <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
-          <template #popupRender>
-            <Menu @click="onClick">
-              <menu-item v-for="item of menu" :key="item.value" :disabled="item.disabled">
+      <component :is="Tooltip" :title="tooltipTitle">
+        <component :is="Dropdown" v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
+          <template #[popupSlot]>
+            <component :is="Menu" @click="onClick">
+              <component :is="MenuItem" v-for="item of menu" :key="item.value" :disabled="item.disabled">
                 <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
                 <component :is="() => toNode(item.label, effectData)" />
-              </menu-item>
-            </Menu>
+              </component>
+            </component>
           </template>
-          <Button v-bind="attrs">
+          <component :is="Button" v-bind="attrs">
             <component v-if="icon" :is="getIconNode(icon)" />
-            <component :is="() => toNode(label, effectData)" /><DownOutlined />
-          </Button>
-        </Dropdown>
+            <component :is="() => toNode(label, effectData)" /><component :is="getSemanticIconNode('expand')" />
+          </component>
+        </component>
         <component v-else-if="render" :is="() => render({ props: attrs, ...effectData })" />
-        <Button v-else v-bind="attrs" @click="onClick"
+        <component :is="Button" v-else v-bind="attrs" @click="onClick"
           ><component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
           <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
-        /></Button>
-      </Tooltip>
-      <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
+        /></component>
+      </component>
+      <component :is="Divider" type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
     </template>
 
-    <Dropdown v-if="moreBtns.length">
-      <Button v-bind="defaultAttrs">
-        <component v-if="moreLabel" :is="() => toNode(moreLabel, effectData)" /><ellipsis-outlined v-else />
-      </Button>
-      <template #popupRender>
-        <Menu>
-          <menu-item
+    <component :is="Dropdown" v-if="moreBtns.length">
+      <component :is="Button" v-bind="defaultAttrs">
+        <component v-if="moreLabel" :is="() => toNode(moreLabel, effectData)" />
+        <component v-else :is="getSemanticIconNode('more')" />
+      </component>
+      <template #[popupSlot]>
+        <component :is="Menu">
+          <component
+            :is="MenuItem"
             v-for="{ attrs, icon, label, tooltipTitle, onClick } of moreBtns"
             :key="label"
             :disabled="attrs.disabled"
           >
-            <Tooltip :title="tooltipTitle">
-              <Button block v-bind="attrs" shape="" @click="onClick">
+            <component :is="Tooltip" :title="tooltipTitle">
+              <component :is="Button" block v-bind="attrs" shape="" @click="onClick">
                 <component v-if="icon" :is="getIconNode(icon)" />
                 <component :is="() => toNode(label, effectData)" />
-              </Button>
-            </Tooltip>
-          </menu-item>
-        </Menu>
+              </component>
+            </component>
+          </component>
+        </component>
       </template>
-    </Dropdown>
-  </Space>
+    </component>
+  </component>
 </template>
 <script setup lang="ts">
 import { ref, watchEffect, reactive, toValue, inject, computed } from 'vue'
-import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from '../../compat/antdv'
-import { EllipsisOutlined, DownOutlined } from '../../compat/icons'
-import { getComputedStatus, useDisabled, getIconNode, toNode } from '../../utils'
+import { getComputedStatus, useDisabled, getIconNode, getSemanticIconNode, toNode } from '../../utils'
+import { getUIActionSlot, resolveUIActionComponent, resolveUILayoutComponent } from '../../adapter'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
@@ -66,6 +67,14 @@ const props = defineProps<{
   methods?: Obj
   effectData?: Obj
 }>()
+const Space = resolveUILayoutComponent('space')
+const Button = resolveUIActionComponent('button')
+const Tooltip = resolveUIActionComponent('tooltip')
+const Dropdown = resolveUIActionComponent('dropdown')
+const Menu = resolveUIActionComponent('menu')
+const MenuItem = resolveUIActionComponent('menuItem')
+const Divider = resolveUIActionComponent('divider')
+const popupSlot = getUIActionSlot('popup')
 const { option, methods, effectData } = props
 
 const __config = Array.isArray(option) ? { actions: option } : option
@@ -121,7 +130,10 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
       computed(() => {
         const config = toValue(item.dropdown) as any
         if (isPlainObject(config)) {
-          return Object.entries(config).map(([value, label]) => ({ value, label }))
+          return Object.entries(config).map(([value, label]) => ({
+            value,
+            label,
+          }))
         } else if (typeof config[0] !== 'object') {
           return uniq(config).map((txt) => ({ value: txt, label: txt }))
         }

@@ -1,35 +1,42 @@
 <template>
   <template v-for="(tag, index) in tags" :key="tag">
-    <Tooltip v-if="tag.length > 20" :title="tag">
-      <Tag :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
+    <component :is="Tooltip" v-if="tag.length > 20" :title="tag">
+      <component :is="Tag" :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
         {{ `${tag.slice(0, 20)}...` }}
-      </Tag>
-    </Tooltip>
-    <Tag v-else :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
+      </component>
+    </component>
+    <component :is="Tag" v-else :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
       {{ tag }}
-    </Tag>
+    </component>
   </template>
-  <Input
+  <component
+    :is="Input"
     v-if="inputVisible"
     ref="inputRef"
-    v-model:value="inputValue"
+    v-bind="inputProps"
     type="text"
     size="small"
     :style="{ width: '78px' }"
     @blur="handleInputConfirm"
   />
-  <Tag v-else style="background: #fff; border-style: dashed" @click="showInput">
-    <plus-outlined />
+  <component :is="Tag" v-else style="background: #fff; border-style: dashed" @click="showInput">
+    <component :is="getSemanticIconNode('add')" />
     <component :is="() => toNode(newLabel, effectData)" />
-  </Tag>
+  </component>
 </template>
 <script lang="ts" setup>
 import { computed, nextTick, ref, type Slot } from 'vue'
-import baseComps from '../compat/antdv'
-import { PlusOutlined } from '../compat/icons'
-import { toNode } from '../utils'
+import { getSemanticIconNode, toNode } from '../utils'
+import {
+  mapUIFieldProps,
+  resolveUIActionComponent,
+  resolveUIComponent,
+  resolveUIPresentationComponent,
+} from '../adapter'
 
-const { Input, Tooltip, Tag } = baseComps
+const Input = resolveUIComponent('Input')
+const Tooltip = resolveUIActionComponent('tooltip')
+const Tag = resolveUIPresentationComponent('tag')
 
 defineOptions({
   inheritAttrs: false,
@@ -59,6 +66,16 @@ const emit = defineEmits(['update:value'])
 const inputRef = ref()
 const inputValue = ref('')
 const inputVisible = ref(false)
+const inputProps = computed(() =>
+  mapUIFieldProps(
+    'Input',
+    {
+      value: inputValue.value,
+      'onUpdate:value': (value) => (inputValue.value = value),
+    },
+    { option: props.option, effectData: props.effectData }
+  )
+)
 
 // watch(
 //   () => props.value,

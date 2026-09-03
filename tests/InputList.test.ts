@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { nextTick, reactive } from 'vue'
 import InputList from '../src/components/InputList.vue'
 import { buildModelsMap, formatRule } from '../src/utils/buildModel'
+import { antdvAdapter, initializeUIAdapter } from '../src/adapter'
+
+beforeAll(() => initializeUIAdapter(antdvAdapter))
 
 function setupInputList(option: Obj, data: Obj, props: Obj = {}) {
   const { modelsMap } = buildModelsMap([option], data)
@@ -181,7 +184,9 @@ describe('InputList', () => {
     }
     const model = buildModelsMap([option], data).modelsMap.get(option)!
     const value1Model = model.listData.modelsMap.get(option.columns[0])!
-    const validator = formatRule(value1Model.rules, { current: data.list[0] })[0].validator
+    const validator = formatRule(value1Model.rules, {
+      current: data.list[0],
+    })[0].validator
 
     await expect(validator({}, '')).rejects.toThrow('value1 或 value2 至少填写一项')
     data.list[0].value1 = '填写值一'

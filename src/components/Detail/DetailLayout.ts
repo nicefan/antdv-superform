@@ -1,12 +1,11 @@
 import { type PropType, defineComponent, h, inject, unref, toRefs, reactive, toRaw, mergeProps } from 'vue'
-import { Col, Row, Space } from '../../compat/antdv'
 import { getEffectData, getViewNode, toNode, useControl, useInnerSlots } from '../../utils'
 import Controls, { containers } from '../index'
-import Descriptions from './Descriptions'
 import { globalProps } from '../../plugin'
 import { DataProvider } from '../../dataProvider'
 import { defaults } from 'lodash-es'
 import { createLabelNode } from '../../utils/labelNode'
+import { renderUIContainer, renderUILayout } from '../../adapter'
 
 const DetailLayouts = defineComponent({
   inheritAttrs: false,
@@ -31,7 +30,11 @@ const DetailLayouts = defineComponent({
       gutter: 16,
     })
 
-    const attrs = { subSpan: option.subSpan, ...option.descriptionsProps, ...ctx.attrs }
+    const attrs = {
+      subSpan: option.subSpan,
+      ...option.descriptionsProps,
+      ...ctx.attrs,
+    }
 
     /** 向下继承信息 */
     const provideData = defaults(
@@ -52,7 +55,12 @@ const DetailLayouts = defineComponent({
     let section: any[] | undefined
 
     nodes.forEach((item, idx) => {
-      item.node ??= () => h(Descriptions, { config: attrs, items: item.group!, class: attrs.class })
+      item.node ??= () =>
+        renderUIContainer('descriptions', {
+          config: attrs,
+          items: item.group!,
+          class: attrs.class,
+        })
       // if (nodes.length === 1) {
       //   nodeGroup.push(['block', item])
       //   return
@@ -82,12 +90,18 @@ const DetailLayouts = defineComponent({
           let slot = items.node
           if (type === 'row') {
             slot = () =>
-              h(Row, rowProps, () =>
-                items.map((item, idx) => {
-                  const colProps = item.option.colProps || { span: item.option.span ?? presetSpan }
-                  return !unref(item.hidden) && h(Col, { ...globalProps.Col, ...colProps, key: idx }, item.node)
-                })
-              )
+              renderUILayout('row', rowProps, {
+                default: () =>
+                  items.map((item, idx) => {
+                    const colProps = item.option.colProps || {
+                      span: item.option.span ?? presetSpan,
+                    }
+                    return (
+                      !unref(item.hidden) &&
+                      renderUILayout('col', { ...globalProps.Col, ...colProps, key: idx }, { default: item.node })
+                    )
+                  }),
+              })
           } else if (type === 'section') {
             slot = () => items.map((item) => !unref(item.hidden) && item.node())
           }
@@ -121,7 +135,13 @@ const DetailLayouts = defineComponent({
 })
 
 type NodeItem = { option: Obj; hidden: Ref<boolean>; label?: Fn; content: Fn }
-type BlockNode = { option: Obj; isBlock?: boolean; hidden?: Ref<boolean>; node?: Fn; group?: NodeItem[] }
+type BlockNode = {
+  option: Obj
+  isBlock?: boolean
+  hidden?: Ref<boolean>
+  node?: Fn
+  group?: NodeItem[]
+}
 
 function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
   const nodes: BlockNode[] = []
@@ -139,7 +159,10 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
       field: model.refName,
       value: refData,
       text: refData,
-      ...('index' in model && { index: model.index, record: field ? refData : parent }),
+      ...('index' in model && {
+        index: model.index,
+        record: field ? refData : parent,
+      }),
     })
     const { attrs, hidden } = useControl({ option, effectData })
     const slots = useInnerSlots(option.slots, effectData)
@@ -162,7 +185,13 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
           return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
         })
         render = () =>
-          h(Space, { direction: isBreak ? 'vertical' : 'horizontal' }, () => contents?.map((node) => node()))
+          renderUILayout(
+            'space',
+            { direction: isBreak ? 'vertical' : 'horizontal' },
+            {
+              default: () => contents?.map((node) => node()),
+            }
+          )
       }
       nodeItems.push({ option, label, hidden, content: render })
     } else if (type === 'Fragment') {
@@ -181,7 +210,18 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
       const viewType = [...containers, 'InputList'].includes(type) ? type : 'Group'
       const Control = Controls[viewType]
       const defRender = () =>
-        h(Control, reactive({ option, model, effectData, isView: true, ...globalProps[viewType], ...attrs }), slots)
+        h(
+          Control,
+          reactive({
+            option,
+            model,
+            effectData,
+            isView: true,
+            ...globalProps[viewType],
+            ...attrs,
+          }),
+          slots
+        )
       render ??= defRender
       if (type === 'InputList') {
         if (!isBlock || (label && !attrs?.labelIndex)) {
@@ -212,7 +252,12 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
       } else {
         const style = option.align && { textAlign: option.align }
         render = nodeItems[0]?.content || render
-        nodes.push({ option, isBlock, node: () => h(render, { style }), hidden }) // 自定义render,直接渲染
+        nodes.push({
+          option,
+          isBlock,
+          node: () => h(render, { style }),
+          hidden,
+        }) // 自定义render,直接渲染
       }
       currentGroup = undefined // 隔断分组
     }
@@ -226,7 +271,14 @@ function getContent(option, model: ModelData, parentEffect) {
   const effectData =
     toRaw(parent.value) === toRaw(parentEffect.current)
       ? parentEffect
-      : getEffectData({ parent: parentEffect, current: parent, text: value, value, field: model.refName, isView: true })
+      : getEffectData({
+          parent: parentEffect,
+          current: parent,
+          text: value,
+          value,
+          field: model.refName,
+          isView: true,
+        })
 
   const content = getViewNode(option, effectData)
   return content === false ? undefined : () => (content ? content() : String(model.refData ?? ''))

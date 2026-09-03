@@ -87,4 +87,15 @@ P008 前逐步建立以下自动检查：
 - 执行：`pnpm build`。
 - 结果：`vue-tsc --noEmit` 通过；Vite 声明打包失败。既有 `compat/antdv.ts` 和 `Table/buildColumns.ts` 的导出推断引用 AntDV 内部不可命名类型，随后 API Extractor 无法跟踪 `WebpackPluginInstance`；该构建链问题不属于 P001/P002 改动，本次未扩大范围修复。
 
+### P003：容器、布局与图标解耦
+
+- 执行：`pnpm vitest run tests/adapter.test.ts tests/formModel.test.ts tests/formComponents.test.ts tests/InputList.test.ts tests/ListGroup.test.ts tests/useIcon.test.ts tests/fieldProcessors.test.ts --threads false --reporter=dot`。
+- 结果：7 个测试文件、35 项测试通过；覆盖 capability 解析、Form 实例方法、model/props 映射、语义图标、复合列表和字段回归。
+- 执行：`pnpm exec vue-tsc --noEmit`。
+- 结果：类型检查通过。
+- 执行：P003 改动范围的 ESLint 检查及 `git diff --check`。
+- 结果：ESLint 0 个错误；保留 17 个既有未使用变量/断言警告，本阶段不扩散修改；差异格式检查通过。
+- Dev 页面：`/upgrade-dev/index.html#p003-containers`，覆盖 Form、栅格、Card、Tabs、Collapse、Descriptions 和 ButtonGroup 图标交互。
+- 未执行：build，原因是当前未进入确认提交阶段。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

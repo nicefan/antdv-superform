@@ -1,6 +1,7 @@
 <template>
   <template v-if="optionsRef.length">
-    <checkable-tag
+    <component
+      :is="CheckableTag"
       v-bind="$attrs"
       class="tag-select"
       v-for="{ label, value } of optionsRef"
@@ -9,16 +10,16 @@
       @change="(checked) => handleChange(value, checked)"
     >
       {{ label }}
-    </checkable-tag>
+    </component>
   </template>
   <div v-else class="ant-form-item-extra">{{ placeholder }}</div>
 </template>
 <script lang="ts" setup>
 import { computed } from 'vue'
-import baseComps from '../compat/antdv'
 import { useOptions } from '../utils/useOptions'
+import { resolveUIPresentationComponent } from '../adapter'
 
-const { CheckableTag } = baseComps
+const CheckableTag = resolveUIPresentationComponent('checkableTag')
 
 defineOptions({
   inheritAttrs: false,
