@@ -14,7 +14,6 @@ export {
   clearUIFormValidation,
   defineUIAdapter,
   getUIAdapter,
-  getUIActionSlot,
   getUIContainerAdapter,
   getUIFieldAdapter,
   mapUIContainerProps,
@@ -26,15 +25,15 @@ export {
   renderUIIcon,
   renderUISemanticIcon,
   renderUILayout,
+  renderUIAction,
+  renderUIPresentation,
   resolveUIComponent,
-  resolveUIActionComponent,
   resolveUILayoutComponent,
-  resolveUIPresentationComponent,
   validateUIForm,
 } from './adapter'
 export type {
   ActionAdapter,
-  ActionComponentName,
+  ActionRenderType,
   AdapterComponent,
   ContainerAdapter,
   FieldAdapter,
@@ -45,7 +44,7 @@ export type {
   LayoutAdapter,
   LayoutComponentName,
   PresentationAdapter,
-  PresentationComponentName,
+  PresentationRenderType,
   UIAdapter,
 } from './adapter'
 export { registerFormComponents } from './components'

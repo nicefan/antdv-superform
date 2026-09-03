@@ -238,11 +238,19 @@ P010 发布与迁移
 
 ### 审查回补任务（2026-09-03）
 
-- [ ] 审计 Select、RadioGroup、CheckboxGroup、TreeSelect 的增强规则，先删除无明确业务价值的历史事件兼容和属性透传。
-- [ ] 对确认保留的标签同步等业务语义，仅定义最小标准事件输入；UI 事件参数由 Field Adapter 做一次归一化，Core 不解释原始 UI 事件。
-- [ ] 删除 `optionType` 等无通用价值的 UI 专属属性；只有仍被确认需要的能力才补 Adapter 转换。
-- [ ] 增加不依赖 AntDV 事件结构的最小 Field Adapter 契约测试。
-- [ ] 外部 options/search 回调的并发、取消和异常由调用方负责，本阶段不改变其执行语义。
+- [x] 审计 Select、RadioGroup、CheckboxGroup、TreeSelect 的增强规则，先删除无明确业务价值的历史事件兼容和属性透传。
+- [x] 对确认保留的标签同步等业务语义，仅定义最小标准事件输入；UI 事件参数由 Field Adapter 做一次归一化，Core 不解释原始 UI 事件。
+- [x] 删除 `optionType` 等无通用价值的 UI 专属属性；只有仍被确认需要的能力才补 Adapter 转换。
+- [x] 增加不依赖 AntDV 事件结构的最小 Field Adapter 契约测试。
+- [x] 外部 options/search 回调的并发、取消和异常由调用方负责，本阶段不改变其执行语义。
+
+#### 2026-09-03：完成字段精简回补
+
+- 完成：保留有公开用途的 `labelField`，处理器统一输出 `onValueChange`；AntDV Adapter 负责 Select、RadioGroup、CheckboxGroup、TreeSelect 的原始 change 参数转换；删除 RadioGroup 自动注入 `name` 和由 `buttonStyle` 推断 `optionType` 的规则。
+- 设计影响：Core 不再解释字段 UI 事件；未增加独立事件 capability，继续复用 Field Adapter 的属性转换入口。
+- 兼容性：按钮型 RadioGroup 需显式配置 `attrs.optionType`，依赖 DOM `name` 时需显式配置 `attrs.name`；已更新迁移记录和示例。
+- 验证：字段处理器、Adapter 和图标相关测试 3 个文件、23 项通过；类型检查通过；相关 ESLint 0 错误，保留示例文件既有警告。
+- 后续：开始 P003 复合组件属性、样式和事件精简。
 
 ---
 
@@ -287,18 +295,42 @@ P010 发布与迁移
 
 #### 2026-09-03：代码审查回补任务
 
-- [ ] 盘点 ButtonGroup、TagInput、TagSelect 当前支持的属性、样式、事件和 slot，形成“保留/删除”清单；优先删除仅为旧 UI 透传服务的规则，并将不兼容项写入迁移记录。
-- [ ] 收缩 Action/Presentation capability：Core 生成最小业务视图模型，Adapter 负责最终渲染；不为 Button、Menu、Dropdown、Tooltip、Tag、CheckableTag 的每个内部节点分别建立复杂转换边界。
-- [ ] 将 AntDV Descriptions 兼容实现移入 Adapter 私有目录，消除 `adapter -> Descriptions -> adapter` 循环依赖。
-- [ ] 空图标不要求 Adapter 提供 Icon capability，并补充无图标场景测试。
-- [ ] 保留 Card、Tabs、Form 等单根透明包装的自然 attrs fallthrough；清理 Collections、Group 等非透明组件中 attrs 向 Row、section 和内容节点的重复扩散，不新增成套 `rowProps/sectionProps/contentProps` API。
-- [ ] TagInput、TagSelect 不再把通用 `$attrs` 复制到每个 Tag；保留组件自身声明的业务属性，删除无明确用途的内部节点透传，不为每个子节点新增独立 props 入口。
+- [x] 盘点 ButtonGroup、TagInput、TagSelect 当前支持的属性、样式、事件和 slot，形成“保留/删除”清单；优先删除仅为旧 UI 透传服务的规则，并将不兼容项写入迁移记录。
+- [x] 收缩 Action/Presentation capability：Core 生成最小业务视图模型，Adapter 负责最终渲染；不为 Button、Menu、Dropdown、Tooltip、Tag、CheckableTag 的每个内部节点分别建立复杂转换边界。
+- [x] 将 AntDV Descriptions 兼容实现移入 Adapter 私有目录，消除 `adapter -> Descriptions -> adapter` 循环依赖。
+- [x] 空图标不要求 Adapter 提供 Icon capability，并补充无图标场景测试。
+- [x] 保留 Card、Tabs、Form 等单根透明包装的自然 attrs fallthrough；清理 Collections、Group 等非透明组件中 attrs 向 Row、section 和内容节点的重复扩散，不新增成套 `rowProps/sectionProps/contentProps` API。
+- [x] TagInput、TagSelect 不再把通用 `$attrs` 复制到每个 Tag；保留组件自身声明的业务属性，删除无明确用途的内部节点透传，不为每个子节点新增独立 props 入口。
 - [ ] 清理 ButtonGroup、Collapse、Descriptions、List、TagSelect、labelNode 中残留的 AntDV class/protocol；Core 自有样式改用最少的 `sup-*` 语义 class，AntDV 私有结构随兼容实现进入 Adapter。
-- [ ] 删除无业务作用的内联视觉样式和冗余事件拦截，例如无链接语义的 `<a>`、根级重复 `click.stop`；布局所必需的动态样式保留。
-- [ ] ButtonGroup 按实际渲染分支解析可选原语，避免简单按钮强制要求 Dropdown、Menu 和 Divider。
-- [ ] 合并 Field/Container 重复的 model 属性与事件映射逻辑，保持同一转换规则。
-- [ ] 合并 Layout 组件选择与 `compactSpace` 回退逻辑；不提取只使用一次或仅减少少量行数的 helper。
+- [x] 删除无业务作用的内联视觉样式和冗余事件拦截，例如无链接语义的 `<a>`、根级重复 `click.stop`；布局所必需的动态样式保留。
+- [x] ButtonGroup 不再解析单个 UI 原语，统一交给 Action Adapter 按实际分支渲染，简单按钮不再要求 Core 感知 Dropdown、Menu 和 Divider。
+- [x] 合并 Field/Container 重复的 model 属性与事件映射逻辑，保持同一转换规则。
+- [x] 合并 Layout 组件选择与 `compactSpace` 回退逻辑；不提取只使用一次或仅减少少量行数的 helper。
 - [ ] 增加最小非 AntDV Adapter 契约测试，覆盖 Tabs、ButtonGroup、TagInput 和 TagSelect 的基础渲染。
+
+#### 2026-09-03：完成首轮复合组件精简
+
+- 完成：删除 TagInput/TagSelect 向内部 Tag 复制任意 attrs、Tag 字段的 `valueToString` 旧别名、ButtonItem `color -> ant-btn-*` 规则、ButtonGroup 根级重复事件拦截，以及 Collections/Group 的跨层 attrs 扩散；内联视觉样式改为 Core 语义 class。
+- 设计影响：透明单根组件继续使用 Vue 自然 fallthrough；非透明复合组件不新增子节点 props 边界，只保留自身声明的业务能力。
+- 兼容性：相关内部节点透传、Tag `valueToString` 和按钮 `color` 不再支持，已更新迁移记录和示例。
+- 验证：相关测试 6 个文件、35 项通过；类型检查通过；范围内 ESLint 0 错误；未执行 build。
+- 后续：继续收缩 Action/Presentation capability，并处理 Descriptions 归属和剩余 AntDV 私有协议。
+
+#### 2026-09-03：完成 Action/Presentation 能力收缩
+
+- 完成：Action 改为 `group/tooltip` 粗粒度渲染协议，Presentation 改为 `tag/checkableTag` 语义渲染协议；ButtonGroup、TagInput、TagSelect、labelNode 和详情 Tag 展示不再解析 AntDV 原语。
+- 设计影响：按钮树、下拉 slot、事件拦截及 Tag 的 checked/closable 事件映射统一留在 AntDV Adapter；Core 只组织业务状态与回调。
+- 兼容性：移除此前短期公开的 Action/Presentation 组件解析 API；折叠菜单项不再套用按钮 Tooltip 和任意按钮 attrs，已同步迁移记录。
+- 验证：Adapter 相关测试覆盖 AntDV 协议映射和最小非 AntDV 粗粒度渲染实现；未执行 build。
+- 后续：处理 Descriptions 归属和剩余 AntDV 私有协议，再补 Tabs 及复合组件的最小非 AntDV 渲染测试。
+
+#### 2026-09-03：完成 Descriptions 兼容实现归位
+
+- 完成：将 Descriptions 表格/表单兼容实现移至 `src/adapter/antdv/`，内部布局直接使用 AntDV Adapter 的可覆盖 Row/Col，不再反向调用公共 Adapter。
+- 设计影响：Core 的 DetailLayout 只通过 Container capability 请求 Descriptions；AntDV class、表格结构和布局实现均留在 Adapter 私有范围。
+- 兼容性：渲染行为和 Schema 协议不变。
+- 验证：Adapter 测试 14 项通过；类型检查通过；相关 ESLint 0 错误、0 警告；提交前 build 的 JavaScript 转换完成，声明汇总仍被已记录问题阻塞。
+- 后续：清理 Collapse/List 等剩余 AntDV 私有协议，再补 Tabs 及复合组件的最小非 AntDV 渲染测试。
 
 ---
 

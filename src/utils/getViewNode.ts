@@ -7,7 +7,7 @@ import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
 import { getIconNode } from './'
-import { resolveUIPresentationComponent } from '../adapter'
+import { renderUIPresentation } from '../adapter'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -47,7 +47,6 @@ const getOptions = (option, _effectData, optionsArr) => {
 }
 
 const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }: Obj) => {
-  const Tag = resolveUIPresentationComponent('tag')
   const item: Obj = { color, label, icon }
   if (tagViewer !== true || !color) {
     const tagOption = tagViewer === true ? globalConfig.tagViewer : tagViewer
@@ -65,8 +64,8 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
     item.color ??=
       color || tagOption[value] || (value === true && 'success') || (value === false && 'error') || 'default'
   }
-  return h(
-    Tag,
+  return renderUIPresentation(
+    'tag',
     { color: item.color },
     {
       default: () => item.label || value,

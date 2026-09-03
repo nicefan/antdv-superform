@@ -98,4 +98,34 @@ P008 前逐步建立以下自动检查：
 - Dev 页面：`/upgrade-dev/index.html#p003-containers`，覆盖 Form、栅格、Card、Tabs、Collapse、Descriptions 和 ButtonGroup 图标交互。
 - 未执行：build，原因是当前未进入确认提交阶段。
 
+### P002/P003 精简回补：字段事件、公共映射与首轮复合组件
+
+- 执行：`pnpm vitest run tests/adapter.test.ts tests/fieldProcessors.test.ts tests/useIcon.test.ts --threads false --reporter=dot`。
+- 补充执行：`pnpm vitest run tests/adapter.test.ts tests/fieldProcessors.test.ts tests/useIcon.test.ts tests/formModel.test.ts tests/InputList.test.ts tests/ListGroup.test.ts --threads false --reporter=dot`。
+- 结果：6 个测试文件、35 项测试通过；覆盖 Core 标准值事件、AntDV change 参数转换、最小非 AntDV Field Adapter、空图标、表单模型和复合列表行为。
+- 执行：`pnpm exec vue-tsc --noEmit`。
+- 结果：类型检查通过。
+- 执行：相关源码、测试和示例 ESLint。
+- 结果：变更源码及测试 0 个错误、0 个警告；示例文件保留既有警告。
+- 未执行：build，原因是当前未进入提交阶段。
+
+### P003 Action/Presentation 能力收缩
+
+- 执行：`pnpm vitest run tests/adapter.test.ts tests/fieldProcessors.test.ts tests/useIcon.test.ts tests/formModel.test.ts tests/InputList.test.ts tests/ListGroup.test.ts --threads false --reporter=dot`。
+- 结果：6 个测试文件、36 项测试通过；新增覆盖 AntDV Action/Presentation 协议映射及最小非 AntDV 粗粒度渲染实现。
+- 执行：`pnpm exec vue-tsc --noEmit`。
+- 结果：类型检查通过。
+- 未执行：build，原因是当前未进入提交阶段。
+
+### P003 Descriptions 兼容实现归位
+
+- 执行：`pnpm vitest run tests/adapter.test.ts --threads false --reporter=dot`。
+- 结果：Adapter 测试 14 项通过。
+- 执行：`pnpm exec vue-tsc --noEmit`。
+- 结果：类型检查通过。
+- 执行：Descriptions 及 AntDV Adapter 相关 ESLint、`git diff --check`。
+- 结果：0 个错误、0 个警告；差异格式检查通过。
+- 提交前执行：`pnpm build`。
+- 结果：JavaScript 和样式转换完成，但声明生成仍因已记录的不可命名推断类型及 API Extractor `WebpackPluginInstance` 内部错误而失败；失败产生的临时 `lib` 文件未纳入提交。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

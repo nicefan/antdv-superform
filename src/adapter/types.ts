@@ -51,20 +51,18 @@ export interface IconAdapter {
   render: (icon: unknown, context: IconAdapterContext) => VNodeChild
 }
 
-export type ActionComponentName = 'button' | 'tooltip' | 'dropdown' | 'menu' | 'menuItem' | 'divider'
+export type ActionRenderType = 'group' | 'tooltip'
 
 export interface ActionAdapter {
-  components: Record<ActionComponentName, AdapterComponent>
-  /** Core 统一使用 popup slot，Adapter 映射到当前 UI 名称。 */
-  slots?: {
-    popup?: string
-  }
+  /** 渲染按钮组或提示；具体按钮、菜单和下拉结构由 Adapter 内部处理。 */
+  render: (type: ActionRenderType, props: Obj, slots: Obj) => VNodeChild
 }
 
-export type PresentationComponentName = 'tag' | 'checkableTag'
+export type PresentationRenderType = 'tag' | 'checkableTag'
 
 export interface PresentationAdapter {
-  components: Record<PresentationComponentName, AdapterComponent>
+  /** 渲染轻量展示原语。 */
+  render: (type: PresentationRenderType, props: Obj, slots: Obj) => VNodeChild
 }
 
 export interface ComponentModelConfig {

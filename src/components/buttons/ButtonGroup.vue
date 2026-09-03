@@ -1,62 +1,25 @@
 <template>
-  <component :is="Space" class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
-    <template
-      v-for="({ attrs, icon, label, tooltipTitle, dropdownProp, menu, render, onClick }, index) of btns"
-      :key="label"
-    >
-      <component :is="Tooltip" :title="tooltipTitle">
-        <component :is="Dropdown" v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
-          <template #[popupSlot]>
-            <component :is="Menu" @click="onClick">
-              <component :is="MenuItem" v-for="item of menu" :key="item.value" :disabled="item.disabled">
-                <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
-                <component :is="() => toNode(item.label, effectData)" />
-              </component>
-            </component>
-          </template>
-          <component :is="Button" v-bind="attrs">
-            <component v-if="icon" :is="getIconNode(icon)" />
-            <component :is="() => toNode(label, effectData)" /><component :is="getSemanticIconNode('expand')" />
-          </component>
-        </component>
-        <component v-else-if="render" :is="() => render({ props: attrs, ...effectData })" />
-        <component :is="Button" v-else v-bind="attrs" @click="onClick"
-          ><component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
-          <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
-        /></component>
-      </component>
-      <component :is="Divider" type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
-    </template>
-
-    <component :is="Dropdown" v-if="moreBtns.length">
-      <component :is="Button" v-bind="defaultAttrs">
-        <component v-if="moreLabel" :is="() => toNode(moreLabel, effectData)" />
-        <component v-else :is="getSemanticIconNode('more')" />
-      </component>
-      <template #[popupSlot]>
-        <component :is="Menu">
-          <component
-            :is="MenuItem"
-            v-for="{ attrs, icon, label, tooltipTitle, onClick } of moreBtns"
-            :key="label"
-            :disabled="attrs.disabled"
-          >
-            <component :is="Tooltip" :title="tooltipTitle">
-              <component :is="Button" block v-bind="attrs" shape="" @click="onClick">
-                <component v-if="icon" :is="getIconNode(icon)" />
-                <component :is="() => toNode(label, effectData)" />
-              </component>
-            </component>
-          </component>
-        </component>
-      </template>
-    </component>
-  </component>
+  <component
+    :is="
+      () =>
+        renderUIAction('group', {
+          groupProps: attrs,
+          buttons: btns,
+          moreButtons: moreBtns,
+          defaultButtonProps: defaultAttrs,
+          divider: isDivider,
+          labelOnly,
+          iconOnly,
+          moreLabel,
+          effectData,
+        })
+    "
+  />
 </template>
 <script setup lang="ts">
 import { ref, watchEffect, reactive, toValue, inject, computed } from 'vue'
-import { getComputedStatus, useDisabled, getIconNode, getSemanticIconNode, toNode } from '../../utils'
-import { getUIActionSlot, resolveUIActionComponent, resolveUILayoutComponent } from '../../adapter'
+import { getComputedStatus, useDisabled } from '../../utils'
+import { renderUIAction } from '../../adapter'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
@@ -67,14 +30,6 @@ const props = defineProps<{
   methods?: Obj
   effectData?: Obj
 }>()
-const Space = resolveUILayoutComponent('space')
-const Button = resolveUIActionComponent('button')
-const Tooltip = resolveUIActionComponent('tooltip')
-const Dropdown = resolveUIActionComponent('dropdown')
-const Menu = resolveUIActionComponent('menu')
-const MenuItem = resolveUIActionComponent('menuItem')
-const Divider = resolveUIActionComponent('divider')
-const popupSlot = getUIActionSlot('popup')
 const { option, methods, effectData } = props
 
 const __config = Array.isArray(option) ? { actions: option } : option
@@ -120,11 +75,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
   const allBtns = actionBtns.map((item) => {
     const isHide = getComputedStatus(item.hidden, param)
     const disabled = item.disabled !== undefined ? useDisabled(item.disabled, param) : dis
-    const onClick = (e) => {
-      !(e.domEvent || e).stopPropagation()
-      item.onClick?.({ ...param, e })
-    }
-    const _class = item.color && `ant-btn-${item.color}`
+    const onClick = (e) => item.onClick?.({ ...param, e })
     const menu =
       item.dropdown &&
       computed(() => {
@@ -154,7 +105,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
       ...item,
       tooltipTitle,
       onClick,
-      attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled },
+      attrs: { ...defaultAttrs, ...item.attrs, disabled },
     }
   })
 

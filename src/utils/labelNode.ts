@@ -2,26 +2,24 @@ import { isPlainObject } from 'lodash-es'
 import { h } from 'vue'
 import { toNode } from './toNode'
 import { getIconNode, getSemanticIconNode } from './useIcon'
-import { resolveUIActionComponent } from '../adapter'
+import { renderUIAction } from '../adapter'
 
 export const createLabelNode = (option, effectData) => {
   const { title, label, labelSlot, tooltip } = option
   const tipProps = tooltip && (isPlainObject(tooltip) ? tooltip : { title: tooltip })
   const _label = title || labelSlot || label
-  const Tooltip = tooltip && resolveUIActionComponent('tooltip')
   return _label === undefined
     ? undefined
     : () => [
         toNode(_label, effectData),
         tooltip &&
-          h(Tooltip, tipProps, {
+          renderUIAction('tooltip', tipProps, {
             title: () => toNode(tooltip.title, effectData),
             default: () =>
               h(
-                'a',
+                'span',
                 {
-                  class: 'ant-typography ant-typography-secondary',
-                  style: { marginLeft: '4px' },
+                  class: 'sup-label-tooltip',
                 },
                 (tooltip.icon ? getIconNode(tooltip.icon) : getSemanticIconNode('info')) as any
               ),

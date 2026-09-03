@@ -205,7 +205,6 @@ interface ButtonItem {
   invalidDisabled?: boolean
   /** @deprecated 使用 `unauthorized` */
   roleMode?: 'hidden' | 'disable'
-  color?: 'success' | 'error' | 'warning' | 'primary' | string
   /** 按钮可见场景 */
   visibleIn?: 'form' | 'detail' | 'both'
   /** @deprecated 使用 `visibleIn` */
@@ -526,21 +525,17 @@ interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
     multiple?: boolean
     /** 将多选结果转换为逗号分隔字符串后写回字段 */
     stringifyValue?: boolean
-    /** @deprecated 使用 `stringifyValue` */
-    valueToString?: boolean
-  } & HTMLAttributes
+  }
 }
 interface ExtTagInputOption extends ExtFormItemOption {
   attrs?: {
     /** 将标签数组转换为逗号分隔字符串后写回字段 */
     stringifyValue?: boolean
-    /** @deprecated 使用 `stringifyValue` */
-    valueToString?: boolean
     /**新增标签名 */
     newLabel?: VSlot
     /** 是否可删除, 默认为true */
     closable?: boolean | ((tag: string, index: number) => boolean)
-  } & HTMLAttributes
+  }
 }
 interface ExtTreeOption extends ExtFormItemOption {
   labelField?: string

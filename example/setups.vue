@@ -188,7 +188,6 @@ export default defineComponent({
         onClick: openTable,
       },
       {
-        color: 'warning',
         tooltip: '提示',
         label: '表格赋值',
         onClick: () => {
@@ -197,7 +196,6 @@ export default defineComponent({
         },
       },
       {
-        color: 'success',
         label: '更新查询',
         onClick: () => {
           abc.fieldName = '2'

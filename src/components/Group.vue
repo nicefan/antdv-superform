@@ -45,9 +45,8 @@ export default defineComponent({
                 option: { descriptionsProps: attrs, ...option },
                 modelsMap: model.children,
                 effectData,
-                ...attrs,
               })
-            : h(Collections, { option, model, effectData, ...attrs })
+            : h(Collections, { option, model, effectData })
         ),
     }
 

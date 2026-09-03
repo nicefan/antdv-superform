@@ -1,5 +1,9 @@
 import { type PropType, computed, defineComponent, h, inject, mergeProps, unref } from 'vue'
-import { renderUILayout } from '../../adapter'
+import base from '../../compat/antdv'
+
+function renderLayout(type: 'row' | 'col', props: Obj, slots: Obj) {
+  return h(type === 'row' ? base.Row : base.Col, props, slots)
+}
 
 export default defineComponent({
   props: {
@@ -150,7 +154,7 @@ export default defineComponent({
               ),
             ])
           : // 横向排列
-            rowGroup.value.map((group, idx) =>
+            rowGroup.value.map((group) =>
               h(
                 'tr',
                 { class: 'ant-descriptions-row' },
@@ -208,7 +212,7 @@ export default defineComponent({
     } else {
       const render = () =>
         rowGroup.value.map((group) =>
-          renderUILayout(
+          renderLayout(
             'row',
             { class: 'ant-descriptions-row', ...rowProps },
             {
@@ -224,18 +228,18 @@ export default defineComponent({
                     colProps.span = gridConfig.column ? 24 / gridConfig.column : gridConfig.subSpan
                   }
 
-                  return renderUILayout('col', colProps, {
+                  return renderLayout('col', colProps, {
                     default: () =>
-                      renderUILayout(
+                      renderLayout(
                         'row',
                         { class: ['ant-descriptions-item-container'] },
                         {
                           default: () => [
                             label &&
-                              renderUILayout('col', mergeProps({ class: 'ant-descriptions-item-label' }, labelCol), {
+                              renderLayout('col', mergeProps({ class: 'ant-descriptions-item-label' }, labelCol), {
                                 default: () => h('label', {}, label()),
                               }),
-                            renderUILayout(
+                            renderLayout(
                               'col',
                               {
                                 class: 'ant-descriptions-item-content',

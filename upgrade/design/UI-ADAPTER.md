@@ -91,9 +91,16 @@ P001 期间旧 `components`、`registerComponent` 和 `registerFormComponents` �
 - Layout capability 以 `row`、`col`、`space`、`compactSpace` 表达语义布局原语，不在 Core 中使用 AntDV 组件名或实例。
 - `compactSpace` 为可选能力，未实现时回退到普通 `space`，保证其他 UI Adapter 不需模拟 AntDV 的 `Space.Compact`。
 - 存在受控状态的 Tabs、Collapse 等容器先使用 `value/onUpdate:value`，再由 Container capability 映射为具体 UI model 协议。
-- Action capability 承接 Button、Tooltip、Dropdown、Menu 和 Divider，并显式映射下拉内容 slot；Presentation capability 承接 Tag 系列轻量原语。
+- Action capability 只暴露 `group/tooltip` 粗粒度渲染入口，Presentation capability 只暴露 `tag/checkableTag` 语义入口；具体 Button、Dropdown、Menu、Divider 和 UI 事件协议留在 Adapter 内部。
 - Icon capability 同时提供 Schema 图标渲染和 `add/remove/more/expand/collapse/info` 语义图标；Upload 专属图标留待 P006。
-- `SuperList` 和当前 Descriptions 表格/表单模式不是 Core 通用组件，由 AntDV Adapter 作为兼容实现显式提供。
+- `SuperList` 和当前 Descriptions 表格/表单模式不是 Core 通用组件，由 AntDV Adapter 作为兼容实现显式提供；Descriptions 实现位于 Adapter 私有目录并直接消费可覆盖的 AntDV 基础组件，不反向依赖公共 Adapter 入口。
 - 单根且语义透明的包装保留 Vue attrs fallthrough；多根、跨层扩散、受控状态冲突或协议转换场景才显式接管。
 - ButtonGroup、TagInput、TagSelect 等复合组件优先收缩旧 UI 属性和内部节点透传，再以最小业务视图模型连接 Adapter，不为每个内部原语建立独立扩展面。
 - 允许删除升级前缺少明确业务价值的能力和规则；产生用户可见影响时同步更新迁移记录，不额外建立长期兼容层。
+
+### P003 复合组件精简清单
+
+- ButtonGroup 保留动作、权限、显隐禁用、确认、loading、图标文字模式、数量折叠和下拉业务；删除 `color -> ant-btn-*` 样式规则及根容器重复事件拦截。
+- TagInput 保留标签增删、`closable`、`newLabel` 和 `stringifyValue`；删除任意 attrs 向每个 Tag 的复制及 `valueToString` 旧别名。
+- TagSelect 保留 options、单多选、`stringifyValue`、`change/check` 和空状态；删除任意 attrs 向每个 CheckableTag 的复制及 `valueToString` 旧别名。
+- Collections、Group 不再把同一份 attrs 同时扩散到 Row、section 和嵌套内容；布局或内容配置只使用已有的明确入口，不新增对应的透传属性组。

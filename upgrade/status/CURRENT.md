@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-P001 Adapter 生命周期回补、P002 和 P003 主任务均已完成并通过相关验证。2026-09-03 代码审查确认了 P002/P003 回补项，应先完成回补；P004 尚未获得明确实施指令。
+P001 Adapter 生命周期回补及 P002/P003 主任务均已完成。P002 字段精简、P003 首轮复合组件精简及 Action/Presentation 能力收缩已经完成；P004 尚未获得明确实施指令。
 
 ## 已完成
 
@@ -30,10 +30,15 @@ P001 Adapter 生命周期回补、P002 和 P003 主任务均已完成并通过�
 - Form/FormItem、Row/Col/Space、Group、Card、Tabs、Collapse、Descriptions、List 和 ButtonGroup 已迁入 Adapter 渲染边界。
 - 按钮、列表和搜索表单的通用图标已改用语义名；`SuperList` 明确归为 AntDV Adapter 兼容实现。
 - 已补齐 P003 Dev 验证页面，覆盖表单栅格、Card、Tabs、Collapse、Descriptions 和按钮图标。
+- 字段处理器已统一输出标准 `onValueChange`，AntDV 原始 change 参数只在 Adapter 中转换；RadioGroup 不再自动注入 `name` 或推断 `optionType`。
+- Field/Container 已共用 model 映射逻辑，Layout 已共用组件选择和回退逻辑；空图标不再要求 Icon capability。
+- 已完成首轮复合组件精简：TagInput/TagSelect 不再向内部 Tag 广播 attrs，ButtonGroup 不再生成 AntDV 颜色 class，Collections/Group 不再跨布局层扩散 attrs。
+- Action/Presentation 已改为粗粒度语义渲染入口，按钮树、下拉 slot、事件拦截和 Tag 的 UI 事件映射均收回 AntDV Adapter。
+- Descriptions 表格/表单兼容实现已移入 AntDV Adapter 私有目录，不再反向依赖公共 Adapter 入口。
 
 ## 下一步
 
-先执行 P002/P003 精简回补：审计并删除无明确业务价值的历史字段规则和 UI 透传，以最小事件输入保留必要字段语义；收缩 ButtonGroup、TagInput、TagSelect 的属性/样式/事件能力，清理跨层 attrs 扩散和 AntDV 私有协议；随后处理 Descriptions 归属、Adapter 映射复用及最小非 AntDV 契约测试。完成后解决声明构建阻塞，再等待用户明确要求开始 P004。
+继续 P003 精简回补：清理 Collapse/List 等剩余 AntDV 私有协议，再补 Tabs 及复合组件的最小非 AntDV 契约测试。完成后解决声明构建阻塞，再等待用户明确要求开始 P004。
 
 ## 当前临时状态
 

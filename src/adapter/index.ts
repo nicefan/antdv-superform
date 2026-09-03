@@ -1,13 +1,13 @@
 import { h, type Component, type Slots } from 'vue'
 import type {
   AdapterComponent,
-  ActionComponentName,
+  ActionRenderType,
   ContainerAdapter,
   FieldAdapter,
   FieldAdapterContext,
   IconAdapterContext,
   LayoutComponentName,
-  PresentationComponentName,
+  PresentationRenderType,
   UIAdapter,
 } from './types'
 
@@ -52,6 +52,27 @@ function requireAdapterComponent(component: AdapterComponent | undefined, capabi
   return resolved
 }
 
+function mapModelBinding(props: Obj, model?: { prop?: string; event?: string }) {
+  const mapped = { ...props }
+  const { prop = 'value', event = 'update:value' } = model || {}
+  if (prop !== 'value') {
+    mapped[prop] = mapped.value
+    delete mapped.value
+  }
+  if (event !== 'update:value') {
+    const listener = event.startsWith('on') ? event : `on${event[0].toUpperCase()}${event.slice(1)}`
+    mapped[listener] = mapped['onUpdate:value']
+    delete mapped['onUpdate:value']
+  }
+  return mapped
+}
+
+function getUILayout(type: LayoutComponentName) {
+  const layout = getUIAdapter().layout
+  const configured = type === 'compactSpace' ? layout?.compactSpace ?? layout?.space : layout?.[type]
+  return { component: requireAdapterComponent(configured, type), layout }
+}
+
 export function renderUIForm(props: Obj, slots: Obj = {}) {
   const form = getUIAdapter().form
   const component = requireAdapterComponent(form?.component, 'Form')
@@ -77,9 +98,7 @@ export function clearUIFormValidation(instance: unknown) {
 }
 
 export function renderUILayout(type: LayoutComponentName, props: Obj = {}, slots: Obj = {}) {
-  const layout = getUIAdapter().layout
-  const configured = type === 'compactSpace' ? layout?.compactSpace ?? layout?.space : layout?.[type]
-  const component = requireAdapterComponent(configured, type)
+  const { component, layout } = getUILayout(type)
   return h(component, layout?.transformProps?.[type]?.(props) ?? props, slots)
 }
 
@@ -89,17 +108,7 @@ export function getUIContainerAdapter(type: string): ContainerAdapter | undefine
 
 export function mapUIContainerProps(type: string, props: Obj) {
   const container = getUIContainerAdapter(type)
-  let mapped = { ...props }
-  const { prop = 'value', event = 'update:value' } = container?.model || {}
-  if (prop !== 'value') {
-    mapped[prop] = mapped.value
-    delete mapped.value
-  }
-  if (event !== 'update:value') {
-    const listener = event.startsWith('on') ? event : `on${event[0].toUpperCase()}${event.slice(1)}`
-    mapped[listener] = mapped['onUpdate:value']
-    delete mapped['onUpdate:value']
-  }
+  let mapped = mapModelBinding(props, container?.model)
   if (container?.transformProps) mapped = container.transformProps(mapped)
   return mapped
 }
@@ -125,36 +134,24 @@ export function renderUISemanticIcon(name: string) {
 }
 
 export function resolveUILayoutComponent(type: LayoutComponentName) {
-  const layout = getUIAdapter().layout
-  const configured = type === 'compactSpace' ? layout?.compactSpace ?? layout?.space : layout?.[type]
-  return requireAdapterComponent(configured, type)
+  return getUILayout(type).component
 }
 
-export function resolveUIActionComponent(type: ActionComponentName) {
-  return requireAdapterComponent(getUIAdapter().actions?.components[type], `Action(${type})`)
+export function renderUIAction(type: ActionRenderType, props: Obj = {}, slots: Obj = {}) {
+  const actions = getUIAdapter().actions
+  if (!actions) throw new Error(`UIAdapter '${getUIAdapter().name}' 未提供 Action capability`)
+  return actions.render(type, props, slots)
 }
 
-export function getUIActionSlot(type: 'popup') {
-  return getUIAdapter().actions?.slots?.[type] ?? type
-}
-
-export function resolveUIPresentationComponent(type: PresentationComponentName) {
-  return requireAdapterComponent(getUIAdapter().presentation?.components[type], `Presentation(${type})`)
+export function renderUIPresentation(type: PresentationRenderType, props: Obj = {}, slots: Obj = {}) {
+  const presentation = getUIAdapter().presentation
+  if (!presentation) throw new Error(`UIAdapter '${getUIAdapter().name}' 未提供 Presentation capability`)
+  return presentation.render(type, props, slots)
 }
 
 export function mapUIFieldProps(type: string, props: Obj, context: Omit<FieldAdapterContext, 'type'>): Obj {
   const field = getUIFieldAdapter(type)
-  let mapped = { ...field?.defaultProps, ...props }
-  const { prop = 'value', event = 'update:value' } = field?.model || {}
-  if (prop !== 'value') {
-    mapped[prop] = mapped.value
-    delete mapped.value
-  }
-  if (event !== 'update:value') {
-    const listener = event.startsWith('on') ? event : `on${event[0].toUpperCase()}${event.slice(1)}`
-    mapped[listener] = mapped['onUpdate:value']
-    delete mapped['onUpdate:value']
-  }
+  let mapped = mapModelBinding({ ...field?.defaultProps, ...props }, field?.model)
   if (field?.transformProps) mapped = field.transformProps(mapped, { type, ...context })
   return mapped
 }
@@ -171,7 +168,7 @@ export { default as antdvAdapter } from './antdv'
 export type {
   AdapterComponent,
   ActionAdapter,
-  ActionComponentName,
+  ActionRenderType,
   ContainerAdapter,
   ComponentModelConfig,
   FieldAdapter,
@@ -182,6 +179,6 @@ export type {
   LayoutAdapter,
   LayoutComponentName,
   PresentationAdapter,
-  PresentationComponentName,
+  PresentationRenderType,
   UIAdapter,
 } from './types'

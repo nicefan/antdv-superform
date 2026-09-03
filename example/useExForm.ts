@@ -92,7 +92,6 @@ export default function exampleForm() {
           actions: [
             {
               label: '开始',
-              color: 'error',
               dropdown: [
                 { label: '按钮一', value: 'start1', icon: AndroidOutlined },
                 { label: '按钮二', value: 'start2', icon: AndroidOutlined },
@@ -228,7 +227,6 @@ export default function exampleForm() {
             initialValue: 'abc,ddo',
             attrs: {
               stringifyValue: true,
-              class: 'a',
             },
           },
           {
@@ -604,6 +602,7 @@ export default function exampleForm() {
             field: 'radio',
             label: '天气',
             attrs: {
+              optionType: 'button',
               buttonStyle: 'solid',
               options: [
                 { label: '晴天', value: '1' },

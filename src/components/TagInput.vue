@@ -1,42 +1,21 @@
 <template>
-  <template v-for="(tag, index) in tags" :key="tag">
-    <component :is="Tooltip" v-if="tag.length > 20" :title="tag">
-      <component :is="Tag" :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
-        {{ `${tag.slice(0, 20)}...` }}
-      </component>
-    </component>
-    <component :is="Tag" v-else :closable="getClosable(tag, index)" @close="handleClose(tag)" v-bind="$attrs">
-      {{ tag }}
-    </component>
-  </template>
+  <component v-for="(tag, index) in tags" :key="tag" :is="() => renderTag(tag, index)" />
   <component
     :is="Input"
     v-if="inputVisible"
     ref="inputRef"
     v-bind="inputProps"
-    type="text"
-    size="small"
-    :style="{ width: '78px' }"
+    class="sup-tag-input"
     @blur="handleInputConfirm"
   />
-  <component :is="Tag" v-else style="background: #fff; border-style: dashed" @click="showInput">
-    <component :is="getSemanticIconNode('add')" />
-    <component :is="() => toNode(newLabel, effectData)" />
-  </component>
+  <component :is="renderAddTag" v-else />
 </template>
 <script lang="ts" setup>
-import { computed, nextTick, ref, type Slot } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { getSemanticIconNode, toNode } from '../utils'
-import {
-  mapUIFieldProps,
-  resolveUIActionComponent,
-  resolveUIComponent,
-  resolveUIPresentationComponent,
-} from '../adapter'
+import { mapUIFieldProps, renderUIAction, renderUIPresentation, resolveUIComponent } from '../adapter'
 
 const Input = resolveUIComponent('Input')
-const Tooltip = resolveUIActionComponent('tooltip')
-const Tag = resolveUIPresentationComponent('tag')
 
 defineOptions({
   inheritAttrs: false,
@@ -49,8 +28,6 @@ const props = withDefaults(
     effectData: Obj
     value?: string | string[]
     stringifyValue?: boolean
-    /** @deprecated 使用 `stringifyValue` */
-    valueToString?: boolean
     newLabel?: string | Fn
     isView?: boolean
     closable?: boolean | Fn
@@ -110,8 +87,27 @@ const handleClose = (removedTag) => {
   updateValue(_tags)
 }
 
+const renderTag = (tag: string, index: number) => {
+  const node = renderUIPresentation(
+    'tag',
+    {
+      removable: getClosable(tag, index),
+      onRemove: () => handleClose(tag),
+    },
+    { default: () => (tag.length > 20 ? `${tag.slice(0, 20)}...` : tag) }
+  )
+  return tag.length > 20 ? renderUIAction('tooltip', { title: tag }, { default: () => node }) : node
+}
+
+const renderAddTag = () =>
+  renderUIPresentation(
+    'tag',
+    { class: 'sup-tag-add', onClick: showInput },
+    { default: () => [getSemanticIconNode('add'), toNode(props.newLabel, props.effectData)] }
+  )
+
 const updateValue = (val: string[]) => {
-  if (props.stringifyValue || props.valueToString) {
+  if (props.stringifyValue) {
     emit('update:value', val.join(','))
   } else {
     emit('update:value', val)

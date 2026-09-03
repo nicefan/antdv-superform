@@ -1,4 +1,4 @@
-import { h, toRaw } from 'vue'
+import { h, toRaw, unref } from 'vue'
 import base from '../compat/antdv'
 import {
   DownOutlined,
@@ -11,11 +11,138 @@ import {
 import { toNode } from '../utils/toNode'
 import { globalConfig } from '../config'
 import type { IconAdapterContext, UIAdapter } from './types'
-import AntdvDescriptions from '../components/Detail/Descriptions'
+import AntdvDescriptions from './antdv/Descriptions'
 
 function renderAntdvIcon(icon: unknown, { customIcon }: IconAdapterContext = {}) {
   if (typeof icon === 'string') return customIcon?.(icon) || h('span', { class: `anticon ${icon}` })
   return icon ? h(toRaw(icon) as any) : undefined
+}
+
+function mapChangeEvent(props: Obj, normalize: (...args: any[]) => any[] = (value) => [value]) {
+  const { onValueChange, onChange, ...rest } = props
+  if (!onValueChange) return props
+  return {
+    ...rest,
+    onChange: (...args: any[]) => {
+      onValueChange(...normalize(...args))
+      return onChange?.(...args)
+    },
+  }
+}
+
+function stopActionEvent(event: any) {
+  const target = event?.domEvent || event
+  target?.stopPropagation?.()
+}
+
+function renderActionContent(button: Obj, effectData: Obj, labelOnly: boolean, iconOnly: boolean) {
+  return [
+    button.icon && !labelOnly ? renderAntdvIcon(button.icon, { customIcon: globalConfig.customIcon }) : undefined,
+    !button.icon || !iconOnly ? toNode(button.label, effectData) : undefined,
+  ]
+}
+
+function renderActionButton(button: Obj, effectData: Obj, labelOnly: boolean, iconOnly: boolean) {
+  const attrs = { ...button.attrs, disabled: unref(button.attrs?.disabled) }
+  const callAction = (event: any) => {
+    stopActionEvent(event)
+    button.onClick?.(event)
+  }
+  let content
+  const menu = unref(button.menu)
+  if (menu) {
+    content = h(
+      base.Dropdown,
+      { disabled: attrs.disabled, ...button.dropdownProps },
+      {
+        popupRender: () =>
+          h(base.Menu, { onClick: callAction }, () =>
+            menu.map((item) =>
+              h(
+                base.MenuItem,
+                { key: item.value, disabled: item.disabled },
+                {
+                  icon: item.icon
+                    ? () =>
+                        renderAntdvIcon(item.icon, {
+                          customIcon: globalConfig.customIcon,
+                        })
+                    : undefined,
+                  default: () => toNode(item.label, effectData),
+                }
+              )
+            )
+          ),
+        default: () =>
+          h(base.Button, attrs, () => [
+            ...renderActionContent(button, effectData, labelOnly, iconOnly),
+            h(DownOutlined),
+          ]),
+      }
+    )
+  } else if (button.render) {
+    content = button.render({ props: attrs, ...effectData })
+  } else {
+    content = h(base.Button, { ...attrs, onClick: callAction }, () =>
+      renderActionContent(button, effectData, labelOnly, iconOnly)
+    )
+  }
+  return h(base.Tooltip, { title: unref(button.tooltipTitle) }, { default: () => content })
+}
+
+function renderAntdvActionGroup(props: Obj) {
+  const { groupProps, buttons, moreButtons, defaultButtonProps, divider, labelOnly, iconOnly, moreLabel, effectData } =
+    props
+  const content = buttons.flatMap((button, index) => [
+    renderActionButton(button, effectData, labelOnly, iconOnly),
+    divider && index < buttons.length - 1 ? h(base.Divider, { type: 'vertical', class: 'buttons-divider' }) : undefined,
+  ])
+  if (moreButtons.length) {
+    content.push(
+      h(
+        base.Dropdown,
+        {},
+        {
+          default: () =>
+            h(base.Button, defaultButtonProps, () => (moreLabel ? toNode(moreLabel, effectData) : h(EllipsisOutlined))),
+          popupRender: () =>
+            h(base.Menu, {}, () =>
+              moreButtons.map((button) =>
+                h(
+                  base.MenuItem,
+                  {
+                    key: button.label,
+                    disabled: unref(button.attrs?.disabled),
+                    onClick: (event) => {
+                      stopActionEvent(event)
+                      button.onClick?.(event)
+                    },
+                  },
+                  {
+                    icon: button.icon
+                      ? () =>
+                          renderAntdvIcon(button.icon, {
+                            customIcon: globalConfig.customIcon,
+                          })
+                      : undefined,
+                    default: () => toNode(button.label, effectData),
+                  }
+                )
+              )
+            ),
+        }
+      )
+    )
+  }
+  return h(
+    base.Space,
+    {
+      size: divider ? 0 : 'small',
+      ...groupProps,
+      class: ['sup-buttons', groupProps?.class],
+    },
+    () => content
+  )
 }
 
 /** 内置 AntDV Adapter 实现；调用方仍需在安装时显式传入。 */
@@ -88,22 +215,18 @@ export const antdvAdapter: UIAdapter = {
     render: renderAntdvIcon,
   },
   actions: {
-    components: {
-      button: 'Button',
-      tooltip: 'Tooltip',
-      dropdown: 'Dropdown',
-      menu: 'Menu',
-      menuItem: 'MenuItem',
-      divider: 'Divider',
-    },
-    slots: {
-      popup: 'popupRender',
+    render(type, props, slots) {
+      return type === 'group' ? renderAntdvActionGroup(props) : h(base.Tooltip, props, slots)
     },
   },
   presentation: {
-    components: {
-      tag: 'Tag',
-      checkableTag: 'CheckableTag',
+    render(type, props, slots) {
+      if (type === 'checkableTag') {
+        const { selected, onSelectedChange, ...rest } = props
+        return h(base.CheckableTag, { ...rest, checked: selected, onChange: onSelectedChange }, slots)
+      }
+      const { removable, onRemove, ...rest } = props
+      return h(base.Tag, { ...rest, closable: removable, onClose: onRemove }, slots)
     },
   },
   fields: {
@@ -185,11 +308,11 @@ export const antdvAdapter: UIAdapter = {
       component: 'Select',
       processors: ['select'],
       transformProps(props, { option }) {
-        return {
+        return mapChangeEvent({
           optionFilterProp: 'label',
           placeholder: `请选择${option.label ?? ''}`,
           ...props,
-        }
+        })
       },
     },
     Radio: {
@@ -202,6 +325,7 @@ export const antdvAdapter: UIAdapter = {
     RadioGroup: {
       component: 'RadioGroup',
       processors: ['radioGroup'],
+      transformProps: (props) => mapChangeEvent(props, (event) => [event?.target?.value]),
     },
     Checkbox: {
       component: 'Checkbox',
@@ -213,6 +337,7 @@ export const antdvAdapter: UIAdapter = {
     CheckboxGroup: {
       component: 'CheckboxGroup',
       processors: ['checkboxGroup'],
+      transformProps: (props) => mapChangeEvent(props),
     },
     DatePicker: {
       component: 'DatePicker',
@@ -234,11 +359,14 @@ export const antdvAdapter: UIAdapter = {
       component: 'TreeSelect',
       processors: ['treeSelect'],
       transformProps(props, { option }) {
-        return {
-          allowClear: true,
-          placeholder: `请选择${option.label ?? ''}`,
-          ...props,
-        }
+        return mapChangeEvent(
+          {
+            allowClear: true,
+            placeholder: `请选择${option.label ?? ''}`,
+            ...props,
+          },
+          (value, labels) => [value, Array.isArray(value) ? labels : Array.isArray(labels) ? labels[0] : labels]
+        )
       },
     },
     Switch: {

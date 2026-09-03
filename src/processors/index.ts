@@ -30,6 +30,11 @@ function omitLabelModelProps(props: Obj) {
   return rest
 }
 
+function getOptionLabels(options: Obj[], value: unknown) {
+  const getLabel = (current: unknown) => options.find((item) => Object.is(item.value, current))?.label
+  return Array.isArray(value) ? value.map(getLabel) : getLabel(value)
+}
+
 const processors: Record<string, FieldProcessor> = {
   picker: ({ option, effectData }) => ({
     modelBehavior: {
@@ -88,15 +93,8 @@ const processors: Record<string, FieldProcessor> = {
           )
         : undefined
     let boundProps: Obj = {}
-    const onChange = (...args) => {
-      if (option.labelField) {
-        const item = args[1]
-        const labelName = boundProps.fieldNames?.label || 'label'
-        boundProps['onUpdate:labelValue']?.(
-          Array.isArray(item) ? item.map((option) => option[labelName]) : item?.[labelName]
-        )
-      }
-      boundProps.onChange?.(...args)
+    const onValueChange = (value) => {
+      if (option.labelField) boundProps['onUpdate:labelValue']?.(getOptionLabels(optionsRef.value, value))
     }
     return {
       transformProps(props) {
@@ -105,7 +103,7 @@ const processors: Record<string, FieldProcessor> = {
         return {
           ...rest,
           options: optionsRef.value,
-          onChange,
+          onValueChange,
           onSearch: explicitSearch || remoteSearch,
         }
       },
@@ -114,13 +112,8 @@ const processors: Record<string, FieldProcessor> = {
   radioGroup: ({ option, effectData, attrs }) => {
     const { optionsRef } = useOptions(option, attrs.options, effectData)
     let boundProps: Obj = {}
-    const onChange = (event) => {
-      const value = event?.target?.value
-      if (option.labelField) {
-        const label = optionsRef.value.find((item) => Object.is(item.value, value))?.label
-        boundProps['onUpdate:labelValue']?.(label)
-      }
-      boundProps.onChange?.(event)
+    const onValueChange = (value) => {
+      if (option.labelField) boundProps['onUpdate:labelValue']?.(getOptionLabels(optionsRef.value, value))
     }
     return {
       transformProps(props) {
@@ -128,13 +121,11 @@ const processors: Record<string, FieldProcessor> = {
         const rest = omitLabelModelProps(props)
         return {
           ...rest,
-          name: option.field,
-          optionType: props.optionType || (props.buttonStyle && 'button'),
           options: optionsRef.value.map((item) => ({
             ...item,
             label: toNode(item.label, effectData),
           })),
-          onChange,
+          onValueChange,
         }
       },
     }
@@ -142,12 +133,8 @@ const processors: Record<string, FieldProcessor> = {
   checkboxGroup: ({ option, effectData, attrs }) => {
     const { optionsRef } = useOptions(option, attrs.options, effectData)
     let boundProps: Obj = {}
-    const onChange = (values) => {
-      if (option.labelField) {
-        const labels = values.map((value) => optionsRef.value.find((item) => item.value == value)?.label)
-        boundProps['onUpdate:labelValue']?.(labels)
-      }
-      boundProps.onChange?.(values)
+    const onValueChange = (value) => {
+      if (option.labelField) boundProps['onUpdate:labelValue']?.(getOptionLabels(optionsRef.value, value))
     }
     return {
       transformProps(props) {
@@ -155,9 +142,8 @@ const processors: Record<string, FieldProcessor> = {
         const rest = omitLabelModelProps(props)
         return {
           ...rest,
-          name: option.field,
           options: optionsRef.value,
-          onChange,
+          onValueChange,
         }
       },
     }
@@ -177,18 +163,14 @@ const processors: Record<string, FieldProcessor> = {
       )
     }
     let boundProps: Obj = {}
-    const onChange = (...args) => {
-      const [value, labels] = args
-      if (option.labelField) {
-        boundProps['onUpdate:labelValue']?.(Array.isArray(value) ? labels : labels?.[0])
-      }
-      boundProps.onChange?.(...args)
+    const onValueChange = (_value, labels) => {
+      if (option.labelField) boundProps['onUpdate:labelValue']?.(labels)
     }
     return {
       transformProps(props) {
         boundProps = props
         const rest = omitLabelModelProps(props)
-        return { ...rest, treeData: dataRef.value, onChange }
+        return { ...rest, treeData: dataRef.value, onValueChange }
       },
     }
   },

@@ -24,9 +24,9 @@ export default defineComponent({
     },
     effectData: Object,
   },
-  setup(props, ctx) {
+  setup(props) {
     const { type: parentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
-    const rowProps = { gutter, ...props.option.rowProps, ...ctx.attrs }
+    const rowProps = { gutter, ...props.option.rowProps }
     const inheritOptions = inject<Obj>('inheritOptions', {})
     const presetSpan = subSpan ?? inheritOptions.subSpan
 
@@ -140,7 +140,6 @@ export default defineComponent({
                 class: ['sup-form-section', type === 'Descriptions' && 'sup-detail'],
                 style: alignStyle,
                 key: idx,
-                ...ctx.attrs,
               },
               node()
             )
@@ -179,7 +178,16 @@ export default defineComponent({
     // 根容器下如有表单组件，则使用group包裹
     return () =>
       props.option.isContainer && hasWrap
-        ? h(Controls.Group, { class: 'sup-form-section', ...ctx.attrs, ...props }, { innerContent: content })
+        ? h(
+            Controls.Group,
+            {
+              class: 'sup-form-section',
+              option: props.option,
+              model: props.model,
+              effectData: props.effectData,
+            },
+            { innerContent: content }
+          )
         : content()
   },
 })

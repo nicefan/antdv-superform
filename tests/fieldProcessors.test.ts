@@ -97,9 +97,9 @@ describe('field processors', () => {
       onChange,
     })
 
-    props.onChange('published', { label: '发布', value: 'published' })
+    props.onValueChange('published')
     expect(updateLabel).toHaveBeenCalledWith('发布')
-    expect(onChange).toHaveBeenCalled()
+    expect(props.onChange).toBe(onChange)
     scope.stop()
   })
 
@@ -160,10 +160,14 @@ describe('field processors', () => {
       labelField: 'levelName',
       options: [{ label: '重要', value: 'important' }],
     })
-    radio.processor.transformProps({ 'onUpdate:labelValue': radioLabel }).onChange({
-      target: { value: 'important' },
+    const radioProps = radio.processor.transformProps({
+      'onUpdate:labelValue': radioLabel,
+      buttonStyle: 'solid',
     })
+    radioProps.onValueChange('important')
     expect(radioLabel).toHaveBeenCalledWith('重要')
+    expect(radioProps).not.toHaveProperty('name')
+    expect(radioProps).not.toHaveProperty('optionType')
     radio.scope.stop()
 
     const checkboxLabel = vi.fn()
@@ -176,7 +180,7 @@ describe('field processors', () => {
         { label: 'Adapter', value: 'adapter' },
       ],
     })
-    checkbox.processor.transformProps({ 'onUpdate:labelValue': checkboxLabel }).onChange(['schema', 'adapter'])
+    checkbox.processor.transformProps({ 'onUpdate:labelValue': checkboxLabel }).onValueChange(['schema', 'adapter'])
     expect(checkboxLabel).toHaveBeenCalledWith(['Schema', 'Adapter'])
     checkbox.scope.stop()
   })
