@@ -57,8 +57,6 @@ export default defineConfig(({ mode }) =>
             entry: {
               index: resolve(__dirname, 'src/index.ts'),
               'unplugin/vite': resolve(__dirname, 'src/unplugin/vite.ts'),
-              'unplugin/rollup': resolve(__dirname, 'src/unplugin/rollup.ts'),
-              'unplugin/webpack': resolve(__dirname, 'src/unplugin/webpack.ts'),
             },
             formats: ['es'],
             name: 'MyLib',
@@ -119,14 +117,10 @@ export default defineConfig(({ mode }) =>
             copyDtsFiles: true,
             async afterBuild() {
               // 汇总过程需要代理声明作为入口，结束后只保留 package exports 指向的根声明。
-              await Promise.all(
-                ['vite', 'rollup', 'webpack'].map((name) =>
-                  rm(resolve(__dirname, `lib/unplugin/${name}.d.ts`), { force: true })
-                )
-              )
+              await rm(resolve(__dirname, 'lib/unplugin/vite.d.ts'), { force: true })
               // API Extractor 在 Windows 下输出 CRLF，统一为仓库使用的 LF。
               await Promise.all(
-                ['index', 'vite', 'rollup', 'webpack'].map(async (name) => {
+                ['index', 'vite'].map(async (name) => {
                   const file = resolve(__dirname, `lib/${name}.d.ts`)
                   const content = await readFile(file, 'utf8')
                   await writeFile(file, content.replace(/\r\n/g, '\n'), 'utf8')

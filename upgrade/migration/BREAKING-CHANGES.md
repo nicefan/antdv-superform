@@ -251,3 +251,25 @@ Collapse 标题、轻量 List 内容和操作区复用了 `.ant-descriptions-hea
 ### 迁移
 
 如有针对旧内部 class 的样式覆盖，请改用对应的 `sup-*` 语义 class。不要再通过安装配置覆盖 `SuperList/SuperListItem`；需要替换完整列表渲染时，应实现 Adapter 的 `list/listItem` Container capability。
+
+## 构建插件仅保留 Vite
+
+阶段：P004
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+包同时导出：
+
+- `antdv-superform/unplugin/vite`
+- `antdv-superform/unplugin/rollup`
+- `antdv-superform/unplugin/webpack`
+
+### 现在
+
+只保留 `antdv-superform/unplugin/vite`。Rollup、Webpack 插件入口和相关声明不再发布。
+
+### 迁移
+
+Vite 项目无需修改。直接使用 Rollup 或 Webpack 的项目需要自行接入 Schema 组件注册，或迁移到 Vite 构建入口；本次不保留兼容代理包。

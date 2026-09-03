@@ -149,4 +149,15 @@ P008 前逐步建立以下自动检查：
 - 补充执行：`pnpm vitest run tests/packageDeclarations.test.ts tests/field-compat.test.ts tests/superFormUnplugin.test.ts --threads false --reporter=dot`。
 - 结果：3 个测试文件、13 项测试通过；发布声明回归测试固定了子路径入口与主声明边界。
 
+### P004 启动：仅保留 Vite 插件
+
+- 检查：package exports、构建入口和发布声明只保留 `unplugin/vite`，源码中删除 Rollup、Webpack 插件入口。
+- 回归：发布声明测试同步断言 Rollup、Webpack 子路径不再导出。
+- 执行：`pnpm vitest run tests/packageDeclarations.test.ts tests/superFormUnplugin.test.ts --threads false --reporter=dot`。
+- 结果：2 个测试文件、5 项测试通过。
+- 执行：`pnpm exec vue-tsc --noEmit`、相关 ESLint 和 `git diff --check`。
+- 结果：均通过。
+- 执行：`pnpm build`。
+- 结果：完整构建成功，仅生成主入口和 `unplugin/vite` 的 JavaScript、声明及样式产物。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

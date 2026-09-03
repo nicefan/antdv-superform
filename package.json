@@ -33,14 +33,6 @@
     "./unplugin/vite": {
       "types": "./lib/vite.d.ts",
       "import": "./lib/unplugin/vite.js"
-    },
-    "./unplugin/rollup": {
-      "types": "./lib/rollup.d.ts",
-      "import": "./lib/unplugin/rollup.js"
-    },
-    "./unplugin/webpack": {
-      "types": "./lib/webpack.d.ts",
-      "import": "./lib/unplugin/webpack.js"
     }
   },
   "scripts": {

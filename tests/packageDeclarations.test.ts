@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -7,14 +7,15 @@ const workspace = process.cwd()
 describe('发布声明', () => {
   it('unplugin 子路径指向汇总后的独立声明', async () => {
     const packageJson = JSON.parse(await readFile(path.join(workspace, 'package.json'), 'utf8'))
-    const entries = ['vite', 'rollup', 'webpack']
+    expect(packageJson.exports['./unplugin/vite'].types).toBe('./lib/vite.d.ts')
+    expect(packageJson.exports).not.toHaveProperty('./unplugin/rollup')
+    expect(packageJson.exports).not.toHaveProperty('./unplugin/webpack')
+    await expect(access(path.join(workspace, 'lib/unplugin/rollup.js'))).rejects.toThrow()
+    await expect(access(path.join(workspace, 'lib/unplugin/webpack.js'))).rejects.toThrow()
 
-    for (const name of entries) {
-      expect(packageJson.exports[`./unplugin/${name}`].types).toBe(`./lib/${name}.d.ts`)
-      const declaration = await readFile(path.join(workspace, `lib/${name}.d.ts`), 'utf8')
-      expect(declaration).not.toContain('../src')
-      expect(declaration).not.toContain('node_modules')
-    }
+    const declaration = await readFile(path.join(workspace, 'lib/vite.d.ts'), 'utf8')
+    expect(declaration).not.toContain('../src')
+    expect(declaration).not.toContain('node_modules')
   })
 
   it('主声明不包含开发环境的类型扩展或内部依赖路径', async () => {

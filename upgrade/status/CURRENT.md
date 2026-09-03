@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完成。P004 的声明构建前置阻塞已经解除，下一轮可以正式开始公共 Schema 类型解耦。
+P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完成。P004 已开始，声明构建前置阻塞已经解除，当前进入公共 Schema 类型分层。
 
 ## 已完成
 
@@ -37,10 +37,11 @@ P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完�
 - Descriptions 表格/表单兼容实现已移入 AntDV Adapter 私有目录，不再反向依赖公共 Adapter 入口。
 - Collapse、List 和按钮分隔线已移除 Core 中残留的 AntDV 私有 class；轻量 List 兼容实现已移入 AntDV Adapter 私有目录。
 - 声明构建已恢复：公共导出使用可命名类型，unplugin 子路径指向独立汇总声明，发布声明不再包含 dev/example 扩展或指向未发布 `src/` 的代理入口。
+- 已完成公共 Schema 类型分类和扩展机制设计；构建插件按产品范围收缩为仅支持 Vite。
 
 ## 下一步
 
-正式开始 P004 公共 Schema 类型解耦。最小非 AntDV 假 Adapter 测试已取消，真实 Element Plus Adapter 与独立 dev 环境后置到 P005。
+提取第一批 Form、Field、Layout 稳定 Props，并建立 AntDV UI 组件类型扩展入口。真实 Element Plus Adapter 与独立 dev 环境后置到 P005。
 
 ## 当前临时状态
 

@@ -344,7 +344,7 @@ P010 发布与迁移
 
 ## P004 公共 Schema 类型解耦
 
-状态：待开始
+状态：进行中
 依赖：P001，建议在 P002/P003 稳定后执行
 
 ### 目标
@@ -359,13 +359,21 @@ P010 发布与迁移
 ### 任务
 
 - [x] 启动 P004 前解决当前声明打包失败，并验证 Adapter 新增公开类型可以生成稳定的 d.ts。
-- [ ] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
+- [x] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
 - [ ] 定义框架无关的稳定 Props 子集。
-- [ ] 设计 UI 专属扩展属性的类型扩展机制。
+- [x] 设计 UI 专属扩展属性的类型扩展机制。
 - [ ] 为旧 AntDV Props 暴露提供兼容别名或过渡类型。
 - [ ] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
 - [ ] 记录每项不兼容类型变化和迁移示例。
 - [ ] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留稳定扩展契约，其余收为内部 API 或明确标记实验状态。
+
+#### 2026-09-03：启动 P004 并收缩构建插件
+
+- 完成：新增公共 Schema 类型设计，明确 Core 固定容器/增强语义、UI 真实组件名、Adapter 类型目录和 Vite 按需导入的边界。
+- 完成：按产品范围只保留 Vite 插件，移除 Rollup、Webpack 插件源码、构建入口和 package exports。
+- 设计影响：普通输入默认使用 `value/onUpdate:value`，只有非默认 model 或存在转换时才声明字段协议；类型完整支持不等于运行时完整导入。
+- 兼容性：`antdv-superform/unplugin/rollup` 和 `antdv-superform/unplugin/webpack` 不再提供，已同步迁移记录。
+- 后续：提取第一批 Form、Field、Layout 稳定 Props，并建立 AntDV UI 类型扩展入口。
 
 ### 验收条件
 
