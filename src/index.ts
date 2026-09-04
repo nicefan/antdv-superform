@@ -9,7 +9,7 @@ export * from './superDetail'
 export * from './superModal'
 export { diagnoseSchema } from './utils/diagnoseSchema'
 export type { SchemaDiagnostic, SchemaDiagnosticLevel, SchemaKind } from './utils/diagnoseSchema'
-export { antdvAdapter, defineUIAdapter } from './adapter'
+export { defineUIAdapter } from './adapter'
 export type {
   ActionAdapter,
   ActionRenderType,
@@ -26,7 +26,7 @@ export type {
   PresentationRenderType,
   UIAdapter,
 } from './adapter'
-export { registerFormComponents } from './components'
+export { registerAutoImportedComponents } from './components'
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'
 export type { AdapterDefaultProps, InstallConfig } from './plugin'
 

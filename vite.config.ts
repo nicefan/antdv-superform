@@ -57,6 +57,8 @@ export default defineConfig(({ mode }) =>
             entry: {
               index: resolve(__dirname, 'src/index.ts'),
               'unplugin/vite': resolve(__dirname, 'src/unplugin/vite.ts'),
+              'adapter/antdv': resolve(__dirname, 'src/adapter/antdv.ts'),
+              'adapter/element-plus': resolve(__dirname, 'src/adapter/element-plus.ts'),
             },
             formats: ['es'],
             name: 'MyLib',
@@ -78,6 +80,7 @@ export default defineConfig(({ mode }) =>
               /lodash/,
               /antdv-next/,
               /@antdv-next/,
+              /^element-plus(?:\/|$)/,
               '@vueuse/core',
             ],
             // input: [`dist/index.d.ts`],
@@ -116,11 +119,15 @@ export default defineConfig(({ mode }) =>
             // cleanVueFileName: true,
             copyDtsFiles: true,
             async afterBuild() {
-              // 汇总过程需要代理声明作为入口，结束后只保留 package exports 指向的根声明。
-              await rm(resolve(__dirname, 'lib/unplugin/vite.d.ts'), { force: true })
+              // 汇总过程需要代理声明作为入口，结束后只保留 package exports 指向的汇总声明。
+              await Promise.all(
+                ['unplugin/vite', 'adapter/antdv', 'adapter/element-plus'].map((name) =>
+                  rm(resolve(__dirname, `lib/${name}.d.ts`), { force: true })
+                )
+              )
               // API Extractor 在 Windows 下输出 CRLF，统一为仓库使用的 LF。
               await Promise.all(
-                ['index', 'vite'].map(async (name) => {
+                ['index', 'vite', 'antdv', 'element-plus'].map(async (name) => {
                   const file = resolve(__dirname, `lib/${name}.d.ts`)
                   const content = await readFile(file, 'utf8')
                   await writeFile(file, content.replace(/\r\n/g, '\n'), 'utf8')

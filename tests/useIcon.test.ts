@@ -1,7 +1,8 @@
 import { defineComponent, isProxy, reactive } from 'vue'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { getIconNode } from '../src/utils/useIcon'
-import { antdvAdapter, initializeUIAdapter } from '../src/adapter'
+import { initializeUIAdapter } from '../src/adapter'
+import { antdvAdapter } from '../src/adapter/antdv'
 
 beforeAll(() => initializeUIAdapter(antdvAdapter))
 

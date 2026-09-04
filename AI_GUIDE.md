@@ -27,7 +27,7 @@
 
 5. `attrs` 传给底层 Ant Design Vue 组件；表单布局、表格业务行为等库级配置应放在 schema 对应层级，不要把所有配置都塞进 `attrs`。
 
-6. 自定义字段类型必须先通过 `registerComponent` 注册。不要虚构 `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 等当前注册表中不存在的类型。
+6. 项目字段通过安装配置的 `components` 注册，schema 直接使用注册名；普通 UI 字段也可由 Vite 自动导入插件注册。不要使用 `Ext` 前缀或假定未配置的组件存在。
 
 ## 2. 公共导出
 
@@ -40,7 +40,7 @@
 | 详情 | `SuperDetail`、`useDetail`、`defineDetail` | 只读详情                                 |
 | 弹窗 | `createModal`、`useModal`、`useModalForm`  | 命令式弹窗和弹窗表单                     |
 | 按钮 | `SuperButtons`、`useButtons`               | 独立按钮组                               |
-| 插件 | 默认导出 `superForm`                       | 全局安装、默认值、组件替换、扩展字段注册 |
+| 插件 | 默认导出 `superForm`                       | 全局安装、默认值、项目字段注册           |
 | 诊断 | `diagnoseSchema`                           | 返回 schema 的错误、警告和冗余配置建议   |
 
 常用公开类型包括：
@@ -63,7 +63,8 @@ import type {
 
 ```ts
 import { createApp } from "vue";
-import superForm, { antdvAdapter } from "antdv-superform";
+import superForm from "antdv-superform";
+import { antdvAdapter } from "antdv-superform/adapter/antdv";
 import App from "./App.vue";
 
 const app = createApp(App);
@@ -105,8 +106,7 @@ app.use(superForm, {
 - `dictApi(name)` 必须返回 `Promise<{ label, value }[]>` 或兼容选项数组。
 - `buttonRoles()` 返回当前权限字符串数组。
 - `tableApiSetting.resultTransform` 应返回数组，或 `{ current, size, total, records }`。
-- `components` 可替换库使用的底层组件，例如 `Table`、`Modal`。
-- `superForm.registerComponent('ModalSelect', Comp)` 注册后的 schema 类型是 `ExtModalSelect`，不是 `ModalSelect`。
+- `components` 只注册项目字段，不替换 Adapter 的底层组件；注册名就是 schema 类型名。
 - `superForm.setDefaultProps()` 可在安装后继续合并全局默认属性。
 
 ## 4. Schema 基础规则
@@ -746,16 +746,20 @@ const importModal = useModalForm(
 
 ```ts
 import superForm from "antdv-superform";
+import { antdvAdapter } from "antdv-superform/adapter/antdv";
 import ModalSelect from "./ModalSelect.vue";
 
-superForm.registerComponent("ModalSelect", ModalSelect);
+app.use(superForm, {
+  adapter: antdvAdapter,
+  components: { ModalSelect },
+});
 ```
 
 使用：
 
 ```ts
 {
-  type: 'ExtModalSelect',
+  type: 'ModalSelect',
   field: 'lawIds',
   labelField: 'lawNames',
   label: '法律依据',
@@ -768,17 +772,15 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 }
 ```
 
-扩展组件会收到：
+项目组件会收到合并后的标准字段属性，包括：
 
-- `option`
-- `effectData`
 - `value` / `onUpdate:value`
-- 合并后的 `attrs`
-- `isView`、`disabled`
+- `attrs` 中声明的组件属性
+- `disabled` 等由 Schema 控制得到的属性
 - `labelField` 对应的 `labelValue` / `onUpdate:labelValue`
 - `vModelFields` 声明的其他双向绑定
 
-业务项目定义的 `ExtModalSelect`、`ExtLinkUnit` 等不是 npm 包内置类型。只有消费项目完成注册后才能使用。
+组件不会收到 Core 内部的 `option`、`model` 或 `effectData`。如组件使用 `modelValue` 等非默认协议，在 `components` 中注册 `{ component, model }`。项目类型提示可由 Vite 插件生成的声明补充。
 
 ## 13. 不要生成的旧 API
 
@@ -804,7 +806,7 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 | `blocked`                         | `block`                                    |
 | `wrapping`                        | `breakAfter`                               |
 | 按钮配置 `forSlot`                | `targetSlot`                               |
-| `registComponent`                 | `registerComponent`                        |
+| `registerComponent` / `registComponent` | 安装配置 `components`，直接使用注册名 |
 | DateRangePicker `keepField`       | `endField`                                 |
 
 以下内容也不要假定存在：
@@ -812,12 +814,12 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 - `apis.export` 的自动导出行为
 - `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 内置字段
 - `rowSelection: true` 的正式类型支持；使用 `{}`
-- 未注册的任意 `Ext*` 组件
+- 任意 `Ext*` 组件解析兼容
 
 ## 14. 生成完成后的自检
 
 1. 所有 import 都来自包根入口或消费项目已有封装。
-2. 字段类型在内置列表中，或已确认存在对应 `registerComponent`。
+2. 字段类型属于 Core/当前 Adapter，或已通过安装配置、Vite 自动导入明确注册。
 3. 表格显式设置了稳定 `attrs.rowKey`。
 4. 分页需求明确配置了 `pagination`。
 5. `immediate`、`params`、`searchForm` 位于表格 schema 正确层级。

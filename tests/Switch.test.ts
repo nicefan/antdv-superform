@@ -2,7 +2,8 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { createApp, defineComponent, effectScope, nextTick, ref } from 'vue'
 import { buildModelsMap } from '../src/utils/buildModel'
 import { resolveFieldProcessors } from '../src/processors'
-import { antdvAdapter, mapUIFieldProps } from '../src/adapter'
+import { mapUIFieldProps } from '../src/adapter'
+import { antdvAdapter } from '../src/adapter/antdv'
 import plugin from '../src/plugin'
 
 beforeAll(async () => {

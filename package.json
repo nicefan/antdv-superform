@@ -33,6 +33,14 @@
     "./unplugin/vite": {
       "types": "./lib/vite.d.ts",
       "import": "./lib/unplugin/vite.js"
+    },
+    "./adapter/antdv": {
+      "types": "./lib/antdv.d.ts",
+      "import": "./lib/adapter/antdv.js"
+    },
+    "./adapter/element-plus": {
+      "types": "./lib/element-plus.d.ts",
+      "import": "./lib/adapter/element-plus.js"
     }
   },
   "scripts": {
@@ -48,7 +56,13 @@
   "peerDependencies": {
     "@antdv-next/icons": ">=1.1.1",
     "antdv-next": ">=1.5.0",
+    "element-plus": ">=2.14.5",
     "vue": ">=3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "element-plus": {
+      "optional": true
+    }
   },
   "dependencies": {
     "unplugin": "^3.3.0"
@@ -68,6 +82,7 @@
     "@vueuse/core": "^10.5.0",
     "antdv-next": "1.5.0",
     "dayjs": "^1.11.21",
+    "element-plus": "^2.14.5",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^4.2.1",

@@ -1,9 +1,10 @@
 import { createApp, defineComponent, h } from 'vue'
 import App from './App.vue'
-import superForm, { antdvAdapter } from '../src'
+import superForm from '../src'
+import { antdvAdapter } from '../src/adapter/antdv'
 import type { ButtonItem } from '../src'
 import 'antdv-next/dist/antd.css'
-import { Button, InputNumber, Table } from 'antdv-next'
+import { Button } from 'antdv-next'
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -22,8 +23,6 @@ const app = createApp(App)
 //     )
 //   }
 // })
-superForm.registerComponent('InNumber', InputNumber)
-
 const defaultButtons: Obj<ButtonItem> = {
   add: {
     label: '新增',
@@ -89,9 +88,8 @@ const tagColorList = ['pink', 'cyan', 'red', 'green', 'blue', 'orange', 'purple'
 app
   .use(superForm, {
     adapter: antdvAdapter,
-    // 覆盖Antd组件，
     components: {
-      Table: Table,
+      Rate,
     },
     tagViewer: (val) => {
       // 如果是布尔值，使用预定义的颜色

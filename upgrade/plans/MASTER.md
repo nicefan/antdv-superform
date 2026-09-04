@@ -1,7 +1,7 @@
 # UI 适配器升级总计划
 
 状态：活动
-当前状态：P002/P003 及审查回补、P004 公共 Schema 类型解耦已完成；P005 待开始
+当前状态：P002/P003 及审查回补、P004 公共 Schema 类型解耦、P005 Schema 解析与自动导入已完成；P006 待确认开始
 基线分支：`next-dev`
 
 ## 全局目标
@@ -363,7 +363,8 @@ P010 发布与迁移
 - [x] 删除剩余公共 Schema 对旧 AntDV Props 的直接继承。
 - [x] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
 - [x] 记录每项不兼容类型变化和迁移示例。
-- [x] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留 `defineUIAdapter`、`antdvAdapter` 和 Adapter 类型契约。
+- [x] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留 `defineUIAdapter` 和 Adapter 类型契约。
+- [x] 回补具体 Adapter 独立构建入口，AntDV 与 Element Plus 不再由包根聚合导出。
 
 #### 2026-09-03：启动 P004 并收缩构建插件
 
@@ -384,7 +385,7 @@ P010 发布与迁移
 #### 2026-09-04：收缩 Container、Action 与公开运行时边界
 
 - 完成：Descriptions、Tabs 改用明确容器契约，Button、Tooltip、Dropdown 改由 `UIActionComponentProps` 提供 Adapter Props；安装配置移除未消费的 AntDV `locale` 类型与运行时注入。
-- 设计影响：包根只保留 `defineUIAdapter`、`antdvAdapter` 及 Adapter 类型契约；渲染、解析、映射和实例访问函数收为 Core 内部 API。
+- 设计影响：当时包根保留 `defineUIAdapter`、`antdvAdapter` 及 Adapter 类型契约；渲染、解析、映射和实例访问函数收为 Core 内部 API。具体 Adapter 导出随后由 ADR-0005 调整为独立子路径。
 - 兼容性：Descriptions 不再支持 `labelBgColor/borderColor`，Tabs 根节不再暴露实际未消费的 `attrs/forceRender`；安装时的 `locale` 与包根底层 Adapter 工具函数不再提供。
 - 验证：Adapter 与字段回归 2 个文件、22 项通过；类型检查、变更文件 ESLint、完整构建和发布声明测试通过。
 - 后续：拆分 Modal、Table 和 Upload 公共类型，完成 P004 声明解耦。
@@ -396,6 +397,13 @@ P010 发布与迁移
 - 兼容性：表格动作 `meta` 改回普通业务对象；自定义 Adapter 需声明 Modal、Table、Column、Pagination 和 Upload 的属性映射。
 - 验证：类型 fixture、类型检查、完整构建和发布声明测试通过。
 
+#### 2026-09-04：回补 Adapter 独立构建入口
+
+- 完成：包根移除具体 Adapter 导出；AntDV 与 Element Plus 分别使用 `adapter/antdv`、`adapter/element-plus` 子路径及独立构建入口。
+- 设计影响：新增 ADR-0005；具体 UI 框架依赖保持 external，Element Plus peer dependency 为可选。
+- 兼容性：`antdvAdapter` 不再从包根导入，需改用 `antdv-superform/adapter/antdv`。
+- 验证：提交前 build 成功，生成两个 Adapter 的独立 JavaScript 与汇总声明；发布边界及 P005 定向测试 8 个文件、41 项通过。
+
 ### 验收条件
 
 - [x] Core 公共类型不直接 import AntDV 类型。
@@ -406,7 +414,7 @@ P010 发布与迁移
 
 ## P005 Schema 解析与自动导入
 
-状态：待开始
+状态：已完成
 依赖：P001、P002
 
 ### 目标
@@ -415,24 +423,45 @@ P010 发布与迁移
 
 ### 任务
 
-- [ ] 明确定义 `coreTypes`、`enhancedTypes` 和保留类型。
-- [ ] 移除或收缩 `allItems` 的混合职责。
-- [ ] 为组件来源区分 `core`、`enhanced`、`auto` 和 `custom`，不保留 `legacy` 分支。
-- [ ] unplugin 扫描时排除 Core 与增强类型，仅解析普通组件。
-- [ ] 调整虚拟模块注册方式，避免把自动导入组件误判为增强组件。
-- [ ] 保持动态 Schema 的显式 `types` 配置能力。
-- [ ] 直接移除 `configureComponents`、`registerFormComponents`、`registerComponent` 和 `Ext` 前缀等旧注册、解析规则。
-- [ ] 建立 Core UI 依赖架构保护测试，以当前未迁移的 Upload、Modal 和 Table 为显式暂时范围。
-- [ ] 更新生成的 d.ts 和对应测试。
-- [ ] 建立最小 Element Plus Adapter 和独立 dev 环境，覆盖 Form、布局、Input、Switch、Select、Tabs、ButtonGroup、TagInput 和 TagSelect，并验证类型声明与按需导入。
-- [ ] 为删除的旧注册和解析规则补充迁移记录。
+- [x] 明确定义 `coreTypes`、`enhancedTypes` 和保留类型。
+- [x] 移除或收缩 `allItems` 的混合职责。
+- [x] 为组件来源区分 `core`、`enhanced`、`auto` 和 `custom`，不保留 `legacy` 分支。
+- [x] unplugin 扫描时排除 Core 与增强类型，仅解析普通组件。
+- [x] 调整虚拟模块注册方式，避免把自动导入组件误判为增强组件。
+- [x] 保持动态 Schema 的显式 `types` 配置能力。
+- [x] 直接移除 `configureComponents`、`registerFormComponents`、`registerComponent` 和 `Ext` 前缀等旧注册、解析规则。
+- [x] 建立 Core UI 依赖架构保护测试，以当前未迁移的 Upload、Modal 和 Table 为显式暂时范围。
+- [x] 更新生成的 d.ts 和对应测试。
+- [x] 建立最小 Element Plus Adapter、独立 Schema 和独立 dev 环境，覆盖 Form、布局、Input、Switch、Select、Tabs、ButtonGroup、TagInput 和 TagSelect，并验证类型声明与按需导入。
+- [x] 为删除的旧注册和解析规则补充迁移记录。
 
 ### 验收条件
 
-- [ ] 解析优先级与 ADR-0002 一致。
-- [ ] 自动导入组件只接收标准组件属性，不被注入 `option/model/effectData`。
-- [ ] legacy 与 `Ext` 前缀解析已移除，无新旧双路径。
-- [ ] 同一份基础 Schema 可在不修改 Core 的前提下切换 AntDV 与 Element Plus Adapter。
+- [x] 解析优先级与 ADR-0002 一致。
+- [x] 自动导入组件只接收标准组件属性，不被注入 `option/model/effectData`。
+- [x] legacy 与 `Ext` 前缀解析已移除，无新旧双路径。
+- [x] AntDV 与 Element Plus 分别使用符合自身组件名和 Props 协议的 Schema，均可在不修改 Core 源码的前提下运行。
+
+### 进展记录
+
+#### 2026-09-04：完成 Schema 解析、自动导入与 Element Plus 最小验证
+
+- 完成：拆分 Core/增强保留类型与 custom/auto 注册表；自动导入排除保留类型并支持 model、Adapter 增强名称和多虚拟模块；删除旧注册、底层覆盖及 Ext 解析；在内部 Adapter 目录新增 Element Plus 最小实现，并建立独立 Schema 和 dev 入口。
+- 设计影响：项目显式组件优先于自动导入组件，但不能覆盖 Core 或增强类型；第二 UI 框架使用自己的真实组件名和 Props。
+- 兼容性：旧注册方法、`Ext` 前缀、`components` 底层覆盖及项目组件 Core 内部参数注入已移除，迁移方式见不兼容变化记录。
+- 验证：P005 定向测试 17 项、Adapter/字段回归 29 项和类型检查通过；真实浏览器确认 Element Plus 要求范围均可渲染和切换；未执行 build，因当前未进入提交阶段。
+- 后续：P006 待确认开始；Upload、Modal、消息、预览和 Table 仍在架构测试的显式临时范围内使用 compat。
+
+#### 2026-09-04：回补 Element Plus 独立发布入口
+
+- 完成：Element Plus Adapter 保持在内部 `src/adapter`，并新增独立发布子路径；不从 Core 根入口或 AntDV Adapter 聚合导出。
+- 验证：独立构建产物和声明已生成，声明边界测试通过。
+
+#### 2026-09-04：回补 Element Plus 独立 dev package
+
+- 完成：Element Plus 验证环境拥有独立 `package.json`、TypeScript 与 Vite 配置；应用与构建插件都只通过公开包入口消费已构建产物。
+- 边界：根 Vite 配置不再扫描或生成 Element Plus 验证模块，根 TypeScript 工程也不包含该目录。
+- 验证：按用户要求本轮只修改，未安装依赖、启动服务或执行测试。
 
 ---
 

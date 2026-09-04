@@ -38,11 +38,52 @@
 
 以下项目只是计划风险，不代表已经实施；进入对应阶段后必须给出最终方案。
 
-- 安装配置可能从 `components` 同时承担底层替换和自定义注册，调整为 `adapter` 与用户组件注册分离。
-- `InputNumber`、`TextArea`、`TimePicker` 等纯 UI Schema 类型的解析来源将从 Core 包装改为 Adapter 或自动导入。
-- 公开 Schema Props 将从直接继承 AntDV 类型改为稳定通用类型加 Adapter 扩展类型。
-- `registerFormComponents`、`registerComponent`、`Ext` 前缀等旧 API 将在 P005 直接移除，不设废弃期。
 - UI 默认属性的配置归属和索引名称可能调整。
+
+## 项目组件注册与自动导入来源分离
+
+阶段：P005
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+- `components` 同时承担项目组件注册和 AntDV 底层组件替换。
+- `registerComponent`、`registComponent`、`registerFormComponents` 和 `configureComponents` 可以从不同入口修改同一份注册状态。
+- `registerComponent('UserPicker', component)` 同时生成 `UserPicker` 和 `ExtUserPicker`，旧组件还能收到 `option`、`model`、`effectData` 等 Core 内部参数。
+- Vite 自动导入组件与项目显式组件都记录为 `custom` 来源。
+
+### 现在
+
+- 安装配置 `components` 只注册项目 Schema 组件，注册名就是 `schema.type`。
+- Vite 自动导入组件进入独立 `auto` 来源；Core、增强、`custom`、`auto` 按 ADR-0002 的优先级解析。
+- 项目组件和自动导入组件只接收合并后的字段属性及声明的 model 绑定，不注入 `option`、`model`、`effectData`。
+- Vite 插件排除 Core 和增强类型；动态 Schema 继续使用 `types`，非默认 model 使用 resolver 的 `model`，多应用配置可用 `virtualId` 隔离虚拟模块。
+
+### 影响
+
+依赖旧注册方法、`Ext` 前缀、安装配置覆盖 Adapter 底层组件，或直接读取 Core 内部参数的项目组件需要迁移。把 `Table`、`Input` 等保留名称放入 `components` 会明确报错。
+
+### 迁移
+
+```ts
+app.use(superForm, {
+  adapter: antdvAdapter,
+  components: {
+    UserPicker,
+    MarkdownEditor: {
+      component: MarkdownEditor,
+      model: { prop: 'modelValue', event: 'update:modelValue' },
+    },
+  },
+})
+```
+
+Schema 直接使用 `type: 'UserPicker'` 或 `type: 'MarkdownEditor'`。需要替换 UI 框架组件时修改或实现 Adapter，不再放入 `components`。
+
+### 兼容策略
+
+旧注册方法、底层覆盖和 `Ext` 前缀解析直接移除，不提供废弃期或双路径。分离来源可以保证增强处理器不会被项目注册或自动导入意外绕过。
 
 ## UI 组件 Schema 类型使用真实组件名
 
@@ -115,7 +156,8 @@ app.use(superForm)
 安装时必须显式传入 Adapter，首次初始化后不能切换为其他 Adapter。
 
 ```ts
-import superForm, { antdvAdapter } from 'antdv-superform'
+import superForm from 'antdv-superform'
+import { antdvAdapter } from 'antdv-superform/adapter/antdv'
 
 app.use(superForm, { adapter: antdvAdapter })
 ```
@@ -345,12 +387,13 @@ Descriptions 和 Table Tabs 分别继承完整 `DescriptionsProps` 和 `TabsProp
 ### 现在
 
 - 安装配置只保留 Core 全局配置、`adapter`、`components` 和 `defaultProps`；`defaultProps` 使用框架无关的 `AdapterDefaultProps`。
-- 包根只导出 `defineUIAdapter`、`antdvAdapter` 和 Adapter capability 类型。Core 调用的渲染、解析、映射与实例函数仍保留在内部模块，不再构成公开 API。
+- 包根只导出 `defineUIAdapter` 和 Adapter capability 类型。具体 Adapter 使用独立子路径与构建产物；Core 调用的渲染、解析、映射与实例函数仍保留在内部模块，不再构成公开 API。
 
 ### 影响与迁移
 
 - 移除安装配置中的 `locale`。AntDV 项目应在 `ConfigProvider` 中设置 locale，其他 UI 框架使用各自的全局化入口。
 - 如果业务代码曾从包根调用上述底层函数，应改为实现 `UIAdapter` capability，由 SuperForm Core 调用。
+- `antdvAdapter` 改从 `antdv-superform/adapter/antdv` 导入；Element Plus 使用 `antdv-superform/adapter/element-plus`。
 
 ### 兼容策略
 

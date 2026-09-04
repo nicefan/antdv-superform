@@ -6,7 +6,10 @@
         <h1>UI 适配器改造验证</h1>
         <p>阶段任务完成后，在这里添加对应的人工验证页面。</p>
       </div>
-      <a href="/index.html">返回现有示例</a>
+      <div class="upgrade-links">
+        <a href="/upgrade-dev/element-plus/index.html">Element Plus 验证</a>
+        <a href="/index.html">返回现有示例</a>
+      </div>
     </header>
 
     <div class="upgrade-layout">
@@ -50,7 +53,7 @@ function selectPage(id: string) {
 :root {
   color: #172033;
   background: #f4f6fa;
-  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: Inter, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 * {
@@ -64,6 +67,11 @@ body {
 button,
 a {
   font: inherit;
+}
+
+.upgrade-links {
+  display: flex;
+  gap: 16px;
 }
 
 .upgrade-shell {

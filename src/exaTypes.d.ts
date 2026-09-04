@@ -770,7 +770,6 @@ export type UniWidgetOption =
   | {
       [K in keyof CustomWidgetTypes]: { type: K } & CustomWidgetTypes[K]
     }[keyof CustomWidgetTypes]
-  | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
 
 export type UniOption = UniWrapperOption | UniWidgetOption
 

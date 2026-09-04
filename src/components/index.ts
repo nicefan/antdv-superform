@@ -1,4 +1,4 @@
-import { h, type Component } from 'vue'
+import type { Component } from 'vue'
 import Group from './Group.vue'
 import Form from './Form.vue'
 import InputGroup from './InputGroup.vue'
@@ -12,12 +12,12 @@ import Collapse from './Collapse.vue'
 import Upload from './Upload.vue'
 import TagInput from './TagInput.vue'
 import TagSelect from './TagSelect.vue'
-import { isBaseComponentName, override } from '../compat/antdv'
 import type { ComponentModelConfig } from '../adapter'
+import { coreTypes, enhancedTypes, reservedSchemaTypes } from './schemaTypes'
 
 export { ButtonGroup } from './buttons'
 export { default as Collections } from './Collections'
-export { override }
+export { coreTypes, enhancedTypes, reservedSchemaTypes } from './schemaTypes'
 
 const containerComponents = {
   Form,
@@ -38,11 +38,8 @@ const coreFields = {
   TagInput,
   TagSelect,
 }
-const enhancedFields = {}
-
 export const containers = Object.keys(containerComponents)
 const controls: Record<string, Component> = { ...containerComponents, ...coreFields }
-const reservedSchemaTypes = new Set([...Object.keys(controls), ...Object.keys(enhancedFields)])
 
 export type { ComponentModelConfig } from '../adapter'
 
@@ -59,47 +56,68 @@ export type FormComponentProps<T> = T extends new (...args: any[]) => { $props: 
   ? P
   : Obj
 
-type ComponentSource = 'core' | 'enhanced' | 'custom' | 'legacy'
+export type ComponentSource = 'core' | 'enhanced' | 'custom' | 'auto'
 export interface FormComponentDefinition extends FormComponentConfig {
   source: ComponentSource
 }
 
-const definitions: Record<string, FormComponentDefinition> = Object.fromEntries([
-  ...Object.entries(coreFields).map(([name, component]) => [name, { component, source: 'core' as const }]),
-  ...Object.entries(enhancedFields).map(([name, component]) => [name, { component, source: 'enhanced' as const }]),
-])
+const customDefinitions: Record<string, FormComponentDefinition> = {}
+const autoDefinitions: Record<string, FormComponentDefinition> = {}
 
 function normalizeComponent(component: FormComponent): FormComponentConfig {
   if (typeof component === 'object' && component && 'component' in component) return component as FormComponentConfig
   return { component: component as Component }
 }
 
-/** 注册可直接由 schema type 使用的普通 UI 字段组件。 */
-export function addFormComponent(name: string, config: FormComponent, source: ComponentSource = 'custom') {
-  const definition = { ...normalizeComponent(config), source }
-  definitions[name] = definition
-}
-
-export function configureComponents(components: Record<string, FormComponent | undefined>) {
-  const baseOverrides: Record<string, Component> = {}
+function registerComponents(
+  definitions: Record<string, FormComponentDefinition>,
+  components: Record<string, FormComponent | undefined>,
+  source: 'custom' | 'auto',
+  additionalReservedTypes: Iterable<string> = []
+) {
+  const reservedTypes = new Set([...reservedSchemaTypes, ...additionalReservedTypes])
   Object.entries(components).forEach(([name, config]) => {
     if (!config) return
-    const { component } = normalizeComponent(config)
-    if (isBaseComponentName(name)) baseOverrides[name] = component
-    // 内置增强字段只替换其底层组件，其余名称直接成为 schema type。
-    if (!isBaseComponentName(name) && !reservedSchemaTypes.has(name)) addFormComponent(name, config)
+    if (reservedTypes.has(name)) {
+      throw new Error(`Schema 类型 '${name}' 为 Core 保留类型，不能注册为 ${source} 组件`)
+    }
+    definitions[name] = { ...normalizeComponent(config), source }
   })
-  override(baseOverrides)
 }
 
-export const registerFormComponents = configureComponents
+/** 安装配置中的项目组件，只参与 custom 来源解析。 */
+export function registerCustomComponents(
+  components: Record<string, FormComponent | undefined>,
+  adapterEnhancedTypes: Iterable<string> = []
+) {
+  registerComponents(customDefinitions, components, 'custom', adapterEnhancedTypes)
+}
+
+/** 仅供构建插件生成的虚拟模块登记按需导入组件。 */
+export function registerAutoImportedComponents(components: Record<string, FormComponent | undefined>) {
+  registerComponents(autoDefinitions, components, 'auto')
+}
 
 export function getFormComponent(type: string) {
-  return definitions[type]
+  return customDefinitions[type] || autoDefinitions[type]
 }
 
 export function hasFormComponent(type: string) {
-  return !!definitions[type]
+  return !!getFormComponent(type)
+}
+
+export function getRegisteredFormComponentTypes() {
+  return [...new Set([...Object.keys(customDefinitions), ...Object.keys(autoDefinitions)])]
+}
+
+/** 返回 Schema 类型的解析来源，顺序与 ADR-0002 保持一致。 */
+export function getSchemaTypeSource(
+  type: string,
+  adapterEnhancedTypes: Iterable<string> = []
+): ComponentSource | undefined {
+  if ((coreTypes as readonly string[]).includes(type)) return 'core'
+  if ((enhancedTypes as readonly string[]).includes(type) || new Set(adapterEnhancedTypes).has(type)) return 'enhanced'
+  return customDefinitions[type]?.source || autoDefinitions[type]?.source
 }
 
 export function mapFormComponentModel(definition: FormComponentDefinition, props: Obj) {
@@ -115,16 +133,6 @@ export function mapFormComponentModel(definition: FormComponentDefinition, props
     delete mapped['onUpdate:value']
   }
   return mapped
-}
-
-export function addComponent(name, component) {
-  const customName = `Ext${name}`
-  const legacyComponent = (props) => {
-    return h(component, props)
-  }
-  // 新写法直接使用注册名；Ext 前缀继续兼容已有 schema。
-  addFormComponent(name, legacyComponent, 'legacy')
-  addFormComponent(customName, legacyComponent, 'legacy')
 }
 
 export default controls

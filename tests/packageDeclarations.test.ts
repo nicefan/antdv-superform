@@ -5,6 +5,30 @@ import { describe, expect, it } from 'vitest'
 const workspace = process.cwd()
 
 describe('发布声明', () => {
+  it('具体 UI Adapter 使用独立子路径和产物', async () => {
+    const packageJson = JSON.parse(await readFile(path.join(workspace, 'package.json'), 'utf8'))
+
+    expect(packageJson.exports['./adapter/antdv']).toEqual({
+      types: './lib/antdv.d.ts',
+      import: './lib/adapter/antdv.js',
+    })
+    expect(packageJson.exports['./adapter/element-plus']).toEqual({
+      types: './lib/element-plus.d.ts',
+      import: './lib/adapter/element-plus.js',
+    })
+
+    const rootDeclaration = await readFile(path.join(workspace, 'lib/index.d.ts'), 'utf8')
+    const antdvDeclaration = await readFile(path.join(workspace, 'lib/antdv.d.ts'), 'utf8')
+    const elementPlusDeclaration = await readFile(path.join(workspace, 'lib/element-plus.d.ts'), 'utf8')
+
+    expect(rootDeclaration).not.toContain('antdvAdapter')
+    expect(rootDeclaration).not.toContain('elementPlusAdapter')
+    expect(antdvDeclaration).toContain('antdvAdapter')
+    expect(antdvDeclaration).not.toContain('element-plus')
+    expect(elementPlusDeclaration).toContain('elementPlusAdapter')
+    expect(elementPlusDeclaration).not.toContain('antdv-next')
+  })
+
   it('unplugin 子路径指向汇总后的独立声明', async () => {
     const packageJson = JSON.parse(await readFile(path.join(workspace, 'package.json'), 'utf8'))
     expect(packageJson.exports['./unplugin/vite'].types).toBe('./lib/vite.d.ts')

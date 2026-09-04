@@ -74,6 +74,8 @@
 
 运行 `pnpm dev:upgrade`，访问 `/upgrade-dev/index.html`。该入口与现有 `/index.html` 示例完全分离，只用于升级阶段的人工冒烟和交互验证。
 
+不同 UI 框架的验证环境不得混入根 Vite 配置。Element Plus 使用 `upgrade-dev/element-plus` 下的独立 package、依赖与 Vite 配置，只消费根包已经构建的公开入口。先在根目录完成 build，再进入该目录安装依赖并运行 `pnpm dev`，默认访问 `http://127.0.0.1:5174/`。
+
 每个产生 UI 行为的阶段完成后：
 
 1. 在 `upgrade-dev/pages/` 新增或更新对应页面。

@@ -65,7 +65,8 @@ npm install antdv-superform ant-design-vue
 
 ```ts
 import { createApp } from 'vue'
-import AntdvSuperForm, { antdvAdapter } from 'antdv-superform'
+import AntdvSuperForm from 'antdv-superform'
+import { antdvAdapter } from 'antdv-superform/adapter/antdv'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -306,24 +307,28 @@ options: [
 
 ## 扩展组件
 
-通过插件对象注册业务字段。注册名称不包含 `Ext`，schema 类型需要使用 `Ext` 前缀：
+通过安装配置注册项目字段，注册名就是 schema 类型名：
 
 ```ts
 import AntdvSuperForm from 'antdv-superform'
+import { antdvAdapter } from 'antdv-superform/adapter/antdv'
 import UserPicker from './UserPicker.vue'
 
-AntdvSuperForm.registerComponent('UserPicker', UserPicker)
+app.use(AntdvSuperForm, {
+  adapter: antdvAdapter,
+  components: { UserPicker },
+})
 ```
 
 ```ts
 {
-  type: 'ExtUserPicker',
+  type: 'UserPicker',
   field: 'userId',
   label: '用户',
 }
 ```
 
-还可以通过安装配置的 `components` 替换底层 Ant Design Vue 组件，通过 `setDefaultProps()` 设置组件默认属性。
+项目组件只接收合并后的字段属性和受控值；需要非默认 model 时，可注册 `{ component, model }`。底层 UI 组件由 Adapter 负责，`components` 不再用于替换 Adapter 内部组件。普通 UI 组件也可通过 Vite 自动导入插件按 schema 实际使用情况注册。
 
 ## TypeScript 辅助函数
 

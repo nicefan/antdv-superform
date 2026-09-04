@@ -89,10 +89,6 @@ export type { Locale } from 'antdv-next/dist/locale/index'
 export type { ModalFuncProps, ModalProps } from 'antdv-next/dist/modal/interface'
 export { useConfig as useAntdvConfig } from 'antdv-next/config-provider/context'
 
-/**
- * 可覆盖的底层组件注册表。字段组件统一读取此对象，安装配置中的 components
- * 也只修改此处，避免再维护独立的 components/base 层。
- */
 export type BaseComponentName = string
 export type BaseComponents = Record<BaseComponentName, any>
 
@@ -140,25 +136,7 @@ const baseComponents: BaseComponents = {
   AutoComplete,
 }
 
-const base: BaseComponents = baseComponents
-
-export function isBaseComponentName(name: string): name is BaseComponentName {
-  return name in baseComponents
-}
-
-export function override(comps: Partial<BaseComponents>) {
-  Object.keys(comps).forEach((key) => {
-    const name = key as BaseComponentName
-    if (comps[name]) base[name] = comps[name]
-  })
-}
-
-export function getOverride<T extends { name?: string } | { name?: string }[]>(comp: T): T {
-  if (Array.isArray(comp)) return comp.map(getOverride) as T
-  return ((comp.name && base[comp.name as BaseComponentName]) || comp) as T
-}
-
-export default base
+export default baseComponents
 import {
   AutoComplete,
   Button,

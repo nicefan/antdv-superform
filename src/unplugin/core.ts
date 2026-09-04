@@ -1,9 +1,9 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { createUnplugin } from 'unplugin'
+import { coreTypes, enhancedTypes as builtInEnhancedTypes } from '../components/schemaTypes'
 
-const VIRTUAL_ID = 'virtual:antdv-superform/components'
-const RESOLVED_VIRTUAL_ID = `\0${VIRTUAL_ID}`
+const DEFAULT_VIRTUAL_ID = 'virtual:antdv-superform/components'
 const DEFAULT_EXTENSIONS = ['.vue', '.ts', '.tsx', '.js', '.jsx', '.mts', '.mjs']
 const TYPE_PATTERN = /\btype\s*:\s*(['"`])([A-Z][\w$]*)\1/g
 
@@ -17,6 +17,11 @@ export interface SuperFormComponentResolveResult {
     from?: string
     name: string
   }
+  /** 自动导入组件使用非默认受控值协议时显式声明。 */
+  model?: {
+    prop?: string
+    event?: string
+  }
 }
 
 export type SuperFormComponentResolver = (type: string) => SuperFormComponentResolveResult | undefined | null | false
@@ -26,7 +31,11 @@ export interface SuperFormComponentsOptions {
   dirs?: string[]
   /** 动态 Schema 无法被扫描时显式声明可能使用的 type */
   types?: string[]
+  /** 当前 Adapter 绑定 Core 处理器的真实组件名；这些类型不进入自动导入注册表。 */
+  enhancedTypes?: string[]
   resolvers: SuperFormComponentResolver[]
+  /** 同一 Vite 配置存在多个独立环境时，为虚拟模块设置唯一名称。 */
+  virtualId?: string
   /** 自动注入虚拟注册模块的入口文件，默认 src/main.ts 等常见入口 */
   entry?: string | RegExp | Array<string | RegExp>
   /** 生成的类型声明路径；false 表示不生成 */
@@ -66,6 +75,11 @@ export function scanSchemaTypes(code: string) {
   const types = new Set<string>()
   for (const match of code.matchAll(TYPE_PATTERN)) types.add(match[2])
   return types
+}
+
+export function filterAutoImportTypes(types: Iterable<string>, adapterEnhancedTypes: string[] = []) {
+  const reservedTypes = new Set<string>([...coreTypes, ...builtInEnhancedTypes, ...adapterEnhancedTypes])
+  return new Set([...types].filter((type) => !reservedTypes.has(type)))
 }
 
 function matchesEntry(id: string, entry: SuperFormComponentsOptions['entry'], root: string) {
@@ -131,13 +145,19 @@ export function generateRuntimeModule(
         ? `import ${local} from ${JSON.stringify(result.from)}`
         : `import { ${result.importName} as ${local} } from ${JSON.stringify(result.from)}`
     )
-    fields.push(`${JSON.stringify(type)}: ${local}`)
+    fields.push(
+      result.model
+        ? `${JSON.stringify(type)}: { component: ${local}, model: ${JSON.stringify(result.model)} }`
+        : `${JSON.stringify(type)}: ${local}`
+    )
   }
   return [
-    `import { registerFormComponents as __registerFormComponents } from ${JSON.stringify(superFormImport)}`,
+    `import { registerAutoImportedComponents as __registerAutoImportedComponents } from ${JSON.stringify(
+      superFormImport
+    )}`,
     ...imports,
     `export const components = { ${fields.join(', ')} }`,
-    '__registerFormComponents(components)',
+    '__registerAutoImportedComponents(components)',
   ].join('\n')
 }
 
@@ -185,6 +205,8 @@ export const unplugin = createUnplugin<SuperFormComponentsOptions>((options, met
   let resolved = new Map<string, SuperFormComponentResolveResult>()
   const extensions = new Set(options.extensions || DEFAULT_EXTENSIONS)
   const dtsFile = options.dts === false ? undefined : options.dts || 'superform-components.d.ts'
+  const virtualId = options.virtualId || DEFAULT_VIRTUAL_ID
+  const resolvedVirtualId = `\0${virtualId}`
 
   const scan = async () => {
     const files: string[] = []
@@ -198,7 +220,7 @@ export const unplugin = createUnplugin<SuperFormComponentsOptions>((options, met
         scanSchemaTypes(code).forEach((type) => types.add(type))
       })
     )
-    resolved = resolveComponents(types, options.resolvers)
+    resolved = resolveComponents(filterAutoImportTypes(types, options.enhancedTypes), options.resolvers)
     if (dtsFile) {
       await writeIfChanged(path.resolve(root, dtsFile), generateDts(resolved, options.dtsModule, options.typesImport))
     }
@@ -211,14 +233,14 @@ export const unplugin = createUnplugin<SuperFormComponentsOptions>((options, met
       await scan()
     },
     resolveId(id) {
-      if (id === VIRTUAL_ID) return RESOLVED_VIRTUAL_ID
+      if (id === virtualId) return resolvedVirtualId
     },
     load(id) {
-      if (id === RESOLVED_VIRTUAL_ID) return generateRuntimeModule(resolved, options.superFormImport)
+      if (id === resolvedVirtualId) return generateRuntimeModule(resolved, options.superFormImport)
     },
     transform(code, id) {
-      if (!matchesEntry(id, options.entry, root) || code.includes(VIRTUAL_ID)) return
-      return `import ${JSON.stringify(VIRTUAL_ID)}\n${code}`
+      if (!matchesEntry(id, options.entry, root) || code.includes(virtualId)) return
+      return `import ${JSON.stringify(virtualId)}\n${code}`
     },
     watchChange: meta.framework === 'vite' ? undefined : scan,
     vite: {
@@ -228,7 +250,7 @@ export const unplugin = createUnplugin<SuperFormComponentsOptions>((options, met
       async handleHotUpdate(ctx) {
         if (!extensions.has(path.extname(ctx.file)) || ctx.file.endsWith('.d.ts')) return
         await scan()
-        const virtualModule = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID)
+        const virtualModule = ctx.server.moduleGraph.getModuleById(resolvedVirtualId)
         if (virtualModule) {
           ctx.server.moduleGraph.invalidateModule(virtualModule)
           return [...ctx.modules, virtualModule]

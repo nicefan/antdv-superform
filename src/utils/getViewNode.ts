@@ -1,7 +1,7 @@
 import { globalConfig } from '../config'
 import { ref, unref, h, reactive, inject, computed, mergeProps, toValue } from 'vue'
 import { createButtons } from '../components/buttons'
-import Controls from '../components'
+import Controls, { getFormComponent, mapFormComponentModel } from '../components'
 import { isPlainObject, get as objectGet } from 'lodash-es'
 import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
@@ -138,9 +138,9 @@ export function getViewNode(option, effectData: Obj = {}) {
   if (colRender) {
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)
-      const {
-        attrs: { disabled, ...attrs },
-      } = useControl({ option, effectData: param })
+      const { attrs: controlledAttrs } = useControl({ option, effectData: param })
+      const attrs = { ...controlledAttrs }
+      delete attrs.disabled
 
       const props: Obj = reactive({
         props: { ...attrs, ...vModels },
@@ -180,7 +180,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     return (param: Obj = effectData) => {
       return h('pre', { style: 'white-space: break-spaces;' }, param.value ?? toValue(initialValue))
     }
-  } else if (!content && (colType === 'Upload' || colType.startsWith('Ext'))) {
+  } else if (!content && (colType === 'Upload' || getFormComponent(colType))) {
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)
       const slots = useInnerSlots(option.slots, param, rootSlots)
@@ -188,18 +188,28 @@ export function getViewNode(option, effectData: Obj = {}) {
         attrs: { disabled, ...attrs },
       } = useControl({ option, effectData: param })
 
-      return h(
-        Controls[colType],
-        reactive({
-          option,
-          effectData: param,
-          ...attrs,
-          ...vModels,
-          value: param.value,
-          isView: true,
-          disabled,
-        }),
-        slots
+      if (colType === 'Upload') {
+        return h(
+          Controls.Upload,
+          reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true, disabled }),
+          slots
+        )
+      }
+      const definition = getFormComponent(colType)
+      return (
+        definition &&
+        h(
+          definition.component,
+          reactive(
+            mapFormComponentModel(definition, {
+              ...attrs,
+              ...vModels,
+              value: param.value,
+              disabled,
+            })
+          ),
+          slots
+        )
       )
     }
   } else if (colType === 'Buttons') {

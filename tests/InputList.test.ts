@@ -2,7 +2,8 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import { nextTick, reactive } from 'vue'
 import InputList from '../src/components/InputList.vue'
 import { buildModelsMap, formatRule } from '../src/utils/buildModel'
-import { antdvAdapter, initializeUIAdapter } from '../src/adapter'
+import { initializeUIAdapter } from '../src/adapter'
+import { antdvAdapter } from '../src/adapter/antdv'
 
 beforeAll(() => initializeUIAdapter(antdvAdapter))
 

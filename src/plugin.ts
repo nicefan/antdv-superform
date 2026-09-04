@@ -1,6 +1,6 @@
 import { merge } from 'lodash-es'
-import type { App, Component, VNode } from 'vue'
-import { configureComponents, addComponent, type FormComponent } from './components'
+import type { App } from 'vue'
+import { registerCustomComponents, type FormComponent } from './components'
 import { initializeUIAdapter, type UIAdapter } from './adapter'
 import { globalConfig, type GlobalConfig } from './config'
 
@@ -30,33 +30,21 @@ const install = async (app: App, config: InstallConfig) => {
   const { adapter, components, defaultProps, ..._config } = config
   applyAdapter(adapter)
   Object.assign(globalConfig, _config)
-  components && configureComponents(components)
+  if (components) {
+    const adapterEnhancedTypes = Object.entries(adapter.fields || {})
+      .filter(([, field]) => field?.processors?.length)
+      .map(([name]) => name)
+    registerCustomComponents(components, adapterEnhancedTypes)
+  }
   // 用户默认值始终覆盖当前 Adapter 默认值。
   defaultProps && setDefaultProps(defaultProps)
 }
 
-/** 绑定到组件上的动态属性 */
-interface RegisterParam {
-  option: Obj
-  effectData: Obj
-  /** 当前值 */
-  value?: any
-  [K: string]: any
-}
-function registerComponent(name: string, component: ((param: RegisterParam) => VNode) | Component) {
-  addComponent(name, component)
-}
-/** @deprecated 使用 `registerComponent` */
-function registComponent(name: string, component: ((param: RegisterParam) => VNode) | Component) {
-  registerComponent(name, component)
-}
 function setDefaultProps(props: Obj) {
   merge(globalProps, props)
 }
 export default {
   install,
-  registerComponent,
-  registComponent,
   setDefaultProps,
 }
 export { globalConfig, globalProps }

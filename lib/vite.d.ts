@@ -23,6 +23,11 @@ export declare interface SuperFormComponentResolveResult {
         from?: string;
         name: string;
     };
+    /** 自动导入组件使用非默认受控值协议时显式声明。 */
+    model?: {
+        prop?: string;
+        event?: string;
+    };
 }
 
 export declare interface SuperFormComponentsOptions {
@@ -30,7 +35,11 @@ export declare interface SuperFormComponentsOptions {
     dirs?: string[];
     /** 动态 Schema 无法被扫描时显式声明可能使用的 type */
     types?: string[];
+    /** 当前 Adapter 绑定 Core 处理器的真实组件名；这些类型不进入自动导入注册表。 */
+    enhancedTypes?: string[];
     resolvers: SuperFormComponentResolver[];
+    /** 同一 Vite 配置存在多个独立环境时，为虚拟模块设置唯一名称。 */
+    virtualId?: string;
     /** 自动注入虚拟注册模块的入口文件，默认 src/main.ts 等常见入口 */
     entry?: string | RegExp | Array<string | RegExp>;
     /** 生成的类型声明路径；false 表示不生成 */

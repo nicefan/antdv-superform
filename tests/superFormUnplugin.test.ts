@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   createLibraryResolver,
+  filterAutoImportTypes,
   generateDts,
   generateRuntimeModule,
   scanSchemaTypes,
@@ -33,16 +34,28 @@ describe('SuperForm 组件自动导入插件', () => {
     expect(resolver('Input')).toBeUndefined()
   })
 
+  it('排除 Core、内置增强和当前 Adapter 增强类型', () => {
+    expect([...filterAutoImportTypes(['Form', 'Select', 'ElInput', 'ElRate'], ['ElInput'])]).toEqual(['ElRate'])
+  })
+
   it('生成运行时注册模块和 attrs 类型声明', () => {
     const components = new Map<string, SuperFormComponentResolveResult>([
       ['Rate', { from: 'antdv-next', importName: 'Rate' }],
-      ['Editor', { from: './Editor.vue', importName: 'default' }],
+      [
+        'Editor',
+        {
+          from: './Editor.vue',
+          importName: 'default',
+          model: { prop: 'modelValue', event: 'update:modelValue' },
+        },
+      ],
     ])
 
     const runtime = generateRuntimeModule(components)
     expect(runtime).toContain('import { Rate as __superform_Rate_0 } from "antdv-next"')
     expect(runtime).toContain('import __superform_Editor_1 from "./Editor.vue"')
-    expect(runtime).toContain('__registerFormComponents(components)')
+    expect(runtime).toContain('__registerAutoImportedComponents(components)')
+    expect(runtime).toContain('model: {"prop":"modelValue","event":"update:modelValue"}')
 
     const dts = generateDts(components)
     expect(dts).toContain('interface CustomFormComponentProps')

@@ -15,3 +15,4 @@ ADR 用于保存 Git diff 无法表达的设计理由，防止长期升级中重
 - [ADR-0002：Schema 组件解析顺序](./ADR-0002-Schema组件解析.md)
 - [ADR-0003：保留 compat 作为迁移桥梁（已取代）](./ADR-0003-compat迁移桥梁.md)
 - [ADR-0004：compat 随能力迁移并删除](./ADR-0004-compat随能力迁移并删除.md)
+- [ADR-0005：Adapter 独立构建入口](./ADR-0005-Adapter独立构建入口.md)

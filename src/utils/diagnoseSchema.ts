@@ -1,4 +1,5 @@
 import { diagnoseSchema as diagnose } from '../../shared/schema-diagnostics.mjs'
+import { getRegisteredFormComponentTypes } from '../components'
 
 export type SchemaKind = 'auto' | 'form' | 'table' | 'detail'
 export type SchemaDiagnosticLevel = 'error' | 'warning' | 'suggestion'
@@ -10,7 +11,7 @@ export type SchemaDiagnostic = {
 }
 
 export function diagnoseSchema(schema: Obj, kind: SchemaKind = 'auto'): SchemaDiagnostic[] {
-  return diagnose(schema, kind)
+  return diagnose(schema, kind, getRegisteredFormComponentTypes())
 }
 
 export function reportSchemaDiagnostics(schema: Obj, kind: SchemaKind, name: string) {

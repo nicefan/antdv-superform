@@ -1,17 +1,19 @@
 const BUILTIN_TYPES = new Set([
   'Input',
-  'Textarea',
+  'TextArea',
   'InputNumber',
   'AutoComplete',
   'Select',
   'TreeSelect',
   'DatePicker',
-  'DateRange',
+  'DateRangePicker',
   'TimePicker',
-  'TimeRange',
+  'TimeRangePicker',
   'Switch',
   'Radio',
+  'RadioGroup',
   'Checkbox',
+  'CheckboxGroup',
   'Upload',
   'TagInput',
   'TagSelect',
@@ -20,6 +22,7 @@ const BUILTIN_TYPES = new Set([
   'Hidden',
   'InputSlot',
   'InfoSlot',
+  'Buttons',
   'Form',
   'Group',
   'Fragment',
@@ -51,9 +54,9 @@ const DEPRECATED_KEYS = {
   keepField: '使用 endField',
 }
 
-const INPUT_TYPES = new Set(['Input', 'InputNumber', 'Textarea', 'AutoComplete'])
+const INPUT_TYPES = new Set(['Input', 'InputNumber', 'TextArea', 'AutoComplete'])
 const SELECT_TYPES = new Set(['Select', 'TreeSelect'])
-const OPTION_TYPES = new Set(['Select', 'TreeSelect', 'Radio', 'Checkbox'])
+const OPTION_TYPES = new Set(['Select', 'TreeSelect', 'RadioGroup', 'CheckboxGroup'])
 const CONTAINER_TYPES = new Set([
   'Form',
   'Group',
@@ -103,14 +106,14 @@ function scanDeprecated(value, path, diagnostics, seen) {
   }
 }
 
-function diagnoseItem(item, path, diagnostics, kind) {
+function diagnoseItem(item, path, diagnostics, kind, schemaTypes) {
   if (!isObject(item)) {
     if (typeof item !== 'string') diagnostics.push(issue('error', 'invalid-item', path, '字段配置必须是对象。'))
     return
   }
 
   const { type } = item
-  if (type !== undefined && (typeof type !== 'string' || (!BUILTIN_TYPES.has(type) && !type.startsWith('Ext')))) {
+  if (type !== undefined && (typeof type !== 'string' || !schemaTypes.has(type))) {
     diagnostics.push(issue('error', 'unknown-type', `${path}.type`, `未知字段类型 ${JSON.stringify(type)}。`))
   }
   if (type === undefined && kind !== 'table') {
@@ -160,9 +163,9 @@ function diagnoseItem(item, path, diagnostics, kind) {
     )
   }
 
-  const defaultValueFormat = ['DatePicker', 'DateRange'].includes(type)
+  const defaultValueFormat = ['DatePicker', 'DateRangePicker'].includes(type)
     ? 'YYYY-MM-DD'
-    : ['TimePicker', 'TimeRange'].includes(type)
+    : ['TimePicker', 'TimeRangePicker'].includes(type)
     ? 'HH:mm:ss'
     : undefined
   if (defaultValueFormat && item.attrs?.valueFormat === defaultValueFormat) {
@@ -211,11 +214,12 @@ function diagnoseItem(item, path, diagnostics, kind) {
     }
   }
 
-  if (item.subItems) diagnoseItems(item.subItems, `${path}.subItems`, diagnostics, kind === 'table' ? 'form' : kind)
-  if (item.columns) diagnoseItems(item.columns, `${path}.columns`, diagnostics, 'table')
+  if (item.subItems)
+    diagnoseItems(item.subItems, `${path}.subItems`, diagnostics, kind === 'table' ? 'form' : kind, schemaTypes)
+  if (item.columns) diagnoseItems(item.columns, `${path}.columns`, diagnostics, 'table', schemaTypes)
 }
 
-function diagnoseItems(items, path, diagnostics, kind) {
+function diagnoseItems(items, path, diagnostics, kind, schemaTypes) {
   if (!Array.isArray(items)) {
     diagnostics.push(issue('error', 'invalid-items', path, '必须是数组。'))
     return
@@ -224,7 +228,7 @@ function diagnoseItems(items, path, diagnostics, kind) {
   const fields = new Map()
   items.forEach((item, index) => {
     const itemPath = `${path}[${index}]`
-    diagnoseItem(item, itemPath, diagnostics, kind)
+    diagnoseItem(item, itemPath, diagnostics, kind, schemaTypes)
     if (!isObject(item) || typeof item.field !== 'string' || !item.field) return
     if (fields.has(item.field)) {
       diagnostics.push(
@@ -241,9 +245,10 @@ function diagnoseItems(items, path, diagnostics, kind) {
   })
 }
 
-export function diagnoseSchema(schema, kind = 'auto') {
+export function diagnoseSchema(schema, kind = 'auto', registeredTypes = []) {
   const diagnostics = []
   if (!isObject(schema)) return [issue('error', 'invalid-schema', 'schema', 'schema 必须是对象。')]
+  const schemaTypes = new Set([...BUILTIN_TYPES, ...registeredTypes])
 
   scanDeprecated(schema, 'schema', diagnostics, new WeakSet())
 
@@ -269,7 +274,7 @@ export function diagnoseSchema(schema, kind = 'auto') {
     }
     if (!Array.isArray(schema.columns))
       diagnostics.push(issue('error', 'missing-columns', 'schema.columns', '表格必须配置 columns。'))
-    else diagnoseItems(schema.columns, 'schema.columns', diagnostics, 'table')
+    else diagnoseItems(schema.columns, 'schema.columns', diagnostics, 'table', schemaTypes)
 
     if (schema.immediate === true)
       diagnostics.push(
@@ -305,9 +310,9 @@ export function diagnoseSchema(schema, kind = 'auto') {
         issue('suggestion', 'redundant-default', 'schema.pagination.pageSize', '分页 pageSize 默认是 10，可以省略。')
       )
     if (schema.searchForm?.subItems)
-      diagnoseItems(schema.searchForm.subItems, 'schema.searchForm.subItems', diagnostics, 'form')
+      diagnoseItems(schema.searchForm.subItems, 'schema.searchForm.subItems', diagnostics, 'form', schemaTypes)
     if (schema.rowEditor?.form?.subItems)
-      diagnoseItems(schema.rowEditor.form.subItems, 'schema.rowEditor.form.subItems', diagnostics, 'form')
+      diagnoseItems(schema.rowEditor.form.subItems, 'schema.rowEditor.form.subItems', diagnostics, 'form', schemaTypes)
   } else if (!Array.isArray(schema.subItems)) {
     diagnostics.push(issue('error', 'missing-sub-items', 'schema.subItems', '表单或详情必须配置 subItems。'))
   } else {
@@ -315,7 +320,7 @@ export function diagnoseSchema(schema, kind = 'auto') {
       diagnostics.push(
         issue('suggestion', 'redundant-default', 'schema.attrs.labelAlign', "labelAlign: 'right' 是默认值，可以省略。")
       )
-    diagnoseItems(schema.subItems, 'schema.subItems', diagnostics, resolvedKind)
+    diagnoseItems(schema.subItems, 'schema.subItems', diagnostics, resolvedKind, schemaTypes)
   }
 
   return diagnostics

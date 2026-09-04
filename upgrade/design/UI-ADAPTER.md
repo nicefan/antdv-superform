@@ -66,7 +66,7 @@ fields: {
 - `defaultProps`：覆盖当前适配器提供的默认值；合并顺序需在 P001 定义并补测试。
 - 新版本不保留旧 `components` 底层替换语义，也不增加废弃警告或双路径。
 
-P001 期间旧 `components`、`registerComponent` 和 `registerFormComponents` 行为保持不变，职责分离与旧接口删除在 P005 同时完成。
+P005 已将 `components` 收缩为项目 Schema 组件注册入口，并删除 `registerComponent`、`registerFormComponents`、底层组件替换和 `Ext` 前缀兼容。自动导入组件使用独立的 `auto` 来源注册表。
 
 ## P001 已确认决策
 
@@ -74,7 +74,7 @@ P001 期间旧 `components`、`registerComponent` 和 `registerFormComponents` �
 - 默认值合并顺序为 Adapter 默认值在前、用户 `defaultProps` 在后。
 - Adapter 首次安装后锁定；同一 Adapter 实例可重复安装，不同实例会明确报错。
 - `globalConfig` 视为应用初始化配置，不为同一 Adapter 的重复安装定义缺省项重置语义。
-- Adapter、AntDV Adapter、定义辅助函数、只读访问函数及相关类型从包根公开导出，不公开运行时切换入口。
+- 包根只公开 Adapter 定义辅助函数和相关类型；AntDV、Element Plus 等具体 Adapter 通过各自子路径独立构建和导出，不公开运行时切换入口。
 - 字段标准状态、默认值索引规则、复杂服务 capability 和 `customIcon` 的最终归属，在实际迁移对应能力时确认；P001 不用假设接口锁死后续设计。
 - `locale` 不属于 Core 安装配置；应用在当前 UI 框架的 ConfigProvider 中设置语言。
 

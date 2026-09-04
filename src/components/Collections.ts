@@ -198,9 +198,11 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const slots = useInnerSlots(option.slots, effectData)
-  const definition = getFormComponent(type)
+  const fieldAdapter = !render ? getUIFieldAdapter(type) : undefined
+  const processors = fieldAdapter?.processors
+  // 增强类型必须先于项目组件和自动导入组件解析，避免绕过 Core 处理器。
+  const definition = processors?.length ? undefined : getFormComponent(type)
   const adapterComponent = !render && !definition && resolveUIComponent(type)
-  const processors = adapterComponent ? getUIFieldAdapter(type)?.processors : undefined
   const renderSlot = render
     ? typeof render === 'function'
       ? render
@@ -232,10 +234,8 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
         node = () => renderSlot?.(reactive({ props: allAttrs, ...effectData }))
       } else if (adapterComponent) {
         node = () => h(adapterComponent, reactive(mapUIFieldProps(type, allAttrs, { option, effectData })), slots)
-      } else if (definition?.source === 'custom') {
+      } else if (definition?.source === 'custom' || definition?.source === 'auto') {
         node = () => h(renderSlot, reactive(mapFormComponentModel(definition, allAttrs)), slots)
-      } else if (definition?.source === 'legacy' || type.startsWith('Ext')) {
-        node = () => h(renderSlot, reactive({ option, effectData, ...allAttrs }), slots)
       } else {
         node = () => h(renderSlot, reactive({ option, model, effectData, ...allAttrs }), slots)
       }

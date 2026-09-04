@@ -196,3 +196,30 @@ P005–P007 随各能力迁移逐步建立以下自动检查：
 - 结果：完整构建成功，发布声明 2 项测试通过；生成声明不包含 Core 对 AntDV 类型的直接引用或内部源码路径。
 
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。
+
+### P005：Schema 解析、自动导入与 Element Plus 最小 Adapter
+
+- 执行：`pnpm exec vue-tsc --noEmit`。
+- 结果：类型检查通过，Element Plus 独立 Schema、Adapter 扩展和生成声明均可通过检查。
+- 执行：`pnpm vitest run tests/elementPlusAdapter.test.ts tests/formComponents.test.ts tests/superFormUnplugin.test.ts tests/schemaDiagnostics.test.ts tests/uiDependencyArchitecture.test.ts --threads false --reporter=dot`，并在修正 Table 临时范围白名单后单独复核架构测试。
+- 结果：5 个文件、17 项测试通过；覆盖内部 Element Plus Adapter、四级来源、保留类型、auto model、d.ts、Ext 移除、动态诊断注册和 Core UI 依赖边界。
+- 执行：`pnpm vitest run tests/adapter.test.ts tests/field-compat.test.ts tests/fieldProcessors.test.ts --threads false --reporter=dot`。
+- 结果：3 个文件、29 项回归测试通过。
+- 人工验证：通过真实浏览器打开 `/upgrade-dev/element-plus/index.html`，确认 Form、布局、ElInput、ElSwitch、ElSelect、按需导入 ElRate、Tabs、ButtonGroup、TagInput 和 TagSelect 正常渲染与切换；Adapter 移入 `src/adapter` 后由用户在 5173 服务复核，页面无报错。
+- 执行：P005 范围 ESLint。
+- 结果：0 错误、0 警告。
+- 未执行：build，原因是当前未进入提交阶段。
+
+### P004/P005 回补：Adapter 独立构建入口
+
+- 检查：包根不再导出具体 Adapter；package exports 与 Vite library entry 分别声明 AntDV、Element Plus 子路径。
+- 执行：`pnpm build`。
+- 结果：首次构建发现 external 正则误匹配 Element Plus Adapter 入口；收紧为 npm 模块 ID 后重新构建成功，生成 AntDV、Element Plus 独立 JavaScript 与汇总声明。
+- 执行：`pnpm vitest run tests/packageDeclarations.test.ts tests/elementPlusAdapter.test.ts tests/formComponents.test.ts tests/superFormUnplugin.test.ts tests/schemaDiagnostics.test.ts tests/uiDependencyArchitecture.test.ts tests/adapter.test.ts tests/field-compat.test.ts --threads false --reporter=dot`。
+- 结果：8 个测试文件、41 项测试通过；发布声明、两个 Adapter、组件来源、自动导入、诊断和 UI 依赖边界均通过。
+
+### P005 回补：Element Plus 独立 dev package
+
+- 修改：将 Element Plus 验证的依赖、TypeScript、Vite、自动导入和启动配置移入 `upgrade-dev/element-plus`，并只通过公开 package exports 消费已构建产物。
+- 隔离：根 Vite 配置移除 Element Plus 验证插件实例，根 TypeScript 工程排除该目录。
+- 未执行：按用户要求本轮只修改，未安装独立 package 依赖、未启动服务、未运行测试或 build。

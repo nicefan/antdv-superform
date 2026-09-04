@@ -14,10 +14,10 @@ import {
   TimeRangePicker,
   TreeSelect,
   Upload,
-  override,
 } from '../src/compat/antdv'
 import type { OptionType, UIFormComponentProps } from '../src/exaTypes'
-import { antdvAdapter, getUIFieldAdapter, resolveUIComponent } from '../src/adapter'
+import { getUIFieldAdapter, resolveUIComponent } from '../src/adapter'
+import { antdvAdapter } from '../src/adapter/antdv'
 import plugin from '../src/plugin'
 
 beforeAll(async () => {
@@ -53,18 +53,6 @@ describe('antdv-next 导出边界', () => {
     expect(resolveUIComponent('DateRangePicker')).toBe(AntdvNext.DateRangePicker)
     expect(resolveUIComponent('TextArea')).toBe(AntdvNext.TextArea)
     expect(getUIFieldAdapter('DateRangePicker')?.processors).toEqual(['picker'])
-  })
-
-  it('在同一兼容边界维护底层组件覆盖', () => {
-    const original = base.Input
-    const replacement = { name: 'CustomInput' }
-
-    try {
-      override({ Input: replacement })
-      expect(base.Input).toBe(replacement)
-    } finally {
-      override({ Input: original })
-    }
   })
 })
 

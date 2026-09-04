@@ -46,6 +46,7 @@
     "dist",
     "lib",
     "docs",
+    "upgrade-dev/element-plus",
     "node_modules"
   ]
 }

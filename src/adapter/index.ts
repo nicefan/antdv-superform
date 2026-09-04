@@ -164,7 +164,6 @@ export function renderUIField(type: string, props: Obj, context: Omit<FieldAdapt
   return field?.render ? field.render(component, mapped, { type, ...context }, slots) : h(component, mapped, slots)
 }
 
-export { default as antdvAdapter } from './antdv'
 export type {
   AdapterComponent,
   ActionAdapter,

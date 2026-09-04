@@ -35,9 +35,6 @@ declare type AdapterWidgetTypes = {
     [K in keyof UIFormComponentProps]: UIFormComponentOption<K>
 }
 
-/** 内置 AntDV Adapter 实现；调用方仍需在安装时显式传入。 */
-export declare const antdvAdapter: UIAdapter;
-
 export declare interface AutoCompleteFieldOption {
     options?: SelectOptions
     dictName?: string
@@ -94,8 +91,6 @@ export declare interface ComponentModelConfig {
     event?: string;
 }
 
-declare function configureComponents(components: Record<string, FormComponent | undefined>): void;
-
 export declare interface ContainerAdapter {
     component: AdapterComponent;
     /** 容器存在受控状态时的 UI model 协议。 */
@@ -142,8 +137,6 @@ declare type CustomWidgetTypes = {
 
 declare const _default: {
     install: (app: App<any>, config: InstallConfig) => Promise<void>;
-    registerComponent: typeof registerComponent;
-    registComponent: typeof registComponent;
     setDefaultProps: typeof setDefaultProps;
 };
 export default _default;
@@ -738,26 +731,13 @@ export declare interface RangeFieldOption {
     stringifyValue?: boolean
 }
 
-/** @deprecated 使用 `registerComponent` */
-declare function registComponent(name: string, component: ((param: RegisterParam) => VNode) | Component): void;
-
-declare function registerComponent(name: string, component: ((param: RegisterParam) => VNode) | Component): void;
-
-export declare const registerFormComponents: typeof configureComponents;
+/** 仅供构建插件生成的虚拟模块登记按需导入组件。 */
+export declare function registerAutoImportedComponents(components: Record<string, FormComponent | undefined>): void;
 
 declare type RegisterMethod = {
     (): () => VNode;
     (actions?: Obj, _tableRef?: Obj): void;
 };
-
-/** 绑定到组件上的动态属性 */
-declare interface RegisterParam {
-    option: Obj;
-    effectData: Obj;
-    /** 当前值 */
-    value?: any;
-    [K: string]: any;
-}
 
 declare type ResponsiveValue<T> = Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', T>>
 
@@ -892,11 +872,11 @@ declare function setDefaultProps(props: Obj): void;
 
 export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"link" | "default" | "primary" | "text" | "dashed">;
+    buttonType: PropType<"link" | "default" | "text" | "primary" | "dashed">;
     buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"small" | "middle" | "large">;
+    size: PropType<"small" | "large" | "middle">;
     /** 按钮显示方式icon/label */
-    labelMode: PropType<"label" | "icon" | "both">;
+    labelMode: PropType<"label" | "both" | "icon">;
     hidden: PropType<boolean | Fn<boolean>>;
     /** 无权限时的展示方式，默认隐藏 */
     unauthorized: PropType<"hide" | "disable">;
@@ -909,11 +889,11 @@ export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     [key: string]: any;
 }>, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly< ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"link" | "default" | "primary" | "text" | "dashed">;
+    buttonType: PropType<"link" | "default" | "text" | "primary" | "dashed">;
     buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"small" | "middle" | "large">;
+    size: PropType<"small" | "large" | "middle">;
     /** 按钮显示方式icon/label */
-    labelMode: PropType<"label" | "icon" | "both">;
+    labelMode: PropType<"label" | "both" | "icon">;
     hidden: PropType<boolean | Fn<boolean>>;
     /** 无权限时的展示方式，默认隐藏 */
     unauthorized: PropType<"hide" | "disable">;
@@ -1129,7 +1109,6 @@ export declare type UniWidgetOption =
 | {
     [K in keyof CustomWidgetTypes]: { type: K } & CustomWidgetTypes[K]
 }[keyof CustomWidgetTypes]
-| (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
 
 export declare type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
 
@@ -1299,6 +1278,22 @@ declare type WrapperTypes = {
 }
 
 export { }
+
+
+declare global {
+    namespace SuperFormTypeRegistry {
+        interface UIFormComponentProps {
+            ElInput: FormComponentProps<typeof import('element-plus')['ElInput']> & InputFieldAttrs;
+            ElSelect: FormComponentProps<typeof import('element-plus')['ElSelect']>;
+            ElSwitch: FormComponentProps<typeof import('element-plus')['ElSwitch']> & SwitchFieldAttrs;
+        }
+        interface UIFormComponentOptionExtensions {
+            ElInput: InputFieldOption;
+            ElSelect: SelectFieldOption;
+            ElSwitch: SwitchFieldOption;
+        }
+    }
+}
 
 
 declare global {

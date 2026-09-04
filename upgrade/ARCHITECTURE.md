@@ -33,6 +33,12 @@ Core → antdv-next       禁止
 Core → @antdv-next/icons 禁止
 ```
 
+## 发布边界
+
+- 包根只发布 Core、`defineUIAdapter` 和 Adapter 类型契约，不汇总具体 UI Adapter。
+- AntDV 与 Element Plus Adapter 分别通过 `adapter/antdv`、`adapter/element-plus` 子路径独立构建和发布。
+- 每个具体 Adapter 只依赖自身 UI 框架；UI 框架保持外部依赖，避免未使用的 Adapter 进入消费项目。
+
 ## Schema 组件解析
 
 `schema.type` 按以下顺序解析：
@@ -43,6 +49,8 @@ Core → @antdv-next/icons 禁止
 4. 自动导入解析的普通组件。
 
 纯 UI 组件不因当前使用 AntDV 就自动成为 Core 类型。UI 组件型 `schema.type` 必须使用当前 UI 库的实际组件名，不允许 Core 添加 `TimeRange`、`DateRange`、`Radio` 等别名。没有 SuperForm 语义价值的包装组件应删除，由 Adapter 组件表、自动导入和适配器默认值承接。
+
+切换 Adapter 不保证同一份完整 Schema 原样复用。Core 固定容器和业务语义保持稳定；普通 UI 组件的 `type`、`attrs`、事件和 model 配置应按目标 UI 框架分别编写。多 Adapter 验证只要求各自的 Schema 不需要修改 Core 源码即可运行，不引入跨 UI 框架的组件名或 Props 翻译层。
 
 组件解析后，Adapter 可以通过 `processors` 显式指定 Core 处理器。Core 不根据组件名猜测行为。例如 `DateRangePicker` 和 `TimeRangePicker` 只有配置 `picker` 处理器后才会处理 `endField`；其他 UI 框架可以把自己的真实组件名绑定到同一个处理器。
 

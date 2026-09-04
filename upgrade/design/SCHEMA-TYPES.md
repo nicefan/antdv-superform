@@ -76,4 +76,11 @@ P004 直接建立稳定公共类型和 Adapter 扩展入口。Modal、Table、Up
 
 ## 第二 Adapter 验证
 
-不建立假 Adapter 测试。P005 使用最小 Element Plus Adapter 和独立 dev 环境验证类型扩展、真实组件名、默认/非默认 model、容器映射与按需打包。
+不建立假 Adapter 测试。P005 使用最小 Element Plus Adapter、独立 Schema 和独立 dev 环境，验证类型扩展、真实组件名、默认/非默认 model、容器映射与按需打包。AntDV 与 Element Plus 分别使用符合自身组件名和 Props 协议的 Schema，只共享 Core 固定语义，不要求完整 Schema 原样复用。
+
+## P005 解析实现
+
+- `coreTypes` 固定 Core 容器、复合字段和特殊渲染类型，`enhancedTypes` 固定内置 AntDV Adapter 绑定处理器的真实组件名。
+- 当前 Adapter 的其他增强名称通过 Vite 插件 `enhancedTypes` 显式排除；运行时仍以 Adapter 是否声明 `processors` 判断增强来源。
+- 项目显式组件和自动导入组件分别进入 `custom`、`auto` 注册表，查找时 `custom` 优先于 `auto`，两者都只接收标准字段属性和 model 绑定。
+- 自动导入 resolver 可用 `model` 声明 `modelValue` 等非默认协议；`virtualId` 用于隔离同一 Vite 配置中的多个独立应用入口。

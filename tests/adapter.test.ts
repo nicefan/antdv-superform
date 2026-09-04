@@ -2,7 +2,6 @@ import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { createApp, defineComponent } from 'vue'
 import plugin, { globalProps } from '../src/plugin'
 import {
-  antdvAdapter,
   clearUIFormValidation,
   defineUIAdapter,
   getUIAdapter,
@@ -19,6 +18,7 @@ import {
   resolveUIComponent,
   validateUIForm,
 } from '../src/adapter'
+import { antdvAdapter } from '../src/adapter/antdv'
 import { getFormComponent } from '../src/components'
 
 function createTestApp() {

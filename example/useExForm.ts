@@ -578,12 +578,12 @@ export default function exampleForm() {
         },
         subItems: [
           {
-            type: 'ExtInNumber',
+            type: 'InputNumber',
             label: '自定义组件',
             field: 'de',
             attrs: {
               style: 'width: 100%',
-              placeholder: '自定义组件加Ext前缀',
+              placeholder: '使用当前 Adapter 的真实组件名',
             },
             viewRender: ({ value }) => value,
           },
