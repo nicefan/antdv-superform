@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 export const START_MARKER = '<!-- antdv-superform init-ai:start -->'
 export const END_MARKER = '<!-- antdv-superform init-ai:end -->'
 
-export const MANUAL_PROMPT = `项目使用了 antdv-superform。编写或修改相关代码前，请先阅读 node_modules/antdv-superform/AI_GUIDE.md，并遵循其中的现行 API、默认配置和推荐用法。不要从旧代码推断已废弃 API，也不要重复生成库已提供的默认配置。生成 schema 后，请使用 npx antdv-superform diagnose-schema 或包根导出的 diagnoseSchema() 进行检查。`
+export const MANUAL_PROMPT = `项目使用了 superform。编写或修改相关代码前，请先阅读 node_modules/superform/AI_GUIDE.md，并遵循其中的现行 API、默认配置和推荐用法。不要从旧代码推断已废弃 API，也不要重复生成库已提供的默认配置。生成 schema 后，请使用 npx superform diagnose-schema 或包根导出的 diagnoseSchema() 进行检查。`
 
 const ENTRY_FILES = ['AGENTS.md', 'CLAUDE.md', 'GEMINI.md', '.github/copilot-instructions.md', '.cursorrules']
 
@@ -13,9 +13,9 @@ const guideBlock = (eol) =>
     START_MARKER,
     '## Antdv SuperForm',
     '',
-    '编写或修改使用 `antdv-superform` 的代码前，必须先阅读 `node_modules/antdv-superform/AI_GUIDE.md`，并遵循其中的现行 API、默认配置和推荐用法。不要从旧代码推断已废弃 API，也不要重复生成库已提供的默认配置。',
+    '编写或修改使用 `superform` 的代码前，必须先阅读 `node_modules/superform/AI_GUIDE.md`，并遵循其中的现行 API、默认配置和推荐用法。不要从旧代码推断已废弃 API，也不要重复生成库已提供的默认配置。',
     '',
-    '生成可序列化的 schema 后，可执行 `npx antdv-superform diagnose-schema <schema.json> --type form|table|detail` 检查；代码中的动态 schema 可调用包根导出的 `diagnoseSchema(schema, type)`。',
+    '生成可序列化的 schema 后，可执行 `npx superform diagnose-schema <schema.json> --type form|table|detail` 检查；代码中的动态 schema 可调用包根导出的 `diagnoseSchema(schema, type)`。',
     END_MARKER,
   ].join(eol)
 
@@ -64,7 +64,7 @@ export async function initAi(cwd = process.cwd()) {
     const exists = (await getPathType(file)) === 'file'
     const current = exists
       ? await readFile(file, 'utf8')
-      : '---\ndescription: 使用 antdv-superform 创建或检查表单、表格和详情 schema\nalwaysApply: false\n---\n'
+      : '---\ndescription: 使用 superform 创建或检查表单、表格和详情 schema\nalwaysApply: false\n---\n'
     entries.push({ file, current })
   }
 

@@ -1,50 +1,68 @@
 import { merge } from 'lodash-es'
-import type { App } from 'vue'
-import { registerCustomComponents, type FormComponent } from './components'
+import { registerAdapterFieldTypes, registerCustomComponents, type FormComponent } from './components'
 import { initializeUIAdapter, type UIAdapter } from './adapter'
 import { globalConfig, type GlobalConfig } from './config'
 
 export type AdapterDefaultProps = Record<string, Obj | undefined>
 
-export interface InstallConfig extends GlobalConfig {
-  /** 当前应用使用的 UI 框架适配器；初始化时必须显式传入，之后不可切换。 */
-  adapter: UIAdapter
-  /** UI 组件注册表；非内置名称可直接作为 schema type。 */
-  components?: Record<string, FormComponent | undefined>
+export interface SuperFormConfig extends GlobalConfig {
   /** 组件默认参数 */
   defaultProps?: AdapterDefaultProps
 }
 const globalProps: Obj = {}
+let adapterApplied = false
+let configuredAdapter: UIAdapter | undefined
 
 function applyAdapter(adapter: UIAdapter) {
+  // 重复传入同一实例可以安全复用；切换检查必须先于字段名注册，避免失败后污染保留类型。
+  if (configuredAdapter) {
+    initializeUIAdapter(adapter)
+    return
+  }
+  registerAdapterFieldTypes(Object.keys(adapter.fields || {}))
   initializeUIAdapter(adapter)
-  // 同一 Adapter 重复安装时重新以其默认值为基线，避免用户默认值跨安装残留。
-  Object.keys(globalProps).forEach((name) => delete globalProps[name])
-  merge(globalProps, adapter.defaults || {})
+  configuredAdapter = adapter
+  if (!adapterApplied) {
+    merge(globalProps, adapter.defaults || {})
+    adapterApplied = true
+  }
 }
 
-const install = async (app: App, config: InstallConfig) => {
-  if (!config?.adapter) {
-    throw new Error('初始化 SuperForm 时必须显式传入 adapter')
-  }
-  const { adapter, components, defaultProps, ..._config } = config
+/** 显式初始化应用级 Adapter；首次初始化后不允许切换协议。 */
+export function useAdapter(adapter: UIAdapter) {
   applyAdapter(adapter)
-  Object.assign(globalConfig, _config)
-  if (components) {
-    const adapterEnhancedTypes = Object.entries(adapter.fields || {})
-      .filter(([, field]) => field?.processors?.length)
-      .map(([name]) => name)
-    registerCustomComponents(components, adapterEnhancedTypes)
-  }
-  // 用户默认值始终覆盖当前 Adapter 默认值。
-  defaultProps && setDefaultProps(defaultProps)
+  return adapter
 }
 
-function setDefaultProps(props: Obj) {
+/** 配置 Core 的应用级行为和默认属性。 */
+export function configure(config: SuperFormConfig = {}) {
+  const { defaultProps, ...runtimeConfig } = config
+  Object.assign(globalConfig, runtimeConfig)
+  if (defaultProps) setDefaultProps(defaultProps)
+}
+
+/** 注册一个项目自定义 Schema 组件。 */
+export function registerComponent(name: string, component: FormComponent) {
+  registerCustomComponents({ [name]: component })
+}
+
+/** 注册项目自定义 Schema 组件。 */
+export function registerComponents(components: Record<string, FormComponent | undefined>) {
+  registerCustomComponents(components)
+}
+
+/** 合并组件默认参数。 */
+export function setDefaultProps(props: Obj) {
   merge(globalProps, props)
 }
-export default {
-  install,
+
+const superform = {
+  useAdapter,
+  configure,
+  registerComponent,
+  registerComponents,
   setDefaultProps,
 }
+
 export { globalConfig, globalProps }
+export default superform

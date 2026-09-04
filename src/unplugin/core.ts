@@ -1,9 +1,9 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { createUnplugin } from 'unplugin'
-import { coreTypes, enhancedTypes as builtInEnhancedTypes } from '../components/schemaTypes'
+import { coreTypes } from '../components/schemaTypes'
 
-const DEFAULT_VIRTUAL_ID = 'virtual:antdv-superform/components'
+const DEFAULT_VIRTUAL_ID = 'virtual:superform/components'
 const DEFAULT_EXTENSIONS = ['.vue', '.ts', '.tsx', '.js', '.jsx', '.mts', '.mjs']
 const TYPE_PATTERN = /\btype\s*:\s*(['"`])([A-Z][\w$]*)\1/g
 
@@ -22,16 +22,24 @@ export interface SuperFormComponentResolveResult {
     prop?: string
     event?: string
   }
+  /** 内置 Adapter resolver 使用；表示该组件只提供字段实现，不属于项目组件。 */
+  adapterField?: boolean
+  /** 实际写入 UI 字段注册表的名称，默认使用 Schema type。 */
+  registrationName?: string
 }
 
-export type SuperFormComponentResolver = (type: string) => SuperFormComponentResolveResult | undefined | null | false
+export interface SuperFormComponentResolver {
+  (type: string): SuperFormComponentResolveResult | undefined | null | false
+  /** Adapter 字段由 resolver 标记，生成声明时不重复写入 CustomFormComponentProps。 */
+  adapterFields?: string[]
+}
 
 export interface SuperFormComponentsOptions {
   /** 扫描目录，相对于 root，默认 src */
   dirs?: string[]
   /** 动态 Schema 无法被扫描时显式声明可能使用的 type */
   types?: string[]
-  /** 当前 Adapter 绑定 Core 处理器的真实组件名；这些类型不进入自动导入注册表。 */
+  /** 当前 Adapter 声明的字段名；仅用于避免为这些字段重复生成 Custom 类型声明。 */
   enhancedTypes?: string[]
   resolvers: SuperFormComponentResolver[]
   /** 同一 Vite 配置存在多个独立环境时，为虚拟模块设置唯一名称。 */
@@ -78,8 +86,12 @@ export function scanSchemaTypes(code: string) {
 }
 
 export function filterAutoImportTypes(types: Iterable<string>, adapterEnhancedTypes: string[] = []) {
-  const reservedTypes = new Set<string>([...coreTypes, ...builtInEnhancedTypes, ...adapterEnhancedTypes])
-  return new Set([...types].filter((type) => !reservedTypes.has(type)))
+  void adapterEnhancedTypes
+  const reservedTypes = new Set<string>(coreTypes)
+  const collected = new Set(types)
+  // TagInput 是 Core 复合字段，但其可编辑输入仍由当前 Adapter 提供。
+  if (collected.has('TagInput')) collected.add('Input')
+  return new Set([...collected].filter((type) => !reservedTypes.has(type)))
 }
 
 function matchesEntry(id: string, entry: SuperFormComponentsOptions['entry'], root: string) {
@@ -133,12 +145,17 @@ function identifier(type: string, index: number) {
 
 export function generateRuntimeModule(
   components: Map<string, SuperFormComponentResolveResult>,
-  superFormImport = 'antdv-superform'
+  superFormImport = 'superform'
 ) {
   const imports: string[] = []
   const fields: string[] = []
+  const adapterFields: string[] = []
+  const registeredNames = new Set<string>()
   let index = 0
   for (const [type, result] of components) {
+    const registrationName = result.registrationName || type
+    if (registeredNames.has(registrationName)) continue
+    registeredNames.add(registrationName)
     const local = identifier(type, index++)
     imports.push(
       result.importName === 'default'
@@ -147,9 +164,10 @@ export function generateRuntimeModule(
     )
     fields.push(
       result.model
-        ? `${JSON.stringify(type)}: { component: ${local}, model: ${JSON.stringify(result.model)} }`
-        : `${JSON.stringify(type)}: ${local}`
+        ? `${JSON.stringify(registrationName)}: { component: ${local}, model: ${JSON.stringify(result.model)} }`
+        : `${JSON.stringify(registrationName)}: ${local}`
     )
+    if (result.adapterField) adapterFields.push(JSON.stringify(registrationName))
   }
   return [
     `import { registerAutoImportedComponents as __registerAutoImportedComponents } from ${JSON.stringify(
@@ -157,13 +175,13 @@ export function generateRuntimeModule(
     )}`,
     ...imports,
     `export const components = { ${fields.join(', ')} }`,
-    '__registerAutoImportedComponents(components)',
+    `__registerAutoImportedComponents(components, [${adapterFields.join(', ')}])`,
   ].join('\n')
 }
 
 export function generateDts(
   components: Map<string, SuperFormComponentResolveResult>,
-  dtsModule = 'antdv-superform',
+  dtsModule = 'superform',
   typesImport = dtsModule
 ) {
   const fields = [...components].map(([type, result]) => {
@@ -222,7 +240,15 @@ export const unplugin = createUnplugin<SuperFormComponentsOptions>((options, met
     )
     resolved = resolveComponents(filterAutoImportTypes(types, options.enhancedTypes), options.resolvers)
     if (dtsFile) {
-      await writeIfChanged(path.resolve(root, dtsFile), generateDts(resolved, options.dtsModule, options.typesImport))
+      const adapterFields = new Set<string>([
+        ...(options.enhancedTypes || []),
+        ...options.resolvers.flatMap((resolver) => resolver.adapterFields || []),
+      ])
+      const customComponents = new Map([...resolved].filter(([type]) => !adapterFields.has(type)))
+      await writeIfChanged(
+        path.resolve(root, dtsFile),
+        generateDts(customComponents, options.dtsModule, options.typesImport)
+      )
     }
   }
 

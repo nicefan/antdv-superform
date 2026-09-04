@@ -1,23 +1,23 @@
-# antdv-superform AI 使用指南
+# SuperForm AI 使用指南
 
-> 适用版本：`antdv-superform@0.6.16`  
+> 适用版本：`superform@1.0.0`
 > 技术栈：Vue 3.3+、Ant Design Vue 3.2+、TypeScript
 
-本文只提供使用 `antdv-superform` 编写业务代码时需要遵守的公开 API 和配置规则，不描述组件库内部实现。
+本文只提供使用 `superform` 编写业务代码时需要遵守的公开 API 和配置规则，不描述组件库内部实现。
 
-安装依赖后，可在消费项目根目录执行 `npx antdv-superform init-ai`。命令会检测并安全更新项目已有的 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、Copilot 或 Cursor 指令入口，不覆盖原有约束；没有检测到入口时不会创建文件，而是输出供用户手动添加的提示词。
+安装依赖后，可在消费项目根目录执行 `npx superform init-ai`。命令会检测并安全更新项目已有的 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、Copilot 或 Cursor 指令入口，不覆盖原有约束；没有检测到入口时不会创建文件，而是输出供用户手动添加的提示词。
 
-生成可序列化的 schema 后，使用 `npx antdv-superform diagnose-schema <schema.json> --type form|table|detail` 诊断；包含函数或 Ref 的动态 schema 使用包根导出的 `diagnoseSchema(schema, type)`。安装时配置 `schemaDiagnostics: import.meta.env.DEV`，可在组件接收 schema 时把诊断结果输出到开发控制台。
+生成可序列化的 schema 后，使用 `npx superform diagnose-schema <schema.json> --type form|table|detail` 诊断；包含函数或 Ref 的动态 schema 使用包根导出的 `diagnoseSchema(schema, type)`。通过 `superform.configure({ schemaDiagnostics: import.meta.env.DEV })` 可在组件接收 schema 时把诊断结果输出到开发控制台。
 
 ## 1. 生成代码前必须遵守
 
 1. 只从包根入口导入公共 API：
 
    ```ts
-   import { SuperForm, useForm, SuperTable, useTable } from "antdv-superform";
+   import { SuperForm, useForm, SuperTable, useTable } from "superform";
    ```
 
-   不要从 `antdv-superform/lib/...` 或包内源码路径导入。
+   不要从 `superform/lib/...` 或包内源码路径导入。
 
 2. 先检查消费项目是否有本地安装器或二次封装。若项目已经统一配置字典、权限、上传、默认按钮、组件替换或扩展字段，应沿用该封装，不要在页面重复安装或复制默认配置。
 
@@ -54,7 +54,7 @@ import type {
   RootTableOption,
   ButtonItem,
   ExtButtons,
-} from "antdv-superform";
+} from "superform";
 ```
 
 ## 3. 应用级安装
@@ -63,20 +63,19 @@ import type {
 
 ```ts
 import { createApp } from "vue";
-import superForm from "antdv-superform";
-import { antdvAdapter } from "antdv-superform/adapter/antdv";
+import superForm from "superform";
+import { antdvAdapter } from "superform-antdv";
 import App from "./App.vue";
 
 const app = createApp(App);
-app.use(superForm, { adapter: antdvAdapter });
+superForm.useAdapter(antdvAdapter);
 app.mount("#app");
 ```
 
 常用全局能力：
 
 ```ts
-app.use(superForm, {
-  adapter: antdvAdapter,
+superForm.configure({
   schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => fetchDictionary(name),
   customIcon: (name) => renderProjectIcon(name),
@@ -277,7 +276,7 @@ Descriptions, Table, InputGroup, InputList
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from "antdv-superform";
+import { SuperForm, useForm } from "superform";
 
 const [register, form] = useForm({
   subSpan: 12,
@@ -399,7 +398,7 @@ options: [
 </template>
 
 <script setup lang="ts">
-import { SuperTable, useTable } from "antdv-superform";
+import { SuperTable, useTable } from "superform";
 
 const [register, table] = useTable({
   isContainer: true,
@@ -628,7 +627,7 @@ buttons: {
 ```
 
 ```ts
-import { defineDetail } from "antdv-superform";
+import { defineDetail } from "superform";
 
 const detailSchema = defineDetail({
   mode: "table",
@@ -745,14 +744,10 @@ const importModal = useModalForm(
 ## 12. 扩展字段
 
 ```ts
-import superForm from "antdv-superform";
-import { antdvAdapter } from "antdv-superform/adapter/antdv";
+import superForm from "superform";
 import ModalSelect from "./ModalSelect.vue";
 
-app.use(superForm, {
-  adapter: antdvAdapter,
-  components: { ModalSelect },
-});
+superForm.registerComponents({ ModalSelect });
 ```
 
 使用：

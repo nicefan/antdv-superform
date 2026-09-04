@@ -1,15 +1,17 @@
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { defineComponent } from 'vue'
 import {
   getFormComponent,
   getSchemaTypeSource,
   hasFormComponent,
   mapFormComponentModel,
+  registerAdapterFieldTypes,
   registerAutoImportedComponents,
   registerCustomComponents,
 } from '../src/components'
 
 describe('Schema 项目组件注册', () => {
+  beforeAll(() => registerAdapterFieldTypes(['Select']))
   it('安装配置中的项目组件记录为 custom 来源', () => {
     const UserPicker = defineComponent(() => () => null)
 
@@ -40,7 +42,7 @@ describe('Schema 项目组件注册', () => {
   it('按 core、enhanced、custom、auto 顺序区分解析来源', () => {
     expect(getSchemaTypeSource('Form')).toBe('core')
     expect(getSchemaTypeSource('Select')).toBe('enhanced')
-    expect(getSchemaTypeSource('ElInput', ['ElInput'])).toBe('enhanced')
+    expect(getSchemaTypeSource('AdapterInput', ['AdapterInput'])).toBe('enhanced')
     expect(getSchemaTypeSource('ProjectEditor')).toBe('custom')
     expect(getSchemaTypeSource('ProjectRate')).toBe('auto')
   })
@@ -69,10 +71,11 @@ describe('Schema 项目组件注册', () => {
     })
   })
 
-  it('Core 与内置增强类型不能被项目注册表覆盖', () => {
+  it('项目注册不能覆盖 Core 与 Adapter 字段，自动导入可为 Adapter 字段提供实际组件', () => {
     const Component = defineComponent(() => () => null)
 
     expect(() => registerCustomComponents({ Form: Component })).toThrow("Schema 类型 'Form' 为 Core 保留类型")
-    expect(() => registerAutoImportedComponents({ Select: Component })).toThrow("Schema 类型 'Select' 为 Core 保留类型")
+    expect(() => registerCustomComponents({ Select: Component })).toThrow("Schema 类型 'Select' 为 Core 保留类型")
+    expect(() => registerAutoImportedComponents({ Select: Component })).not.toThrow()
   })
 })

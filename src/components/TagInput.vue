@@ -13,9 +13,7 @@
 <script lang="ts" setup>
 import { computed, nextTick, ref } from 'vue'
 import { getSemanticIconNode, toNode } from '../utils'
-import { mapUIFieldProps, renderUIAction, renderUIPresentation, resolveUIComponent } from '../adapter'
-
-const Input = resolveUIComponent('Input')
+import { mapUIFieldProps, renderUIAction, renderUIPresentation, requireUIComponent } from '../adapter'
 
 defineOptions({
   inheritAttrs: false,
@@ -43,6 +41,8 @@ const emit = defineEmits(['update:value'])
 const inputRef = ref()
 const inputValue = ref('')
 const inputVisible = ref(false)
+// 延迟到组件渲染阶段解析，避免模块加载早于 app.use 初始化 Adapter。
+const Input = computed(() => requireUIComponent('Input'))
 const inputProps = computed(() =>
   mapUIFieldProps(
     'Input',

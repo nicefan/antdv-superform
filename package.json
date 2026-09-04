@@ -1,5 +1,5 @@
 {
-  "name": "antdv-superform",
+  "name": "superform",
   "version": "1.0.0",
   "author": {
     "name": "nicefan",
@@ -19,7 +19,7 @@
     "AI_GUIDE.md"
   ],
   "bin": {
-    "antdv-superform": "bin/antdv-superform.mjs"
+    "superform": "bin/antdv-superform.mjs"
   },
   "type": "module",
   "main": "./lib/index.js",
@@ -34,24 +34,20 @@
       "types": "./lib/vite.d.ts",
       "import": "./lib/unplugin/vite.js"
     },
-    "./adapter/antdv": {
-      "types": "./lib/antdv.d.ts",
-      "import": "./lib/adapter/antdv.js"
-    },
-    "./adapter/element-plus": {
-      "types": "./lib/element-plus.d.ts",
-      "import": "./lib/adapter/element-plus.js"
+    "./sdk": {
+      "types": "./lib/sdk.d.ts",
+      "import": "./lib/sdk.js"
     }
   },
   "scripts": {
-    "dev": "vite",
-    "dev:upgrade": "vite --open /upgrade-dev/index.html",
-    "build": "vue-tsc --noEmit && vite build",
+    "type-check": "vue-tsc --noEmit",
+    "build:core": "vue-tsc --noEmit && vite build",
+    "build": "pnpm run build:core && pnpm --filter superform-antdv build && pnpm --filter superform-element-plus build",
+    "build:examples": "pnpm --filter superform-antdv-example build && pnpm --filter superform-element-plus-example build",
     "test": "vitest run",
     "build:dist": "vite build --mode dist",
     "rollup": "rollup -c",
-    "dts": "vue-tsc --declaration --emitDeclarationOnly",
-    "serve": "vite preview"
+    "dts": "vue-tsc --declaration --emitDeclarationOnly"
   },
   "peerDependencies": {
     "@antdv-next/icons": ">=1.1.1",

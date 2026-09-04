@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest'
-import { createApp, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
+import { Checkbox, Input, Radio, TextArea, TimeRangePicker } from 'antdv-next'
 import plugin, { globalProps } from '../src/plugin'
 import {
   clearUIFormValidation,
@@ -15,29 +16,23 @@ import {
   renderUIPresentation,
   renderUILayout,
   renderUISemanticIcon,
+  registerUIComponents,
   resolveUIComponent,
   validateUIForm,
 } from '../src/adapter'
-import { antdvAdapter } from '../src/adapter/antdv'
+import { antdvAdapter } from '../packages/superform-antdv/src'
 import { getFormComponent } from '../src/components'
 
-function createTestApp() {
-  return createApp(defineComponent(() => () => null))
-}
-
-beforeAll(async () => {
-  await plugin.install(createTestApp(), { adapter: antdvAdapter })
+beforeAll(() => {
+  plugin.useAdapter(antdvAdapter)
+  registerUIComponents({ Checkbox, Input, Radio, TextArea, TimeRangePicker })
 })
 
 describe('UIAdapter', () => {
-  it('安装时必须显式传入 Adapter', async () => {
-    await expect((plugin.install as any)(createTestApp())).rejects.toThrow('必须显式传入 adapter')
-  })
-
   it('显式初始化 AntDV Adapter 后可解析字段组件协议', () => {
     expect(getUIAdapter()).toBe(antdvAdapter)
-    expect(resolveUIComponent('Input')).toBe(antdvAdapter.components.Input)
-    expect(resolveUIComponent('TimeRangePicker')).toBe(antdvAdapter.components.TimeRangePicker)
+    expect(resolveUIComponent('Input')).toBe(Input)
+    expect(resolveUIComponent('TimeRangePicker')).toBe(TimeRangePicker)
     expect(getUIFieldAdapter('Switch')?.model).toEqual({
       prop: 'checked',
       event: 'update:checked',
@@ -45,8 +40,8 @@ describe('UIAdapter', () => {
   })
 
   it('UI 字段只使用真实组件名，不注册旧别名', () => {
-    expect(resolveUIComponent('TextArea')).toBe(antdvAdapter.components.TextArea)
-    expect(resolveUIComponent('TimeRangePicker')).toBe(antdvAdapter.components.TimeRangePicker)
+    expect(resolveUIComponent('TextArea')).toBe(TextArea)
+    expect(resolveUIComponent('TimeRangePicker')).toBe(TimeRangePicker)
     expect(getFormComponent('RadioGroup')).toBeUndefined()
     expect(getFormComponent('CheckboxGroup')).toBeUndefined()
     expect(getUIFieldAdapter('RadioGroup')?.processors).toEqual(['radioGroup'])
@@ -60,7 +55,7 @@ describe('UIAdapter', () => {
 
     const rawCheckedComponents = ['Radio', 'Checkbox']
     rawCheckedComponents.forEach((type) => {
-      expect(resolveUIComponent(type)).toBe(antdvAdapter.components[type])
+      expect(resolveUIComponent(type)).toBe(type === 'Radio' ? Radio : Checkbox)
       expect(getFormComponent(type)).toBeUndefined()
       expect(getUIFieldAdapter(type)?.model).toEqual({
         prop: 'checked',
@@ -105,9 +100,8 @@ describe('UIAdapter', () => {
     expect(onValueChange).toHaveBeenLastCalledWith('root', '根节点')
   })
 
-  it('Adapter 默认值先于用户 defaultProps 合并', async () => {
-    await plugin.install(createTestApp(), {
-      adapter: antdvAdapter,
+  it('Adapter 默认值先于用户 defaultProps 合并', () => {
+    plugin.configure({
       defaultProps: {
         FormItem: { validateFirst: false },
       },
@@ -202,13 +196,13 @@ describe('UIAdapter', () => {
     expect(tag.props).toMatchObject({ closable: true, onClose: onRemove })
   })
 
-  it('初始化后拒绝切换为其他 Adapter', async () => {
+  it('初始化后拒绝切换为其他 Adapter', () => {
     const adapter = defineUIAdapter({
       name: 'other-ui',
       components: { Input: defineComponent(() => () => null) },
     })
 
-    await expect(plugin.install(createTestApp(), { adapter })).rejects.toThrow("不能切换为 'other-ui'")
+    expect(() => plugin.useAdapter(adapter)).toThrow("不能切换为 'other-ui'")
     expect(getUIAdapter()).toBe(antdvAdapter)
   })
 
@@ -221,15 +215,21 @@ describe('UIAdapter', () => {
 
   it('非 AntDV Adapter 可以消费 Core 标准字段和复合组件协议', async () => {
     vi.resetModules()
-    const { defineUIAdapter, initializeUIAdapter, mapUIFieldProps, renderUIAction, renderUIPresentation } =
-      await import('../src/adapter')
+    const {
+      defineUIAdapter,
+      initializeUIAdapter,
+      mapUIFieldProps,
+      registerUIComponents,
+      renderUIAction,
+      renderUIPresentation,
+    } = await import('../src/adapter')
     const Field = defineComponent(() => () => null)
     const adapter = defineUIAdapter({
       name: 'simple-ui',
-      components: { Field },
+      components: {},
       fields: {
         Choice: {
-          component: 'Field',
+          component: 'ChoiceField',
           transformProps(props) {
             const { onValueChange, ...rest } = props
             return { ...rest, onSelect: onValueChange }
@@ -248,6 +248,7 @@ describe('UIAdapter', () => {
       },
     })
     initializeUIAdapter(adapter)
+    registerUIComponents({ ChoiceField: Field })
 
     const onValueChange = vi.fn()
     const mapped = mapUIFieldProps('Choice', { onValueChange }, { option: {}, effectData: {} })

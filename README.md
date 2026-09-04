@@ -50,29 +50,29 @@ Vue 和 Ant Design Vue 是 peer dependencies，需要由消费项目安装。
 ## 安装
 
 ```bash
-pnpm add antdv-superform ant-design-vue
+pnpm add superform superform-antdv antdv-next
 ```
 
 也可以使用 npm：
 
 ```bash
-npm install antdv-superform ant-design-vue
+npm install superform superform-antdv antdv-next
 ```
 
 ## 应用级配置
 
-插件安装用于配置字典、权限、默认属性和底层组件替换，不会代替组件导入。
+Adapter、全局配置和项目组件分别显式注册；无需调用 Vue `app.use()`。
 
 ```ts
 import { createApp } from 'vue'
-import AntdvSuperForm from 'antdv-superform'
-import { antdvAdapter } from 'antdv-superform/adapter/antdv'
+import superform from 'superform'
+import { antdvAdapter } from 'superform-antdv'
 import App from './App.vue'
 
 const app = createApp(App)
 
-app.use(AntdvSuperForm, {
-  adapter: antdvAdapter,
+superform.useAdapter(antdvAdapter)
+superform.configure({
   schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => api.getDictionary(name),
   buttonRoles: () => permissionStore.roles,
@@ -86,7 +86,7 @@ app.use(AntdvSuperForm, {
 app.mount('#app')
 ```
 
-`dictApi(name)` 应返回 `Promise<{ label, value }[]>`。未使用这些全局能力时，可以省略插件安装，直接导入组件和组合函数。
+`dictApi(name)` 应返回 `Promise<{ label, value }[]>`。未使用这些全局能力时可以省略 `configure`，但渲染前仍需初始化 Adapter。
 
 ## 快速开始
 
@@ -98,7 +98,7 @@ app.mount('#app')
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform'
 
 const [register, form] = useForm({
   subSpan: 12,
@@ -159,7 +159,7 @@ await form.getForm()
 </template>
 
 <script setup lang="ts">
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from 'superform'
 
 const [register, table] = useTable({
   immediate: true,
@@ -307,17 +307,13 @@ options: [
 
 ## 扩展组件
 
-通过安装配置注册项目字段，注册名就是 schema 类型名：
+通过 Core API 注册项目字段，注册名就是 schema 类型名：
 
 ```ts
-import AntdvSuperForm from 'antdv-superform'
-import { antdvAdapter } from 'antdv-superform/adapter/antdv'
+import superform from 'superform'
 import UserPicker from './UserPicker.vue'
 
-app.use(AntdvSuperForm, {
-  adapter: antdvAdapter,
-  components: { UserPicker },
-})
+superform.registerComponents({ UserPicker })
 ```
 
 ```ts
@@ -333,7 +329,7 @@ app.use(AntdvSuperForm, {
 ## TypeScript 辅助函数
 
 ```ts
-import { defineForm, defineTable, defineDetail } from 'antdv-superform'
+import { defineForm, defineTable, defineDetail } from 'superform'
 
 const form = defineForm({ /* ... */ })
 const table = defineTable({ /* ... */ })
@@ -347,7 +343,7 @@ const detail = defineDetail({ /* ... */ })
 npm 包会发布 [`AI_GUIDE.md`](AI_GUIDE.md)。安装依赖后，在消费项目根目录执行：
 
 ```bash
-npx antdv-superform init-ai
+npx superform init-ai
 ```
 
 该命令不要求选择 AI 工具，而是检测项目中已经存在的 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、`.github/copilot-instructions.md`、`.cursorrules` 等入口，并向所有已发现的文件添加或更新带标记的指引。若项目已经存在 `.cursor/rules/`，则创建或更新专属的 `antdv-superform.mdc`。现有内容不会被覆盖。
@@ -355,7 +351,7 @@ npx antdv-superform init-ai
 生成的指引要求 AI 在使用组件库前读取：
 
 ```text
-node_modules/antdv-superform/AI_GUIDE.md
+node_modules/superform/AI_GUIDE.md
 ```
 
 重复执行命令不会重复追加内容。若没有检测到任何 AI 入口，命令不会创建文件，而是在终端输出一段可复制的提示词，供用户添加到实际使用工具的项目指令中。升级组件库后无需复制指南，新会话会直接读取当前安装版本附带的文件。
@@ -365,14 +361,14 @@ node_modules/antdv-superform/AI_GUIDE.md
 生成可序列化的 schema 后，AI 或开发者可以直接运行：
 
 ```bash
-npx antdv-superform diagnose-schema schema.json --type table
-npx antdv-superform diagnose-schema schema.json --type form --json
+npx superform diagnose-schema schema.json --type table
+npx superform diagnose-schema schema.json --type form --json
 ```
 
 动态函数、Ref 等无法写入 JSON 的 schema，可以在项目代码或测试中调用公共 API：
 
 ```ts
-import { diagnoseSchema } from 'antdv-superform'
+import { diagnoseSchema } from 'superform'
 
 const diagnostics = diagnoseSchema(schema, 'table')
 ```

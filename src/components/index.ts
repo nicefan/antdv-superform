@@ -12,8 +12,8 @@ import Collapse from './Collapse.vue'
 import Upload from './Upload.vue'
 import TagInput from './TagInput.vue'
 import TagSelect from './TagSelect.vue'
-import type { ComponentModelConfig } from '../adapter'
-import { coreTypes, enhancedTypes, reservedSchemaTypes } from './schemaTypes'
+import { registerUIComponents, type ComponentModelConfig } from '../adapter'
+import { coreTypes, reservedSchemaTypes } from './schemaTypes'
 
 export { ButtonGroup } from './buttons'
 export { default as Collections } from './Collections'
@@ -63,6 +63,7 @@ export interface FormComponentDefinition extends FormComponentConfig {
 
 const customDefinitions: Record<string, FormComponentDefinition> = {}
 const autoDefinitions: Record<string, FormComponentDefinition> = {}
+const adapterFieldTypes = new Set<string>()
 
 function normalizeComponent(component: FormComponent): FormComponentConfig {
   if (typeof component === 'object' && component && 'component' in component) return component as FormComponentConfig
@@ -90,12 +91,35 @@ export function registerCustomComponents(
   components: Record<string, FormComponent | undefined>,
   adapterEnhancedTypes: Iterable<string> = []
 ) {
-  registerComponents(customDefinitions, components, 'custom', adapterEnhancedTypes)
+  registerComponents(customDefinitions, components, 'custom', [...adapterFieldTypes, ...adapterEnhancedTypes])
+}
+
+/** 锁定当前 Adapter 的字段名，并阻止项目组件覆盖 Adapter 协议。 */
+export function registerAdapterFieldTypes(types: Iterable<string>) {
+  const nextTypes = new Set(types)
+  for (const name of Object.keys(customDefinitions)) {
+    if (nextTypes.has(name)) throw new Error(`Schema 类型 '${name}' 已注册为项目组件，不能再由 UIAdapter 接管`)
+  }
+  adapterFieldTypes.clear()
+  nextTypes.forEach((name) => adapterFieldTypes.add(name))
 }
 
 /** 仅供构建插件生成的虚拟模块登记按需导入组件。 */
-export function registerAutoImportedComponents(components: Record<string, FormComponent | undefined>) {
-  registerComponents(autoDefinitions, components, 'auto')
+export function registerAutoImportedComponents(
+  components: Record<string, FormComponent | undefined>,
+  adapterFields: Iterable<string> = []
+) {
+  const uiComponents = Object.fromEntries(
+    Object.entries(components).map(([name, config]) => [name, config && normalizeComponent(config).component])
+  )
+  registerUIComponents(uiComponents)
+
+  // Adapter 字段同样由插件导入，但其 Schema 来源和行为仍归 Adapter，不进入项目组件表。
+  const adapterFieldNames = new Set(adapterFields)
+  const projectComponents = Object.fromEntries(
+    Object.entries(components).filter(([name]) => !reservedSchemaTypes.has(name) && !adapterFieldNames.has(name))
+  )
+  registerComponents(autoDefinitions, projectComponents, 'auto')
 }
 
 export function getFormComponent(type: string) {
@@ -116,7 +140,7 @@ export function getSchemaTypeSource(
   adapterEnhancedTypes: Iterable<string> = []
 ): ComponentSource | undefined {
   if ((coreTypes as readonly string[]).includes(type)) return 'core'
-  if ((enhancedTypes as readonly string[]).includes(type) || new Set(adapterEnhancedTypes).has(type)) return 'enhanced'
+  if (adapterFieldTypes.has(type) || new Set(adapterEnhancedTypes).has(type)) return 'enhanced'
   return customDefinitions[type]?.source || autoDefinitions[type]?.source
 }
 

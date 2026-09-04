@@ -18,9 +18,9 @@ export function reportSchemaDiagnostics(schema: Obj, kind: SchemaKind, name: str
   const diagnostics = diagnoseSchema(schema, kind)
   if (!diagnostics.length) return diagnostics
 
-  console.groupCollapsed?.(`[antdv-superform] ${name} schema 诊断：${diagnostics.length} 项`)
+  console.groupCollapsed?.(`[superform] ${name} schema 诊断：${diagnostics.length} 项`)
   diagnostics.forEach(({ level, path, message }) => {
-    const output = `[antdv-superform] ${path}: ${message}`
+    const output = `[superform] ${path}: ${message}`
     if (level === 'error') console.error(output)
     else if (level === 'warning') console.warn(output)
     else console.info(output)

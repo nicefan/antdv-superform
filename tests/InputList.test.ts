@@ -3,7 +3,7 @@ import { nextTick, reactive } from 'vue'
 import InputList from '../src/components/InputList.vue'
 import { buildModelsMap, formatRule } from '../src/utils/buildModel'
 import { initializeUIAdapter } from '../src/adapter'
-import { antdvAdapter } from '../src/adapter/antdv'
+import { antdvAdapter } from '../packages/superform-antdv/src'
 
 beforeAll(() => initializeUIAdapter(antdvAdapter))
 

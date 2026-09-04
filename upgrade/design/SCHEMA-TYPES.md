@@ -16,7 +16,7 @@
 | UI 输入组件 | 当前 UI 库真实组件名 | AntDV `Input`、`Select`、`TimeRangePicker` | Adapter 类型扩展 |
 | 项目组件 | 自动导入或显式注册名 | `UserPicker` | 应用类型扩展 |
 
-容器名称跨 Adapter 稳定，由 Core 负责子项结构和业务状态，各 Adapter 只映射最终 UI 组件、model 和 slot。普通输入组件不建立 Core 别名，切换 UI 库时允许 Schema 使用不同的真实组件名。
+容器名称跨 Adapter 稳定，由 Core 负责子项结构和业务状态，各 Adapter 只映射最终 UI 组件、model 和 slot。普通输入组件不建立 Core renderer；Element Plus 使用去掉 `El` 前缀的 `Input`、`Select`、`Switch`、`Rate`，再由 Adapter 映射实际组件导出。
 
 具有 SuperForm 业务能力的输入处理器仍可绑定到 UI 真实组件名，例如 AntDV `Select`。该名称是否启用 options、远程搜索等增强，由 Adapter 的 processor 配置决定，不由公共类型根据名称猜测。
 
@@ -42,13 +42,15 @@ export interface CustomFormComponentProps {}
 
 `UniOption` 由上述映射生成可辨识联合。Adapter 通过命名类型注册表的声明合并预先提供全部受支持 UI 组件的 Props；`UIFormComponentOptionExtensions` 将 Select、Range 等组件关联到 Core 增强配置，避免 Core 根据组件名猜测能力。应用或 Vite 插件只扩展项目组件；这些类型映射都不导入运行时组件代码。
 
+多个 Adapter 使用同一 Schema 名称时，按 Adapter 来源分别登记 Props 和增强配置，再将同名字段汇总为联合类型，避免全量构建时发生全局接口重复属性冲突。
+
 Form、FormItem、Row、Col 和 Space 是 Core 固定语义名，它们先接收 Core 稳定 Props，再与当前 Adapter 在 `UIContainerComponentProps` 中声明的 Props 合并。这保留单根组件的自然 attrs 能力，同时不让 Core 类型直接引用具体 UI 包。
 
 Descriptions 和 Tabs 只保留实际被 Core 消费的容器语义，不再继承整个 UI 组件 Props。按钮、Tooltip 和 Dropdown 会落到 Adapter 的语义 Action 渲染器，其有效 UI Props 由 `UIActionComponentProps` 提供类型，Core 不解释具体 UI 属性。
 
 Modal、Table 和 Upload 同样以稳定业务属性为主体，并分别通过 `UIModalComponentProps`、`UITableComponentProps`、`UIUploadComponentProps` 合并 Adapter 属性。类型分层不提前定义运行时 capability，也不改变查询、弹窗和上传流程。
 
-当 UI 组件名与 Core 名称冲突时，Core 固定语义和增强类型优先，UI 扩展必须排除这些保留名称。Vite 插件也必须按 ADR-0002 的解析顺序排除 Core 和增强类型。
+当 UI 组件名与 Core 名称冲突时，Core 固定语义和 Adapter 字段优先，项目组件必须排除这些保留名称。Vite 插件只排除无需运行时导入的 Core 类型；Adapter 字段仍要导入实际组件，但不写入项目组件类型扩展。
 
 ## 默认输入协议
 
@@ -57,7 +59,7 @@ Modal、Table 和 Upload 同样以稳定业务属性为主体，并分别通过 
 类型目录与运行时导入相互独立：
 
 - Adapter 类型声明可以列出全部支持组件。
-- Adapter 运行时只保存必要的协议差异，不导入全部普通 UI 组件。
+- Adapter 运行时保存字段协议差异，并只直接引入 Core 固定 UI 原语，不引入 Schema 字段组件。
 - Vite 插件静态扫描实际使用的 `schema.type` 并生成按需导入。
 - 动态 Schema 无法静态识别时，由插件的 `types` 显式补充。
 
@@ -76,11 +78,11 @@ P004 直接建立稳定公共类型和 Adapter 扩展入口。Modal、Table、Up
 
 ## 第二 Adapter 验证
 
-不建立假 Adapter 测试。P005 使用最小 Element Plus Adapter、独立 Schema 和独立 dev 环境，验证类型扩展、真实组件名、默认/非默认 model、容器映射与按需打包。AntDV 与 Element Plus 分别使用符合自身组件名和 Props 协议的 Schema，只共享 Core 固定语义，不要求完整 Schema 原样复用。
+不建立假 Adapter 测试。P005 使用最小 Element Plus Adapter、独立 Schema 和独立 dev 环境，验证类型扩展、组件名映射、默认/非默认 model、容器映射与按需打包。两个 Adapter 可共享无前缀字段名，但各自保留独立 Props 和运行时组件协议。
 
 ## P005 解析实现
 
-- `coreTypes` 固定 Core 容器、复合字段和特殊渲染类型，`enhancedTypes` 固定内置 AntDV Adapter 绑定处理器的真实组件名。
-- 当前 Adapter 的其他增强名称通过 Vite 插件 `enhancedTypes` 显式排除；运行时仍以 Adapter 是否声明 `processors` 判断增强来源。
+- `coreTypes` 只固定 Core 容器、复合字段和特殊渲染类型；UI 字段名由当前 Adapter 动态登记，Core 不预设 AntDV 字段。
+- 具体 Adapter 的字段声明始终优先于项目组件；是否进入处理器由该字段的 `processors` 决定。
 - 项目显式组件和自动导入组件分别进入 `custom`、`auto` 注册表，查找时 `custom` 优先于 `auto`，两者都只接收标准字段属性和 model 绑定。
-- 自动导入 resolver 可用 `model` 声明 `modelValue` 等非默认协议；`virtualId` 用于隔离同一 Vite 配置中的多个独立应用入口。
+- 自动导入 resolver 只负责定位实际组件；`createAntdvResolver`、`createElementPlusResolver` 分别由两个 Adapter 包的 `/unplugin` 入口提供。项目组件 resolver 仍可用 `model` 声明非默认协议；`virtualId` 用于隔离多个独立入口。

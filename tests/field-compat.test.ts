@@ -1,5 +1,4 @@
 import { beforeAll, describe, expect, expectTypeOf, it } from 'vitest'
-import { createApp, defineComponent } from 'vue'
 import * as AntdvNext from 'antdv-next'
 import base from '../src/compat/antdv'
 import {
@@ -16,12 +15,13 @@ import {
   Upload,
 } from '../src/compat/antdv'
 import type { OptionType, UIFormComponentProps } from '../src/exaTypes'
-import { getUIFieldAdapter, resolveUIComponent } from '../src/adapter'
-import { antdvAdapter } from '../src/adapter/antdv'
+import { getUIFieldAdapter, registerUIComponents, resolveUIComponent } from '../src/adapter'
+import { antdvAdapter } from '../packages/superform-antdv/src'
 import plugin from '../src/plugin'
 
-beforeAll(async () => {
-  await plugin.install(createApp(defineComponent(() => () => null)), { adapter: antdvAdapter })
+beforeAll(() => {
+  plugin.useAdapter(antdvAdapter)
+  registerUIComponents({ DateRangePicker, TextArea })
 })
 
 function expectProps(component: any, names: string[]) {

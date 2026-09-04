@@ -7,7 +7,14 @@ import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
-import { getUIFieldAdapter, mapUIFieldProps, renderUIFormItem, renderUILayout, resolveUIComponent } from '../adapter'
+import {
+  getUIFieldAdapter,
+  mapUIFieldProps,
+  renderUIFormItem,
+  renderUILayout,
+  requireUIComponent,
+  resolveUIComponent,
+} from '../adapter'
 import FieldProcessorRenderer from './processors/FieldProcessorRenderer'
 
 export default defineComponent({
@@ -200,9 +207,9 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
   const slots = useInnerSlots(option.slots, effectData)
   const fieldAdapter = !render ? getUIFieldAdapter(type) : undefined
   const processors = fieldAdapter?.processors
-  // 增强类型必须先于项目组件和自动导入组件解析，避免绕过 Core 处理器。
-  const definition = processors?.length ? undefined : getFormComponent(type)
-  const adapterComponent = !render && !definition && resolveUIComponent(type)
+  // Adapter 声明的字段始终使用其协议；自动导入只提供实际组件，不能绕过字段适配。
+  const definition = fieldAdapter ? undefined : getFormComponent(type)
+  const adapterComponent = !render && fieldAdapter ? requireUIComponent(type) : undefined
   const renderSlot = render
     ? typeof render === 'function'
       ? render

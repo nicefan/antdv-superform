@@ -1,0 +1,22 @@
+{
+  "name": "superform-element-plus-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "superform": "workspace:*",
+    "superform-element-plus": "workspace:*",
+    "element-plus": "^2.14.5",
+    "vue": "~3.5.41"
+  },
+  "devDependencies": {
+    "@types/node": "^18.18.6",
+    "@vitejs/plugin-vue": "^4.4.0",
+    "@vue/compiler-sfc": "~3.5.41",
+    "typescript": "~5.3.3",
+    "vite": "^4.5.0"
+  }
+}

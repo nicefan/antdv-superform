@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-P001 Adapter 生命周期回补、P002/P003 主任务与审查回补、P004 公共 Schema 类型解耦、P005 Schema 解析与自动导入均已完成。P006 待确认开始。
+P005 及 ADR-0006 独立发包回补已完成；P006 尚未开始。
 
 ## 已完成
 
@@ -47,9 +47,16 @@ P001 Adapter 生命周期回补、P002/P003 主任务与审查回补、P004 公�
 - 安装配置已移除未被消费的 `locale`；包根 Adapter 运行时只导出 `defineUIAdapter`，具体 Adapter 使用独立构建子路径。
 - Schema 类型已按 Core、增强、项目显式组件和自动导入组件分源解析，旧注册函数、底层组件覆盖和 `Ext` 前缀兼容已移除。
 - Vite 自动导入会排除 Core 与增强类型，支持动态 `types`、非默认 model、Adapter 增强名称和多虚拟模块隔离。
-- 已在 `src/adapter` 建立 Element Plus 最小 Adapter，并提供独立 Schema 与 dev 入口，覆盖 P005 要求的字段、容器、按钮和复合 Tag 能力。
-- AntDV 与 Element Plus Adapter 分别通过 `adapter/antdv`、`adapter/element-plus` 独立构建和发布，包根不再聚合具体实现。
+- 已在 `packages/superform-element-plus` 建立 Element Plus 最小 Adapter，并提供独立 Schema 与 dev 入口，覆盖 P005 要求的字段、容器、按钮和复合 Tag 能力。
+- AntDV 与 Element Plus Adapter 分别通过 `superform-antdv`、`superform-element-plus` 独立构建和发布，Core 不再聚合具体实现。
 - Element Plus dev 验证已拆为 `upgrade-dev/element-plus` 独立 package，不再复用根 Vite 插件配置或根 TypeScript 工程。
+- 已回补 Adapter 字段边界：固定 UI 原语由 Adapter 直接引入；Input、Select、Rate 等字段只声明支持，实际组件由自动导入或 Adapter 工厂 `components` 注册。
+- AntDV 与 Element Plus 均新增独立 `/full` 全量字段入口；Element Plus Schema 字段统一移除 `El` 前缀。
+- 根包已更名为 `superform`，官方实现拆为 `superform-antdv` 与 `superform-element-plus`，三者位于同一 pnpm monorepo 并独立构建、独立发布。
+- Adapter 默认入口无模块加载副作用；通过 `superform.useAdapter()` 显式初始化，不再依赖 Vue `app.use()`。
+- `configure` 只处理全局行为与默认属性，`registerComponent(s)` 只处理项目自定义 Schema 组件；Adapter 的 `components` 只提供已声明字段的运行时组件。
+- 自动导入 resolver 已分别移入官方 Adapter 的 `/unplugin`；Core 插件只保留扫描、生成和通用 resolver 能力。
+- 两个 example 已成为 workspace 独立 package，分别通过公开包名验证 AntDV 源码联调和 Element Plus 发布产物消费。
 
 ## 下一步
 
@@ -59,6 +66,7 @@ P001 Adapter 生命周期回补、P002/P003 主任务与审查回补、P004 公�
 
 - `compat/antdv.ts` 和 `compat/icons.ts` 仍为未迁移复杂能力提供内部施工支持；对应能力完成时当轮删除，不作为新版兼容层。
 - `components/index.ts` 仍汇总 Core 容器和复合字段，但项目组件与自动导入组件已经使用独立注册表，不再承担 Adapter 底层覆盖职责。
+- 自动导入组件同时可为 Adapter 字段提供运行时实现；Adapter 字段未注册时会明确报错，且不会退回项目组件协议。
 - `globalProps` 仍包含 FormItem、Table 等 AntDV 默认值；字段和容器的实际组件渲染已迁入 Adapter。
 - Adapter 默认值已经成为 `globalProps` 的初始来源；复杂能力的运行时默认值随 P006/P007 capability 迁移。
 - `exaTypes.d.ts` 已清除对 AntDV Props 的直接引用；Adapter 类型目录只产生类型依赖，不触发运行时导入。

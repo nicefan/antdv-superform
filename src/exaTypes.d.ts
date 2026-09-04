@@ -102,46 +102,60 @@ declare global {
   /** Adapter 类型目录的合并入口，带命名空间以避免污染业务全局类型。 */
   namespace SuperFormTypeRegistry {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIContainerComponentProps {}
+    interface UIContainerComponentPropSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIFormComponentProps {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIFormComponentOptionExtensions {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIActionComponentProps {}
+    interface UIFormComponentPropSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UITableComponentProps {}
+    interface UIFormComponentOptionExtensionSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIModalComponentProps {}
+    interface UIActionComponentPropSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIUploadComponentProps {}
+    interface UITableComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIModalComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIUploadComponentPropSources {}
   }
 }
 
 /** Adapter 对 Core 容器和布局节点提供的 UI Props 类型映射。 */
-export type UIContainerComponentProps = SuperFormTypeRegistry.UIContainerComponentProps
+export type UIContainerComponentProps = MergeRegistrySources<
+  SuperFormTypeRegistry.UIContainerComponentPropSources[keyof SuperFormTypeRegistry.UIContainerComponentPropSources]
+>
 
 type UIContainerProps<K extends string> = K extends keyof UIContainerComponentProps
   ? UIContainerComponentProps[K]
   : unknown
 
 /** Adapter 为按钮、提示和下拉交互提供的 UI Props 类型映射。 */
-export type UIActionComponentProps = SuperFormTypeRegistry.UIActionComponentProps
+export type UIActionComponentProps = MergeRegistrySources<
+  SuperFormTypeRegistry.UIActionComponentPropSources[keyof SuperFormTypeRegistry.UIActionComponentPropSources]
+>
 
 type UIActionProps<K extends string> = K extends keyof UIActionComponentProps ? UIActionComponentProps[K] : unknown
 
 /** Adapter 为表格、列和分页提供的 UI Props 类型映射。 */
-export type UITableComponentProps = SuperFormTypeRegistry.UITableComponentProps
+export type UITableComponentProps = MergeRegistrySources<
+  SuperFormTypeRegistry.UITableComponentPropSources[keyof SuperFormTypeRegistry.UITableComponentPropSources]
+>
 
 type UITableProps<K extends string> = K extends keyof UITableComponentProps ? UITableComponentProps[K] : unknown
 
 /** Adapter 为弹窗提供的 UI Props 类型映射。 */
-export type UIModalComponentProps = SuperFormTypeRegistry.UIModalComponentProps
+export type UIModalComponentProps = MergeRegistrySources<
+  SuperFormTypeRegistry.UIModalComponentPropSources[keyof SuperFormTypeRegistry.UIModalComponentPropSources]
+>
 
 type UIModalProps<K extends string> = K extends keyof UIModalComponentProps ? UIModalComponentProps[K] : unknown
 
 /** Adapter 为上传组件提供的 UI Props 类型映射。 */
-export type UIUploadComponentProps = SuperFormTypeRegistry.UIUploadComponentProps
+export type UIUploadComponentProps = MergeRegistrySources<
+  SuperFormTypeRegistry.UIUploadComponentPropSources[keyof SuperFormTypeRegistry.UIUploadComponentPropSources]
+>
 
 type UIUploadProps<K extends string> = K extends keyof UIUploadComponentProps ? UIUploadComponentProps[K] : unknown
 
@@ -371,9 +385,12 @@ type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
 /** SuperForm 稳定的弹窗语义，其他外观和交互属性由 Adapter 补充。 */
 export interface ModalSchemaProps {
   title?: VSlot
+  content?: VSlot
   icon?: string | Component
   buttons?: ExtButtons
   destroyOnClose?: boolean
+  maskClosable?: boolean
+  afterClose?: Fn
   onOk?: Fn
   onCancel?: Fn
 }
@@ -385,6 +402,8 @@ export type ModalOpenOptions = Partial<ExtModalProps> & { data?: Obj }
 export interface TableSchemaProps {
   /** 数据初始化后默认展开的行。 */
   defaultExpandLevel?: number | 'all'
+  /** 当前展开行；Core 会在默认展开层级计算完成后更新该值。 */
+  expandedRowKeys?: (string | number)[]
   /** 显式关闭选择列，具体选择配置由 Adapter 提供。 */
   rowSelection?: false | (UITableProps<'Table'> extends { rowSelection?: infer T } ? T : Obj)
 }
@@ -559,7 +578,7 @@ interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
   buttons?: ExtButtons
 }
 /** 表单元素属性 */
-interface ExtFormItemOption extends ExtBaseOption {
+interface ExtFormItemOption extends ExtBaseOption, RangeFieldOption {
   /** 指定ref对象时，同步变化 */
   value?: any
   /** 指定查看时显示的字段 */
@@ -577,13 +596,25 @@ interface ExtFormItemOption extends ExtBaseOption {
   editable?: boolean | Fn<boolean>
 }
 
-/**
- * Adapter UI 字段的 attrs 类型映射。具体 Adapter 预先声明它支持的真实组件名和 Props。
- */
-export type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps
+type KeysOfUnion<T> = T extends unknown ? keyof T : never
+type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends keyof T ? T[K] : never) : never
+type MergeRegistrySources<T> = {
+  [K in KeysOfUnion<T>]: ValueOfUnion<T, K>
+}
+type UIFormComponentPropSource = SuperFormTypeRegistry.UIFormComponentPropSources[
+  keyof SuperFormTypeRegistry.UIFormComponentPropSources
+]
+type UIFormComponentOptionExtensionSource = SuperFormTypeRegistry.UIFormComponentOptionExtensionSources[
+  keyof SuperFormTypeRegistry.UIFormComponentOptionExtensionSources
+]
+
+/** Adapter UI 字段的 attrs 类型映射；同名字段按 Adapter 来源合并为联合类型。 */
+export type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps &
+  MergeRegistrySources<UIFormComponentPropSource>
 
 /** Adapter 为字段组件关联的 Core 增强配置。 */
-export type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormComponentOptionExtensions
+export type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormComponentOptionExtensions &
+  MergeRegistrySources<UIFormComponentOptionExtensionSource>
 
 /** 自定义 UI 字段的 attrs 类型映射。 */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

@@ -17,11 +17,12 @@ interface UIAdapter {
   name: string
   components: Record<string, Component>
   fields?: Record<string, FieldAdapter | undefined>
+  fieldComponents?: Record<string, Component | undefined>
   defaults?: Record<string, Record<string, unknown>>
 }
 ```
 
-`FieldAdapter` 当前支持实际组件、组件名称、model 协议、字段默认值、属性转换函数和 Core `processors`。Form、Modal、Upload、Table 等复杂服务暂不提前定型，在对应阶段按真实需求扩展。
+`components` 只保存 Core 运行必需、由具体 Adapter 直接引入的固定 UI 原语。`FieldAdapter` 声明字段组件的注册名、model 协议、字段默认值、属性转换函数和 Core `processors`；字段实际组件由自动导入，或由 Adapter 工厂的 `components` 参数写入内部 `fieldComponents`。
 
 ## 字段适配
 
@@ -40,7 +41,7 @@ interface UIAdapter {
 
 AntDV 适配器再转换为 `checked`、`checkedValue`、`unCheckedValue`、`checkedChildren`、`unCheckedChildren` 和 `update:checked`。Core 不保留这些 AntDV 名称。
 
-普通 UI 字段不经过增强器。Schema 直接使用 UI 库真实组件名，例如 `TimeRangePicker`；Adapter 只提供同名组件、model 协议和默认值，不维护 UI 组件别名。
+普通 UI 字段不经过增强器。Schema 使用 Adapter 声明的字段名，例如 `TimeRangePicker`；Adapter 同时声明实际组件注册名、model 协议和默认值，但不直接引入字段组件。Element Plus 可将无前缀字段名映射到 `El*` 导出。
 
 需要 SuperForm 增强的真实 UI 组件由 Adapter 显式指定处理器：
 
@@ -61,26 +62,29 @@ fields: {
 
 ## 用户扩展
 
-- `adapter`：通过 `app.use(superForm, { adapter })` 在初始化时显式指定应用级 UI 框架实现；该参数必传，初始化后不可切换。
-- `components`：目标职责是注册消费项目自己的 Schema 组件；P001 为保持施工连续性暂时留下的底层组件替换行为，由 P005 直接删除。
+- `superform.useAdapter(adapter)`：显式指定应用级 UI 框架实现；初始化后不可切换。
+- `create*Adapter({ components })`：未使用构建插件时，显式提供当前 Adapter 字段所需的实际 UI 组件。
+- `superform.registerComponent(s)`：注册消费项目自己的 Schema 组件，不得覆盖 Core 或当前 Adapter 字段。
+- `superform-antdv/full` 与 `superform-element-plus/full`：提供已附带全量字段组件的 Adapter，可直接传给 `useAdapter`。
+- `superform.configure()`：设置 `dictApi`、`customIcon`、默认按钮和 `defaultProps` 等 Core 全局行为。
 - `defaultProps`：覆盖当前适配器提供的默认值；合并顺序需在 P001 定义并补测试。
 - 新版本不保留旧 `components` 底层替换语义，也不增加废弃警告或双路径。
 
-P005 已将 `components` 收缩为项目 Schema 组件注册入口，并删除 `registerComponent`、`registerFormComponents`、底层组件替换和 `Ext` 前缀兼容。自动导入组件使用独立的 `auto` 来源注册表。
+P005 已将项目组件与 Adapter 字段组件分为两套注册入口，并删除旧底层覆盖和 `Ext` 前缀兼容。自动导入组件使用独立的 `auto` 来源注册表。
 
 ## P001 已确认决策
 
-- Adapter 采用应用级全局实例，必须在安装时显式传入，P001 不支持表单级局部覆盖。
+- Adapter 采用应用级全局实例，必须通过 `useAdapter` 显式传入，P001 不支持表单级局部覆盖。
 - 默认值合并顺序为 Adapter 默认值在前、用户 `defaultProps` 在后。
-- Adapter 首次安装后锁定；同一 Adapter 实例可重复安装，不同实例会明确报错。
+- Adapter 首次初始化后锁定；同一 Adapter 实例可重复使用，不同实例会明确报错。
 - `globalConfig` 视为应用初始化配置，不为同一 Adapter 的重复安装定义缺省项重置语义。
-- 包根只公开 Adapter 定义辅助函数和相关类型；AntDV、Element Plus 等具体 Adapter 通过各自子路径独立构建和导出，不公开运行时切换入口。
+- Core 只公开 Adapter 定义辅助函数和相关类型；AntDV、Element Plus 分别通过独立 npm 包构建和发布。
 - 字段标准状态、默认值索引规则、复杂服务 capability 和 `customIcon` 的最终归属，在实际迁移对应能力时确认；P001 不用假设接口锁死后续设计。
 - `locale` 不属于 Core 安装配置；应用在当前 UI 框架的 ConfigProvider 中设置语言。
 
 ## P002 已确认决策
 
-- 普通 UI 字段由 Adapter 或自动导入解析，不进入 Core 字段注册表。
+- 普通 UI 字段由 Adapter 声明支持、由自动导入或 Adapter 工厂 `components` 提供实际组件，不进入 Core 字段注册表。
 - 字段增强通过 Adapter 的 `processors` 显式组合，不按组件名称推断。
 - Core 处理器负责 options、范围模型、标签和值等通用语义；Adapter 负责 UI 组件、默认属性、受控值协议和特殊渲染。
 - UI 组件的事件参数由 Adapter 归一化后再交给 Core；外部 options/search 回调的并发、取消和异常仍由调用方负责。

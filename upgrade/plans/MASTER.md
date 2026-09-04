@@ -401,7 +401,7 @@ P010 发布与迁移
 
 - 完成：包根移除具体 Adapter 导出；AntDV 与 Element Plus 分别使用 `adapter/antdv`、`adapter/element-plus` 子路径及独立构建入口。
 - 设计影响：新增 ADR-0005；具体 UI 框架依赖保持 external，Element Plus peer dependency 为可选。
-- 兼容性：`antdvAdapter` 不再从包根导入，需改用 `antdv-superform/adapter/antdv`。
+- 兼容性：`antdvAdapter` 不再从 Core 导入，需安装并改用 `superform-antdv`。
 - 验证：提交前 build 成功，生成两个 Adapter 的独立 JavaScript 与汇总声明；发布边界及 P005 定向测试 8 个文件、41 项通过。
 
 ### 验收条件
@@ -451,6 +451,33 @@ P010 发布与迁移
 - 兼容性：旧注册方法、`Ext` 前缀、`components` 底层覆盖及项目组件 Core 内部参数注入已移除，迁移方式见不兼容变化记录。
 - 验证：P005 定向测试 17 项、Adapter/字段回归 29 项和类型检查通过；真实浏览器确认 Element Plus 要求范围均可渲染和切换；未执行 build，因当前未进入提交阶段。
 - 后续：P006 待确认开始；Upload、Modal、消息、预览和 Table 仍在架构测试的显式临时范围内使用 compat。
+
+#### 2026-09-04：回补字段支持声明与组件引入边界
+
+- [x] `adapter.components` 收缩为 Core 固定 UI 原语，Schema 字段不再由具体 Adapter 直接引入。
+- [x] AntDV 与 Element Plus Adapter 补充 Rate 字段声明和类型支持。
+- [x] 自动导入为 Adapter 字段注册实际组件，内置 resolver 覆盖各 Adapter 已声明字段。
+- [x] Adapter 工厂新增 `components`，支持不使用构建插件时手动注册字段组件。
+- [x] Adapter 字段优先应用自身 model、processor 和转换；缺少实际组件时明确报错。
+- 验证：按用户要求本轮只修改，未执行测试、typecheck 或 build。
+
+#### 2026-09-04：回补全量字段入口与 Element Plus Schema 命名
+
+- [x] 为 AntDV、Element Plus 增加独立 `/full` 构建和发布子入口。
+- [x] 全量入口导出已附带完整字段组件的 Adapter，并保留字段注册表命名导出。
+- [x] Element Plus Schema 字段统一为 `Input`、`Select`、`Switch`、`Rate`，resolver 映射到实际 `El*` 导出。
+- [x] Adapter 字段类型按来源登记，同名字段 Props 汇总为联合类型。
+- 验证：按用户要求本轮只修改，未执行测试、typecheck 或 build。
+
+#### 2026-09-04：回补 Core 与官方 Adapter 独立发包
+
+- [x] 根包更名为 `superform` 并建立 pnpm monorepo。
+- [x] 建立 `superform-antdv`、`superform-element-plus` 独立 package、构建与声明入口。
+- [x] Adapter 通过 peer dependency 共享 Core，禁止构建重复 Core 实例。
+- [x] 收敛 `useAdapter/configure/registerComponents` 运行时 API，并更新自动导入注册入口。
+- [x] 更新两个独立 example 的公开包消费路径。
+- [x] 完成 Core、Adapter、example 的测试、类型检查、构建和运行验证。
+- [x] 更新迁移、状态和验证记录后提交并推送。
 
 #### 2026-09-04：回补 Element Plus 独立发布入口
 

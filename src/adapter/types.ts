@@ -79,8 +79,8 @@ export interface FieldAdapterContext {
 }
 
 export interface FieldAdapter {
-  /** 实际组件或 adapter.components 中的组件名称 */
-  component: AdapterComponent
+  /** 初始化或自动导入时使用的组件注册名；Adapter 本身不直接持有字段组件。 */
+  component: string
   /** 当前 UI 框架使用的受控值协议 */
   model?: ComponentModelConfig
   /** 该字段在当前 UI 框架下的默认属性 */
@@ -96,10 +96,12 @@ export interface FieldAdapter {
 export interface UIAdapter {
   /** 用于诊断和调试的适配器名称 */
   name: string
-  /** 当前 UI 框架提供的基础组件 */
+  /** Core 运行必需、由 Adapter 直接引入的固定 UI 原语；不包含 Schema 字段组件。 */
   components: Record<string, Component>
-  /** SuperForm 增强字段到 UI 组件协议的映射 */
+  /** Adapter 支持的 Schema 字段及其组件协议；这里只声明能力，不负责引入字段组件。 */
   fields?: Record<string, FieldAdapter | undefined>
+  /** 初始化 Adapter 时一并注册的字段组件；通常只由各 Adapter 的 full 入口提供。 */
+  fieldComponents?: Record<string, Component | undefined>
   /** 表单容器、表单项及实例协议。 */
   form?: FormAdapter
   /** 栅格和空间容器协议。 */

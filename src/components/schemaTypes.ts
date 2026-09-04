@@ -23,19 +23,7 @@ export const coreTypes = [
   'TagSelect',
 ] as const
 
-/** 内置 AntDV Adapter 已绑定 Core 处理器的真实组件名。 */
-export const enhancedTypes = [
-  'Input',
-  'AutoComplete',
-  'Select',
-  'RadioGroup',
-  'CheckboxGroup',
-  'DatePicker',
-  'DateRangePicker',
-  'TimePicker',
-  'TimeRangePicker',
-  'TreeSelect',
-  'Switch',
-] as const
+/** 官方和第三方 Adapter 的字段由各自包声明，Core 不预设 UI 字段名。 */
+export const enhancedTypes = [] as const
 
-export const reservedSchemaTypes = new Set<string>([...coreTypes, ...enhancedTypes])
+export const reservedSchemaTypes = new Set<string>(coreTypes)

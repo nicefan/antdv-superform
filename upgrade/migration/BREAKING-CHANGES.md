@@ -55,7 +55,7 @@
 
 ### 现在
 
-- 安装配置 `components` 只注册项目 Schema 组件，注册名就是 `schema.type`。
+- `superform.registerComponent(s)` 只注册项目 Schema 组件，注册名就是 `schema.type`。
 - Vite 自动导入组件进入独立 `auto` 来源；Core、增强、`custom`、`auto` 按 ADR-0002 的优先级解析。
 - 项目组件和自动导入组件只接收合并后的字段属性及声明的 model 绑定，不注入 `option`、`model`、`effectData`。
 - Vite 插件排除 Core 和增强类型；动态 Schema 继续使用 `types`，非默认 model 使用 resolver 的 `model`，多应用配置可用 `virtualId` 隔离虚拟模块。
@@ -67,14 +67,11 @@
 ### 迁移
 
 ```ts
-app.use(superForm, {
-  adapter: antdvAdapter,
-  components: {
-    UserPicker,
-    MarkdownEditor: {
-      component: MarkdownEditor,
-      model: { prop: 'modelValue', event: 'update:modelValue' },
-    },
+superform.registerComponents({
+  UserPicker,
+  MarkdownEditor: {
+    component: MarkdownEditor,
+    model: { prop: 'modelValue', event: 'update:modelValue' },
   },
 })
 ```
@@ -84,6 +81,33 @@ Schema 直接使用 `type: 'UserPicker'` 或 `type: 'MarkdownEditor'`。需要�
 ### 兼容策略
 
 旧注册方法、底层覆盖和 `Ext` 前缀解析直接移除，不提供废弃期或双路径。分离来源可以保证增强处理器不会被项目注册或自动导入意外绕过。
+
+### Adapter 字段组件改为按需注册
+
+Adapter 现在只直接引入 Form、布局、容器、Action、Presentation 等 Core 固定 UI 原语。Input、Select、Switch、Rate 等 Schema 字段由 Adapter 声明支持和适配协议，但实际组件必须通过 Vite 插件自动导入，或由 Adapter 工厂显式提供：
+
+```ts
+import superform from 'superform'
+import { createAntdvAdapter } from 'superform-antdv'
+import { Input, Rate, Select } from 'antdv-next'
+
+superform.useAdapter(createAntdvAdapter({
+  components: { Input, Select, Rate },
+}))
+```
+
+Vite 用户可从 `superform-antdv/unplugin` 或 `superform-element-plus/unplugin` 使用对应 resolver。Adapter 已声明但未注册的字段会在运行时明确报错。项目自定义组件改用 `superform.registerComponent(s)`，不会与 Adapter 的 `components` 混用。
+
+需要快速全量引入时，可使用独立入口：
+
+```ts
+import superform from 'superform'
+import { elementPlusFull } from 'superform-element-plus/full'
+
+superform.useAdapter(elementPlusFull)
+```
+
+Element Plus Schema 名称不携带组件库导出的 `El` 前缀：`ElInput`、`ElSelect`、`ElSwitch`、`ElRate` 分别改为 `Input`、`Select`、`Switch`、`Rate`。
 
 ## UI 组件 Schema 类型使用真实组件名
 
@@ -137,7 +161,7 @@ Checkbox  → CheckboxGroup
 
 不保留旧名称兼容。项目已经开放 UI 组件库自由绑定，保留与实际组件不一致的别名会破坏跨 UI 框架的一致解析规则。
 
-## 安装时必须显式传入 Adapter
+## 必须通过 Core 显式初始化 Adapter
 
 阶段：P001 回补
 状态：已实施
@@ -153,22 +177,24 @@ app.use(superForm)
 
 ### 现在
 
-安装时必须显式传入 Adapter，首次初始化后不能切换为其他 Adapter。
+Core、AntDV Adapter 和 Element Plus Adapter 已拆成独立 npm 包。必须调用 `superform.useAdapter()` 显式初始化，首次初始化后不能切换为其他 Adapter；不再通过 Vue `app.use()` 承担这项职责。
 
 ```ts
-import superForm from 'antdv-superform'
-import { antdvAdapter } from 'antdv-superform/adapter/antdv'
+import superform from 'superform'
+import { antdvAdapter } from 'superform-antdv'
 
-app.use(superForm, { adapter: antdvAdapter })
+superform.useAdapter(antdvAdapter)
+superform.configure({ defaultProps, dictApi })
+superform.registerComponents({ UserSelect })
 ```
 
 ### 影响
 
-所有省略 `adapter` 的应用安装代码都需要调整。运行期间依赖重新安装插件切换 UI 框架的代码将明确报错。
+应用需要同时安装 `superform` 和一个 Adapter 包。原 `app.use(superForm, options)` 需拆为 `useAdapter`、`configure` 和按需的 `registerComponent(s)`；运行期间切换 UI 框架会明确报错。
 
 ### 迁移
 
-根据项目实际使用的 UI 框架导入对应 Adapter，并在 `app.use` 初始化配置中显式传入。
+根据项目实际使用的 UI 框架安装对应 Adapter 包并显式调用 `useAdapter`。Vue App 只需正常挂载，无需注册空插件。
 
 ### 兼容策略
 
@@ -386,14 +412,14 @@ Descriptions 和 Table Tabs 分别继承完整 `DescriptionsProps` 和 `TabsProp
 
 ### 现在
 
-- 安装配置只保留 Core 全局配置、`adapter`、`components` 和 `defaultProps`；`defaultProps` 使用框架无关的 `AdapterDefaultProps`。
-- 包根只导出 `defineUIAdapter` 和 Adapter capability 类型。具体 Adapter 使用独立子路径与构建产物；Core 调用的渲染、解析、映射与实例函数仍保留在内部模块，不再构成公开 API。
+- `configure` 只保留 Core 全局配置和 `defaultProps`；`defaultProps` 使用框架无关的 `AdapterDefaultProps`。Adapter 和项目组件分别使用 `useAdapter`、`registerComponent(s)`。
+- Core 包只导出 `defineUIAdapter` 和 Adapter capability 类型。具体 Adapter 使用独立 npm 包与构建产物；Core 调用的渲染、解析、映射与实例函数仍保留在内部模块，不再构成公开 API。
 
 ### 影响与迁移
 
 - 移除安装配置中的 `locale`。AntDV 项目应在 `ConfigProvider` 中设置 locale，其他 UI 框架使用各自的全局化入口。
 - 如果业务代码曾从包根调用上述底层函数，应改为实现 `UIAdapter` capability，由 SuperForm Core 调用。
-- `antdvAdapter` 改从 `antdv-superform/adapter/antdv` 导入；Element Plus 使用 `antdv-superform/adapter/element-plus`。
+- `antdvAdapter` 改从 `superform-antdv` 导入；Element Plus 使用 `superform-element-plus`。
 
 ### 兼容策略
 

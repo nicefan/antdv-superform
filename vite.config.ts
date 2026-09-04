@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import viteDts from 'vite-plugin-dts'
-import SuperFormComponents, { createLibraryResolver } from './src/unplugin/vite'
 // import ViteComponents, { AntDesignVueResolver } from 'vite-plugin-components'
 // import svgSprite from 'vite-plugin-svg-sprite'
 // import resolvePlugin from '@rollup/plugin-node-resolve'
@@ -16,7 +15,7 @@ export default defineConfig(({ mode }) =>
         build: {
           lib: {
             entry: resolve(__dirname, 'scripts/repl-entry.ts'),
-            name: 'antdv-superform',
+            name: 'superform',
             formats: ['es'],
           },
           outDir: 'dist',
@@ -42,11 +41,6 @@ export default defineConfig(({ mode }) =>
         plugins: [vue(), vueJsx()],
       }
     : {
-        resolve: {},
-        server: {
-          host: '127.0.0.1',
-          open: '/index.html',
-        },
         test: {
           deps: {
             inline: [/antdv-next/, /@v-c/],
@@ -57,19 +51,15 @@ export default defineConfig(({ mode }) =>
             entry: {
               index: resolve(__dirname, 'src/index.ts'),
               'unplugin/vite': resolve(__dirname, 'src/unplugin/vite.ts'),
-              'adapter/antdv': resolve(__dirname, 'src/adapter/antdv.ts'),
-              'adapter/element-plus': resolve(__dirname, 'src/adapter/element-plus.ts'),
+              sdk: resolve(__dirname, 'src/sdk.ts'),
             },
             formats: ['es'],
-            name: 'MyLib',
+            name: 'superform',
             fileName: (_, entryName) => `${entryName}.js`,
           },
           outDir: 'lib',
           minify: false,
           rollupOptions: {
-            // input: {
-            //   main: resolve(__dirname, 'example/index.html'),
-            // },
             external: [
               'vue',
               'unplugin',
@@ -98,15 +88,6 @@ export default defineConfig(({ mode }) =>
           target: 'es2020',
         },
         plugins: [
-          SuperFormComponents({
-            dirs: ['example'],
-            entry: 'example/main.ts',
-            dts: 'example/superform-components.d.ts',
-            superFormImport: '/src/components/index.ts',
-            dtsModule: '../src/exaTypes',
-            typesImport: '../src',
-            resolvers: [createLibraryResolver({ from: 'antdv-next', components: ['Rate'] })],
-          }),
           vue(),
           vueJsx(),
           viteDts({
@@ -121,13 +102,13 @@ export default defineConfig(({ mode }) =>
             async afterBuild() {
               // 汇总过程需要代理声明作为入口，结束后只保留 package exports 指向的汇总声明。
               await Promise.all(
-                ['unplugin/vite', 'adapter/antdv', 'adapter/element-plus'].map((name) =>
+                ['unplugin/vite'].map((name) =>
                   rm(resolve(__dirname, `lib/${name}.d.ts`), { force: true })
                 )
               )
               // API Extractor 在 Windows 下输出 CRLF，统一为仓库使用的 LF。
               await Promise.all(
-                ['index', 'vite', 'antdv', 'element-plus'].map(async (name) => {
+                ['index', 'vite', 'sdk'].map(async (name) => {
                   const file = resolve(__dirname, `lib/${name}.d.ts`)
                   const content = await readFile(file, 'utf8')
                   await writeFile(file, content.replace(/\r\n/g, '\n'), 'utf8')

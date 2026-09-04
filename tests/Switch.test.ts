@@ -1,14 +1,12 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { createApp, defineComponent, effectScope, nextTick, ref } from 'vue'
+import { effectScope, nextTick, ref } from 'vue'
 import { buildModelsMap } from '../src/utils/buildModel'
 import { resolveFieldProcessors } from '../src/processors'
 import { mapUIFieldProps } from '../src/adapter'
-import { antdvAdapter } from '../src/adapter/antdv'
+import { antdvAdapter } from '../packages/superform-antdv/src'
 import plugin from '../src/plugin'
 
-beforeAll(async () => {
-  await plugin.install(createApp(defineComponent(() => () => null)), { adapter: antdvAdapter })
-})
+beforeAll(() => plugin.useAdapter(antdvAdapter))
 
 function setupSwitch(option: Obj, value?: string | number | boolean, attrs: Obj = {}) {
   const parent: Obj = value === undefined ? {} : { [option.field]: value }

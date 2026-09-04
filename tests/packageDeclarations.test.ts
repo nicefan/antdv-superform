@@ -5,21 +5,42 @@ import { describe, expect, it } from 'vitest'
 const workspace = process.cwd()
 
 describe('发布声明', () => {
-  it('具体 UI Adapter 使用独立子路径和产物', async () => {
+  it('具体 UI Adapter 使用独立包和产物', async () => {
     const packageJson = JSON.parse(await readFile(path.join(workspace, 'package.json'), 'utf8'))
+    const antdvPackage = JSON.parse(
+      await readFile(path.join(workspace, 'packages/superform-antdv/package.json'), 'utf8')
+    )
+    const elementPlusPackage = JSON.parse(
+      await readFile(path.join(workspace, 'packages/superform-element-plus/package.json'), 'utf8')
+    )
 
-    expect(packageJson.exports['./adapter/antdv']).toEqual({
-      types: './lib/antdv.d.ts',
-      import: './lib/adapter/antdv.js',
-    })
-    expect(packageJson.exports['./adapter/element-plus']).toEqual({
-      types: './lib/element-plus.d.ts',
-      import: './lib/adapter/element-plus.js',
-    })
+    expect(packageJson.name).toBe('superform')
+    expect(packageJson.exports).not.toHaveProperty('./adapter/antdv')
+    expect(packageJson.exports).not.toHaveProperty('./adapter/element-plus')
+    for (const adapterPackage of [antdvPackage, elementPlusPackage]) {
+      expect(adapterPackage.exports['.']).toEqual({ types: './lib/index.d.ts', import: './lib/index.js' })
+      expect(adapterPackage.exports['./full']).toEqual({ types: './lib/full.d.ts', import: './lib/full.js' })
+      expect(adapterPackage.exports['./unplugin']).toEqual({
+        types: './lib/unplugin.d.ts',
+        import: './lib/unplugin.js',
+      })
+      expect(adapterPackage.peerDependencies.superform).toBeDefined()
+    }
 
     const rootDeclaration = await readFile(path.join(workspace, 'lib/index.d.ts'), 'utf8')
-    const antdvDeclaration = await readFile(path.join(workspace, 'lib/antdv.d.ts'), 'utf8')
-    const elementPlusDeclaration = await readFile(path.join(workspace, 'lib/element-plus.d.ts'), 'utf8')
+    const antdvDeclaration = await readFile(path.join(workspace, 'packages/superform-antdv/lib/index.d.ts'), 'utf8')
+    const elementPlusDeclaration = await readFile(
+      path.join(workspace, 'packages/superform-element-plus/lib/index.d.ts'),
+      'utf8'
+    )
+    const antdvFullDeclaration = await readFile(
+      path.join(workspace, 'packages/superform-antdv/lib/full.d.ts'),
+      'utf8'
+    )
+    const elementPlusFullDeclaration = await readFile(
+      path.join(workspace, 'packages/superform-element-plus/lib/full.d.ts'),
+      'utf8'
+    )
 
     expect(rootDeclaration).not.toContain('antdvAdapter')
     expect(rootDeclaration).not.toContain('elementPlusAdapter')
@@ -27,6 +48,8 @@ describe('发布声明', () => {
     expect(antdvDeclaration).not.toContain('element-plus')
     expect(elementPlusDeclaration).toContain('elementPlusAdapter')
     expect(elementPlusDeclaration).not.toContain('antdv-next')
+    expect(antdvFullDeclaration).toContain('antdvUIComponents')
+    expect(elementPlusFullDeclaration).toContain('elementPlusUIComponents')
   })
 
   it('unplugin 子路径指向汇总后的独立声明', async () => {
@@ -54,7 +77,7 @@ describe('发布声明', () => {
     expect(declaration).toContain('export declare type UIUploadComponentProps')
     expect(declaration).toContain('export declare interface FormSchemaProps')
     expect(declaration).toContain('export declare interface LayoutColProps')
-    expect(declaration).toContain('export declare interface InstallConfig')
+    expect(declaration).toContain('export declare interface SuperFormConfig')
     expect(declaration).not.toContain('export declare function getUIAdapter')
     expect(declaration).not.toContain('export declare function renderUI')
     expect(declaration).not.toContain('export declare function resolveUI')

@@ -1,6 +1,5 @@
 /// <reference types="../types" />
 
-import { App } from 'vue';
 import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
@@ -91,6 +90,9 @@ export declare interface ComponentModelConfig {
     event?: string;
 }
 
+/** 配置 Core 的应用级行为和默认属性。 */
+export declare function configure(config?: SuperFormConfig): void;
+
 export declare interface ContainerAdapter {
     component: AdapterComponent;
     /** 容器存在受控状态时的 UI model 协议。 */
@@ -135,12 +137,6 @@ declare type CustomWidgetTypes = {
     }
 }
 
-declare const _default: {
-    install: (app: App<any>, config: InstallConfig) => Promise<void>;
-    setDefaultProps: typeof setDefaultProps;
-};
-export default _default;
-
 declare type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
 
 export declare interface DefaultOptionType {
@@ -157,6 +153,7 @@ export declare function defineForm<T extends keyof OptionType = 'Form'>(option: 
 
 export declare function defineTable(option: RootTableOption): RootTableOption;
 
+/** 保留 Adapter 的具体类型并提供统一定义入口。 */
 export declare function defineUIAdapter<T extends UIAdapter>(adapter: T): T;
 
 declare type DetailOption = ExtDescriptionsOption | ExtFormOption | (() => ExtDescriptionsOption | ExtFormOption) | (() => Promise<ExtDescriptionsOption | ExtFormOption>);
@@ -335,7 +332,7 @@ declare type ExtDescriptionsProps = {
 HTMLAttributes
 
 /** 表单元素属性 */
-export declare interface ExtFormItemOption extends ExtBaseOption {
+export declare interface ExtFormItemOption extends ExtBaseOption, RangeFieldOption {
     /** 指定ref对象时，同步变化 */
     value?: any
     /** 指定查看时显示的字段 */
@@ -528,8 +525,8 @@ declare interface ExtUpload extends ExtFormItemOption {
 export declare type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upload'>, keyof UploadSchemaProps>
 
 export declare interface FieldAdapter {
-    /** 实际组件或 adapter.components 中的组件名称 */
-    component: AdapterComponent;
+    /** 初始化或自动导入时使用的组件注册名；Adapter 本身不直接持有字段组件。 */
+    component: string;
     /** 当前 UI 框架使用的受控值协议 */
     model?: ComponentModelConfig;
     /** 该字段在当前 UI 框架下的默认属性 */
@@ -652,14 +649,7 @@ export declare interface InputFieldOption {
     onSearch?: (effectData: Obj, value: string) => void
 }
 
-export declare interface InstallConfig extends GlobalConfig {
-    /** 当前应用使用的 UI 框架适配器；初始化时必须显式传入，之后不可切换。 */
-    adapter: UIAdapter;
-    /** UI 组件注册表；非内置名称可直接作为 schema type。 */
-    components?: Record<string, FormComponent | undefined>;
-    /** 组件默认参数 */
-    defaultProps?: AdapterDefaultProps;
-}
+declare type KeysOfUnion<T> = T extends unknown ? keyof T : never
 
 export declare interface LayoutAdapter {
     row: AdapterComponent;
@@ -701,14 +691,21 @@ export declare interface LayoutSpaceProps extends HTMLAttributes {
     wrap?: boolean
 }
 
+declare type MergeRegistrySources<T> = {
+    [K in KeysOfUnion<T>]: ValueOfUnion<T, K>
+}
+
 export declare type ModalOpenOptions = Partial<ExtModalProps> & { data?: Obj }
 
 /** SuperForm 稳定的弹窗语义，其他外观和交互属性由 Adapter 补充。 */
 export declare interface ModalSchemaProps {
     title?: VSlot
+    content?: VSlot
     icon?: string | Component
     buttons?: ExtButtons
     destroyOnClose?: boolean
+    maskClosable?: boolean
+    afterClose?: Fn
     onOk?: Fn
     onCancel?: Fn
 }
@@ -732,7 +729,13 @@ export declare interface RangeFieldOption {
 }
 
 /** 仅供构建插件生成的虚拟模块登记按需导入组件。 */
-export declare function registerAutoImportedComponents(components: Record<string, FormComponent | undefined>): void;
+export declare function registerAutoImportedComponents(components: Record<string, FormComponent | undefined>, adapterFields?: Iterable<string>): void;
+
+/** 注册一个项目自定义 Schema 组件。 */
+export declare function registerComponent(name: string, component: FormComponent): void;
+
+/** 注册项目自定义 Schema 组件。 */
+export declare function registerComponents(components: Record<string, FormComponent | undefined>): void;
 
 declare type RegisterMethod = {
     (): () => VNode;
@@ -868,11 +871,12 @@ declare type SelectOptions =
 | Ref_2<DefaultOptionsType>
 | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
 
+/** 合并组件默认参数。 */
 declare function setDefaultProps(props: Obj): void;
 
 export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"link" | "default" | "text" | "primary" | "dashed">;
+    buttonType: PropType<"link" | "primary" | "text" | "dashed" | "default">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "large" | "middle">;
     /** 按钮显示方式icon/label */
@@ -889,7 +893,7 @@ export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     [key: string]: any;
 }>, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly< ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"link" | "default" | "text" | "primary" | "dashed">;
+    buttonType: PropType<"link" | "primary" | "text" | "dashed" | "default">;
     buttonShape: PropType<"default" | "circle" | "round">;
     size: PropType<"small" | "large" | "middle">;
     /** 按钮显示方式icon/label */
@@ -950,6 +954,20 @@ export declare const SuperForm: DefineComponent<ExtractPropTypes<{
     ignoreRules: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
 
+declare const superform: {
+    useAdapter: typeof useAdapter;
+    configure: typeof configure;
+    registerComponent: typeof registerComponent;
+    registerComponents: typeof registerComponents;
+    setDefaultProps: typeof setDefaultProps;
+};
+export default superform;
+
+export declare interface SuperFormConfig extends GlobalConfig {
+    /** 组件默认参数 */
+    defaultProps?: AdapterDefaultProps;
+}
+
 export declare const SuperTable: DefineComponent<ExtractPropTypes<{
     dataSource: PropType<Obj<any>[]>;
     schema: PropType<RootTableOption>;
@@ -1005,6 +1023,8 @@ declare interface TableScanHight {
 export declare interface TableSchemaProps {
     /** 数据初始化后默认展开的行。 */
     defaultExpandLevel?: number | 'all'
+    /** 当前展开行；Core 会在默认展开层级计算完成后更新该值。 */
+    expandedRowKeys?: (string | number)[]
     /** 显式关闭选择列，具体选择配置由 Adapter 提供。 */
     rowSelection?: false | (UITableProps<'Table'> extends { rowSelection?: infer T } ? T : Obj)
 }
@@ -1040,17 +1060,21 @@ export declare interface TreeFieldOption<TreeData = unknown> {
 }
 
 /** Adapter 为按钮、提示和下拉交互提供的 UI Props 类型映射。 */
-export declare type UIActionComponentProps = SuperFormTypeRegistry.UIActionComponentProps
+export declare type UIActionComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIActionComponentPropSources[keyof SuperFormTypeRegistry.UIActionComponentPropSources]
+>
 
 declare type UIActionProps<K extends string> = K extends keyof UIActionComponentProps ? UIActionComponentProps[K] : unknown
 
 export declare interface UIAdapter {
     /** 用于诊断和调试的适配器名称 */
     name: string;
-    /** 当前 UI 框架提供的基础组件 */
+    /** Core 运行必需、由 Adapter 直接引入的固定 UI 原语；不包含 Schema 字段组件。 */
     components: Record<string, Component>;
-    /** SuperForm 增强字段到 UI 组件协议的映射 */
+    /** Adapter 支持的 Schema 字段及其组件协议；这里只声明能力，不负责引入字段组件。 */
     fields?: Record<string, FieldAdapter | undefined>;
+    /** 初始化 Adapter 时一并注册的字段组件；通常只由各 Adapter 的 full 入口提供。 */
+    fieldComponents?: Record<string, Component | undefined>;
     /** 表单容器、表单项及实例协议。 */
     form?: FormAdapter;
     /** 栅格和空间容器协议。 */
@@ -1068,7 +1092,9 @@ export declare interface UIAdapter {
 }
 
 /** Adapter 对 Core 容器和布局节点提供的 UI Props 类型映射。 */
-export declare type UIContainerComponentProps = SuperFormTypeRegistry.UIContainerComponentProps
+export declare type UIContainerComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIContainerComponentPropSources[keyof SuperFormTypeRegistry.UIContainerComponentPropSources]
+>
 
 declare type UIContainerProps<K extends string> = K extends keyof UIContainerComponentProps
 ? UIContainerComponentProps[K]
@@ -1080,25 +1106,39 @@ declare type UIFormComponentOption<K extends keyof UIFormComponentProps> = ExtFo
 }
 
 /** Adapter 为字段组件关联的 Core 增强配置。 */
-export declare type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormComponentOptionExtensions
+export declare type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormComponentOptionExtensions &
+MergeRegistrySources<UIFormComponentOptionExtensionSource>
 
-/**
- * Adapter UI 字段的 attrs 类型映射。具体 Adapter 预先声明它支持的真实组件名和 Props。
- */
-export declare type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps
+declare type UIFormComponentOptionExtensionSource = SuperFormTypeRegistry.UIFormComponentOptionExtensionSources[
+keyof SuperFormTypeRegistry.UIFormComponentOptionExtensionSources
+]
+
+/** Adapter UI 字段的 attrs 类型映射；同名字段按 Adapter 来源合并为联合类型。 */
+export declare type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps &
+MergeRegistrySources<UIFormComponentPropSource>
+
+declare type UIFormComponentPropSource = SuperFormTypeRegistry.UIFormComponentPropSources[
+keyof SuperFormTypeRegistry.UIFormComponentPropSources
+]
 
 /** Adapter 为弹窗提供的 UI Props 类型映射。 */
-export declare type UIModalComponentProps = SuperFormTypeRegistry.UIModalComponentProps
+export declare type UIModalComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIModalComponentPropSources[keyof SuperFormTypeRegistry.UIModalComponentPropSources]
+>
 
 declare type UIModalProps<K extends string> = K extends keyof UIModalComponentProps ? UIModalComponentProps[K] : unknown
 
 /** Adapter 为表格、列和分页提供的 UI Props 类型映射。 */
-export declare type UITableComponentProps = SuperFormTypeRegistry.UITableComponentProps
+export declare type UITableComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UITableComponentPropSources[keyof SuperFormTypeRegistry.UITableComponentPropSources]
+>
 
 declare type UITableProps<K extends string> = K extends keyof UITableComponentProps ? UITableComponentProps[K] : unknown
 
 /** Adapter 为上传组件提供的 UI Props 类型映射。 */
-export declare type UIUploadComponentProps = SuperFormTypeRegistry.UIUploadComponentProps
+export declare type UIUploadComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIUploadComponentPropSources[keyof SuperFormTypeRegistry.UIUploadComponentPropSources]
+>
 
 declare type UIUploadProps<K extends string> = K extends keyof UIUploadComponentProps ? UIUploadComponentProps[K] : unknown
 
@@ -1145,6 +1185,9 @@ export declare interface UploadSchemaProps {
     /** 查看模式 */
     isView?: boolean
 }
+
+/** 显式初始化应用级 Adapter；首次初始化后不允许切换协议。 */
+export declare function useAdapter(adapter: UIAdapter): UIAdapter;
 
 export declare function useButtons(option: ExtButtonGroup): (() => VNode<RendererNode, RendererElement, {
     [key: string]: any;
@@ -1259,6 +1302,8 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
 
 declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);
 
+declare type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends keyof T ? T[K] : never) : never
+
 declare type VSlot = string | Fn
 
 declare type WidgetTypes = CoreWidgetTypes & AdapterWidgetTypes
@@ -1280,95 +1325,28 @@ declare type WrapperTypes = {
 export { }
 
 
-declare global {
-    namespace SuperFormTypeRegistry {
-        interface UIFormComponentProps {
-            ElInput: FormComponentProps<typeof import('element-plus')['ElInput']> & InputFieldAttrs;
-            ElSelect: FormComponentProps<typeof import('element-plus')['ElSelect']>;
-            ElSwitch: FormComponentProps<typeof import('element-plus')['ElSwitch']> & SwitchFieldAttrs;
-        }
-        interface UIFormComponentOptionExtensions {
-            ElInput: InputFieldOption;
-            ElSelect: SelectFieldOption;
-            ElSwitch: SwitchFieldOption;
-        }
-    }
-}
-
-
-declare global {
-    namespace SuperFormTypeRegistry {
-        interface UIContainerComponentProps {
-            Col: ColProps;
-            Form: FormProps;
-            FormItem: FormItemProps;
-            Row: RowProps;
-            Space: SpaceProps;
-        }
-        interface UIFormComponentProps {
-            AutoComplete: AutoCompleteProps;
-            CheckboxGroup: CheckboxGroupProps;
-            DatePicker: DatePickerProps;
-            DateRangePicker: RangePickerProps;
-            Input: InputProps & InputFieldAttrs;
-            InputNumber: InputNumberProps;
-            RadioGroup: RadioGroupProps;
-            Select: SelectProps;
-            Switch: SwitchProps & SwitchFieldAttrs;
-            TextArea: TextAreaProps;
-            TimePicker: TimePickerProps;
-            TimeRangePicker: TimeRangePickerProps;
-            TreeSelect: TreeSelectProps;
-        }
-        interface UIFormComponentOptionExtensions {
-            AutoComplete: AutoCompleteFieldOption;
-            CheckboxGroup: SelectFieldOption;
-            DateRangePicker: RangeFieldOption;
-            Input: InputFieldOption;
-            RadioGroup: SelectFieldOption;
-            Select: SelectFieldOption;
-            Switch: SwitchFieldOption;
-            TimeRangePicker: RangeFieldOption;
-            TreeSelect: TreeFieldOption<TreeSelectProps['treeData']>;
-        }
-        interface UIActionComponentProps {
-            Button: ButtonProps;
-            Dropdown: DropdownProps;
-            Tooltip: TooltipProps;
-        }
-        interface UITableComponentProps {
-            Table: TableProps;
-            Column: TableColumnType;
-            Pagination: PaginationProps;
-        }
-        interface UIModalComponentProps {
-            Modal: ModalFuncProps & ModalProps;
-        }
-        interface UIUploadComponentProps {
-            Upload: UploadProps;
-        }
-    }
-}
-
-
 
 declare global {
   /** Adapter 类型目录的合并入口，带命名空间以避免污染业务全局类型。 */
   namespace SuperFormTypeRegistry {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIContainerComponentProps {}
+    interface UIContainerComponentPropSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIFormComponentProps {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIFormComponentOptionExtensions {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIActionComponentProps {}
+    interface UIFormComponentPropSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UITableComponentProps {}
+    interface UIFormComponentOptionExtensionSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIModalComponentProps {}
+    interface UIActionComponentPropSources {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface UIUploadComponentProps {}
+    interface UITableComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIModalComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIUploadComponentPropSources {}
   }
 }
 

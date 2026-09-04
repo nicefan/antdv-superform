@@ -27,8 +27,14 @@ export type {
   UIAdapter,
 } from './adapter'
 export { registerAutoImportedComponents } from './components'
+export {
+  configure,
+  registerComponent,
+  registerComponents,
+  useAdapter,
+} from './plugin'
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'
-export type { AdapterDefaultProps, InstallConfig } from './plugin'
+export type { AdapterDefaultProps, SuperFormConfig } from './plugin'
 
 export default plugin
 

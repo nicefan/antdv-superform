@@ -7,6 +7,7 @@ import {
   scanSchemaTypes,
   type SuperFormComponentResolveResult,
 } from '../src/unplugin/core'
+import { createElementPlusResolver } from '../packages/superform-element-plus/src/unplugin'
 
 describe('SuperForm 组件自动导入插件', () => {
   it('从静态 Schema 中提取 PascalCase type', () => {
@@ -34,8 +35,28 @@ describe('SuperForm 组件自动导入插件', () => {
     expect(resolver('Input')).toBeUndefined()
   })
 
-  it('排除 Core、内置增强和当前 Adapter 增强类型', () => {
-    expect([...filterAutoImportTypes(['Form', 'Select', 'ElInput', 'ElRate'], ['ElInput'])]).toEqual(['ElRate'])
+  it('只排除 Core，Adapter 字段仍进入自动导入', () => {
+    expect([...filterAutoImportTypes(['Form', 'Select', 'Input', 'Rate'], ['Input'])]).toEqual([
+      'Select',
+      'Input',
+      'Rate',
+    ])
+  })
+
+  it('内置 Element Plus resolver 覆盖 Adapter 声明的字段', () => {
+    const resolver = createElementPlusResolver()
+    expect(resolver('Rate')).toEqual({
+      from: 'element-plus',
+      importName: 'ElRate',
+      adapterField: true,
+      registrationName: 'Rate',
+    })
+    expect(resolver('Input')).toEqual({
+      from: 'element-plus',
+      importName: 'ElInput',
+      adapterField: true,
+      registrationName: 'Input',
+    })
   })
 
   it('生成运行时注册模块和 attrs 类型声明', () => {
@@ -54,7 +75,7 @@ describe('SuperForm 组件自动导入插件', () => {
     const runtime = generateRuntimeModule(components)
     expect(runtime).toContain('import { Rate as __superform_Rate_0 } from "antdv-next"')
     expect(runtime).toContain('import __superform_Editor_1 from "./Editor.vue"')
-    expect(runtime).toContain('__registerAutoImportedComponents(components)')
+    expect(runtime).toContain('__registerAutoImportedComponents(components, [])')
     expect(runtime).toContain('model: {"prop":"modelValue","event":"update:modelValue"}')
 
     const dts = generateDts(components)

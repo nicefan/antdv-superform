@@ -221,5 +221,28 @@ P005–P007 随各能力迁移逐步建立以下自动检查：
 ### P005 回补：Element Plus 独立 dev package
 
 - 修改：将 Element Plus 验证的依赖、TypeScript、Vite、自动导入和启动配置移入 `upgrade-dev/element-plus`，并只通过公开 package exports 消费已构建产物。
+
+### P005 回补：Adapter 字段声明与运行时注册分离
+
+- 修改：固定 UI 原语保留在 Adapter 内部直接依赖；字段组件改由自动导入或 Adapter 工厂 `components` 注册，AntDV/Element Plus resolver 覆盖各自字段范围。
+- 覆盖：Rate 类型支持、Adapter 字段解析优先级、未注册错误、TagInput 的 Input 依赖和自动生成声明去重。
+- 结果：按用户要求只修改，未执行测试、typecheck 或 build。
+
+### P005 回补：全量字段入口与无前缀 Element Plus Schema
+
+- 修改：新增两个 `/full` 发布入口；Element Plus Schema 字段移除 `El` 前缀，并由 resolver 映射实际组件导出。
+- 后续验证已完成：全量入口声明与发布路径、同名 Adapter 字段类型合并、Element Plus 自动导入和手动 `components` 注册。
+- 结果：按用户要求只修改，未执行测试、typecheck 或 build。
 - 隔离：根 Vite 配置移除 Element Plus 验证插件实例，根 TypeScript 工程排除该目录。
 - 未执行：按用户要求本轮只修改，未安装独立 package 依赖、未启动服务、未运行测试或 build。
+
+### P005 回补：Core 与官方 Adapter 独立 npm 包
+
+- 执行：`pnpm type-check`，以及两个 Adapter package 的 `vue-tsc --noEmit`。
+- 结果：Core、`superform-antdv`、`superform-element-plus` 类型检查通过。
+- 执行：`pnpm test`。
+- 结果：17 个测试文件、78 项测试全部通过；覆盖 Adapter、字段协议、组件来源、自动导入和三包发布声明。
+- 执行：Core、两个 Adapter package 构建，以及 `superform-antdv-example`、`superform-element-plus-example` 构建。
+- 结果：五项构建全部通过；两个 Adapter 的 `/full`、`/unplugin` 和声明产物生成成功，两个 example 均完成生产打包。
+- 运行验证：在 Codex 可见集成终端分别启动 5173、5174，Vite 均正常 ready，验证后已显式停止；浏览器因用户保存的 localhost 访问策略未做页面级自动检查。
+- 已知临时边界：P006/P007 尚未迁移的 Upload、Modal、Table 继续使 Core 内部 compat 保留 AntDV 施工依赖；不属于最终发布边界。
