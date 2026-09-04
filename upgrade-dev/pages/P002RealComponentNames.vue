@@ -21,7 +21,8 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
-import { SuperForm, getUIAdapter, getUIFieldAdapter } from '../../src'
+import { SuperForm } from '../../src'
+import { getUIAdapter, getUIFieldAdapter } from '../../src/adapter'
 import type { ExtFormOption } from '../../src'
 
 const adapter = getUIAdapter()

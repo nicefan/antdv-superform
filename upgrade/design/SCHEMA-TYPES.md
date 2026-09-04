@@ -35,6 +35,7 @@ namespace SuperFormTypeRegistry {
   interface UIFormComponentProps {}
   interface UIFormComponentOptionExtensions {}
   interface UIContainerComponentProps {}
+  interface UIActionComponentProps {}
 }
 export interface CustomFormComponentProps {}
 ```
@@ -42,6 +43,8 @@ export interface CustomFormComponentProps {}
 `UniOption` 由上述映射生成可辨识联合。Adapter 通过命名类型注册表的声明合并预先提供全部受支持 UI 组件的 Props；`UIFormComponentOptionExtensions` 将 Select、Range 等组件关联到 Core 增强配置，避免 Core 根据组件名猜测能力。应用或 Vite 插件只扩展项目组件；这些类型映射都不导入运行时组件代码。
 
 Form、FormItem、Row、Col 和 Space 是 Core 固定语义名，它们先接收 Core 稳定 Props，再与当前 Adapter 在 `UIContainerComponentProps` 中声明的 Props 合并。这保留单根组件的自然 attrs 能力，同时不让 Core 类型直接引用具体 UI 包。
+
+Descriptions 和 Tabs 只保留实际被 Core 消费的容器语义，不再继承整个 UI 组件 Props。按钮、Tooltip 和 Dropdown 会落到 Adapter 的语义 Action 渲染器，其有效 UI Props 由 `UIActionComponentProps` 提供类型，Core 不解释具体 UI 属性。
 
 当 UI 组件名与 Core 名称冲突时，Core 固定语义和增强类型优先，UI 扩展必须排除这些保留名称。Vite 插件也必须按 ADR-0002 的解析顺序排除 Core 和增强类型。
 

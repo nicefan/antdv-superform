@@ -1,18 +1,15 @@
 /// <reference types="../types" />
 
 import { App } from 'vue';
-import { ButtonProps } from 'antdv-next';
 import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
 import { ComputedRef } from 'vue';
+import { CSSProperties } from 'vue';
 import { default as default_2 } from 'vue';
 import { DefineComponent } from 'vue';
-import { DescriptionsProps } from 'antdv-next';
-import { DropdownProps } from 'antdv-next';
 import { ExtractPropTypes } from 'vue';
 import { HTMLAttributes } from 'vue';
-import { Locale } from 'antdv-next/dist/locale/index';
 import { ModalFuncProps } from 'antdv-next/dist/modal/interface';
 import { ModalProps } from 'antdv-next/dist/modal/interface';
 import { PaginationProps } from 'antdv-next';
@@ -24,11 +21,8 @@ import { RendererNode } from 'vue';
 import { Slots } from 'vue';
 import { TableColumnType } from 'antdv-next';
 import { TableProps } from 'antdv-next';
-import { TabsProps } from 'antdv-next';
-import { TooltipProps } from 'antdv-next';
 import { UploadProps } from 'antdv-next';
 import { VNode } from 'vue';
-import { VNodeArrayChildren } from 'vue';
 import { VNodeChild } from 'vue';
 import { VNodeTypes } from 'vue';
 
@@ -41,6 +35,8 @@ export declare type ActionRenderType = 'group' | 'tooltip';
 
 export declare type AdapterComponent = string | Component;
 
+export declare type AdapterDefaultProps = Record<string, Obj | undefined>;
+
 declare type AdapterWidgetTypes = {
     [K in keyof UIFormComponentProps]: UIFormComponentOption<K>
 }
@@ -52,12 +48,6 @@ export declare interface AutoCompleteFieldOption {
     options?: SelectOptions
     dictName?: string
 }
-
-/**
- * 可覆盖的底层组件注册表。字段组件统一读取此对象，安装配置中的 components
- * 也只修改此处，避免再维护独立的 components/base 层。
- */
-declare type BaseComponentName = string;
 
 export declare interface ButtonItem {
     label?: VSlot
@@ -82,20 +72,18 @@ export declare interface ButtonItem {
     /** @deprecated 使用 `visibleIn` */
     validOn?: 'form' | 'detail' | 'both'
     dropdown?: SelectOptions
-    dropdownProps?: DropdownProps
+    dropdownProps?: UIActionProps<'Dropdown'>
     tooltip?: string
     /** 按钮禁用时的提示 */
     disabledTooltip?: string | Fn<string>
     icon?: string | Component
-    attrs?: ButtonProps & HTMLAttributes
+    attrs?: UIActionProps<'Button'> & HTMLAttributes
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     /** 传递到内置方法时的所需参数 */
     meta?: Obj
     onClick?: Fn
 }
-
-export declare function clearUIFormValidation(instance: unknown): void;
 
 declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
     label: VSlot
@@ -219,7 +207,7 @@ export declare interface ExtBaseOption {
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
-    tooltip?: VSlot | (TooltipProps & { title: VSlot; icon?: VSlot })
+    tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: VSlot })
     // help?: HelpMessage
     /** 校验规则，指定value而没指定field时无效 */
     rules?: RuleConfig | RuleConfig[]
@@ -337,6 +325,13 @@ export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type
 
 declare type ExtDescriptionsProps = {
     mode?: 'table' | 'form' | 'default'
+    bordered?: boolean
+    colon?: boolean
+    column?: number
+    contentStyle?: CSSProperties
+    labelStyle?: CSSProperties
+    layout?: 'horizontal' | 'vertical'
+    size?: 'default' | 'middle' | 'small'
     /** 输入框列属性，置为空对象将清空继承属性 */
     wrapperCol?: LayoutColProps & UIContainerProps<'Col'>
     /** 标题列属性，置为空对象将清空继承属性 */
@@ -344,15 +339,12 @@ declare type ExtDescriptionsProps = {
     labelAlign?: 'left' | 'center' | 'right'
     /**分组数据表格模式展示时，设为fixed,让列宽一致 */
     tableLayout?: 'fixed' | 'auto'
-    /**@deprecated */
-    labelBgColor?: string
-    /**@deprecated */
-    borderColor?: string
     /**mode为form模式时，该元素不用input风格包裹 */
     noInput?: boolean
+    /** 隐藏当前标签的冒号 */
+    noColon?: boolean
     span?: number
-} & DescriptionsProps &
-ExtRow &
+} & ExtRow &
 HTMLAttributes
 
 /** 表单元素属性 */
@@ -461,10 +453,15 @@ declare interface ExtRow {
 
 declare type ExtSlotOption = { render: VSlot }
 
-export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
+export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type' | 'attrs'> {
     label: VSlot
     key?: string
     icon?: string | Component
+    attrs?: {
+        closable?: boolean
+        closeIcon?: VSlot
+        forceRender?: boolean
+    }
     subItems: UniOption[]
 }
 
@@ -510,9 +507,8 @@ export declare interface ExtTableOption extends ExtBaseOption {
     editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ModalFuncProps | Obj }
 }
 
-export declare interface ExtTabsOption extends ExtBaseOption {
+export declare interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
     activeKey?: Ref_2<string | undefined>
-    forceRender?: boolean
     buttons?: ExtButtons<'add' | 'refresh'>
     subItems: ExtTabItem[]
 }
@@ -647,12 +643,6 @@ export declare interface FormSchemaProps extends HTMLAttributes {
     wrapperCol?: LayoutColProps
 }
 
-export declare function getUIAdapter(): UIAdapter;
-
-export declare function getUIContainerAdapter(type: string): ContainerAdapter | undefined;
-
-export declare function getUIFieldAdapter(type: string): FieldAdapter | undefined;
-
 declare interface GlobalConfig {
     /** 是否在组件接收 schema 时输出诊断信息 */
     schemaDiagnostics?: boolean;
@@ -702,13 +692,12 @@ export declare interface InputFieldOption {
 }
 
 export declare interface InstallConfig extends GlobalConfig {
-    locale?: Locale;
     /** 当前应用使用的 UI 框架适配器；初始化时必须显式传入，之后不可切换。 */
     adapter: UIAdapter;
     /** UI 组件注册表；非内置名称可直接作为 schema type。 */
-    components?: Partial<Record<BaseComponentName, FormComponent>> & Record<string, FormComponent | undefined>;
+    components?: Record<string, FormComponent | undefined>;
     /** 组件默认参数 */
-    defaultProps?: Obj;
+    defaultProps?: AdapterDefaultProps;
 }
 
 export declare interface LayoutAdapter {
@@ -751,12 +740,6 @@ export declare interface LayoutSpaceProps extends HTMLAttributes {
     wrap?: boolean
 }
 
-export declare function mapUIContainerProps(type: string, props: Obj): {
-    [x: string]: any;
-};
-
-export declare function mapUIFieldProps(type: string, props: Obj, context: Omit<FieldAdapterContext, 'type'>): Obj;
-
 export declare type OptionType = WrapperTypes & WidgetTypes & CustomWidgetTypes
 
 export declare interface PresentationAdapter {
@@ -795,40 +778,6 @@ declare interface RegisterParam {
     value?: any;
     [K: string]: any;
 }
-
-export declare function renderUIAction(type: ActionRenderType, props?: Obj, slots?: Obj): VNodeChild;
-
-export declare function renderUIContainer(type: string, props?: Obj, slots?: Obj): string | number | boolean | void | VNode<RendererNode, RendererElement, {
-    [key: string]: any;
-}> | VNodeArrayChildren | null;
-
-export declare function renderUIField(type: string, props: Obj, context: Omit<FieldAdapterContext, 'type'>, slots?: Slots): string | number | boolean | void | VNode<RendererNode, RendererElement, {
-    [key: string]: any;
-}> | VNodeArrayChildren | null;
-
-export declare function renderUIForm(props: Obj, slots?: Obj): VNode<RendererNode, RendererElement, {
-    [key: string]: any;
-}>;
-
-export declare function renderUIFormItem(props: Obj, slots?: Obj): VNode<RendererNode, RendererElement, {
-    [key: string]: any;
-}>;
-
-export declare function renderUIIcon(icon: unknown, context?: IconAdapterContext): VNodeChild;
-
-export declare function renderUILayout(type: LayoutComponentName, props?: Obj, slots?: Obj): VNode<RendererNode, RendererElement, {
-    [key: string]: any;
-}>;
-
-export declare function renderUIPresentation(type: PresentationRenderType, props?: Obj, slots?: Obj): VNodeChild;
-
-export declare function renderUISemanticIcon(name: string): VNode<RendererNode, RendererElement, {
-    [key: string]: any;
-}> | undefined;
-
-export declare function resolveUIComponent(type: string): Component | undefined;
-
-export declare function resolveUILayoutComponent(type: LayoutComponentName): Component;
 
 declare type ResponsiveValue<T> = Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', T>>
 
@@ -1085,10 +1034,11 @@ declare interface TableScanHight {
     inheritHeight?: boolean
 }
 
-declare interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
+declare type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
     field?: string
     initialValue?: any
     bordered?: boolean
+    defaultActiveKey?: string | number
     options?: SelectOptions
     /** 字典名称 */
     dictName?: string
@@ -1113,6 +1063,11 @@ export declare interface TreeFieldOption<TreeData = unknown> {
     data?: TreeData | Fn<Promise<TreeData>>
     treeData?: TreeData | Fn<Promise<TreeData>> | Fn<TreeData>
 }
+
+/** Adapter 为按钮、提示和下拉交互提供的 UI Props 类型映射。 */
+export declare type UIActionComponentProps = SuperFormTypeRegistry.UIActionComponentProps
+
+declare type UIActionProps<K extends string> = K extends keyof UIActionComponentProps ? UIActionComponentProps[K] : unknown
 
 export declare interface UIAdapter {
     /** 用于诊断和调试的适配器名称 */
@@ -1283,8 +1238,6 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
 
 declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);
 
-export declare function validateUIForm(instance: unknown): Promise<unknown>;
-
 declare type VSlot = string | Fn
 
 declare type WidgetTypes = CoreWidgetTypes & AdapterWidgetTypes
@@ -1341,6 +1294,11 @@ declare global {
             TimeRangePicker: RangeFieldOption;
             TreeSelect: TreeFieldOption<TreeSelectProps['treeData']>;
         }
+        interface UIActionComponentProps {
+            Button: ButtonProps;
+            Dropdown: DropdownProps;
+            Tooltip: TooltipProps;
+        }
     }
 }
 
@@ -1355,6 +1313,8 @@ declare global {
     interface UIFormComponentProps {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIFormComponentOptionExtensions {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIActionComponentProps {}
   }
 }
 

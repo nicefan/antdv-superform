@@ -177,4 +177,14 @@ P005–P007 随各能力迁移逐步建立以下自动检查：
 - 执行：`pnpm build`。
 - 结果：完整构建成功；汇总声明包含稳定命名类型注册表，不包含指向源码 `exaTypes` 的相对模块扩展。
 
+### P004：Container、Action 与公开运行时边界
+
+- 类型 fixture：补充 Action Props 目录、安装配置、Tabs 子项 attrs 和 Descriptions 已移除属性检查。
+- 执行：`pnpm vitest run tests/adapter.test.ts tests/field-compat.test.ts --threads false --reporter=dot`。
+- 结果：2 个测试文件、22 项通过。
+- 执行：`pnpm exec vue-tsc --noEmit` 和变更文件 ESLint。
+- 结果：均通过。
+- 执行：`pnpm build` 和 `pnpm vitest run tests/packageDeclarations.test.ts --threads false --reporter=dot`。
+- 结果：完整构建成功；发布声明 2 项测试通过，包根不再导出底层 Adapter 运行时函数。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

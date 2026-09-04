@@ -306,3 +306,52 @@ type TreeSelectOption = OptionType['TreeSelect']
 ### 兼容策略
 
 不保留 `ExtInputOption`、`ExtTreeOption` 别名或新旧双路径。组件实际 Props 始终以当前 Adapter 类型目录为准。
+
+## Container 与 Action 公共类型收缩
+
+阶段：P004
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+Descriptions 和 Table Tabs 分别继承完整 `DescriptionsProps` 和 `TabsProps`；Button、Tooltip、Dropdown 类型也由 Core 直接引用 AntDV Props。Tabs 根配置声明了实际未传给 UI 组件的 `attrs` 和 `forceRender`。
+
+### 现在
+
+- Descriptions 只声明布局、展示模式和标签样式等实际消费的稳定属性。
+- Tabs 根只保留受控状态、按钮和子项；`forceRender` 放在具体 Tab 子项的 `attrs` 中。
+- Button、Tooltip 和 Dropdown Props 由 Adapter 的 `UIActionComponentProps` 类型目录提供。
+
+### 影响与迁移
+
+- 删除 Descriptions 的 `labelBgColor` 和 `borderColor`；改用项目主题或 `--descriptions-bg-color` / `--descriptions-border-color` CSS 变量。
+- Tabs 根节点的 `attrs` 与 `forceRender` 原本没有传到底层 Tabs，现在直接移除；需要预渲染时将 `forceRender` 放到对应 Tab 子项 `attrs`。
+
+### 兼容策略
+
+不保留无效透传或已废弃颜色属性；Action 的有效 UI Props 仍由当前 Adapter 完整提供。
+
+## 安装配置与 Adapter 运行时导出收缩
+
+阶段：P004
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+`InstallConfig.locale` 直接使用 AntDV `Locale`，但注入后没有任何组件消费。包根同时导出了 `getUI*`、`renderUI*`、`resolveUI*`、`mapUI*` 和表单实例桥接函数。
+
+### 现在
+
+- 安装配置只保留 Core 全局配置、`adapter`、`components` 和 `defaultProps`；`defaultProps` 使用框架无关的 `AdapterDefaultProps`。
+- 包根只导出 `defineUIAdapter`、`antdvAdapter` 和 Adapter capability 类型。Core 调用的渲染、解析、映射与实例函数仍保留在内部模块，不再构成公开 API。
+
+### 影响与迁移
+
+- 移除安装配置中的 `locale`。AntDV 项目应在 `ConfigProvider` 中设置 locale，其他 UI 框架使用各自的全局化入口。
+- 如果业务代码曾从包根调用上述底层函数，应改为实现 `UIAdapter` capability，由 SuperForm Core 调用。
+
+### 兼容策略
+
+不保留无消费者的 locale 注入或底层运行时函数代理。

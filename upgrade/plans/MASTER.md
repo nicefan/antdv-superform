@@ -356,13 +356,14 @@ P010 发布与迁移
 - [x] 启动 P004 前解决当前声明打包失败，并验证 Adapter 新增公开类型可以生成稳定的 d.ts。
 - [x] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
 - [x] 提取 Form、FormItem、Row、Col 和 Space 的第一批框架无关稳定 Props。
-- [ ] 完成 Container、Action、Modal、Table 和 Upload 的稳定 Props。
+- [x] 完成 Container 和 Action 的稳定 Props 及 Adapter 类型扩展。
+- [ ] 完成 Modal、Table 和 Upload 的稳定 Props。
 - [x] 设计 UI 专属扩展属性的类型扩展机制。
 - [x] 删除 Form、Field 和 Layout 公共 Schema 对旧 AntDV Props 的直接继承和兼容别名。
 - [ ] 删除剩余公共 Schema 对旧 AntDV Props 的直接继承。
 - [ ] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
 - [ ] 记录每项不兼容类型变化和迁移示例。
-- [ ] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留稳定扩展契约，其余收为内部 API 或明确标记实验状态。
+- [x] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留 `defineUIAdapter`、`antdvAdapter` 和 Adapter 类型契约。
 
 #### 2026-09-03：启动 P004 并收缩构建插件
 
@@ -379,6 +380,14 @@ P010 发布与迁移
 - 兼容性：AntDV Schema 仍有完整字段、表单和布局 Props 提示；不再导出 `ExtInputOption` 和 `ExtTreeOption` 兼容别名，改用 `OptionType['Input']` 和 `OptionType['TreeSelect']`。
 - 验证：类型 fixture 通过；相关字段与 Vite 插件测试 2 个文件、11 项通过。
 - 后续：继续拆分 Container、Action 类型及安装配置，再处理 Modal、Table 和 Upload。
+
+#### 2026-09-04：收缩 Container、Action 与公开运行时边界
+
+- 完成：Descriptions、Tabs 改用明确容器契约，Button、Tooltip、Dropdown 改由 `UIActionComponentProps` 提供 Adapter Props；安装配置移除未消费的 AntDV `locale` 类型与运行时注入。
+- 设计影响：包根只保留 `defineUIAdapter`、`antdvAdapter` 及 Adapter 类型契约；渲染、解析、映射和实例访问函数收为 Core 内部 API。
+- 兼容性：Descriptions 不再支持 `labelBgColor/borderColor`，Tabs 根节不再暴露实际未消费的 `attrs/forceRender`；安装时的 `locale` 与包根底层 Adapter 工具函数不再提供。
+- 验证：Adapter 与字段回归 2 个文件、22 项通过；类型检查、变更文件 ESLint、完整构建和发布声明测试通过。
+- 后续：拆分 Modal、Table 和 Upload 公共类型，完成 P004 声明解耦。
 
 ### 验收条件
 

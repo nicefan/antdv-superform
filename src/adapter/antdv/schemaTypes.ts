@@ -1,8 +1,10 @@
 import type {
   AutoCompleteProps,
+  ButtonProps,
   CheckboxGroupProps,
   ColProps,
   DatePickerProps,
+  DropdownProps,
   FormItemProps,
   FormProps,
   InputNumberProps,
@@ -16,6 +18,7 @@ import type {
   TextAreaProps,
   TimePickerProps,
   TimeRangePickerProps,
+  TooltipProps,
   TreeSelectProps,
 } from 'antdv-next'
 import type {
@@ -67,6 +70,12 @@ declare global {
       Switch: SwitchFieldOption
       TimeRangePicker: RangeFieldOption
       TreeSelect: TreeFieldOption<TreeSelectProps['treeData']>
+    }
+
+    interface UIActionComponentProps {
+      Button: ButtonProps
+      Dropdown: DropdownProps
+      Tooltip: TooltipProps
     }
   }
 }

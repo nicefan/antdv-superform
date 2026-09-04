@@ -75,7 +75,8 @@ P001 期间旧 `components`、`registerComponent` 和 `registerFormComponents` �
 - Adapter 首次安装后锁定；同一 Adapter 实例可重复安装，不同实例会明确报错。
 - `globalConfig` 视为应用初始化配置，不为同一 Adapter 的重复安装定义缺省项重置语义。
 - Adapter、AntDV Adapter、定义辅助函数、只读访问函数及相关类型从包根公开导出，不公开运行时切换入口。
-- 字段标准状态、默认值索引规则、复杂服务 capability、`locale` 和 `customIcon` 的最终归属，在实际迁移对应能力时确认；P001 不用假设接口锁死后续设计。
+- 字段标准状态、默认值索引规则、复杂服务 capability 和 `customIcon` 的最终归属，在实际迁移对应能力时确认；P001 不用假设接口锁死后续设计。
+- `locale` 不属于 Core 安装配置；应用在当前 UI 框架的 ConfigProvider 中设置语言。
 
 ## P002 已确认决策
 

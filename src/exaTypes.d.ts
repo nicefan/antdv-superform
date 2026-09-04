@@ -3,18 +3,13 @@
 /* eslint-disable no-use-before-define */
 import Vue from 'vue'
 
-import type { Component, HTMLAttributes, VNodeTypes, Ref } from 'vue'
+import type { Component, CSSProperties, HTMLAttributes, VNodeTypes, Ref } from 'vue'
 import type {
   PaginationProps,
   TableColumnType,
   ModalFuncProps,
-  DescriptionsProps,
   TableProps,
   UploadProps,
-  TabsProps,
-  ButtonProps,
-  TooltipProps,
-  DropdownProps,
 } from './compat/antdv'
 
 import { RuleConfig } from './utils/buildRule'
@@ -123,6 +118,8 @@ declare global {
     interface UIFormComponentProps {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIFormComponentOptionExtensions {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIActionComponentProps {}
   }
 }
 
@@ -133,6 +130,11 @@ type UIContainerProps<K extends string> = K extends keyof UIContainerComponentPr
   ? UIContainerComponentProps[K]
   : unknown
 
+/** Adapter 为按钮、提示和下拉交互提供的 UI Props 类型映射。 */
+export type UIActionComponentProps = SuperFormTypeRegistry.UIActionComponentProps
+
+type UIActionProps<K extends string> = K extends keyof UIActionComponentProps ? UIActionComponentProps[K] : unknown
+
 interface ExtBaseOption {
   type: string
   field?: string
@@ -140,7 +142,7 @@ interface ExtBaseOption {
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
-  tooltip?: VSlot | (TooltipProps & { title: VSlot; icon?: VSlot })
+  tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: VSlot })
   // help?: HelpMessage
   /** 校验规则，指定value而没指定field时无效 */
   rules?: RuleConfig | RuleConfig[]
@@ -193,6 +195,13 @@ interface ExtRow {
 }
 type ExtDescriptionsProps = {
   mode?: 'table' | 'form' | 'default'
+  bordered?: boolean
+  colon?: boolean
+  column?: number
+  contentStyle?: CSSProperties
+  labelStyle?: CSSProperties
+  layout?: 'horizontal' | 'vertical'
+  size?: 'default' | 'middle' | 'small'
   /** 输入框列属性，置为空对象将清空继承属性 */
   wrapperCol?: LayoutColProps & UIContainerProps<'Col'>
   /** 标题列属性，置为空对象将清空继承属性 */
@@ -200,15 +209,12 @@ type ExtDescriptionsProps = {
   labelAlign?: 'left' | 'center' | 'right'
   /**分组数据表格模式展示时，设为fixed,让列宽一致 */
   tableLayout?: 'fixed' | 'auto'
-  /**@deprecated */
-  labelBgColor?: string
-  /**@deprecated */
-  borderColor?: string
   /**mode为form模式时，该元素不用input风格包裹 */
   noInput?: boolean
+  /** 隐藏当前标签的冒号 */
+  noColon?: boolean
   span?: number
-} & DescriptionsProps &
-  ExtRow &
+} & ExtRow &
   HTMLAttributes
 interface ExtGroupBaseOption extends ExtBaseOption, ExtRow {
   title?: VSlot
@@ -269,12 +275,12 @@ interface ButtonItem {
   /** @deprecated 使用 `visibleIn` */
   validOn?: 'form' | 'detail' | 'both'
   dropdown?: SelectOptions
-  dropdownProps?: DropdownProps
+  dropdownProps?: UIActionProps<'Dropdown'>
   tooltip?: string
   /** 按钮禁用时的提示 */
   disabledTooltip?: string | Fn<string>
   icon?: string | Component
-  attrs?: ButtonProps & HTMLAttributes
+  attrs?: UIActionProps<'Button'> & HTMLAttributes
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
   /** 传递到内置方法时的所需参数 */
@@ -331,10 +337,11 @@ interface ExtButtonGroup<T extends string = string> {
   // subItems?: ButtonItem[]
 }
 type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
-interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
+type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
   field?: string
   initialValue?: any
   bordered?: boolean
+  defaultActiveKey?: string | number
   options?: SelectOptions
   /** 字典名称 */
   dictName?: string
@@ -483,16 +490,20 @@ interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
 //   title?: string | VNode
 //   subItems: UniOption[]
 // }
-interface ExtTabsOption extends ExtBaseOption {
+interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
   activeKey?: Ref<string | undefined>
-  forceRender?: boolean
   buttons?: ExtButtons<'add' | 'refresh'>
   subItems: ExtTabItem[]
 }
-interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
+interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type' | 'attrs'> {
   label: VSlot
   key?: string
   icon?: string | Component
+  attrs?: {
+    closable?: boolean
+    closeIcon?: VSlot
+    forceRender?: boolean
+  }
   subItems: UniOption[]
 }
 interface ExtCollapseOption extends ExtBaseOption {

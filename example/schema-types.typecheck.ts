@@ -1,4 +1,16 @@
-import type { FormSchemaProps, LayoutColProps, LayoutRowProps, OptionType, UIFormComponentProps } from '../src'
+import type {
+  AdapterDefaultProps,
+  FormSchemaProps,
+  InstallConfig,
+  LayoutColProps,
+  LayoutRowProps,
+  OptionType,
+  UIActionComponentProps,
+  UIAdapter,
+  UIFormComponentProps,
+} from '../src'
+
+declare const adapter: UIAdapter
 
 /** 验证 Core 表单和布局属性不需要引用具体 UI 类型。 */
 export const formProps: FormSchemaProps = {
@@ -32,6 +44,20 @@ export const rangeOption: OptionType['DateRangePicker'] = {
 }
 
 export const inputProps: UIFormComponentProps['Input'] = { variant: 'filled' }
+export const buttonProps: UIActionComponentProps['Button'] = { danger: true }
+
+export const defaultProps: AdapterDefaultProps = {
+  Form: { layout: 'vertical' },
+  Input: { allowClear: true },
+}
+
+export const installConfig: InstallConfig = { adapter, defaultProps }
+
+export const removedLocale: InstallConfig = {
+  adapter,
+  // @ts-expect-error locale 已无运行时消费方，不再作为 Core 安装配置。
+  locale: {},
+}
 
 export const removedFormProps: FormSchemaProps = {
   // @ts-expect-error `component` 是 AntDV 专属实现属性，不属于 Core 稳定契约。
@@ -41,4 +67,22 @@ export const removedFormProps: FormSchemaProps = {
 export const removedColProps: LayoutColProps = {
   // @ts-expect-error 响应式断点属于 Adapter 扩展，Core 只保证栅格基础语义。
   xs: 24,
+}
+
+export const tabsOption: OptionType['Tabs'] = {
+  type: 'Tabs',
+  subItems: [{ label: 'A', attrs: { forceRender: true }, subItems: [] }],
+  // @ts-expect-error Tabs 根节不再接收实际未消费的透传 attrs。
+  attrs: { animated: true },
+}
+
+export const descriptionsOption: OptionType['Descriptions'] = {
+  type: 'Descriptions',
+  subItems: [],
+  attrs: {
+    mode: 'table',
+    column: 2,
+    // @ts-expect-error 已废弃的私有颜色参数不再属于容器契约。
+    borderColor: '#ddd',
+  },
 }

@@ -1,18 +1,18 @@
 import { merge } from 'lodash-es'
 import type { App, Component, VNode } from 'vue'
 import { configureComponents, addComponent, type FormComponent } from './components'
-import type { BaseComponentName, Locale } from './compat/antdv'
 import { initializeUIAdapter, type UIAdapter } from './adapter'
 import { globalConfig, type GlobalConfig } from './config'
 
+export type AdapterDefaultProps = Record<string, Obj | undefined>
+
 export interface InstallConfig extends GlobalConfig {
-  locale?: Locale
   /** 当前应用使用的 UI 框架适配器；初始化时必须显式传入，之后不可切换。 */
   adapter: UIAdapter
   /** UI 组件注册表；非内置名称可直接作为 schema type。 */
-  components?: Partial<Record<BaseComponentName, FormComponent>> & Record<string, FormComponent | undefined>
+  components?: Record<string, FormComponent | undefined>
   /** 组件默认参数 */
-  defaultProps?: Obj
+  defaultProps?: AdapterDefaultProps
 }
 const globalProps: Obj = {}
 
@@ -27,8 +27,7 @@ const install = async (app: App, config: InstallConfig) => {
   if (!config?.adapter) {
     throw new Error('初始化 SuperForm 时必须显式传入 adapter')
   }
-  const { locale, adapter, components, defaultProps, ..._config } = config
-  app.provide('localeData', { locale: locale, exist: true })
+  const { adapter, components, defaultProps, ..._config } = config
   applyAdapter(adapter)
   Object.assign(globalConfig, _config)
   components && configureComponents(components)

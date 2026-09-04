@@ -24,8 +24,6 @@ export default defineComponent({
       layout,
       bordered,
       mode = bordered && 'table',
-      labelBgColor,
-      borderColor,
       rowProps,
       colon,
       size = 'middle',
@@ -104,9 +102,6 @@ export default defineComponent({
     const rowGroup = computed(() => getRowGroup())
 
     if (mode === 'table') {
-      let colorStyle = ''
-      borderColor && (colorStyle += `--descriptions-border-color:${borderColor};`)
-      labelBgColor && (colorStyle += `--descriptions-bg-color:${labelBgColor};`)
       const rows = () =>
         layout === 'vertical'
           ? rowGroup.value.flatMap((group) => [
@@ -204,7 +199,6 @@ export default defineComponent({
         h(
           'div',
           {
-            style: colorStyle,
             class: ['ant-descriptions', 'ant-descriptions-bordered', size !== 'default' && 'ant-descriptions-' + size],
           },
           h('div', { class: 'ant-descriptions-view' }, h('table', { style: { tableLayout } }, rows()))
