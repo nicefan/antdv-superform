@@ -4,13 +4,6 @@
 import Vue from 'vue'
 
 import type { Component, CSSProperties, HTMLAttributes, VNodeTypes, Ref } from 'vue'
-import type {
-  PaginationProps,
-  TableColumnType,
-  ModalFuncProps,
-  TableProps,
-  UploadProps,
-} from './compat/antdv'
 
 import { RuleConfig } from './utils/buildRule'
 
@@ -22,10 +15,6 @@ interface HelpMessage {
   color: 'success' | 'info' | 'warning' | 'error'
 }
 
-type VColumnProps = TableColumnType & {
-  /** 是否隐藏 */
-  defaultHidden?: boolean
-}
 type EffectData =
   | (Obj & {
       /**整个表单数据 */
@@ -120,6 +109,12 @@ declare global {
     interface UIFormComponentOptionExtensions {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIActionComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UITableComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIModalComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIUploadComponentProps {}
   }
 }
 
@@ -134,6 +129,21 @@ type UIContainerProps<K extends string> = K extends keyof UIContainerComponentPr
 export type UIActionComponentProps = SuperFormTypeRegistry.UIActionComponentProps
 
 type UIActionProps<K extends string> = K extends keyof UIActionComponentProps ? UIActionComponentProps[K] : unknown
+
+/** Adapter 为表格、列和分页提供的 UI Props 类型映射。 */
+export type UITableComponentProps = SuperFormTypeRegistry.UITableComponentProps
+
+type UITableProps<K extends string> = K extends keyof UITableComponentProps ? UITableComponentProps[K] : unknown
+
+/** Adapter 为弹窗提供的 UI Props 类型映射。 */
+export type UIModalComponentProps = SuperFormTypeRegistry.UIModalComponentProps
+
+type UIModalProps<K extends string> = K extends keyof UIModalComponentProps ? UIModalComponentProps[K] : unknown
+
+/** Adapter 为上传组件提供的 UI Props 类型映射。 */
+export type UIUploadComponentProps = SuperFormTypeRegistry.UIUploadComponentProps
+
+type UIUploadProps<K extends string> = K extends keyof UIUploadComponentProps ? UIUploadComponentProps[K] : unknown
 
 interface ExtBaseOption {
   type: string
@@ -357,6 +367,41 @@ type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
   /** 设置tab标签 */
   customTab?: Fn
 }
+
+/** SuperForm 稳定的弹窗语义，其他外观和交互属性由 Adapter 补充。 */
+export interface ModalSchemaProps {
+  title?: VSlot
+  icon?: string | Component
+  buttons?: ExtButtons
+  destroyOnClose?: boolean
+  onOk?: Fn
+  onCancel?: Fn
+}
+
+export type ExtModalProps = ModalSchemaProps & Omit<UIModalProps<'Modal'>, keyof ModalSchemaProps>
+export type ModalOpenOptions = Partial<ExtModalProps> & { data?: Obj }
+
+/** SuperForm 稳定的表格容器语义。 */
+export interface TableSchemaProps {
+  /** 数据初始化后默认展开的行。 */
+  defaultExpandLevel?: number | 'all'
+  /** 显式关闭选择列，具体选择配置由 Adapter 提供。 */
+  rowSelection?: false | (UITableProps<'Table'> extends { rowSelection?: infer T } ? T : Obj)
+}
+
+export type ExtTableProps = TableSchemaProps & Omit<UITableProps<'Table'>, keyof TableSchemaProps>
+export type ExtTableColumnProps = UITableProps<'Column'>
+
+/** 请求分页只依赖这三个字段，其他分页外观属性由 Adapter 补充。 */
+export interface TablePaginationSchemaProps {
+  current?: number
+  pageSize?: number
+  total?: number
+}
+
+export type ExtTablePaginationProps = TablePaginationSchemaProps &
+  Omit<UITableProps<'Pagination'>, keyof TablePaginationSchemaProps>
+
 type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
   /**
    *  应用于表格或编辑表单
@@ -365,17 +410,12 @@ type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
   hideInTable?: boolean
   /** 表格内容渲染 */
   viewRender?: VSlot
-  columnProps?: TableColumnType
+  columnProps?: ExtTableColumnProps
 }
 interface ExtTableOption extends ExtBaseOption {
   field: string
   title?: VSlot
-  attrs?: Obj &
-    TableProps & {
-      /**数据初始化后默认展开的行 */
-      defaultExpandLevel?: number | 'all'
-      rowSelection?: false | TableProps['rowSelection']
-    }
+  attrs?: ExtTableProps
   /** @deprecated 更名为editable */
   edit?: boolean
   /** 表格全部为编辑状态，开启后rowEdit无效 */
@@ -384,7 +424,7 @@ interface ExtTableOption extends ExtBaseOption {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
     form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
-    modalProps?: ModalFuncProps | Obj
+    modalProps?: ExtModalProps
     /**提交保存前 */
     onSave?: Fn
     onCancel?: Fn
@@ -396,17 +436,17 @@ interface ExtTableOption extends ExtBaseOption {
   columns: ExtColumnsItem[]
   tabs?: TabsHeader | false
   /** 公共列配置 */
-  columnProps?: TableColumnType
+  columnProps?: ExtTableColumnProps
   /**序号列*/
-  indexColumn?: boolean | TableColumnType
+  indexColumn?: boolean | ExtTableColumnProps
   buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
   /** 列表元素右边按钮 */
-  rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnType })
+  rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: ExtTableColumnProps })
   /** 弹窗属性 */
-  modalProps?: ModalFuncProps | Obj
-  descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
+  modalProps?: ExtModalProps
+  descriptionsProps?: ExtDescriptionsProps & { modalProps?: ExtModalProps }
   /** @deprecated  弹窗表单配置,移至rowEditor */
-  editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ModalFuncProps | Obj }
+  editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ExtModalProps }
 }
 
 interface TableScanHight {
@@ -446,8 +486,8 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
     /** 开启高级查询 */
     advanced?: boolean
   }
-  pagination?: PaginationProps | false
-  attrs?: ExtTableOption['attrs'] | (TableProps & TableScanHight) | Obj
+  pagination?: ExtTablePaginationProps | false
+  attrs?: ExtTableProps & TableScanHight
 }
 interface ExtListOption extends ExtBaseOption, ExtRow {
   field: string
@@ -634,38 +674,48 @@ export interface AutoCompleteFieldOption {
   options?: SelectOptions
   dictName?: string
 }
+
+/** SuperForm 自身消费的上传配置，底层组件属性由 Adapter 补充。 */
+export interface UploadSchemaProps {
+  apis?: {
+    upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
+    delete?: (file: Obj) => Promise<any>
+    download?: (file: Obj) => Promise<any>
+  }
+  /** 指定文件信息字段 */
+  infoNames?: { [k in 'uid' | 'name' | 'url']?: string } | Obj<string>
+  /** 指定文件信息中某属性作为同步绑定值，不指定将同步绑定文件对象 */
+  valueKey?: string
+  /** 文件最小 MB */
+  minSize?: number
+  /** 文件最大 MB */
+  maxSize?: number
+  /** 单文件上传，绑定值为字符串或文件对象 */
+  isSingle?: boolean
+  /** 最大文件数量 */
+  maxCount?: number
+  /** 允许的文件类型 */
+  accept?: string
+  /** 达到最大文件数量时隐藏上传主体 */
+  hideOnMax?: boolean
+  /** 上传模式：auto 自动上传；submit 提交时上传；custom 手动上传；base64/text 转换内容。 */
+  uploadMode?: 'auto' | 'submit' | 'custom' | 'base64' | 'text'
+  tip?: string
+  /** 上传按钮标题 */
+  title?: VSlot
+  /** 是否允许重名文件 */
+  repeatable?: boolean
+  /** 查看模式 */
+  isView?: boolean
+}
+
+export type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upload'>, keyof UploadSchemaProps>
+
 interface ExtUpload extends ExtFormItemOption {
   vModelFields?: {
     fileList?: string | Obj
   }
-  attrs?: UploadProps & {
-    apis?: {
-      upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
-      delete?: (file: Obj) => Promise<any>
-      download?: (file: Obj) => Promise<any>
-    }
-    /** 指定文件信息字段 */
-    infoNames?: { [k in 'uid' | 'name' | 'url']?: string } | Obj<string>
-    /** 指定文件信息中某属性作为同步绑定值，不指定将同步绑定文件对象 */
-    valueKey?: string
-    /** 文件最小MB */
-    minSize?: number
-    /** 文件最大MB */
-    maxSize?: number
-    /** 单文件上传, 绑定值为字符串或文件对象 */
-    isSingle?: boolean
-    /** 达到最大文件数量时，隐藏上传主体 */
-    hideOnMax?: boolean
-    /** 上传模式，默认auto,选择文件后自动上传，submit:提交时上传，custom通过绑定fileList中的文件对象手动上传 */
-    uploadMode?: 'auto' | 'submit' | 'custom' | 'base64' | 'text'
-    tip?: string
-    /** 上传按钮标题 */
-    title?: VSlot
-    /** 是否允许重名文件 */
-    repeatable?: boolean
-    /** 查看模式 */
-    isView?: boolean
-  }
+  attrs?: ExtUploadProps
 }
 type ExtSlotOption = { render: VSlot }
 type ExtInfoSlotOption = (ExtBaseOption & ExtSlotOption) | ExtFormItemOption

@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完成。P004 已开始，声明构建前置阻塞已经解除，当前进入公共 Schema 类型分层。
+P001 Adapter 生命周期回补、P002/P003 主任务与审查回补、P004 公共 Schema 类型解耦均已完成。P005 待确认开始。
 
 ## 已完成
 
@@ -43,23 +43,24 @@ P001 Adapter 生命周期回补及 P002/P003 主任务与审查回补均已完�
 - Form、FormItem、Row、Col 和 Space 已抽取 Core 稳定 Props；AntDV 容器与布局属性由 Adapter 类型目录扩展。
 - 普通 UI 字段已改为根据 `UIFormComponentProps` 生成 Schema 类型，AntDV Adapter 预声明支持组件与增强配置，不产生全量运行时导入。
 - Descriptions、Tabs 已改用显式容器类型，Button、Tooltip、Dropdown 的 UI Props 已归入 Adapter Action 类型目录。
+- Modal、Table、Upload 已抽取 Core 稳定 Props，完整 UI Props 由 AntDV Adapter 类型目录补充；公共 Schema 不再直接导入 AntDV 类型。
 - 安装配置已移除未被消费的 `locale`；包根 Adapter 运行时导出收缩为 `defineUIAdapter` 和 `antdvAdapter`。
 
 ## 下一步
 
-拆分 Modal、Table 和 Upload 公共类型，完成 P004 声明解耦和迁移记录。真实 Element Plus Adapter 与独立 dev 环境后置到 P005。
+确认后开始 P005 Schema 解析与自动导入，并建立最小 Element Plus Adapter 和独立 dev 环境。
 
 ## 当前临时状态
 
 - `compat/antdv.ts` 和 `compat/icons.ts` 仍为未迁移复杂能力提供内部施工支持；对应能力完成时当轮删除，不作为新版兼容层。
 - `components/index.ts` 的容器、Core 复合字段和旧注册职责仍在同一入口，P005 将分离职责并直接删除旧解析规则。
 - `globalProps` 仍包含 FormItem、Table 等 AntDV 默认值；字段和容器的实际组件渲染已迁入 Adapter。
-- Adapter 默认值已经成为 `globalProps` 的初始来源，默认值类型解耦留待 P004。
-- `exaTypes.d.ts` 仅剩 Modal、Table 和 Upload 直接引用 AntDV Props，留待 P004 下一轮拆分。
+- Adapter 默认值已经成为 `globalProps` 的初始来源；复杂能力的运行时默认值随 P006/P007 capability 迁移。
+- `exaTypes.d.ts` 已清除对 AntDV Props 的直接引用；Adapter 类型目录只产生类型依赖，不触发运行时导入。
 - Table、Upload、Modal、message 和预览 Image 仍直接使用 AntDV 协议，分别留待 P006/P007。
 - `globalConfig` 按应用初始化配置使用，不增加重复安装时的重置语义。
 - 外部 options/search 回调的并发、取消和异常处理仍由调用方负责，不纳入本轮回补。
-- 当前声明可稳定构建；Form、Field、Layout、Container 和 Action 已完成类型分层，复杂能力仍留待 P004 解耦。
+- Form、Field、Layout、Container、Action、Modal、Table 和 Upload 已完成公共类型分层，生成声明验证通过。
 - 本轮回补以逻辑清晰和实现简单为优先，允许删除升级前缺少明确业务价值的能力或规则，不通过增加大量细粒度边界维持表面兼容。
 
 ## 重要约束

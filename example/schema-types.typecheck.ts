@@ -4,10 +4,17 @@ import type {
   InstallConfig,
   LayoutColProps,
   LayoutRowProps,
+  ModalSchemaProps,
   OptionType,
+  RootTableOption,
+  TableSchemaProps,
+  UploadSchemaProps,
   UIActionComponentProps,
   UIAdapter,
   UIFormComponentProps,
+  UIModalComponentProps,
+  UITableComponentProps,
+  UIUploadComponentProps,
 } from '../src'
 
 declare const adapter: UIAdapter
@@ -45,6 +52,27 @@ export const rangeOption: OptionType['DateRangePicker'] = {
 
 export const inputProps: UIFormComponentProps['Input'] = { variant: 'filled' }
 export const buttonProps: UIActionComponentProps['Button'] = { danger: true }
+export const tableProps: UITableComponentProps['Table'] = { scroll: { x: 1200 } }
+export const columnProps: UITableComponentProps['Column'] = { width: 160, fixed: 'left' }
+export const modalProps: UIModalComponentProps['Modal'] = { width: 720, maskClosable: false }
+export const uploadProps: UIUploadComponentProps['Upload'] = { listType: 'picture-card' }
+
+export const coreTableProps: TableSchemaProps = { defaultExpandLevel: 2, rowSelection: false }
+export const coreModalProps: ModalSchemaProps = { title: '编辑', destroyOnClose: true }
+export const coreUploadProps: UploadSchemaProps = { uploadMode: 'submit', maxCount: 3, accept: '.png,.jpg' }
+
+export const tableOption: RootTableOption = {
+  columns: [{ type: 'Text', field: 'name', columnProps: { width: 160, fixed: 'left' } }],
+  attrs: { bordered: true, rowSelection: { preserveSelectedRowKeys: true } },
+  pagination: { current: 1, pageSize: 20, showSizeChanger: true },
+  modalProps: { width: 720, maskClosable: false },
+}
+
+export const uploadOption: OptionType['Upload'] = {
+  type: 'Upload',
+  field: 'files',
+  attrs: { uploadMode: 'submit', maxCount: 3, listType: 'picture-card' },
+}
 
 export const defaultProps: AdapterDefaultProps = {
   Form: { layout: 'vertical' },

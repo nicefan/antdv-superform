@@ -187,4 +187,12 @@ P005–P007 随各能力迁移逐步建立以下自动检查：
 - 执行：`pnpm build` 和 `pnpm vitest run tests/packageDeclarations.test.ts --threads false --reporter=dot`。
 - 结果：完整构建成功；发布声明 2 项测试通过，包根不再导出底层 Adapter 运行时函数。
 
+### P004：Modal、Table 与 Upload 类型分层
+
+- 类型 fixture：补充三类 Core 稳定 Props、AntDV Adapter Props 目录，以及表格列、选择、分页、弹窗和上传属性检查。
+- 执行：`pnpm exec vue-tsc --noEmit`、变更文件 ESLint 和 `git diff --check`。
+- 结果：类型检查和差异格式检查通过；ESLint 0 错误，保留 3 个既有警告。
+- 执行：`pnpm build` 和 `pnpm vitest run tests/packageDeclarations.test.ts --threads false --reporter=dot`。
+- 结果：完整构建成功，发布声明 2 项测试通过；生成声明不包含 Core 对 AntDV 类型的直接引用或内部源码路径。
+
 后续阶段完成时，在此追加执行命令、结果和已知限制，不粘贴大段日志。

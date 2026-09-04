@@ -9,18 +9,23 @@ import type {
   FormProps,
   InputNumberProps,
   InputProps,
+  PaginationProps,
   RadioGroupProps,
   RangePickerProps,
   RowProps,
   SelectProps,
   SpaceProps,
   SwitchProps,
+  TableColumnType,
+  TableProps,
   TextAreaProps,
   TimePickerProps,
   TimeRangePickerProps,
   TooltipProps,
   TreeSelectProps,
+  UploadProps,
 } from 'antdv-next'
+import type { ModalFuncProps, ModalProps } from 'antdv-next/dist/modal/interface'
 import type {
   AutoCompleteFieldOption,
   InputFieldAttrs,
@@ -76,6 +81,20 @@ declare global {
       Button: ButtonProps
       Dropdown: DropdownProps
       Tooltip: TooltipProps
+    }
+
+    interface UITableComponentProps {
+      Table: TableProps
+      Column: TableColumnType
+      Pagination: PaginationProps
+    }
+
+    interface UIModalComponentProps {
+      Modal: ModalFuncProps & ModalProps
+    }
+
+    interface UIUploadComponentProps {
+      Upload: UploadProps
     }
   }
 }

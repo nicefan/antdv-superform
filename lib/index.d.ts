@@ -10,18 +10,12 @@ import { default as default_2 } from 'vue';
 import { DefineComponent } from 'vue';
 import { ExtractPropTypes } from 'vue';
 import { HTMLAttributes } from 'vue';
-import { ModalFuncProps } from 'antdv-next/dist/modal/interface';
-import { ModalProps } from 'antdv-next/dist/modal/interface';
-import { PaginationProps } from 'antdv-next';
 import { PropType } from 'vue';
 import { PublicProps } from 'vue';
 import { Ref as Ref_2 } from 'vue';
 import { RendererElement } from 'vue';
 import { RendererNode } from 'vue';
 import { Slots } from 'vue';
-import { TableColumnType } from 'antdv-next';
-import { TableProps } from 'antdv-next';
-import { UploadProps } from 'antdv-next';
 import { VNode } from 'vue';
 import { VNodeChild } from 'vue';
 import { VNodeTypes } from 'vue';
@@ -126,14 +120,14 @@ declare type CoreWidgetTypes = {
     TagSelect: ExtTagSelectOption
 }
 
-export declare function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
+export declare function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }?: ExtModalProps): {
     modalRef: Ref_2<any, any>;
     modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
         [key: string]: any;
     }>;
-    setModal: (option?: ModalFuncProps | Obj) => void;
+    setModal: (option?: Partial<ExtModalProps>) => void;
     closeModal: () => Promise<void>;
-    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
+    openModal: (option?: Partial<ExtModalProps>) => Promise<void>;
 };
 
 /** 自定义 UI 字段的 attrs 类型映射。 */
@@ -310,7 +304,7 @@ export declare type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & 
     hideInTable?: boolean
     /** 表格内容渲染 */
     viewRender?: VSlot
-    columnProps?: TableColumnType
+    columnProps?: ExtTableColumnProps
 }
 
 export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
@@ -439,10 +433,7 @@ export declare interface ExtListOption extends ExtBaseOption, ExtRow {
     descriptionsProps?: ExtDescriptionsProps
 }
 
-declare type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & {
-    buttons?: ExtButtons;
-    [k: string]: any;
-});
+export declare type ExtModalProps = ModalSchemaProps & Omit<UIModalProps<'Modal'>, keyof ModalSchemaProps>
 
 declare interface ExtRow {
     /** 行间排版属性 */
@@ -465,15 +456,12 @@ export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type' | 'a
     subItems: UniOption[]
 }
 
+export declare type ExtTableColumnProps = UITableProps<'Column'>
+
 export declare interface ExtTableOption extends ExtBaseOption {
     field: string
     title?: VSlot
-    attrs?: Obj &
-    TableProps & {
-        /**数据初始化后默认展开的行 */
-        defaultExpandLevel?: number | 'all'
-        rowSelection?: false | TableProps['rowSelection']
-    }
+    attrs?: ExtTableProps
     /** @deprecated 更名为editable */
     edit?: boolean
     /** 表格全部为编辑状态，开启后rowEdit无效 */
@@ -482,7 +470,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
         editMode?: 'inline' | 'modal'
         addMode?: 'inline' | 'modal'
         form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
-        modalProps?: ModalFuncProps | Obj
+        modalProps?: ExtModalProps
         /**提交保存前 */
         onSave?: Fn
         onCancel?: Fn
@@ -494,18 +482,23 @@ export declare interface ExtTableOption extends ExtBaseOption {
     columns: ExtColumnsItem[]
     tabs?: TabsHeader | false
     /** 公共列配置 */
-    columnProps?: TableColumnType
+    columnProps?: ExtTableColumnProps
     /**序号列*/
-    indexColumn?: boolean | TableColumnType
+    indexColumn?: boolean | ExtTableColumnProps
     buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
     /** 列表元素右边按钮 */
-    rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnType })
+    rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: ExtTableColumnProps })
     /** 弹窗属性 */
-    modalProps?: ModalFuncProps | Obj
-    descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
+    modalProps?: ExtModalProps
+    descriptionsProps?: ExtDescriptionsProps & { modalProps?: ExtModalProps }
     /** @deprecated  弹窗表单配置,移至rowEditor */
-    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ModalFuncProps | Obj }
+    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ExtModalProps }
 }
+
+export declare type ExtTablePaginationProps = TablePaginationSchemaProps &
+Omit<UITableProps<'Pagination'>, keyof TablePaginationSchemaProps>
+
+export declare type ExtTableProps = TableSchemaProps & Omit<UITableProps<'Table'>, keyof TableSchemaProps>
 
 export declare interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
     activeKey?: Ref_2<string | undefined>
@@ -536,35 +529,10 @@ declare interface ExtUpload extends ExtFormItemOption {
     vModelFields?: {
         fileList?: string | Obj
     }
-    attrs?: UploadProps & {
-        apis?: {
-            upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
-            delete?: (file: Obj) => Promise<any>
-            download?: (file: Obj) => Promise<any>
-        }
-        /** 指定文件信息字段 */
-        infoNames?: { [k in 'uid' | 'name' | 'url']?: string } | Obj<string>
-        /** 指定文件信息中某属性作为同步绑定值，不指定将同步绑定文件对象 */
-        valueKey?: string
-        /** 文件最小MB */
-        minSize?: number
-        /** 文件最大MB */
-        maxSize?: number
-        /** 单文件上传, 绑定值为字符串或文件对象 */
-        isSingle?: boolean
-        /** 达到最大文件数量时，隐藏上传主体 */
-        hideOnMax?: boolean
-        /** 上传模式，默认auto,选择文件后自动上传，submit:提交时上传，custom通过绑定fileList中的文件对象手动上传 */
-        uploadMode?: 'auto' | 'submit' | 'custom' | 'base64' | 'text'
-        tip?: string
-        /** 上传按钮标题 */
-        title?: VSlot
-        /** 是否允许重名文件 */
-        repeatable?: boolean
-        /** 查看模式 */
-        isView?: boolean
-    }
+    attrs?: ExtUploadProps
 }
+
+export declare type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upload'>, keyof UploadSchemaProps>
 
 export declare interface FieldAdapter {
     /** 实际组件或 adapter.components 中的组件名称 */
@@ -740,6 +708,18 @@ export declare interface LayoutSpaceProps extends HTMLAttributes {
     wrap?: boolean
 }
 
+export declare type ModalOpenOptions = Partial<ExtModalProps> & { data?: Obj }
+
+/** SuperForm 稳定的弹窗语义，其他外观和交互属性由 Adapter 补充。 */
+export declare interface ModalSchemaProps {
+    title?: VSlot
+    icon?: string | Component
+    buttons?: ExtButtons
+    destroyOnClose?: boolean
+    onOk?: Fn
+    onCancel?: Fn
+}
+
 export declare type OptionType = WrapperTypes & WidgetTypes & CustomWidgetTypes
 
 export declare interface PresentationAdapter {
@@ -807,8 +787,8 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
         /** 开启高级查询 */
         advanced?: boolean
     }
-    pagination?: PaginationProps | false
-    attrs?: ExtTableOption['attrs'] | (TableProps & TableScanHight) | Obj
+    pagination?: ExtTablePaginationProps | false
+    attrs?: ExtTableProps & TableScanHight
 }
 
 declare interface RuleConfig {
@@ -1022,6 +1002,13 @@ export declare type TableApis = {
     export?: Fn<Promise<any>>
 }
 
+/** 请求分页只依赖这三个字段，其他分页外观属性由 Adapter 补充。 */
+export declare interface TablePaginationSchemaProps {
+    current?: number
+    pageSize?: number
+    total?: number
+}
+
 declare interface TableScanHight {
     maxHeight?: number
     /** 自动计算高度至底部 */
@@ -1032,6 +1019,14 @@ declare interface TableScanHight {
     isFixedHeight?: boolean
     /** 按父元素填充高度 */
     inheritHeight?: boolean
+}
+
+/** SuperForm 稳定的表格容器语义。 */
+export declare interface TableSchemaProps {
+    /** 数据初始化后默认展开的行。 */
+    defaultExpandLevel?: number | 'all'
+    /** 显式关闭选择列，具体选择配置由 Adapter 提供。 */
+    rowSelection?: false | (UITableProps<'Table'> extends { rowSelection?: infer T } ? T : Obj)
 }
 
 declare type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
@@ -1112,6 +1107,21 @@ export declare type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFo
  */
 export declare type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps
 
+/** Adapter 为弹窗提供的 UI Props 类型映射。 */
+export declare type UIModalComponentProps = SuperFormTypeRegistry.UIModalComponentProps
+
+declare type UIModalProps<K extends string> = K extends keyof UIModalComponentProps ? UIModalComponentProps[K] : unknown
+
+/** Adapter 为表格、列和分页提供的 UI Props 类型映射。 */
+export declare type UITableComponentProps = SuperFormTypeRegistry.UITableComponentProps
+
+declare type UITableProps<K extends string> = K extends keyof UITableComponentProps ? UITableComponentProps[K] : unknown
+
+/** Adapter 为上传组件提供的 UI Props 类型映射。 */
+export declare type UIUploadComponentProps = SuperFormTypeRegistry.UIUploadComponentProps
+
+declare type UIUploadProps<K extends string> = K extends keyof UIUploadComponentProps ? UIUploadComponentProps[K] : unknown
+
 export declare type UniOption = UniWrapperOption | UniWidgetOption
 
 export declare type UniWidgetOption =
@@ -1122,6 +1132,40 @@ export declare type UniWidgetOption =
 | (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
 
 export declare type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
+
+/** SuperForm 自身消费的上传配置，底层组件属性由 Adapter 补充。 */
+export declare interface UploadSchemaProps {
+    apis?: {
+        upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
+        delete?: (file: Obj) => Promise<any>
+        download?: (file: Obj) => Promise<any>
+    }
+    /** 指定文件信息字段 */
+    infoNames?: { [k in 'uid' | 'name' | 'url']?: string } | Obj<string>
+    /** 指定文件信息中某属性作为同步绑定值，不指定将同步绑定文件对象 */
+    valueKey?: string
+    /** 文件最小 MB */
+    minSize?: number
+    /** 文件最大 MB */
+    maxSize?: number
+    /** 单文件上传，绑定值为字符串或文件对象 */
+    isSingle?: boolean
+    /** 最大文件数量 */
+    maxCount?: number
+    /** 允许的文件类型 */
+    accept?: string
+    /** 达到最大文件数量时隐藏上传主体 */
+    hideOnMax?: boolean
+    /** 上传模式：auto 自动上传；submit 提交时上传；custom 手动上传；base64/text 转换内容。 */
+    uploadMode?: 'auto' | 'submit' | 'custom' | 'base64' | 'text'
+    tip?: string
+    /** 上传按钮标题 */
+    title?: VSlot
+    /** 是否允许重名文件 */
+    repeatable?: boolean
+    /** 查看模式 */
+    isView?: boolean
+}
 
 export declare function useButtons(option: ExtButtonGroup): (() => VNode<RendererNode, RendererElement, {
     [key: string]: any;
@@ -1149,18 +1193,16 @@ declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Prom
 
 export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any, any>;
-    openModal: (option?: ModalFuncProps | Obj) => Promise<void>;
+    openModal: (option?: Partial<ExtModalProps>) => Promise<void>;
     modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
+    setModal: (option?: Partial<ExtModalProps> | undefined) => void;
 };
 
 export declare function useModalForm(formOption: ExtFormOption, config?: ExtModalProps): {
-    openModal: ({ data, onOk, ...__config }?: ModalFuncProps & {
-        data?: Obj<any> | undefined;
-    }) => Promise<void>;
+    openModal: ({ data, onOk, ...__config }?: ModalOpenOptions) => Promise<void>;
     formActions: {
         readonly dataSource: ComputedRef<any>;
         readonly getForm: () => Promise<any>;
@@ -1176,7 +1218,7 @@ export declare function useModalForm(formOption: ExtFormOption, config?: ExtModa
         [key: string]: any;
     }>;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps | undefined) => void;
+    setModal: (option?: Partial<ExtModalProps> | undefined) => void;
 };
 
 export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
@@ -1213,14 +1255,14 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         /** 初始化数据 */
         resetData?: Obj<any> | undefined;
         /** 弹窗标题 */
-        meta?: ModalFuncProps | undefined;
+        meta?: Obj<any> | undefined;
     } | undefined) => any;
     /** 修改行，须判断是否已有选中行 */
     readonly edit: (param?: {
         /** 弹窗标题 */
         title?: string | undefined;
         record?: Obj<any> | undefined;
-        meta?: ModalFuncProps | undefined;
+        meta?: Obj<any> | undefined;
     } | undefined) => any;
     /** 删除行，须判断是否已有选中行 */
     readonly delete: () => any;
@@ -1229,7 +1271,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         /** 弹窗标题 */
         title?: string | undefined;
         record?: Obj<any> | undefined;
-        meta?: ModalFuncProps | undefined;
+        meta?: Obj<any> | undefined;
     } | undefined) => any;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
     /** `editable`模式下进行表单校验 */
@@ -1299,6 +1341,17 @@ declare global {
             Dropdown: DropdownProps;
             Tooltip: TooltipProps;
         }
+        interface UITableComponentProps {
+            Table: TableProps;
+            Column: TableColumnType;
+            Pagination: PaginationProps;
+        }
+        interface UIModalComponentProps {
+            Modal: ModalFuncProps & ModalProps;
+        }
+        interface UIUploadComponentProps {
+            Upload: UploadProps;
+        }
     }
 }
 
@@ -1315,6 +1368,12 @@ declare global {
     interface UIFormComponentOptionExtensions {}
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
     interface UIActionComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UITableComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIModalComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIUploadComponentProps {}
   }
 }
 

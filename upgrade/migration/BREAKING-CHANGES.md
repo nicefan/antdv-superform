@@ -355,3 +355,47 @@ Descriptions 和 Table Tabs 分别继承完整 `DescriptionsProps` 和 `TabsProp
 ### 兼容策略
 
 不保留无消费者的 locale 注入或底层运行时函数代理。
+
+## Modal、Table 与 Upload 公共类型分层
+
+阶段：P004
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+公共 Schema 直接引用 AntDV 的 `ModalProps`、`ModalFuncProps`、`TableProps`、`TableColumnType`、`PaginationProps` 和 `UploadProps`；表格动作的 `meta` 也被错误标注为弹窗属性。
+
+### 现在
+
+- Core 分别导出 `ModalSchemaProps`、`TableSchemaProps`、`TablePaginationSchemaProps` 和 `UploadSchemaProps`，只描述自身消费的业务属性。
+- AntDV Adapter 通过 `UIModalComponentProps`、`UITableComponentProps` 和 `UIUploadComponentProps` 提供完整 UI 属性提示。
+- 表格动作 `meta` 恢复为普通业务对象，不再错误绑定 AntDV 弹窗类型。
+
+### 影响与迁移
+
+AntDV 项目的现有 Schema 属性仍从内置 Adapter 获得提示。自定义 Adapter 需要按实际支持范围补充上述三个类型目录；不要再依赖 Core 类型隐式携带 AntDV 类型。
+
+```ts
+declare global {
+  namespace SuperFormTypeRegistry {
+    interface UITableComponentProps {
+      Table: MyTableProps
+      Column: MyTableColumnProps
+      Pagination: MyPaginationProps
+    }
+
+    interface UIModalComponentProps {
+      Modal: MyModalProps
+    }
+
+    interface UIUploadComponentProps {
+      Upload: MyUploadProps
+    }
+  }
+}
+```
+
+### 兼容策略
+
+不保留 AntDV 类型别名或双路径。此次只调整公共类型边界，Modal、Table、Upload 的运行时迁移分别在 P006、P007 完成。

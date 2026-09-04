@@ -1,7 +1,7 @@
 # UI 适配器升级总计划
 
 状态：活动
-当前状态：P002/P003 及审查回补已完成；P004 正在进行公共 Schema 类型分层
+当前状态：P002/P003 及审查回补、P004 公共 Schema 类型解耦已完成；P005 待开始
 基线分支：`next-dev`
 
 ## 全局目标
@@ -339,7 +339,7 @@ P010 发布与迁移
 
 ## P004 公共 Schema 类型解耦
 
-状态：进行中
+状态：已完成
 依赖：P001，建议在 P002/P003 稳定后执行
 
 ### 目标
@@ -357,12 +357,12 @@ P010 发布与迁移
 - [x] 按 Form、Field、Layout、Modal、Table、Upload 分类当前 AntDV 类型泄漏。
 - [x] 提取 Form、FormItem、Row、Col 和 Space 的第一批框架无关稳定 Props。
 - [x] 完成 Container 和 Action 的稳定 Props 及 Adapter 类型扩展。
-- [ ] 完成 Modal、Table 和 Upload 的稳定 Props。
+- [x] 完成 Modal、Table 和 Upload 的稳定 Props。
 - [x] 设计 UI 专属扩展属性的类型扩展机制。
 - [x] 删除 Form、Field 和 Layout 公共 Schema 对旧 AntDV Props 的直接继承和兼容别名。
-- [ ] 删除剩余公共 Schema 对旧 AntDV Props 的直接继承。
-- [ ] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
-- [ ] 记录每项不兼容类型变化和迁移示例。
+- [x] 删除剩余公共 Schema 对旧 AntDV Props 的直接继承。
+- [x] 更新 `exaTypes.d.ts`、安装配置和生成的组件类型声明。
+- [x] 记录每项不兼容类型变化和迁移示例。
 - [x] 审查包根导出的 `renderUI*`、`resolveUI*` 等底层运行时函数，只保留 `defineUIAdapter`、`antdvAdapter` 和 Adapter 类型契约。
 
 #### 2026-09-03：启动 P004 并收缩构建插件
@@ -389,11 +389,18 @@ P010 发布与迁移
 - 验证：Adapter 与字段回归 2 个文件、22 项通过；类型检查、变更文件 ESLint、完整构建和发布声明测试通过。
 - 后续：拆分 Modal、Table 和 Upload 公共类型，完成 P004 声明解耦。
 
+#### 2026-09-04：完成 Modal、Table 与 Upload 公共类型分层
+
+- 完成：抽取三类复杂能力的 Core 稳定 Props，并由 AntDV Adapter 类型目录补充完整 UI Props；`exaTypes.d.ts` 不再直接导入 AntDV 类型。
+- 设计影响：本轮只拆分公开类型，不提前修改 P006/P007 的弹窗、上传和表格运行时协议。
+- 兼容性：表格动作 `meta` 改回普通业务对象；自定义 Adapter 需声明 Modal、Table、Column、Pagination 和 Upload 的属性映射。
+- 验证：类型 fixture、类型检查、完整构建和发布声明测试通过。
+
 ### 验收条件
 
-- [ ] Core 公共类型不直接 import AntDV 类型。
-- [ ] AntDV 用户仍能获得适配器专属属性的类型提示。
-- [ ] 迁移记录覆盖所有用户可见的类型变化。
+- [x] Core 公共类型不直接 import AntDV 类型。
+- [x] AntDV 用户仍能获得适配器专属属性的类型提示。
+- [x] 迁移记录覆盖所有用户可见的类型变化。
 
 ---
 

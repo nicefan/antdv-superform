@@ -43,7 +43,8 @@ export default defineComponent({
   emits: ['register', 'load', 'update:dataSource'],
   setup(props, ctx) {
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
-    const option = shallowReactive({ attrs: ctxAttrs }) as RootTableOption
+    // 注册 schema 前只保留根节点透传属性，完整配置会在 setOption 时合入。
+    const option = shallowReactive({ attrs: ctxAttrs }) as unknown as RootTableOption
     const dataRef = ref([])
     const wrapRef = ref()
 

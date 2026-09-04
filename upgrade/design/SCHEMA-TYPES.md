@@ -46,6 +46,8 @@ Form、FormItem、Row、Col 和 Space 是 Core 固定语义名，它们先接收
 
 Descriptions 和 Tabs 只保留实际被 Core 消费的容器语义，不再继承整个 UI 组件 Props。按钮、Tooltip 和 Dropdown 会落到 Adapter 的语义 Action 渲染器，其有效 UI Props 由 `UIActionComponentProps` 提供类型，Core 不解释具体 UI 属性。
 
+Modal、Table 和 Upload 同样以稳定业务属性为主体，并分别通过 `UIModalComponentProps`、`UITableComponentProps`、`UIUploadComponentProps` 合并 Adapter 属性。类型分层不提前定义运行时 capability，也不改变查询、弹窗和上传流程。
+
 当 UI 组件名与 Core 名称冲突时，Core 固定语义和增强类型优先，UI 扩展必须排除这些保留名称。Vite 插件也必须按 ADR-0002 的解析顺序排除 Core 和增强类型。
 
 ## 默认输入协议
