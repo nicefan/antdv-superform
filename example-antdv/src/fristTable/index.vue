@@ -23,7 +23,7 @@
 import { watch, reactive, ref, toRef, h } from 'vue'
 import { Button, Space } from 'antdv-next'
 import { getTableOption } from './formOption'
-import { useForm, useTable, SuperTable, defineTable } from 'superform'
+import { useForm, useTable, SuperTable, defineTable } from 'superform-antdv'
 
 const props = defineProps<{
   msg: string

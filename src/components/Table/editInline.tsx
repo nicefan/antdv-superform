@@ -1,9 +1,8 @@
 import { ref, shallowReactive, toRaw, watch, reactive, h, toRefs, defineComponent, unref, computed } from 'vue'
 import { cloneDeep, isFunction } from 'lodash-es'
-import { message } from '../../compat/antdv'
 import { ButtonGroup, hasFormComponent } from '../index'
 import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
-import base from '../../compat/antdv'
+import { renderUIForm, renderUIFormItem, showUIMessage } from '../../adapter'
 import { buildInnerNode } from '../Collections'
 import { formatRule } from '../../utils/buildModel'
 import { merge } from '../../utils/merge'
@@ -118,7 +117,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
           })
           .catch((err) => {
             console.log('error', err)
-            err?.errorFields && message.error(err.errorFields[0].errors[0])
+            err?.errorFields && showUIMessage('error', err.errorFields[0].errors[0])
           })
       },
     },
@@ -167,8 +166,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       const activeRules = computed(() => (unref(attrs.disabled) || unref(hidden) ? [] : rules))
       return () =>
         editableRef.value
-          ? h(
-              base.Form,
+          ? renderUIForm(
               {
                 ref: (instance) => {
                   if (instance) forms[ruleName] = instance
@@ -177,14 +175,13 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
               },
               {
                 default: () =>
-                  h(
-                    base.FormItem,
+                  renderUIFormItem(
                     {
                       name: model.propChain,
                       rules: activeRules.value,
                       wrapperCol: {},
                     },
-                    inputSlot
+                    { default: inputSlot }
                   ),
               }
             )

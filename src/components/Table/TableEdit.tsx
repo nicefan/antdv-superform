@@ -2,7 +2,7 @@ import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, sh
 import { isFunction } from 'lodash-es'
 import { hasFormComponent } from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
-import base from '../../compat/antdv'
+import { renderUIFormItem } from '../../adapter'
 import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
 import { formatRule } from '../../utils/buildModel'
@@ -83,14 +83,13 @@ export default function ({ model, orgList, rowKey, setRowKey, editableRef }) {
       const rules = __rules && computed(() => (unref(attrs.disabled) ? undefined : __rules))
       return () =>
         selfEditableRef.value
-          ? h(
-              base.FormItem,
+          ? renderUIFormItem(
               reactive({
                 wrapperCol: {},
                 name: model.value.propChain,
                 rules,
               }),
-              inputSlot
+              { default: inputSlot }
             )
           : viewNode
           ? viewNode()

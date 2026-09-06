@@ -1,5 +1,5 @@
 import { h, ref, toRaw, watchEffect } from 'vue'
-import { useForm, defineForm, useModal } from 'superform'
+import { useForm, defineForm, useModal } from 'superform-antdv'
 import { AppleOutlined, AndroidOutlined, UserOutlined, SearchOutlined } from '@antdv-next/icons'
 import { Button, message, Modal } from 'antdv-next'
 import { uniq } from 'lodash-es'

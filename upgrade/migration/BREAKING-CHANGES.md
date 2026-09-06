@@ -87,24 +87,20 @@ Schema 直接使用 `type: 'UserPicker'` 或 `type: 'MarkdownEditor'`。需要�
 Adapter 现在只直接引入 Form、布局、容器、Action、Presentation 等 Core 固定 UI 原语。Input、Select、Switch、Rate 等 Schema 字段由 Adapter 声明支持和适配协议，但实际组件必须通过 Vite 插件自动导入，或由 Adapter 工厂显式提供：
 
 ```ts
-import superform from 'superform'
-import { createAntdvAdapter } from 'superform-antdv'
+import superform from 'superform-antdv'
 import { Input, Rate, Select } from 'antdv-next'
 
-superform.useAdapter(createAntdvAdapter({
-  components: { Input, Select, Rate },
-}))
+superform.initialize({ components: { Input, Select, Rate } })
 ```
 
-Vite 用户可从 `superform-antdv/unplugin` 或 `superform-element-plus/unplugin` 使用对应 resolver。Adapter 已声明但未注册的字段会在运行时明确报错。项目自定义组件改用 `superform.registerComponent(s)`，不会与 Adapter 的 `components` 混用。
+Vite 用户可从 `superform-antdv/unplugin` 或 `superform-element-plus/unplugin` 使用对应 resolver。即使已使用自动导入，也仍需在渲染前调用无参 `initialize()` 初始化 Adapter。Adapter 已声明但未注册的字段会在运行时明确报错。项目自定义组件改用 `superform.registerComponent(s)`。
 
-需要快速全量引入时，可使用独立入口：
+需要快速全量引入时，从产品包根导入统一命名的字段表：
 
 ```ts
-import superform from 'superform'
-import { elementPlusFull } from 'superform-element-plus/full'
+import superform, { fieldComponents } from 'superform-element-plus'
 
-superform.useAdapter(elementPlusFull)
+superform.initialize({ components: fieldComponents })
 ```
 
 Element Plus Schema 名称不携带组件库导出的 `El` 前缀：`ElInput`、`ElSelect`、`ElSwitch`、`ElRate` 分别改为 `Input`、`Select`、`Switch`、`Rate`。
@@ -161,10 +157,10 @@ Checkbox  → CheckboxGroup
 
 不保留旧名称兼容。项目已经开放 UI 组件库自由绑定，保留与实际组件不一致的别名会破坏跨 UI 框架的一致解析规则。
 
-## 必须通过 Core 显式初始化 Adapter
+## 官方 UI 包直接提供完整 SuperForm
 
 阶段：P001 回补
-状态：已实施
+状态：已调整
 影响版本：下一大版本
 
 ### 以前
@@ -177,28 +173,27 @@ app.use(superForm)
 
 ### 现在
 
-Core、AntDV Adapter 和 Element Plus Adapter 已拆成独立 npm 包。必须调用 `superform.useAdapter()` 显式初始化，首次初始化后不能切换为其他 Adapter；不再通过 Vue `app.use()` 承担这项职责。
+官方 UI 实现已拆成独立产品包，并把 Core 打入各自构建结果。应用只导入所选产品包，不再单独安装 Core；包导入不会立即绑定 Adapter，需在渲染前显式调用 `initialize()`，也不通过 Vue `app.use()` 承担初始化职责。
 
 ```ts
-import superform from 'superform'
-import { antdvAdapter } from 'superform-antdv'
+import superform from 'superform-antdv'
 
-superform.useAdapter(antdvAdapter)
+superform.initialize()
 superform.configure({ defaultProps, dictApi })
 superform.registerComponents({ UserSelect })
 ```
 
 ### 影响
 
-应用需要同时安装 `superform` 和一个 Adapter 包。原 `app.use(superForm, options)` 需拆为 `useAdapter`、`configure` 和按需的 `registerComponent(s)`；运行期间切换 UI 框架会明确报错。
+应用只安装 `superform-antdv` 或 `superform-element-plus`。原 `app.use(superForm, options)` 需拆为产品包导入、`initialize`、`configure` 和按需的 `registerComponent(s)`；同一应用不能混用两个官方产品包。
 
 ### 迁移
 
-根据项目实际使用的 UI 框架安装对应 Adapter 包并显式调用 `useAdapter`。Vue App 只需正常挂载，无需注册空插件。
+根据项目实际使用的 UI 框架安装并导入对应产品包。未使用自动导入插件时，在 `initialize({ components })` 中手动提供字段组件，或传入包根的 `fieldComponents`。第三方 Adapter 开发者仍可依赖 `superform/sdk`，使用独立 Core 的 `useAdapter(customAdapter)`。
 
 ### 兼容策略
 
-不保留隐式默认 Adapter，也不提供运行时切换兼容入口。同一 Adapter 实例的重复安装仍允许执行。
+不保留同时安装 Core 与官方 Adapter 的旧组合用法，也不支持两个官方产品包共存或运行时切换。
 
 ## RadioGroup 不再推断 UI 专属属性
 
@@ -412,7 +407,7 @@ Descriptions 和 Table Tabs 分别继承完整 `DescriptionsProps` 和 `TabsProp
 
 ### 现在
 
-- `configure` 只保留 Core 全局配置和 `defaultProps`；`defaultProps` 使用框架无关的 `AdapterDefaultProps`。Adapter 和项目组件分别使用 `useAdapter`、`registerComponent(s)`。
+- `configure` 只保留 Core 全局配置和 `defaultProps`；`defaultProps` 使用框架无关的 `AdapterDefaultProps`。官方产品包通过 `initialize` 显式绑定 Adapter，项目组件继续使用 `registerComponent(s)`。
 - Core 包只导出 `defineUIAdapter` 和 Adapter capability 类型。具体 Adapter 使用独立 npm 包与构建产物；Core 调用的渲染、解析、映射与实例函数仍保留在内部模块，不再构成公开 API。
 
 ### 影响与迁移
@@ -468,3 +463,16 @@ declare global {
 ### 兼容策略
 
 不保留 AntDV 类型别名或双路径。此次只调整公共类型边界，Modal、Table、Upload 的运行时迁移分别在 P006、P007 完成。
+## P006：复杂 UI capability
+
+- 第三方 Adapter 如果需要表单错误提示、按钮确认、命令式弹窗或 Upload，需要实现 `services`、`modal`、`upload` 和 `preview` capability。
+- Modal 的 Core 受控协议固定为 `visible/onUpdate:visible`；具体 UI 框架的 `open`、`modelValue` 及关闭事件由 Adapter 转换。
+- Upload 的 `LIST_IGNORE`、组件事件、预览组件和上传图标不再由 Core 假定为 AntDV 协议。
+- `src/compat/icons.ts` 与 `src/compat/antdv.ts` 均已删除。
+
+## P007：Table capability 与最终 UI 解耦
+
+- Core Table 统一使用 `data`、`columns`、`selection`、`pagination`、`expandedKeys` 和更新回调协议。
+- AntDV 的 `dataSource/rowSelection/expandedRowKeys` 与 Element Plus 的列、选择、展开和分页事件均由各自 Adapter 映射。
+- Core 不再包含具体 UI 框架导入、私有 class 或 compat；AntDV 专属样式迁入 `superform-antdv`。
+- 第三方 Adapter 若提供 SuperTable，需要实现 `table.render`、`table.renderFilter` 和自动高度所需的选择器声明。

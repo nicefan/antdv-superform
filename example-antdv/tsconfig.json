@@ -11,13 +11,13 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noImplicitAny": false,
+    "skipLibCheck": true,
     "sourceMap": true,
     "allowJs": false,
     "baseUrl": ".",
     "paths": {
       "superform": ["../src/index.ts"],
       "superform/sdk": ["../src/sdk.ts"],
-      "superform/unplugin/vite": ["../src/unplugin/vite.ts"],
       "superform-antdv": ["../packages/superform-antdv/src/index.ts"],
       "superform-antdv/unplugin": ["../packages/superform-antdv/src/unplugin.ts"],
       "src/*": ["../src/*"]

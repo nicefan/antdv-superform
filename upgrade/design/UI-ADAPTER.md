@@ -62,10 +62,11 @@ fields: {
 
 ## 用户扩展
 
-- `superform.useAdapter(adapter)`：显式指定应用级 UI 框架实现；初始化后不可切换。
-- `create*Adapter({ components })`：未使用构建插件时，显式提供当前 Adapter 字段所需的实际 UI 组件。
+- `superform.useAdapter(adapter)`：第三方 Adapter 与 Core 组合时显式指定 UI 实现；初始化后不可切换。
+- `superform.initialize({ components })`：官方产品显式初始化入口；未使用构建插件时同时提供 Adapter 已声明字段的实际 UI 组件。
 - `superform.registerComponent(s)`：注册消费项目自己的 Schema 组件，不得覆盖 Core 或当前 Adapter 字段。
-- `superform-antdv/full` 与 `superform-element-plus/full`：提供已附带全量字段组件的 Adapter，可直接传给 `useAdapter`。
+- `superform-antdv` 与 `superform-element-plus`：官方产品包内置 Core 并重新导出 Core API，但导入时不会初始化 Adapter。
+- `fieldComponents`：两个产品包从包根使用同一名称导出全量字段表，通过 `initialize({ components: fieldComponents })` 快速全量登记。
 - `superform.configure()`：设置 `dictApi`、`customIcon`、默认按钮和 `defaultProps` 等 Core 全局行为。
 - `defaultProps`：覆盖当前适配器提供的默认值；合并顺序需在 P001 定义并补测试。
 - 新版本不保留旧 `components` 底层替换语义，也不增加废弃警告或双路径。
@@ -74,7 +75,7 @@ P005 已将项目组件与 Adapter 字段组件分为两套注册入口，并删
 
 ## P001 已确认决策
 
-- Adapter 采用应用级全局实例，必须通过 `useAdapter` 显式传入，P001 不支持表单级局部覆盖。
+- Adapter 采用应用级全局实例，不支持表单级局部覆盖；官方产品通过 `initialize` 显式绑定，第三方组合通过 `useAdapter` 显式传入。
 - 默认值合并顺序为 Adapter 默认值在前、用户 `defaultProps` 在后。
 - Adapter 首次初始化后锁定；同一 Adapter 实例可重复使用，不同实例会明确报错。
 - `globalConfig` 视为应用初始化配置，不为同一 Adapter 的重复安装定义缺省项重置语义。
@@ -84,7 +85,7 @@ P005 已将项目组件与 Adapter 字段组件分为两套注册入口，并删
 
 ## P002 已确认决策
 
-- 普通 UI 字段由 Adapter 声明支持、由自动导入或 Adapter 工厂 `components` 提供实际组件，不进入 Core 字段注册表。
+- 普通 UI 字段由 Adapter 声明支持、由自动导入或官方产品 `initialize({ components })` 提供实际组件，不进入 Core 字段注册表。手动组件的解析优先级始终高于自动导入。
 - 字段增强通过 Adapter 的 `processors` 显式组合，不按组件名称推断。
 - Core 处理器负责 options、范围模型、标签和值等通用语义；Adapter 负责 UI 组件、默认属性、受控值协议和特殊渲染。
 - UI 组件的事件参数由 Adapter 归一化后再交给 Core；外部 options/search 回调的并发、取消和异常仍由调用方负责。
@@ -102,6 +103,22 @@ P005 已将项目组件与 Adapter 字段组件分为两套注册入口，并删
 - 单根且语义透明的包装保留 Vue attrs fallthrough；多根、跨层扩散、受控状态冲突或协议转换场景才显式接管。
 - ButtonGroup、TagInput、TagSelect 等复合组件优先收缩旧 UI 属性和内部节点透传，再以最小业务视图模型连接 Adapter，不为每个内部原语建立独立扩展面。
 - 允许删除升级前缺少明确业务价值的能力和规则；产生用户可见影响时同步更新迁移记录，不额外建立长期兼容层。
+
+## P006 已确认决策
+
+- Service capability 统一承接轻量消息、命令式确认框和可更新信息框；Core 不再调用具体 UI 框架的静态服务。
+- Modal capability 使用 `visible/onUpdate:visible` 受控协议，并允许 Adapter 捕获和恢复脱离组件树挂载时所需的 UI 上下文。
+- Upload capability 负责实际组件、忽略标记、事件转换和默认触发按钮；文件映射、校验、任务队列、提交等待及延迟删除属于 Core Controller。
+- Preview capability 只接收图片列表、当前索引和受控可见状态，不向 Core 暴露 UI 图片组件。
+- Upload 专属图标加入 Icon capability 的语义图标集合；Core 不再导入 UI 图标。
+
+## P007 已确认决策
+
+- Table capability 使用明确的表格、列、分页、选择、展开、筛选和 DOM 选择器协议；Core 不再传递或解释具体 UI 表格组件。
+- Core 统一使用 `data/selection.selectedKeys/expandedKeys/onExpandedChange`，Adapter 负责转换各 UI 框架的事件和受控状态。
+- 表格自动高度依赖的 UI 私有选择器由 Adapter 声明，缺少可选节点时 Core 安全跳过。
+- `src/compat` 已完全删除；具体 UI 样式进入对应产品包，Core 样式只保留 `sup-*` 语义 class。
+- 官方产品包内置 Core，包导入无 Adapter 初始化副作用；`initialize()` 首次调用创建并锁定 Adapter，重复无参调用幂等，初始化后不得再追加字段组件。
 
 ### P003 复合组件精简清单
 

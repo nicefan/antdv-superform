@@ -24,17 +24,8 @@ export default defineConfig(({ mode }) =>
             external: ['vue'],
             output: {
               exports: 'named',
-              globals: {
-                // vue: 'vue',
-                'antdv-next': 'antd',
-              },
               chunkFileNames: '[name].js',
               minifyInternalExports: false,
-              manualChunks(id) {
-                if (id.includes('antdv-next')) {
-                  return 'antd'
-                }
-              },
             },
           },
         },
@@ -68,9 +59,6 @@ export default defineConfig(({ mode }) =>
               'nanoid',
               /dayjs/,
               /lodash/,
-              /antdv-next/,
-              /@antdv-next/,
-              /^element-plus(?:\/|$)/,
               '@vueuse/core',
             ],
             // input: [`dist/index.d.ts`],

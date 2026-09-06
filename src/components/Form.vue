@@ -4,9 +4,8 @@ import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
-import { message } from '../compat/antdv'
 import { ButtonGroup } from './buttons'
-import { clearUIFormValidation, renderUIForm, validateUIForm } from '../adapter'
+import { clearUIFormValidation, renderUIForm, showUIMessage, validateUIForm } from '../adapter'
 
 export default {
   name: 'SuperForm',
@@ -85,7 +84,7 @@ export default {
               return data
             },
             (err) => {
-              typeof err === 'object' && err.message && message.error(err.message)
+              typeof err === 'object' && err.message && showUIMessage('error', err.message)
               return Promise.reject(err)
             }
           )

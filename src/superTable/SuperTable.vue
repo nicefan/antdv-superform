@@ -29,7 +29,7 @@ import { DataProvider } from '../dataProvider'
 import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
-import base from '../compat/antdv'
+import { renderUIForm } from '../adapter'
 import { nanoid } from 'nanoid'
 import { set as setObject } from 'lodash-es'
 
@@ -232,7 +232,7 @@ export default defineComponent({
         }
         const table = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
         if (option.editable) {
-          tableSlot.value = () => h(base.Form, { model: dataRef.value, ref: tableFormRef }, table)
+          tableSlot.value = () => renderUIForm({ model: dataRef.value, ref: tableFormRef }, { default: table })
         } else {
           tableSlot.value = table
         }
@@ -249,7 +249,7 @@ export default defineComponent({
       })
       const table = () => h(Controls.Table, { option, effectData, model, key: Symbol(), ...tableAttrs } as any, slots.value)
       if (option.editable) {
-        tableSlot.value = () => h(base.Form, { model: dataRef.value, ref: tableFormRef }, table)
+        tableSlot.value = () => renderUIForm({ model: dataRef.value, ref: tableFormRef }, { default: table })
       } else {
         tableSlot.value = table
       }

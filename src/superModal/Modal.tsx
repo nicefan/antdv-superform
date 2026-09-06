@@ -1,6 +1,6 @@
 import { defineComponent, ref, render, getCurrentInstance, createVNode, provide, onMounted } from 'vue'
-import base from '../compat/antdv'
 import type { ExtModalProps } from '../exaTypes'
+import { renderUIModal } from '../adapter'
 
 const comp = defineComponent({
   props: {
@@ -19,11 +19,19 @@ const comp = defineComponent({
     const config = ref<Obj>({})
     expose({
       open(_config) {
-        Object.assign(config, _config, { onOk: porxyOk(_config.onOk) })
+        Object.assign(config.value, _config, { onOk: porxyOk(_config.onOk) })
         visible.value = true
       },
     })
-    return () => <base.Modal v-model={[visible.value, 'visible']} {...config} v-slots={slots}></base.Modal>
+    return () =>
+      renderUIModal(
+        {
+          ...config.value,
+          visible: visible.value,
+          'onUpdate:visible': (value) => (visible.value = value),
+        },
+        slots
+      )
   },
 })
 

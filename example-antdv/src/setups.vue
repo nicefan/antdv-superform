@@ -24,7 +24,7 @@ import {
   useModalForm,
   useTable,
   type ButtonItem,
-} from 'superform'
+} from 'superform-antdv'
 import { getTableOption } from './fristTable/formOption'
 import { nanoid } from 'nanoid'
 import { SyncOutlined } from '@antdv-next/icons'

@@ -10,45 +10,21 @@ import {
   shallowRef,
   watch,
   toRaw,
-  nextTick,
 } from 'vue'
 import {
-  UploadOutlined,
-  PaperClipOutlined,
-  LoadingOutlined,
-  SyncOutlined,
-  PlusOutlined,
-  CloseCircleOutlined,
-} from '../compat/icons'
-import base from '../compat/antdv'
-import { message, Modal, Upload } from '../compat/antdv'
+  getUIUploadListIgnore,
+  openUIConfirm,
+  openUIInfo,
+  renderUISemanticIcon,
+  renderUIUpload,
+  renderUIUploadTrigger,
+  showUIMessage,
+} from '../adapter'
 import { globalProps } from '../plugin'
 import usePreview from './usePreview'
 import { isArray, isFunction } from 'lodash-es'
 import { downloadByData, getBase64WithFile } from '../utils/file'
-
-interface FileInfo {
-  /** 文件id */
-  uid: string
-  /** 文件对象 */
-  file?: File
-  /** 文件名 */
-  name: string
-  /** 文件类型 */
-  type: string
-  /** 链接地址 */
-  url: string
-  /** 上传进度 */
-  percent?: number
-  /** 文件状态 */
-  status?: 'waiting' | 'error' | 'success' | 'done' | 'uploading' | 'removed'
-}
-
-function acceptValidtor(file: FileInfo, accept: string) {
-  return accept.split(',').some((str) => {
-    return file.name?.endsWith(str) || (file.type && new RegExp(`^${str.replace('*', '\\S*')}$`).test(file.type))
-  })
-}
+import { createUploadController, type UploadFileInfo } from './upload/controller'
 
 const imgs = '.png,.jpg,.jpeg,.gif,.webp,.svg,.tif,.tiff'
 function fileIsImage(file) {
@@ -65,7 +41,7 @@ function fileIsImage(file) {
 }
 
 function createLoadModal(title, onOk?: Fn) {
-  const modal = Modal.info({
+  const modal = openUIInfo({
     title: () => title,
     okButtonProps: {
       loading: true,
@@ -79,7 +55,7 @@ function createLoadModal(title, onOk?: Fn) {
 
   const setError = (title, err) => {
     modal.update({
-      icon: () => h(CloseCircleOutlined),
+      icon: () => renderUISemanticIcon('error'),
       okButtonProps: {
         loading: false,
       },
@@ -99,7 +75,7 @@ export default defineComponent({
     value: null as unknown as PropType<any>,
     fileList: Array as PropType<any[]>,
     /** 指定文件信息字段 */
-    infoNames: Object as PropType<Partial<Pick<FileInfo, 'uid' | 'name' | 'url'>>>,
+    infoNames: Object as PropType<Partial<Pick<UploadFileInfo, 'uid' | 'name' | 'url'>>>,
     /** 指定文件信息中一个属性存为绑定值 */
     valueKey: String,
     //TODO apis 可从全局配置， 当前配置为字符串时，作为url参数传到全局api方法
@@ -144,37 +120,19 @@ export default defineComponent({
     } = props
     const maxCount = (isSingle ? 1 : props.maxCount) || Infinity
     const { accept, listType } = ctx.attrs as Obj
+    const controller = createUploadController({
+      mode,
+      valueKey,
+      infoNames,
+      maxCount,
+      accept,
+      minSize,
+      maxSize,
+      repeatable,
+    })
 
     const preview = usePreview()
-
-    const __names: Obj = {
-      ...(valueKey && { [valueKey]: valueKey }),
-      uid: 'uid',
-      status: 'status',
-      url: 'url',
-      name: 'name',
-      ...infoNames,
-    }
-    if (mode === 'custom') __names.originFileObj = 'originFileObj'
-
-    const convertInfo = (info) => {
-      const __info = { status: 'done', ...info }
-      Object.entries(__names).forEach(([key, name]) => {
-        if (name && name !== key && name in __info) {
-          __info[key] = __info[name as string]
-          delete __info[name as string]
-        }
-      })
-      return __info
-    }
-    const reconvert = (info) => {
-      const __info = {}
-      Object.entries(__names).forEach(([key, name]) => {
-        const value = info[key]
-        if (name && value !== undefined) __info[name] = value
-      })
-      return __info
-    }
+    const { convertInfo, reconvert } = controller
 
     const { onSubmit } = inject<any>('exaProvider', {})
 
@@ -182,9 +140,6 @@ export default defineComponent({
 
     const outFileList = shallowRef<any[]>([])
     const outValues = shallowRef<any>()
-
-    const tasks = new Map<string, Awaited<any>>()
-    const waitingTasks = new Map<string, Fn<Awaited<any>>>()
 
     const updateFileList = (list) => {
       outFileList.value = list.map(reconvert)
@@ -196,14 +151,7 @@ export default defineComponent({
     }
 
     const updateValue = () => {
-      if (props.isSingle) {
-        const frist = toRaw(outFileList.value[0])
-        outValues.value = !valueKey ? frist : frist?.[valueKey] ?? frist?.[__names.uid] // 指定key无值时用uid替代，满足表单校验，建议表单中绑定列表，通过计算属性生成提交值
-      } else if (valueKey) {
-        outValues.value = outFileList.value.map((item) => item[valueKey] ?? item[__names.uid])
-      } else {
-        outValues.value = outFileList.value
-      }
+      outValues.value = controller.getValue(toRaw(outFileList.value), Boolean(props.isSingle))
       ctx.emit('update:value', outValues.value)
     }
 
@@ -236,52 +184,23 @@ export default defineComponent({
 
     const isLoading = ref(false)
     onSubmit?.(() => {
-      let stack: Promise<any> = Promise.resolve()
-      if (mode === 'auto') {
-        for (const item of innerFileList.value) {
-          if (item.status === 'error') {
-            const error = item.response || { message: '文件上传错误，请删除后重新上传！' }
-            return Promise.reject(error)
-          } else if (item.status === 'uploading') {
-            isLoading.value = true
-          }
-          stack = Promise.all(tasks.values())
-        }
-      } else if (mode === 'submit') {
-        const __tasks: any = []
-        for (const item of innerFileList.value) {
-          if (item.status !== 'done') {
-            isLoading.value = true
-            item.status = 'uploading'
-            const task = waitingTasks.get(item.uid) as Fn
-            __tasks.push(task())
-          }
-          stack = Promise.all(__tasks)
-        }
-      }
-      if (removeFileMap.size) isLoading.value = true
-
+      isLoading.value = controller.hasPendingWork(innerFileList.value)
       if (isLoading.value) {
         const modal = createLoadModal(' 文件同步中，请稍候...')
-        return stack
-          .then((data) =>
-            // 文件删除出错不中断提交
-            Promise.all([...removeFileMap.values()].map((handler) => handler()))
-              .then(() => data)
-              .catch((err) => console.error(err))
-              .finally(() => {
-                modal?.destroy()
-                isLoading.value = false
-                return data
-              })
-          )
+        return controller
+          .submit(innerFileList.value)
+          .then((data) => {
+            modal.destroy()
+            return data
+          })
           .catch((err) => {
             isLoading.value = false
             modal.setError('文件上传失败', err)
             return false
           })
+          .finally(() => (isLoading.value = false))
       }
-      return stack
+      return controller.submit(innerFileList.value)
     })
 
     const beforeUpload = (file, resFileList) => {
@@ -289,36 +208,11 @@ export default defineComponent({
         const res = props.beforeUpload(file, resFileList)
         if (res !== undefined) return res
       }
-      const errMessage = (() => {
-        if (maxCount > 1) {
-          const count = outFileList.value.length + resFileList.indexOf(file)
-          if (count >= maxCount) {
-            return '文件数量最多' + maxCount
-          }
-        }
-        if (accept && !acceptValidtor(file, accept)) {
-          return '请选择正确的文件类型！'
-        }
-        if (minSize || maxSize) {
-          const fileSize = file.size / 1024 / 1024
-          if (minSize && minSize > fileSize) {
-            return '文件最小需要' + minSize + 'M'
-          }
-          if (maxSize && maxSize < fileSize) {
-            return '文件最大不超过' + maxSize + 'M'
-          }
-        }
-        if (!repeatable) {
-          const item = innerFileList.value.find((item) => item.name === file.name)
-          if (item) {
-            return `文件重复: ${item.name}`
-          }
-        }
-      })()
+      const errMessage = controller.validate(file, resFileList, innerFileList.value)
 
       if (errMessage) {
-        message.error(errMessage)
-        return Upload.LIST_IGNORE
+        showUIMessage('error', errMessage)
+        return getUIUploadListIgnore()
       }
       if (mode === 'custom') {
         // 显示上传列表时，返回false，禁用原上传！
@@ -327,12 +221,11 @@ export default defineComponent({
         }
       } else if (maxCount === 1 && innerFileList.value.length) {
         const info = innerFileList.value[0]
-        tasks.delete(info.uid)
-        waitingTasks.delete(info.uid)
+        controller.clearTask(info.uid)
         if (info.status === 'done' && apis.delete) {
           // 提交时进行远程删除
           const __file = { ...outFileList.value[0] }
-          removeFileMap.set(__file, () => apis.delete(__file))
+          controller.queueDelete(__file, () => apis.delete(__file))
         }
       }
     }
@@ -340,8 +233,7 @@ export default defineComponent({
     function handleChange({ file, fileList, event }) {
       if (file.status === 'removed') {
         // 删除完成后清除上传任务
-        tasks.delete(file.uid)
-        waitingTasks.delete(file.uid)
+        controller.clearTask(file.uid)
       } else if (file.status === 'uploading') {
         if (!event && mode !== 'auto') {
           file.status = 'waiting'
@@ -356,11 +248,9 @@ export default defineComponent({
       const { file } = args
 
       if (mode === 'auto') {
-        const promise = upload(args)
-        tasks.set(file.uid, promise)
-        return promise
+        return controller.registerRequest(file.uid, () => upload(args))
       } else if (mode === 'submit') {
-        waitingTasks.set(file.uid, () => upload(args))
+        controller.registerRequest(file.uid, () => upload(args))
       } else if (mode === 'base64' || mode === 'text') {
         return getBase64WithFile(file, mode).then(({ result }) => successHandler({ url: result }, file))
       }
@@ -401,12 +291,11 @@ export default defineComponent({
       )
     }
 
-    const removeFileMap = new Map()
     const remove = async (file) => {
       let result = await props.onRemove?.(file)
       if (result !== false && apis.delete && file.status === 'done') {
         return new Promise((resolve) => {
-          const modal = Modal.confirm({
+          const modal = openUIConfirm({
             title: '确定删除吗？',
             okText: '确定',
             cancelText: '取消',
@@ -417,7 +306,7 @@ export default defineComponent({
               const __file = reconvert(file)
               const handler = () => apis.delete(__file)
               if (mode === 'submit') {
-                removeFileMap.set(
+                controller.queueDelete(
                   __file,
                   () => handler()
                   // .then(
@@ -501,11 +390,11 @@ export default defineComponent({
 
     const iconRender = ({ file, listType }) => {
       if (file.status === 'waiting') {
-        return h(SyncOutlined)
+        return renderUISemanticIcon('sync')
       } else if (file.status === 'uploading') {
-        return h(LoadingOutlined)
+        return renderUISemanticIcon('loading')
       } else {
-        return h(PaperClipOutlined)
+        return renderUISemanticIcon('attachment')
       }
     }
     const __title = props.title
@@ -520,11 +409,17 @@ export default defineComponent({
     if (listType === 'picture-card') {
       slots.default = () =>
         ctx.slots.default?.(effectData) ||
-        h('div', [h(PlusOutlined), titleSlot ? titleSlot() : h('div', { style: 'margin-top:8px' }, title)])
+        h('div', [
+          renderUISemanticIcon('add'),
+          titleSlot ? titleSlot() : h('div', { style: 'margin-top:8px' }, title),
+        ])
     } else {
       slots.default = () => [
         ctx.slots.default?.(effectData) ||
-          h(base.Button, {}, () => [h(UploadOutlined), titleSlot ? titleSlot() : title]),
+          renderUIUploadTrigger(
+            {},
+            { default: () => [renderUISemanticIcon('upload'), titleSlot ? titleSlot() : title] }
+          ),
         tip && h('div', { class: 'sup-upload-tip' }, tip),
       ]
     }
@@ -533,8 +428,7 @@ export default defineComponent({
     return () =>
       isView.value && innerFileList.value.length === 0
         ? h('div', { class: 'sup-upload-tip' }, '暂无附件')
-        : h(
-            base.Upload,
+        : renderUIUpload(
             {
               class: { 'upload-disabled': isView.value },
               customRequest,
@@ -548,7 +442,7 @@ export default defineComponent({
               isImageUrl,
               iconRender,
               onDownload: fileDownload,
-            } as any,
+            },
             {
               ...slots,
               default: () => isView.value || (hideBody.value ? null : slots.default()),

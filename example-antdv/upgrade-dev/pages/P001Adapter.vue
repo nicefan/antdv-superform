@@ -21,7 +21,7 @@
     <article class="demo-card">
       <div>
         <h3>现有表单渲染冒烟检查</h3>
-        <p>确认显式初始化 AntDV Adapter 后，原有 Input 和 Switch 增强字段仍可正常渲染与更新模型。</p>
+        <p>确认 AntDV 产品入口自动初始化 Adapter 后，原有 Input 和 Switch 增强字段仍可正常渲染与更新模型。</p>
       </div>
       <SuperForm :schema="schema" />
       <pre>{{ model }}</pre>
@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
-import { SuperForm, type ExtFormOption } from 'superform'
+import { SuperForm, type ExtFormOption } from 'superform-antdv'
 import { antdvAdapter } from 'superform-antdv'
 
 const adapter = antdvAdapter

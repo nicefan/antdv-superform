@@ -3,17 +3,23 @@
     <header>
       <p>P005 · ELEMENT PLUS</p>
       <h1>独立 Schema 与 UI Adapter</h1>
-      <span>字段能力由 Adapter 声明，实际 Element Plus 组件均由 Vite 插件按需导入。</span>
-      <a href="http://127.0.0.1:5173/upgrade-dev/index.html">返回 AntDV 验证入口</a>
+      <span
+        >字段能力由 Adapter 声明，实际 Element Plus 组件均由 Vite
+        插件按需导入。</span
+      >
+      <a href="http://127.0.0.1:5173/upgrade-dev/index.html"
+        >返回 AntDV 验证入口</a
+      >
     </header>
     <SuperForm :schema="elementPlusSchema" :data-source="model" />
+    <SuperTable @register="registerTable" />
     <pre>{{ model }}</pre>
   </main>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { SuperForm } from 'superform'
+import { reactive, ref } from 'vue'
+import { SuperForm, SuperTable, useTable } from 'superform-element-plus'
 import { elementPlusSchema } from './schema'
 
 const model = reactive({
@@ -25,6 +31,25 @@ const model = reactive({
     tags: { value: ['Core', 'Element Plus'] },
     choices: { value: ['适配器'] },
   },
+})
+
+const rows = ref([
+  { id: 1, name: 'Core 领域逻辑', status: '完成' },
+  { id: 2, name: 'Element Plus Table capability', status: '验证中' },
+])
+
+const [registerTable] = useTable({
+  title: 'P007 · Element Plus Table',
+  dataSource: rows,
+  attrs: {
+    pagination: false,
+    rowSelection: {},
+    rowKey: 'id',
+  },
+  columns: [
+    { type: 'Text', field: 'name', label: '能力' },
+    { type: 'Text', field: 'status', label: '状态' },
+  ],
 })
 </script>
 

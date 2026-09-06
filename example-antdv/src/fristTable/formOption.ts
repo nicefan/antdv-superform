@@ -1,5 +1,5 @@
 import { h, ref } from 'vue'
-import { defineTable } from 'superform'
+import { defineTable } from 'superform-antdv'
 import { EditOutlined } from '@antdv-next/icons'
 import { Modal } from 'antdv-next'
 

@@ -1,5 +1,4 @@
 import { computed, defineComponent, h, reactive, unref, watch } from 'vue'
-import type { TableColumnType } from '../../compat/antdv'
 import { createButtons } from '../buttons'
 import { getViewNode, useControl, getEffectData } from '../../utils'
 import { hasFormComponent } from '../index'
@@ -79,7 +78,7 @@ export function buildColumns({
   attrs,
   isView,
   effectData: parentData,
-}: BuildColumnsParam): TableColumnType[] {
+}: BuildColumnsParam): Obj[] {
   const { methods, buttonMethods, getEditRender, editButtonsSlot } = context
   const effectData = getEffectData({ list: parentData.value, isView, parent: parentData })
 

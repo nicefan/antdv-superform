@@ -1,9 +1,8 @@
 <script lang="ts">
-import baseComps from '../../compat/antdv'
-
 import { useOptions } from '../../utils/useOptions'
-import { h, computed, defineComponent, ref, toRef } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import { toNode, useInnerSlots } from '../../utils'
+import { renderUITableFilter } from '../../adapter'
 
 export default defineComponent({
   props: {
@@ -23,13 +22,14 @@ export default defineComponent({
   },
   emits: ['update:activeKey'],
   setup(props, { attrs, slots, emit }) {
-    const { Card, Tabs, TabPane } = baseComps
     const { optionsRef } = useOptions(
       { ...props, labelAsValue: props.labelAsValue || props.valueToLabel },
       [],
       props.effectData
     )
-    const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<string | number | undefined>
+    const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<
+      string | number | undefined
+    >
     const updateActiveKey = (key) => {
       activeKey.value = key
       emit('update:activeKey', key)
@@ -58,46 +58,33 @@ export default defineComponent({
       return list
     })
     const customTab = (item) =>
-      toNode(innerSlots.customTab || props.customTab || item.tab, { ...props.effectData, item })
-    if (props.bordered) {
-      return () =>
-        h(
-          Card,
-          {
-            tabList: tabList.value,
-            activeTabKey: activeKey.value as string,
-            onTabChange: updateActiveKey,
-          },
-          {
-            ..._slots,
-            default: innerContent,
-            customTab,
-            title,
-            tabBarExtraContent: tabBarExtraSlot || (!title ? extra : undefined),
-            extra: tabBarExtraSlot || title ? extra : undefined,
-            ...innerSlots,
-          }
-        )
-    } else {
-      return () => [
-        title ? titleBar?.() : null,
-        h(
-          Tabs,
-          {
-            ...attrs,
-            activeKey: activeKey.value,
-            'onUpdate:activeKey': updateActiveKey,
-          },
-          {
-            ..._slots,
-            default: () => tabList.value.map((item) => h(TabPane, { ...item, tab: () => customTab(item) })),
-            rightExtra: tabBarExtraSlot || (!title ? extra : undefined),
-            ...innerSlots,
-          }
-        ),
-        innerContent?.(),
-      ]
-    }
+      toNode(innerSlots.customTab || props.customTab || item.tab, {
+        ...props.effectData,
+        item,
+      })
+    return () => [
+      !props.bordered && title ? titleBar?.() : null,
+      renderUITableFilter(
+        {
+          bordered: props.bordered,
+          items: tabList.value.map((item) => ({
+            ...item,
+            tab: customTab(item),
+          })),
+          value: activeKey.value,
+          onValueChange: updateActiveKey,
+          attrs,
+        },
+        {
+          ..._slots,
+          ...innerSlots,
+          default: innerContent,
+          title,
+          tabExtra: tabBarExtraSlot || (!title ? extra : undefined),
+          cardExtra: tabBarExtraSlot || title ? extra : undefined,
+        }
+      ),
+    ]
   },
 })
 </script>

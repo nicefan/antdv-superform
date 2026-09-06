@@ -1,4 +1,6 @@
 import type { SuperFormComponentResolver } from 'superform/unplugin/vite'
+export { default } from 'superform/unplugin/vite'
+export * from 'superform/unplugin/vite'
 
 const fields = [
   'Input',
@@ -23,13 +25,15 @@ const fields = [
 export function createAntdvResolver(): SuperFormComponentResolver {
   const resolver = ((type: string) =>
     fields.includes(type)
-      ? { from: 'antdv-next', importName: type, adapterField: true, registrationName: type }
+      ? {
+          from: 'antdv-next',
+          importName: type,
+          adapterField: true,
+          registrationName: type,
+        }
       : undefined) as SuperFormComponentResolver
   resolver.adapterFields = [...fields]
   return resolver
 }
 
 export const antdvResolver = createAntdvResolver()
-
-export type { SuperFormComponentResolver } from 'superform/unplugin/vite'
-export default createAntdvResolver

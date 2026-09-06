@@ -1,6 +1,5 @@
 import { beforeAll, describe, expect, expectTypeOf, it } from 'vitest'
 import * as AntdvNext from 'antdv-next'
-import base from '../src/compat/antdv'
 import {
   AutoComplete,
   DatePicker,
@@ -13,10 +12,10 @@ import {
   TimeRangePicker,
   TreeSelect,
   Upload,
-} from '../src/compat/antdv'
+} from 'antdv-next'
 import type { OptionType, UIFormComponentProps } from '../src/exaTypes'
 import { getUIFieldAdapter, registerUIComponents, resolveUIComponent } from '../src/adapter'
-import { antdvAdapter } from '../packages/superform-antdv/src'
+import { antdvAdapter } from '../packages/superform-antdv/src/adapter'
 import plugin from '../src/plugin'
 
 beforeAll(() => {
@@ -41,12 +40,6 @@ describe('antdv-next 导出边界', () => {
   it('只暴露 1.0 使用的新导出名称', () => {
     expect(TextArea).toBe(AntdvNext.TextArea)
     expect(DateRangePicker).toBe(AntdvNext.DateRangePicker)
-    expect(base.TextArea).toBe(AntdvNext.TextArea)
-    expect(base.DateRangePicker).toBe(AntdvNext.DateRangePicker)
-    expect(base.SpaceCompact).toBe(AntdvNext.SpaceCompact)
-    expect(base).not.toHaveProperty('Textarea')
-    expect(base).not.toHaveProperty('RangePicker')
-    expect(base).not.toHaveProperty('InputGroup')
   })
 
   it('字段渲染器使用新导出', () => {

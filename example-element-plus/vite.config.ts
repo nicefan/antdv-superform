@@ -1,7 +1,8 @@
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
-import SuperFormComponents from 'superform/unplugin/vite'
-import { createElementPlusResolver } from 'superform-element-plus/unplugin'
+import SuperFormComponents, {
+  createElementPlusResolver,
+} from 'superform-element-plus/unplugin'
 
 export default defineConfig({
   server: {
@@ -14,9 +15,9 @@ export default defineConfig({
       dirs: ['.'],
       entry: 'main.ts',
       dts: 'superform-components.d.ts',
-      superFormImport: 'superform',
-      dtsModule: 'superform',
-      typesImport: 'superform',
+      superFormImport: 'superform-element-plus',
+      dtsModule: 'superform-element-plus',
+      typesImport: 'superform-element-plus',
       resolvers: [createElementPlusResolver()],
     }),
     vue(),

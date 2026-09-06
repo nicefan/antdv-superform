@@ -1,7 +1,12 @@
 /**
  * Adapter 开发 SDK。独立 Adapter 包只能依赖这里的稳定契约，不能引用 Core 源码路径。
  */
-export { defineUIAdapter, registerUIComponents } from './adapter'
+export { defineUIAdapter, registerUIComponents } from "./adapter";
+export { createOfficialProduct } from "./officialProduct";
+export type {
+  OfficialProductInitializeOptions,
+  OfficialSuperFormProduct,
+} from "./officialProduct";
 export type {
   ActionAdapter,
   ActionRenderType,
@@ -17,7 +22,20 @@ export type {
   LayoutComponentName,
   PresentationAdapter,
   PresentationRenderType,
+  PreviewAdapter,
+  ModalAdapter,
+  ServiceAdapter,
+  TableAdapter,
+  UIMessageType,
+  UIServiceHandle,
+  UploadAdapter,
+  UITableColumn,
+  UITableFilterProps,
+  UITablePagination,
+  UITableRenderProps,
+  UITableSelection,
+  UITableSelectors,
   UIAdapter,
-} from './adapter'
-export { globalConfig } from './config'
-export { toNode } from './utils/toNode'
+} from "./adapter";
+export { globalConfig } from "./config";
+export { toNode } from "./utils/toNode";

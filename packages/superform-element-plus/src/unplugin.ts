@@ -1,4 +1,6 @@
 import type { SuperFormComponentResolver } from 'superform/unplugin/vite'
+export { default } from 'superform/unplugin/vite'
+export * from 'superform/unplugin/vite'
 
 const fields = {
   Input: 'ElInput',
@@ -12,11 +14,14 @@ export function createElementPlusResolver(): SuperFormComponentResolver {
   const resolver = ((type: string) => {
     const importName = fields[type as keyof typeof fields]
     return importName
-      ? { from: 'element-plus', importName, adapterField: true, registrationName: type }
+      ? {
+          from: 'element-plus',
+          importName,
+          adapterField: true,
+          registrationName: type,
+        }
       : undefined
   }) as SuperFormComponentResolver
   resolver.adapterFields = Object.keys(fields)
   return resolver
 }
-
-export default createElementPlusResolver

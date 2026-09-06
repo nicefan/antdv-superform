@@ -9,7 +9,7 @@
 </template>
 <script setup lang="ts">
 import useOption from './useExForm'
-import { SuperDetail, useDetail } from 'superform'
+import { SuperDetail, useDetail } from 'superform-antdv'
 import { ref } from 'vue';
 
 const source = ref({})

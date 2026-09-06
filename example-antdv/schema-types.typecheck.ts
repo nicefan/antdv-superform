@@ -14,7 +14,7 @@ import type {
   UIModalComponentProps,
   UITableComponentProps,
   UIUploadComponentProps,
-} from 'superform'
+} from 'superform-antdv'
 
 /** 验证 Core 表单和布局属性不需要引用具体 UI 类型。 */
 export const formProps: FormSchemaProps = {

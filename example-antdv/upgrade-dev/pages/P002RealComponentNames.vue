@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
-import { SuperForm, type ExtFormOption } from 'superform'
+import { SuperForm, type ExtFormOption } from 'superform-antdv'
 import { antdvAdapter } from 'superform-antdv'
 
 const adapter = antdvAdapter

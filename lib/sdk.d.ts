@@ -14,6 +14,8 @@ export declare type ActionRenderType = 'group' | 'tooltip';
 
 export declare type AdapterComponent = string | Component;
 
+declare type AdapterDefaultProps = Record<string, Obj | undefined>;
+
 declare interface ButtonItem {
     label?: VSlot
     /** 全局默认配置指定的名称 */
@@ -57,6 +59,9 @@ export declare interface ComponentModelConfig {
     event?: string;
 }
 
+/** 配置 Core 的应用级行为和默认属性。 */
+declare function configure(config?: SuperFormConfig): void;
+
 export declare interface ContainerAdapter {
     component: AdapterComponent;
     /** 容器存在受控状态时的 UI model 协议。 */
@@ -66,6 +71,9 @@ export declare interface ContainerAdapter {
     /** 容器的 slot 协议不同时自定义最终渲染。 */
     render?: (component: Component, props: Obj, slots: Obj) => VNodeChild;
 }
+
+/** 创建无导入副作用的官方产品实例。 */
+export declare function createOfficialProduct<FieldName extends string>(productName: string, createAdapter: (components?: Partial<Record<FieldName, Component>>) => UIAdapter): OfficialSuperFormProduct<FieldName>;
 
 declare type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
 
@@ -120,6 +128,14 @@ export declare interface FormAdapter {
     validate: (instance: any) => Promise<unknown>;
     /** 清理当前 UI 表单实例的校验状态。 */
     clearValidate: (instance: any) => void;
+}
+
+declare type FormComponent = Component | FormComponentConfig;
+
+declare interface FormComponentConfig {
+    component: Component;
+    /** 不同 UI 库的受控值协议 */
+    model?: ComponentModelConfig;
 }
 
 declare interface GlobalConfig {
@@ -182,6 +198,25 @@ declare type MergeRegistrySources<T> = {
     [K in KeysOfUnion<T>]: ValueOfUnion<T, K>
 }
 
+export declare interface ModalAdapter {
+    /** 渲染受控弹窗；Core 统一使用 visible/onUpdate:visible 协议。 */
+    render: (props: Obj, slots: Obj) => VNodeChild;
+    /** 在组件 setup 中捕获 UI 框架上下文。 */
+    useContext?: () => unknown;
+    /** 为脱离原组件树挂载的弹窗恢复 UI 框架上下文。 */
+    wrapContext?: (content: (props?: Obj) => VNodeChild, context: unknown, props: Obj) => VNodeChild;
+}
+
+export declare interface OfficialProductInitializeOptions<FieldName extends string> {
+    /** 手动提供 Adapter 已声明字段的实际 UI 组件。 */
+    components?: Partial<Record<FieldName, Component>>;
+}
+
+export declare type OfficialSuperFormProduct<FieldName extends string> = typeof superform & {
+    /** 显式初始化官方 UI Adapter；重复无参调用可安全复用。 */
+    initialize(options?: OfficialProductInitializeOptions<FieldName>): OfficialSuperFormProduct<FieldName>;
+};
+
 export declare interface PresentationAdapter {
     /** 渲染轻量展示原语。 */
     render: (type: PresentationRenderType, props: Obj, slots: Obj) => VNodeChild;
@@ -189,14 +224,59 @@ export declare interface PresentationAdapter {
 
 export declare type PresentationRenderType = 'tag' | 'checkableTag';
 
-/** 注册 Adapter 已声明字段所需的实际 UI 组件，供初始化配置和构建插件共用。 */
-export declare function registerUIComponents(components: Record<string, Component | undefined>): void;
+export declare interface PreviewAdapter {
+    /** 渲染受控图片预览；Core 统一使用 visible/onUpdate:visible 协议。 */
+    render: (props: Obj) => VNodeChild;
+}
+
+/** 注册一个项目自定义 Schema 组件。 */
+declare function registerComponent(name: string, component: FormComponent): void;
+
+/** 注册项目自定义 Schema 组件。 */
+declare function registerComponents(components: Record<string, FormComponent | undefined>): void;
+
+/** 按来源登记 Adapter 字段组件；手动配置始终覆盖自动导入。 */
+export declare function registerUIComponents(components: Record<string, Component | undefined>, source?: UIComponentSource): void;
 
 declare type SelectOptions =
 | DefaultOptionsType
 | Readonly<DefaultOptionsType>
 | Ref_2<DefaultOptionsType>
 | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
+
+export declare interface ServiceAdapter {
+    /** 显示轻量消息。 */
+    message: (type: UIMessageType, content: unknown) => void;
+    /** 打开命令式确认框。 */
+    confirm: (props: Obj) => UIServiceHandle;
+    /** 打开命令式信息框，主要用于可更新的加载与错误反馈。 */
+    info: (props: Obj) => UIServiceHandle;
+}
+
+/** 合并组件默认参数。 */
+declare function setDefaultProps(props: Obj): void;
+
+declare const superform: {
+    useAdapter: typeof useAdapter;
+    configure: typeof configure;
+    registerComponent: typeof registerComponent;
+    registerComponents: typeof registerComponents;
+    setDefaultProps: typeof setDefaultProps;
+};
+
+declare interface SuperFormConfig extends GlobalConfig {
+    /** 组件默认参数 */
+    defaultProps?: AdapterDefaultProps;
+}
+
+export declare interface TableAdapter {
+    /** 将 Core 表格状态转换为当前 UI 框架的表格、列和分页结构。 */
+    render: (props: UITableRenderProps, slots: Obj) => VNodeChild;
+    /** 渲染表格顶部的选项卡筛选。 */
+    renderFilter: (props: UITableFilterProps, slots: Obj) => VNodeChild;
+    /** 自动高度计算需要访问的 UI 私有 DOM 节点，由 Adapter 明确声明。 */
+    selectors: UITableSelectors;
+}
 
 export declare function toNode(node: any, param?: any): any;
 
@@ -228,9 +308,104 @@ export declare interface UIAdapter {
     actions?: ActionAdapter;
     /** 详情展示和 Core 复合字段使用的轻量展示原语。 */
     presentation?: PresentationAdapter;
+    /** 消息、确认和可更新信息框等命令式 UI 服务。 */
+    services?: ServiceAdapter;
+    /** 声明式与命令式弹窗共用的渲染协议。 */
+    modal?: ModalAdapter;
+    /** Upload 组件的 UI 协议和忽略标记。 */
+    upload?: UploadAdapter;
+    /** 图片预览协议。 */
+    preview?: PreviewAdapter;
+    /** 表格、列、分页、选择、展开和筛选协议。 */
+    table?: TableAdapter;
     /** 当前 UI 框架的全局组件默认属性 */
     defaults?: Obj<Obj>;
 }
+
+declare type UIComponentSource = "manual" | "auto";
+
+export declare type UIMessageType = 'success' | 'error' | 'info' | 'warning';
+
+export declare interface UIServiceHandle {
+    /** 更新当前命令式提示或确认框。 */
+    update: (props: Obj) => void;
+    /** 销毁当前命令式提示或确认框。 */
+    destroy: () => void;
+}
+
+export declare interface UITableColumn extends Obj {
+    key?: PropertyKey;
+    dataIndex?: string | string[];
+    title?: unknown;
+    children?: UITableColumn[];
+    customRender?: (context: Obj) => unknown;
+}
+
+export declare interface UITableFilterProps {
+    bordered?: boolean;
+    items: Array<Obj & {
+        key: PropertyKey;
+        tab: unknown;
+    }>;
+    value?: unknown;
+    onValueChange: (value: unknown) => void;
+    attrs?: Obj;
+}
+
+export declare interface UITablePagination {
+    current?: number;
+    pageSize?: number;
+    total?: number;
+    pageSizeOptions?: Array<number | string>;
+    onChange?: (page: number, pageSize?: number) => unknown;
+    onShowSizeChange?: (page: number, pageSize: number) => unknown;
+    /** UI 包公开的分页扩展属性，由对应 Adapter 消费。 */
+    attrs?: Obj;
+}
+
+export declare interface UITableRenderProps extends Obj {
+    data: Obj[];
+    columns: UITableColumn[];
+    selection?: UITableSelection;
+    pagination?: false | UITablePagination;
+    rowKey: string | ((row: Obj) => PropertyKey);
+    expandedKeys?: unknown[];
+    onExpandedChange?: (keys: unknown[]) => void;
+}
+
+export declare interface UITableSelection {
+    selectedKeys: unknown[];
+    /** Core 统一回传选中 key、行和 UI 框架提供的附加信息。 */
+    onChange?: (keys: unknown[], rows: Obj[], info?: Obj) => void;
+    /** 返回 false 时禁止选择当前行。 */
+    isRowSelectable?: (row: Obj) => boolean;
+    /** UI 包公开的选择扩展属性，由对应 Adapter 消费。 */
+    attrs?: Obj;
+}
+
+export declare interface UITableSelectors {
+    table: string;
+    title?: string;
+    header?: string;
+    footer?: string;
+    pagination?: string;
+    wrapper?: string;
+    empty?: string;
+    emptyCell?: string;
+    body?: string;
+}
+
+export declare interface UploadAdapter {
+    /** UI 框架拒绝文件但不加入列表时使用的特殊返回值。 */
+    listIgnore: unknown;
+    /** 渲染上传组件，并在内部完成 fileList、事件和 slot 协议转换。 */
+    render: (props: Obj, slots: Obj) => VNodeChild;
+    /** 渲染默认上传触发按钮。 */
+    renderTrigger: (props: Obj, slots: Obj) => VNodeChild;
+}
+
+/** 显式初始化应用级 Adapter；首次初始化后不允许切换协议。 */
+declare function useAdapter(adapter: UIAdapter): UIAdapter;
 
 declare type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends keyof T ? T[K] : never) : never
 

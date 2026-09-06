@@ -16,7 +16,7 @@
 import { inject, reactive, ref, watch } from 'vue'
 import { Row, Button, Image, Modal } from 'antdv-next'
 import useOption from './useExForm'
-import { useButtons, useDetail, useForm, useModal, SuperForm } from 'superform'
+import { useButtons, useDetail, useForm, useModal, SuperForm } from 'superform-antdv'
 import { DatePicker } from 'antdv-next'
 import dayjs from 'dayjs'
 // const props = defineProps<{

@@ -246,3 +246,27 @@ P005–P007 随各能力迁移逐步建立以下自动检查：
 - 结果：五项构建全部通过；两个 Adapter 的 `/full`、`/unplugin` 和声明产物生成成功，两个 example 均完成生产打包。
 - 运行验证：在 Codex 可见集成终端分别启动 5173、5174，Vite 均正常 ready，验证后已显式停止；浏览器因用户保存的 localhost 访问策略未做页面级自动检查。
 - 已知临时边界：P006/P007 尚未迁移的 Upload、Modal、Table 继续使 Core 内部 compat 保留 AntDV 施工依赖；不属于最终发布边界。
+## 2026-09-06 P006 capability 与 Upload Controller
+
+- 已补充 Service、Modal、Upload、Preview capability 的 Adapter 定向断言。
+- 已补充 Upload Controller 的字段映射、校验、submit 延迟上传和删除等待用例。
+- 按本轮协作要求仅修改代码，尚未执行测试、typecheck 或 build。
+- 建议下一步先运行：`pnpm test -- tests/uploadController.test.ts tests/adapter.test.ts tests/elementPlusAdapter.test.ts tests/uiDependencyArchitecture.test.ts`。
+- 基础验证结果：上述 4 个测试文件共 23 项通过；Core、AntDV Adapter、Element Plus Adapter 类型检查通过；未执行 build。
+
+## 2026-09-06 P007 Table 与最终 UI 解耦
+
+- 执行：`tests/adapter.test.ts`、`tests/elementPlusAdapter.test.ts`、`tests/uiDependencyArchitecture.test.ts`、`tests/uploadController.test.ts`、`tests/superFormUnplugin.test.ts`，共 32 项通过。
+- 执行：`tests/useQuery.test.ts`，4 项通过，确认请求取消、最后响应和分页语义未变化。
+- 类型检查：Core、`superform-antdv`、`superform-element-plus` 以及两个 example 均通过。
+- 架构检查：Core 源码、样式和发布 peer dependency 均不再包含具体 UI 框架；compat 已删除。
+- 按用户要求只做基础验证，未执行 build、生产产物声明检查或浏览器人工验证；这些工作留到 P010 提交准备阶段。
+
+## 2026-09-06 P007 回补：官方产品显式初始化
+
+- 类型检查：Core、`superform-antdv`、`superform-element-plus` 以及两个 example 均通过。
+- 定向测试：`adapter.test.ts`、`elementPlusAdapter.test.ts`、`officialProduct.test.ts`、`superFormUnplugin.test.ts` 共 25 项通过。
+- 覆盖：导入无 Adapter 初始化副作用、显式初始化与重复调用、官方产品混用拦截、手动组件优先级、Element Plus 无前缀全量组件表，以及 Adapter 字段不重复生成 d.ts。
+- 构建修正：官方包的 `/unplugin` 入口将 `unplugin` 和 `node:` 模块保持为 external，避免 Node 代码进入浏览器产物；产品包直接声明 `unplugin` 依赖。
+- 声明修正：`fieldComponents` 使用可移植的 `Record<FieldName, Component>` 类型，声明构建同时纳入产品包所内置的 Core 源码。
+- 执行：`superform-antdv` 和 `superform-element-plus` 定向 build，均通过；`tests/packageDeclarations.test.ts` 3 项通过。

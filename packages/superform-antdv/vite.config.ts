@@ -1,42 +1,62 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import viteDts from 'vite-plugin-dts'
-import { resolve } from 'node:path'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vueJsx from "@vitejs/plugin-vue-jsx";
+import viteDts from "vite-plugin-dts";
+import { resolve } from "node:path";
 
 export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        find: /^superform\/unplugin\/vite$/,
+        replacement: resolve(__dirname, "../../src/unplugin/vite.ts"),
+      },
+      {
+        find: /^superform\/sdk$/,
+        replacement: resolve(__dirname, "../../src/sdk.ts"),
+      },
+      {
+        find: /^superform$/,
+        replacement: resolve(__dirname, "../../src/index.ts"),
+      },
+    ],
+  },
   build: {
     lib: {
       entry: {
-        index: resolve(__dirname, 'src/index.ts'),
-        full: resolve(__dirname, 'src/full.ts'),
-        unplugin: resolve(__dirname, 'src/unplugin.ts'),
+        index: resolve(__dirname, "src/index.ts"),
+        unplugin: resolve(__dirname, "src/unplugin.ts"),
       },
-      formats: ['es'],
+      formats: ["es"],
       fileName: (_, entryName) => `${entryName}.js`,
     },
-    outDir: 'lib',
+    outDir: "lib",
     minify: false,
     rollupOptions: {
       external: [
-        'vue',
-        'superform',
-        /^superform\//,
-        'antdv-next',
+        "vue",
+        "unplugin",
+        /^node:/,
+        "antdv-next",
         /^antdv-next\//,
-        '@antdv-next/icons',
+        "@antdv-next/icons",
         /^@antdv-next\//,
       ],
+      output: {
+        intro: (chunk) =>
+          chunk.name === "index" ? 'import "./style.css";' : "",
+      },
     },
   },
   plugins: [
     vue(),
     vueJsx(),
     viteDts({
-      include: ['src'],
+      entryRoot: resolve(__dirname, "../.."),
+      include: ["src", "../../src", "../../types"],
       rollupTypes: true,
       insertTypesEntry: false,
       copyDtsFiles: true,
     }),
   ],
-})
+});

@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { Alert, Button, Space } from 'antdv-next'
-import { SuperForm, useForm } from 'superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const dataSource = reactive({
   list: [{ value1: '', value2: '' }],

@@ -3,7 +3,7 @@ import { effectScope, nextTick, ref } from 'vue'
 import { buildModelsMap } from '../src/utils/buildModel'
 import { resolveFieldProcessors } from '../src/processors'
 import { mapUIFieldProps } from '../src/adapter'
-import { antdvAdapter } from '../packages/superform-antdv/src'
+import { antdvAdapter } from '../packages/superform-antdv/src/adapter'
 import plugin from '../src/plugin'
 
 beforeAll(() => plugin.useAdapter(antdvAdapter))

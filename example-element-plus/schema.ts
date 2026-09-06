@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { ExtFormOption } from 'superform'
+import type { ExtFormOption } from 'superform-element-plus'
 
 const activeTab = ref('tags')
 

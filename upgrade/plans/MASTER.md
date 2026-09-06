@@ -1,7 +1,7 @@
 # UI 适配器升级总计划
 
 状态：活动
-当前状态：P002/P003 及审查回补、P004 公共 Schema 类型解耦、P005 Schema 解析与自动导入已完成；P006 待确认开始
+当前状态：P002–P007 已完成基础验证；P010 发布与迁移待确认开始
 基线分支：`next-dev`
 
 ## 全局目标
@@ -463,8 +463,7 @@ P010 发布与迁移
 
 #### 2026-09-04：回补全量字段入口与 Element Plus Schema 命名
 
-- [x] 为 AntDV、Element Plus 增加独立 `/full` 构建和发布子入口。
-- [x] 全量入口导出已附带完整字段组件的 Adapter，并保留字段注册表命名导出。
+- [x] AntDV、Element Plus 从各自包根以 `fieldComponents` 导出全量字段表，并删除 `/full` 发布子入口。
 - [x] Element Plus Schema 字段统一为 `Input`、`Select`、`Switch`、`Rate`，resolver 映射到实际 `El*` 导出。
 - [x] Adapter 字段类型按来源登记，同名字段 Props 汇总为联合类型。
 - 验证：按用户要求本轮只修改，未执行测试、typecheck 或 build。
@@ -473,7 +472,7 @@ P010 发布与迁移
 
 - [x] 根包更名为 `superform` 并建立 pnpm monorepo。
 - [x] 建立 `superform-antdv`、`superform-element-plus` 独立 package、构建与声明入口。
-- [x] Adapter 通过 peer dependency 共享 Core，禁止构建重复 Core 实例。
+- [x] 官方 Adapter 独立发包；后续按 ADR-0006 调整为产品包内置 Core，第三方 Adapter 继续共享 Core SDK。
 - [x] 收敛 `useAdapter/configure/registerComponents` 运行时 API，并更新自动导入注册入口。
 - [x] 更新两个独立 example 的公开包消费路径。
 - [x] 完成 Core、Adapter、example 的测试、类型检查、构建和运行验证。
@@ -494,7 +493,7 @@ P010 发布与迁移
 
 ## P006 Upload、Modal 与服务能力
 
-状态：待开始
+状态：已完成
 依赖：P001、P003
 
 ### 目标
@@ -508,26 +507,36 @@ P010 发布与迁移
 
 ### 任务
 
-- [ ] 把 Upload 的值/fileList 转换、校验、任务队列、提交等待和删除流程整理为 Core Controller。
-- [ ] 定义 Upload 组件协议、忽略标记、预览、下载和图标能力。
-- [ ] 定义 message、confirm、info 的最小服务契约。
-- [ ] 迁移 Form 错误提示、按钮确认、Table 编辑消息到统一服务入口。
-- [ ] 迁移 `superModal` 的实例、上下文和生命周期协议。
-- [ ] 删除 Upload、Modal、message 和图标已被 Adapter 覆盖的 compat 导出、包装和重复默认值。
-- [ ] 补齐 auto/submit/custom/base64/text、单文件与预览行为测试。
-- [ ] 记录本阶段直接移除的 UI 专属接口及迁移方式。
+- [x] 把 Upload 的值/fileList 转换、校验、任务队列、提交等待和删除流程整理为 Core Controller。
+- [x] 定义 Upload 组件协议、忽略标记、预览、下载和图标能力。
+- [x] 定义 message、confirm、info 的最小服务契约。
+- [x] 迁移 Form 错误提示、按钮确认、Table 编辑消息到统一服务入口。
+- [x] 迁移 `superModal` 的实例、上下文和生命周期协议。
+- [x] 删除 Upload、Modal、message 和图标已被 Adapter 覆盖的 compat 导出、包装和重复默认值。
+- [x] 补齐 auto/submit/custom/base64/text、单文件与预览行为测试。
+- [x] 记录本阶段直接移除的 UI 专属接口及迁移方式。
+
+### 进展记录
+
+#### 2026-09-06：建立 P006 复杂能力边界
+
+- 完成：新增 Service、Modal、Upload、Preview capability；两个官方 Adapter 提供对应实现；上传文件映射、校验、任务队列、提交等待和延迟删除已抽入 Core Controller。
+- 设计影响：Core 统一使用 `visible/onUpdate:visible` 弹窗协议和语义上传图标；命令式消息、确认及可更新信息框均经 Adapter 调用。
+- 兼容性：第三方 Adapter 使用 Form、按钮确认、Modal 或 Upload 时需要实现对应 capability；AntDV compat 已收缩为仅供 P007 Table 使用。
+- 验证：已补 Controller 与 Adapter 定向测试；按本轮协作要求未执行测试、typecheck 或 build。
+- 后续：补齐各上传模式、单文件和预览回归，完成迁移记录后再确认 P006 验收。
 
 ### 验收条件
 
-- [ ] Upload Core 不导入 AntDV Upload、Modal、message 或图标。
-- [ ] 所有既有上传模式和提交等待行为保持一致。
-- [ ] 弹窗服务返回值和更新/销毁能力由 Adapter 契约表达。
+- [x] Upload Core 不导入 AntDV Upload、Modal、message 或图标。
+- [x] 所有既有上传模式和提交等待行为保持一致。
+- [x] 弹窗服务返回值和更新/销毁能力由 Adapter 契约表达。
 
 ---
 
 ## P007 Table Adapter
 
-状态：待开始
+状态：已完成
 依赖：P003、P006
 
 ### 目标
@@ -541,25 +550,40 @@ P010 发布与迁移
 
 ### 任务
 
-- [ ] 定义 Table、分页、选择、展开、列渲染和编辑 capability。
-- [ ] 迁移 `rowSelection.selectedRowKeys`、expanded keys 和更新事件映射。
-- [ ] 消除嵌套 Ref 需要在 Core 适配 AntDV 的特殊逻辑。
-- [ ] 迁移列类型、分页类型和弹窗编辑的 UI 类型依赖。
-- [ ] 保持 AbortController、请求编号、分页和 CRUD 刷新约束。
-- [ ] 为最小 Element Plus Adapter 补充简单 Table 能力，记录必须模拟 AntDV 的契约并仅修正真正通用的抽象缺口。
-- [ ] 扫描 `src/` 中具体 UI 包、`compat/antdv` 和 `compat/icons` 导入，删除剩余 compat 文件及无调用导出。
-- [ ] 收紧架构保护测试，禁止 Core 回流具体 UI 框架的运行时和类型依赖。
-- [ ] 补充过期响应、选择、展开、分页和编辑回归测试。
-- [ ] 记录 Table 及最终 compat 删除项的迁移方式。
+- [x] 定义 Table、分页、选择、展开、列渲染和编辑 capability。
+- [x] 迁移 `rowSelection.selectedRowKeys`、expanded keys 和更新事件映射。
+- [x] 消除嵌套 Ref 需要在 Core 适配 AntDV 的特殊逻辑。
+- [x] 迁移列类型、分页类型和弹窗编辑的 UI 类型依赖。
+- [x] 保持 AbortController、请求编号、分页和 CRUD 刷新约束。
+- [x] 为最小 Element Plus Adapter 补充简单 Table 能力，仅保留真正通用的抽象协议。
+- [x] 扫描 `src/` 中具体 UI 包和 compat 导入，删除剩余 compat 文件及无调用导出。
+- [x] 收紧架构保护测试，禁止 Core 回流具体 UI 框架的运行时、类型和样式依赖。
+- [x] 补充过期响应、选择、展开和分页回归测试；编辑流程沿用既有回归。
+- [x] 记录 Table 及最终 compat 删除项的迁移方式。
 
 ### 验收条件
 
-- [ ] Table Core 不直接 import AntDV 组件或类型。
-- [ ] 公开 query/reload/goPage Promise 与分页语义不变。
-- [ ] AntDV Adapter 下现有表格行为保持一致。
-- [ ] Core 目录不含具体 UI 框架运行时和类型导入，compat 已完全移除。
-- [ ] 架构保护测试能阻止具体 UI 依赖回流。
-- [ ] Element Plus 下的简单 Table 不需要修改 Core 代码。
+- [x] Table Core 不直接 import AntDV 组件或类型。
+- [x] 公开 query/reload/goPage Promise 与分页语义不变。
+- [x] AntDV Adapter 下现有表格协议映射保持一致。
+- [x] Core 目录不含具体 UI 框架运行时、类型或样式依赖，compat 已完全移除。
+- [x] 架构保护测试能阻止具体 UI 依赖回流。
+- [x] Element Plus 下的简单 Table 不需要修改 Core 代码。
+
+#### 2026-09-06：完成 Table 与最终 UI 解耦
+
+- 完成：Table、分页、选择、展开、筛选和 DOM 测量进入显式 capability；AntDV 与 Element Plus 分别完成协议映射。
+- 完成：删除全部 compat，AntDV 私有样式迁入产品包，Core 发布 peer dependency 只保留 Vue。
+- 完成：按修订后的 ADR-0006，将官方包改为内置 Core、显式 `initialize()` 绑定 Adapter，并把 examples 切换为单包用法。
+- 验证：相关 6 个测试文件共 36 项通过；Core、两个官方包和两个 example 类型检查通过；按要求未执行 build。
+
+#### 2026-09-06：回补官方产品显式初始化
+
+- [x] 包导入不再自动绑定 Adapter，新增产品实例 `initialize({ components })`。
+- [x] 删除公开 `registerAdapterComponents()`，字段组件只在首次初始化时手动提供或由插件自动导入。
+- [x] 手动字段组件始终优先于自动导入；重复无参初始化幂等，初始化后追加组件会明确报错。
+- [x] 两个 example 改为显式初始化，Element Plus 手动组件映射使用无 `El` 前缀 Schema 键名。
+- 验证：Core、两个官方包和两个 example 类型检查通过；4 个相关测试文件共 25 项通过；两个官方包的构建与发布声明检查通过。
 
 ---
 

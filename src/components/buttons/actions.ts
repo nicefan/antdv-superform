@@ -1,9 +1,9 @@
-import { Modal } from '../../compat/antdv'
 import type { ButtonItem } from '../../exaTypes'
 import { globalProps, globalConfig } from '../../plugin'
 import { defaults, merge } from 'lodash-es'
 import { isRef, ref } from 'vue'
 import { toNode } from '../../utils'
+import { openUIConfirm } from '../../adapter'
 
 const getDefault = () => {
   return merge(
@@ -95,7 +95,7 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
 
       const _action = (text, method, param) => {
         if (text) {
-          Modal.confirm({
+          openUIConfirm({
             title: () => toNode(text, param),
             okText: '确定',
             cancelText: '取消',

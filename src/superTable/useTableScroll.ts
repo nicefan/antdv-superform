@@ -1,7 +1,16 @@
 import type { Ref } from 'vue'
-import { ref, computed, unref, nextTick, watch, onMounted, onUnmounted } from 'vue'
+import {
+  ref,
+  computed,
+  unref,
+  nextTick,
+  watch,
+  onMounted,
+  onUnmounted,
+} from 'vue'
 import { getViewportOffset } from '../utils/dom'
 import { debounce } from 'lodash-es'
+import { getUITableSelectors } from '../adapter'
 
 export function useTableScroll(
   option: Obj,
@@ -9,6 +18,9 @@ export function useTableScroll(
   wrapRef: Ref<HTMLElement | null>,
   abortController?: AbortController
 ) {
+  const selectors = getUITableSelectors()
+  const query = (root: Element, selector?: string) =>
+    selector ? (root.querySelector(selector) as HTMLElement | null) : null
   // const scrollHeightRef: Ref<number | null> = ref(null)
   // const modalFn = useModalContext();
 
@@ -21,7 +33,9 @@ export function useTableScroll(
   const listenResize = () => {
     beResize = true
     if (abortController) {
-      window.addEventListener('resize', debounceRedoHeight, { signal: abortController.signal })
+      window.addEventListener('resize', debounceRedoHeight, {
+        signal: abortController.signal,
+      })
     } else {
       document.addEventListener('redoHeight', debounceRedoHeight)
     }
@@ -73,11 +87,12 @@ export function useTableScroll(
   }
 
   async function calcTableHeight() {
-    const { maxHeight, inheritHeight, isFixedHeight, resizeHeightOffset } = option
+    const { maxHeight, inheritHeight, isFixedHeight, resizeHeightOffset } =
+      option
     const wrapEl = unref(wrapRef)
     if (!wrapEl) return
 
-    const tableEl = wrapEl.querySelector('.ant-table') as HTMLElement
+    const tableEl = query(wrapEl, selectors.table)
     if (!tableEl) return
 
     // bodyEl!.style.height = 'unset';
@@ -89,17 +104,23 @@ export function useTableScroll(
     const wrapView = getViewportOffset(wrapEl)
     // Table height from bottom height-custom offset
     const paddingHeight = tableView.left - wrapView.left
-    const outerPadding = (parseInt(outerStyle.marginBottom) || 0) + (parseInt(outerStyle.paddingBottom) || 0)
+    const outerPadding =
+      (parseInt(outerStyle.marginBottom) || 0) +
+      (parseInt(outerStyle.paddingBottom) || 0)
     let bottomIncludeBody = 0
     if (wrapEl && inheritHeight) {
-      bottomIncludeBody = wrapView.bottomIncludeBody - wrapView.bottom - (tableView.top - wrapView.top)
+      bottomIncludeBody =
+        wrapView.bottomIncludeBody -
+        wrapView.bottom -
+        (tableView.top - wrapView.top)
     } else {
       // Table height from bottom
       bottomIncludeBody = tableView.bottomIncludeBody - outerPadding // 去掉一个页面底部边距
     }
-    const titleEl = tableEl.querySelector('.ant-table-title') as HTMLElement
-    const headerHeight = titleEl?.parentElement === tableEl ? titleEl.offsetHeight ?? 0 : 0
-    const headEl = tableEl.querySelector('.ant-table-thead ')
+    const titleEl = query(tableEl, selectors.title)
+    const headerHeight =
+      titleEl?.parentElement === tableEl ? titleEl.offsetHeight ?? 0 : 0
+    const headEl = query(tableEl, selectors.header)
     if (!headEl) return
 
     // Add a delay to get the correct bottomIncludeBody paginationHeight footerHeight headerHeight
@@ -108,26 +129,33 @@ export function useTableScroll(
       headerCellHeight = (headEl as HTMLElement).offsetHeight
     }
     let footerHeight = 0
-    const footerEl = tableEl.querySelector('.ant-table-footer') as HTMLElement
+    const footerEl = query(tableEl, selectors.footer)
     if (footerEl && footerEl.parentElement === tableEl) {
       footerHeight += footerEl.offsetHeight || 0
     }
     // Pager height
     let paginationHeight = 0
-    const paginationEl = wrapEl.querySelector('.ant-pagination') as HTMLElement
+    const paginationEl = query(wrapEl, selectors.pagination)
     if (paginationEl) {
       paginationHeight = paginationEl.offsetHeight + 16
     }
 
     // 表格最大高度
-    let tableHeight = Math.ceil(bottomIncludeBody) - (resizeHeightOffset || 0) - paddingHeight - paginationHeight
+    let tableHeight =
+      Math.ceil(bottomIncludeBody) -
+      (resizeHeightOffset || 0) -
+      paddingHeight -
+      paginationHeight
 
     // 表格行滚动高度
-    const innerHeight = maxHeight || tableHeight - footerHeight - headerHeight - headerCellHeight - 1
+    const innerHeight =
+      maxHeight ||
+      tableHeight - footerHeight - headerHeight - headerCellHeight - 1
 
     // 计算指定固定高度时表格最大高度
     if (maxHeight && isFixedHeight) {
-      tableHeight = maxHeight + footerHeight + headerHeight + headerCellHeight + 1
+      tableHeight =
+        maxHeight + footerHeight + headerHeight + headerCellHeight + 1
     }
 
     if (isFixedHeight) {
@@ -136,14 +164,16 @@ export function useTableScroll(
       if (!inheritHeight) {
         wrapEl.style.height = 'unset'
       }
-      const tableWrap = wrapEl.querySelector('.ant-table-wrapper') as HTMLElement
-      tableWrap.style.height = ''
-      tableWrap.style['overflow-y'] = undefined
+      const tableWrap = query(wrapEl, selectors.wrapper)
+      if (tableWrap) {
+        tableWrap.style.height = ''
+        tableWrap.style['overflow-y'] = ''
+      }
       if (!(unref(dataRef)?.length > 0)) {
-        const emptyEl = tableEl.querySelector('.ant-empty')
+        const emptyEl = query(tableEl, selectors.empty)
         if (emptyEl) {
-          const emptyCell = tableEl.querySelector('.ant-table-tbody .ant-table-cell') as HTMLElement
-          emptyCell!.style.height = `${innerHeight}px`
+          const emptyCell = query(tableEl, selectors.emptyCell)
+          if (emptyCell) emptyCell.style.height = `${innerHeight}px`
         }
         return
       }
@@ -151,7 +181,7 @@ export function useTableScroll(
     if (tableEl.scrollHeight > tableHeight) {
       setHeight(innerHeight)
     } else {
-      const bodyEl = tableEl.querySelector('.ant-table-body') as HTMLElement
+      const bodyEl = query(tableEl, selectors.body)
       if (bodyEl) {
         setHeight(bodyEl.scrollHeight <= innerHeight ? null : innerHeight)
       }

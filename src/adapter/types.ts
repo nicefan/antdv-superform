@@ -65,6 +65,119 @@ export interface PresentationAdapter {
   render: (type: PresentationRenderType, props: Obj, slots: Obj) => VNodeChild
 }
 
+export interface UIServiceHandle {
+  /** 更新当前命令式提示或确认框。 */
+  update: (props: Obj) => void
+  /** 销毁当前命令式提示或确认框。 */
+  destroy: () => void
+}
+
+export type UIMessageType = 'success' | 'error' | 'info' | 'warning'
+
+export interface ServiceAdapter {
+  /** 显示轻量消息。 */
+  message: (type: UIMessageType, content: unknown) => void
+  /** 打开命令式确认框。 */
+  confirm: (props: Obj) => UIServiceHandle
+  /** 打开命令式信息框，主要用于可更新的加载与错误反馈。 */
+  info: (props: Obj) => UIServiceHandle
+}
+
+export interface ModalAdapter {
+  /** 渲染受控弹窗；Core 统一使用 visible/onUpdate:visible 协议。 */
+  render: (props: Obj, slots: Obj) => VNodeChild
+  /** 在组件 setup 中捕获 UI 框架上下文。 */
+  useContext?: () => unknown
+  /** 为脱离原组件树挂载的弹窗恢复 UI 框架上下文。 */
+  wrapContext?: (
+    content: (props?: Obj) => VNodeChild,
+    context: unknown,
+    props: Obj
+  ) => VNodeChild
+}
+
+export interface UploadAdapter {
+  /** UI 框架拒绝文件但不加入列表时使用的特殊返回值。 */
+  listIgnore: unknown
+  /** 渲染上传组件，并在内部完成 fileList、事件和 slot 协议转换。 */
+  render: (props: Obj, slots: Obj) => VNodeChild
+  /** 渲染默认上传触发按钮。 */
+  renderTrigger: (props: Obj, slots: Obj) => VNodeChild
+}
+
+export interface PreviewAdapter {
+  /** 渲染受控图片预览；Core 统一使用 visible/onUpdate:visible 协议。 */
+  render: (props: Obj) => VNodeChild
+}
+
+export interface UITableSelection {
+  selectedKeys: unknown[]
+  /** Core 统一回传选中 key、行和 UI 框架提供的附加信息。 */
+  onChange?: (keys: unknown[], rows: Obj[], info?: Obj) => void
+  /** 返回 false 时禁止选择当前行。 */
+  isRowSelectable?: (row: Obj) => boolean
+  /** UI 包公开的选择扩展属性，由对应 Adapter 消费。 */
+  attrs?: Obj
+}
+
+export interface UITablePagination {
+  current?: number
+  pageSize?: number
+  total?: number
+  pageSizeOptions?: Array<number | string>
+  onChange?: (page: number, pageSize?: number) => unknown
+  onShowSizeChange?: (page: number, pageSize: number) => unknown
+  /** UI 包公开的分页扩展属性，由对应 Adapter 消费。 */
+  attrs?: Obj
+}
+
+export interface UITableColumn extends Obj {
+  key?: PropertyKey
+  dataIndex?: string | string[]
+  title?: unknown
+  children?: UITableColumn[]
+  customRender?: (context: Obj) => unknown
+}
+
+export interface UITableRenderProps extends Obj {
+  data: Obj[]
+  columns: UITableColumn[]
+  selection?: UITableSelection
+  pagination?: false | UITablePagination
+  rowKey: string | ((row: Obj) => PropertyKey)
+  expandedKeys?: unknown[]
+  onExpandedChange?: (keys: unknown[]) => void
+}
+
+export interface UITableFilterProps {
+  bordered?: boolean
+  items: Array<Obj & { key: PropertyKey; tab: unknown }>
+  value?: unknown
+  onValueChange: (value: unknown) => void
+  attrs?: Obj
+}
+
+export interface UITableSelectors {
+  table: string
+  title?: string
+  header?: string
+  footer?: string
+  pagination?: string
+  wrapper?: string
+  empty?: string
+  emptyCell?: string
+  body?: string
+}
+
+export interface TableAdapter {
+  /** 将 Core 表格状态转换为当前 UI 框架的表格、列和分页结构。 */
+  render: (props: UITableRenderProps, slots: Obj) => VNodeChild
+  /** 渲染表格顶部的选项卡筛选。 */
+  renderFilter: (props: UITableFilterProps, slots: Obj) => VNodeChild
+  /** 自动高度计算需要访问的 UI 私有 DOM 节点，由 Adapter 明确声明。 */
+  selectors: UITableSelectors
+}
+
 export interface ComponentModelConfig {
   /** 组件接收主值的属性名，默认 value */
   prop?: string
@@ -90,7 +203,12 @@ export interface FieldAdapter {
   /** 将核心字段状态转换为当前 UI 组件属性 */
   transformProps?: (props: Obj, context: FieldAdapterContext) => Obj
   /** 当前 UI 框架需要特殊组件或 slot 协议时自定义最终渲染 */
-  render?: (component: Component, props: Obj, context: FieldAdapterContext, slots: Slots) => VNodeChild
+  render?: (
+    component: Component,
+    props: Obj,
+    context: FieldAdapterContext,
+    slots: Slots
+  ) => VNodeChild
 }
 
 export interface UIAdapter {
@@ -114,6 +232,16 @@ export interface UIAdapter {
   actions?: ActionAdapter
   /** 详情展示和 Core 复合字段使用的轻量展示原语。 */
   presentation?: PresentationAdapter
+  /** 消息、确认和可更新信息框等命令式 UI 服务。 */
+  services?: ServiceAdapter
+  /** 声明式与命令式弹窗共用的渲染协议。 */
+  modal?: ModalAdapter
+  /** Upload 组件的 UI 协议和忽略标记。 */
+  upload?: UploadAdapter
+  /** 图片预览协议。 */
+  preview?: PreviewAdapter
+  /** 表格、列、分页、选择、展开和筛选协议。 */
+  table?: TableAdapter
   /** 当前 UI 框架的全局组件默认属性 */
   defaults?: Obj<Obj>
 }

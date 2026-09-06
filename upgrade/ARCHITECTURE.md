@@ -35,9 +35,10 @@ Core → @antdv-next/icons 禁止
 
 ## 发布边界
 
-- 包根只发布 Core、`defineUIAdapter` 和 Adapter 类型契约，不汇总具体 UI Adapter。
-- AntDV 与 Element Plus Adapter 分别通过 `adapter/antdv`、`adapter/element-plus` 子路径独立构建和发布。
-- 每个具体 Adapter 只依赖自身 UI 框架；UI 框架保持外部依赖，避免未使用的 Adapter 进入消费项目。
+- `superform` 只发布 Core、`defineUIAdapter`、Adapter 类型契约和通用构建能力，不汇总具体 UI Adapter。
+- AntDV 与 Element Plus 分别通过 `superform-antdv`、`superform-element-plus` 作为完整产品包独立发布，各自打包 Core，并由业务显式调用 `initialize()` 绑定对应 Adapter。
+- 官方 UI 用户只安装其中一个产品包；`superform` 继续作为第三方 Adapter 使用的独立 Core/SDK 包。
+- 官方产品包不能在同一应用混用；Vue 与对应 UI 框架保持 external，Core 源码进入产品包构建结果。
 
 ## Schema 组件解析
 
@@ -81,8 +82,8 @@ Core → @antdv-next/icons 禁止
 
 ## 迁移约束
 
-- `src/compat/antdv.ts` 和 `src/compat/icons.ts` 只是未迁移能力的内部施工依赖，不是面向用户的兼容层。
-- 迁移采用逐能力、逐模块替换；每项能力迁入 Adapter 后立即删除对应 compat 导出，不留新旧双路径。
+- P007 已删除 `src/compat/antdv.ts` 和 `src/compat/icons.ts`；Core 不再保留具体 UI 框架的施工桥梁。
+- 架构保护测试同时扫描源码与样式，阻止具体 UI 依赖重新进入 Core。
 - P004 直接将公共 Schema 从 AntDV Props 切换到稳定类型与 Adapter 扩展类型，不提供旧 Props 兼容别名。
 - P005 直接移除旧组件注册和解析规则；移除项只记录迁移方式，不设废弃期。
 - Element Plus 的最小验证随 P005 和 P007 对应能力实施，不再单设第二 UI 框架 PoC 阶段。

@@ -1,17 +1,6 @@
-<template>
-  <Image.PreviewGroup
-    :style="{ display: 'none' }"
-    :preview="{
-      visible,
-      onVisibleChange: setVisible,
-      current,
-    }"
-  >
-    <Image v-for="(img, index) of images" :key="index" :width="width" :src="img" :height="height" />
-  </Image.PreviewGroup>
-</template>
+<template><RenderPreview /></template>
 <script setup lang="ts">
-import { Image } from '../compat/antdv'
+import { renderUIPreview } from '../adapter'
 const emit = defineEmits(['update:value'])
 const props = defineProps<{
   images?: string[]
@@ -24,4 +13,14 @@ const props = defineProps<{
 const setVisible = (boo) => {
   emit('update:value', boo)
 }
+
+const RenderPreview = () =>
+  renderUIPreview({
+    images: props.images,
+    visible: props.visible,
+    current: props.current,
+    width: props.width,
+    height: props.height,
+    'onUpdate:visible': setVisible,
+  })
 </script>

@@ -1,7 +1,7 @@
 {
   "name": "superform-antdv",
   "version": "1.0.0",
-  "description": "AntDV adapter for SuperForm",
+  "description": "SuperForm for AntDV",
   "type": "module",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
@@ -11,10 +11,6 @@
     ".": {
       "types": "./lib/index.d.ts",
       "import": "./lib/index.js"
-    },
-    "./full": {
-      "types": "./lib/full.d.ts",
-      "import": "./lib/full.js"
     },
     "./unplugin": {
       "types": "./lib/unplugin.d.ts",
@@ -26,10 +22,12 @@
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run"
   },
+  "dependencies": {
+    "unplugin": "^3.3.0"
+  },
   "peerDependencies": {
     "@antdv-next/icons": ">=1.1.1",
     "antdv-next": ">=1.5.0",
-    "superform": ">=1.0.0",
     "vue": ">=3.5.0"
   },
   "devDependencies": {
