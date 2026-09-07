@@ -9,5 +9,4 @@ const product = createOfficialProduct<AntdvFieldName>(
 
 export * from "superform";
 export * from "./adapter";
-export { fieldComponents } from "./fieldComponents";
 export default product;

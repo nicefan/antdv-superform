@@ -218,7 +218,7 @@ export interface UIAdapter {
   components: Record<string, Component>
   /** Adapter 支持的 Schema 字段及其组件协议；这里只声明能力，不负责引入字段组件。 */
   fields?: Record<string, FieldAdapter | undefined>
-  /** 初始化 Adapter 时一并注册的字段组件；通常只由各 Adapter 的 full 入口提供。 */
+  /** 初始化 Adapter 时一并注册的字段组件；官方产品通常由 /components 入口提供。 */
   fieldComponents?: Record<string, Component | undefined>
   /** 表单容器、表单项及实例协议。 */
   form?: FormAdapter

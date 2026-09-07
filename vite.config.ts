@@ -69,6 +69,7 @@ export default defineConfig(({ mode }) =>
             // },
             output: {
               intro: (chunk) => (chunk.name === 'index' ? 'import "./style.css";' : ''),
+              chunkFileNames: '[name].js',
             },
           },
         },

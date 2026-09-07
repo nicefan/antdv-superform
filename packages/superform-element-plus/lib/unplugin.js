@@ -1,7 +1,7 @@
 import { promises } from "node:fs";
 import path from "node:path";
 import { createUnplugin } from "unplugin";
-import { c as coreTypes } from "./schemaTypes-ea36ba4a.js";
+import { c as coreTypes } from "./schemaTypes.js";
 const DEFAULT_VIRTUAL_ID = "virtual:superform/components";
 const DEFAULT_EXTENSIONS = [".vue", ".ts", ".tsx", ".js", ".jsx", ".mts", ".mjs"];
 const TYPE_PATTERN = /\btype\s*:\s*(['"`])([A-Z][\w$]*)\1/g;
@@ -208,12 +208,31 @@ ${code}`;
     }
   };
 });
-const vite = unplugin.vite;
+const createSuperFormComponents = unplugin.vite;
 const fields = {
   Input: "ElInput",
+  InputNumber: "ElInputNumber",
+  InputOtp: "ElInputOtp",
+  InputTag: "ElInputTag",
+  Autocomplete: "ElAutocomplete",
+  Mention: "ElMention",
   Select: "ElSelect",
+  SelectV2: "ElSelectV2",
+  Cascader: "ElCascader",
+  TreeSelect: "ElTreeSelect",
+  Radio: "ElRadio",
+  RadioGroup: "ElRadioGroup",
+  Checkbox: "ElCheckbox",
+  CheckboxGroup: "ElCheckboxGroup",
   Switch: "ElSwitch",
-  Rate: "ElRate"
+  DatePicker: "ElDatePicker",
+  TimePicker: "ElTimePicker",
+  TimeSelect: "ElTimeSelect",
+  ColorPicker: "ElColorPicker",
+  Rate: "ElRate",
+  Slider: "ElSlider",
+  Segmented: "ElSegmented",
+  Transfer: "ElTransfer"
 };
 function createElementPlusResolver() {
   const resolver = (type) => {
@@ -228,8 +247,17 @@ function createElementPlusResolver() {
   resolver.adapterFields = Object.keys(fields);
   return resolver;
 }
+function SuperFormComponents(options = {}) {
+  return createSuperFormComponents({
+    ...options,
+    superFormImport: options.superFormImport || "superform-element-plus",
+    dtsModule: options.dtsModule || "superform-element-plus",
+    typesImport: options.typesImport || "superform-element-plus",
+    resolvers: [createElementPlusResolver(), ...options.resolvers || []]
+  });
+}
 export {
   createElementPlusResolver,
   createLibraryResolver,
-  vite as default
+  SuperFormComponents as default
 };

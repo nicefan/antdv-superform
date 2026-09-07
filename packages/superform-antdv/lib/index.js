@@ -1,7 +1,7 @@
 import "./style.css";
 import { h, inject, reactive, ref, isRef, watchEffect, computed, toValue, toRef, watch, unref, toRefs, mergeProps, markRaw, defineComponent, openBlock, createBlock, resolveDynamicComponent, provide, watchPostEffect, toRaw, readonly, shallowRef, useAttrs, onMounted, shallowReactive, getCurrentInstance, onUnmounted, nextTick, createVNode, render as render$1, createElementBlock, Fragment, renderList, toDisplayString, Teleport, useSlots } from "vue";
-import { r as reservedSchemaTypes } from "./schemaTypes-ea36ba4a.js";
-import { Row, Col, Tooltip, CheckableTag, Tag, message, Modal, ConfigProvider, Upload, Button, Image, Table, Card, Tabs, TabPane, Divider, Dropdown, Menu, MenuItem, Space, Form, FormItem, SpaceCompact, Collapse, CollapsePanel, Input, TextArea, InputNumber, AutoComplete, Select, Radio, RadioGroup, Checkbox, CheckboxGroup, DatePicker, DateRangePicker, TimePicker, TimeRangePicker, TreeSelect, Switch, Rate } from "antdv-next";
+import { r as reservedSchemaTypes } from "./schemaTypes.js";
+import { Row, Col, Tooltip, CheckableTag, Tag, message, Modal, ConfigProvider, Upload, Button, Image, Table, Card, Tabs, TabPane, Divider, Dropdown, Menu, MenuItem, Space, Form, FormItem, SpaceCompact, Collapse, CollapsePanel } from "antdv-next";
 import { PlusOutlined, MinusOutlined, EllipsisOutlined, DownOutlined, UpOutlined, InfoCircleOutlined, UploadOutlined, PaperClipOutlined, LoadingOutlined, SyncOutlined, CloseCircleOutlined } from "@antdv-next/icons";
 import { useConfig } from "antdv-next/config-provider/context";
 let activeAdapter;
@@ -4039,7 +4039,8 @@ const FieldProcessorRenderer = defineComponent({
   name: "FieldProcessorRenderer",
   inheritAttrs: false,
   props: {
-    type: { type: String, required: true },
+    // 不能命名为 type，否则 Input 的 attrs.type 会覆盖 Schema 字段类型。
+    fieldType: { type: String, required: true },
     processors: { type: Array, required: true },
     option: { type: Object, required: true },
     model: { type: Object, required: true },
@@ -4064,7 +4065,7 @@ const FieldProcessorRenderer = defineComponent({
     return () => {
       const processedProps = processorState.transformProps(reactive({ ...ctx.attrs, ...valueProps }));
       return renderUIField(
-        props.type,
+        props.fieldType,
         processedProps,
         {
           option: props.option,
@@ -4258,7 +4259,7 @@ function buildInnerNode(option, model, effectData, attrs) {
     if (!renderSlot) {
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`);
     } else if (adapterComponent && (processors2 == null ? void 0 : processors2.length)) {
-      node = () => h(FieldProcessorRenderer, { type, processors: processors2, option, model, effectData, ...attrs }, slots);
+      node = () => h(FieldProcessorRenderer, { ...attrs, fieldType: type, processors: processors2, option, model, effectData }, slots);
     } else {
       const valueProps = useVModel({ option, model, effectData });
       const allAttrs = { ...attrs, ...valueProps };
@@ -7545,7 +7546,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const inputRef = ref();
     const inputValue = ref("");
     const inputVisible = ref(false);
-    const Input2 = computed(() => requireUIComponent("Input"));
+    const Input = computed(() => requireUIComponent("Input"));
     const inputProps = computed(
       () => mapUIFieldProps(
         "Input",
@@ -7616,7 +7617,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         (openBlock(true), createElementBlock(Fragment, null, renderList(tags.value, (tag, index) => {
           return openBlock(), createBlock(resolveDynamicComponent(() => renderTag(tag, index)), { key: tag });
         }), 128)),
-        inputVisible.value ? (openBlock(), createBlock(resolveDynamicComponent(Input2.value), mergeProps({
+        inputVisible.value ? (openBlock(), createBlock(resolveDynamicComponent(Input.value), mergeProps({
           key: 0,
           ref_key: "inputRef",
           ref: inputRef
@@ -8580,6 +8581,19 @@ function createAntdvFields() {
         return { type: "number", placeholder: `请输入${option.label ?? ""}`, ...props, style: [{ width: "100%" }, props.style] };
       }
     },
+    InputOTP: { component: "InputOTP" },
+    InputPassword: { component: "InputPassword" },
+    InputSearch: {
+      component: "InputSearch",
+      processors: ["input"],
+      transformProps(props, { option }) {
+        const rest = { ...props };
+        const searchLoading = rest.searchLoading;
+        delete rest.search;
+        delete rest.searchLoading;
+        return { placeholder: `请输入${option.label ?? ""}`, ...rest, loading: searchLoading };
+      }
+    },
     AutoComplete: {
       component: "AutoComplete",
       processors: ["autoComplete"],
@@ -8587,6 +8601,8 @@ function createAntdvFields() {
         return { filterOption: true, placeholder: `请输入${option.label ?? ""}`, ...props };
       }
     },
+    Cascader: { component: "Cascader" },
+    ColorPicker: { component: "ColorPicker" },
     Select: {
       component: "Select",
       processors: ["select"],
@@ -8603,6 +8619,10 @@ function createAntdvFields() {
     CheckboxGroup: { component: "CheckboxGroup", processors: ["checkboxGroup"], transformProps: (props) => mapChangeEvent(props) },
     DatePicker: { component: "DatePicker", processors: ["picker"] },
     DateRangePicker: { component: "DateRangePicker", processors: ["picker"] },
+    DateMonthPicker: { component: "DateMonthPicker", processors: ["picker"] },
+    DateQuarterPicker: { component: "DateQuarterPicker", processors: ["picker"] },
+    DateWeekPicker: { component: "DateWeekPicker", processors: ["picker"] },
+    DateYearPicker: { component: "DateYearPicker", processors: ["picker"] },
     TimePicker: { component: "TimePicker", processors: ["picker"] },
     TimeRangePicker: { component: "TimeRangePicker", processors: ["picker"] },
     TreeSelect: {
@@ -8621,7 +8641,14 @@ function createAntdvFields() {
         return { ...rest, checkedValue: trueValue, unCheckedValue: falseValue, checkedChildren: trueLabel, unCheckedChildren: falseLabel };
       }
     },
-    Rate: { component: "Rate" }
+    Rate: { component: "Rate" },
+    Mentions: { component: "Mentions" },
+    Segmented: { component: "Segmented" },
+    Slider: { component: "Slider" },
+    Transfer: {
+      component: "Transfer",
+      model: { prop: "targetKeys", event: "update:targetKeys" }
+    }
   };
 }
 const antdvFields = createAntdvFields();
@@ -9577,24 +9604,6 @@ function useDetail(option, data) {
 function defineDetail(option) {
   return option;
 }
-const fieldComponents = {
-  Input,
-  TextArea,
-  InputNumber,
-  AutoComplete,
-  Select,
-  Radio,
-  RadioGroup,
-  Checkbox,
-  CheckboxGroup,
-  DatePicker,
-  DateRangePicker,
-  TimePicker,
-  TimeRangePicker,
-  TreeSelect,
-  Switch,
-  Rate
-};
 const product = createOfficialProduct(
   "superform-antdv",
   (components) => createAntdvAdapter({ components })
@@ -9619,7 +9628,6 @@ export {
   defineTable,
   defineUIAdapter,
   diagnoseSchema,
-  fieldComponents,
   registerAutoImportedComponents,
   registerComponent,
   registerComponents,

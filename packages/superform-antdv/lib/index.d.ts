@@ -70,7 +70,7 @@ export declare const antdvCapabilities: Pick<UIAdapter, "form" | "table" | "comp
 
 export declare const antdvDefaults: NonNullable<UIAdapter['defaults']>;
 
-export declare type AntdvFieldName = "Input" | "TextArea" | "InputNumber" | "AutoComplete" | "Select" | "Radio" | "RadioGroup" | "Checkbox" | "CheckboxGroup" | "DatePicker" | "DateRangePicker" | "TimePicker" | "TimeRangePicker" | "TreeSelect" | "Switch" | "Rate";
+export declare type AntdvFieldName = "Input" | "TextArea" | "InputNumber" | "InputOTP" | "InputPassword" | "InputSearch" | "AutoComplete" | "Cascader" | "ColorPicker" | "Select" | "Radio" | "RadioGroup" | "Checkbox" | "CheckboxGroup" | "DatePicker" | "DateRangePicker" | "DateMonthPicker" | "DateQuarterPicker" | "DateWeekPicker" | "DateYearPicker" | "TimePicker" | "TimeRangePicker" | "TreeSelect" | "Switch" | "Rate" | "Mentions" | "Segmented" | "Slider" | "Transfer";
 
 export declare const antdvFields: Record<string, FieldAdapter | undefined>;
 
@@ -560,9 +560,6 @@ export declare type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upl
 export { FieldAdapter }
 
 export { FieldAdapterContext }
-
-/** AntDV Adapter 支持的全量字段组件，适合不使用自动导入插件的应用。 */
-export declare const fieldComponents: Record<AntdvFieldName, Component>;
 
 export { FormAdapter }
 
@@ -1090,7 +1087,8 @@ declare type UIContainerProps<K extends string> = K extends keyof UIContainerCom
 
 declare type UIFormComponentOption<K extends keyof UIFormComponentProps> = ExtFormItemOption &
 (K extends keyof UIFormComponentOptionExtensions ? UIFormComponentOptionExtensions[K] : unknown) & {
-    attrs?: UIFormComponentProps[K] & HTMLAttributes
+    // UI 库的必填 Props 可能由动态属性、Adapter 默认值或增强处理器补充，Schema 静态 attrs 只约束已填写的属性。
+    attrs?: Partial<UIFormComponentProps[K]> & HTMLAttributes
 }
 
 /** Adapter 为字段组件关联的 Core 增强配置。 */
@@ -1341,20 +1339,33 @@ declare global {
         interface UIFormComponentPropSources {
             antdv: {
                 AutoComplete: AutoCompleteProps;
+                Cascader: FormComponentProps<typeof import('antdv-next')['Cascader']>;
                 Checkbox: FormComponentProps<typeof import('antdv-next')['Checkbox']>;
                 CheckboxGroup: CheckboxGroupProps;
+                ColorPicker: FormComponentProps<typeof import('antdv-next')['ColorPicker']>;
+                DateMonthPicker: FormComponentProps<typeof import('antdv-next')['DateMonthPicker']>;
                 DatePicker: DatePickerProps;
+                DateQuarterPicker: FormComponentProps<typeof import('antdv-next')['DateQuarterPicker']>;
                 DateRangePicker: RangePickerProps;
+                DateWeekPicker: FormComponentProps<typeof import('antdv-next')['DateWeekPicker']>;
+                DateYearPicker: FormComponentProps<typeof import('antdv-next')['DateYearPicker']>;
                 Input: InputProps & InputFieldAttrs;
                 InputNumber: InputNumberProps;
+                InputOTP: FormComponentProps<typeof import('antdv-next')['InputOTP']>;
+                InputPassword: FormComponentProps<typeof import('antdv-next')['InputPassword']>;
+                InputSearch: FormComponentProps<typeof import('antdv-next')['InputSearch']> & InputFieldAttrs;
+                Mentions: FormComponentProps<typeof import('antdv-next')['Mentions']>;
                 Radio: FormComponentProps<typeof import('antdv-next')['Radio']>;
                 RadioGroup: RadioGroupProps;
                 Rate: FormComponentProps<typeof import('antdv-next')['Rate']>;
+                Segmented: FormComponentProps<typeof import('antdv-next')['Segmented']>;
                 Select: SelectProps;
+                Slider: FormComponentProps<typeof import('antdv-next')['Slider']>;
                 Switch: SwitchProps & SwitchFieldAttrs;
                 TextArea: TextAreaProps;
                 TimePicker: TimePickerProps;
                 TimeRangePicker: TimeRangePickerProps;
+                Transfer: FormComponentProps<typeof import('antdv-next')['Transfer']>;
                 TreeSelect: TreeSelectProps;
             };
         }
@@ -1364,6 +1375,7 @@ declare global {
                 CheckboxGroup: SelectFieldOption;
                 DateRangePicker: RangeFieldOption;
                 Input: InputFieldOption;
+                InputSearch: InputFieldOption;
                 RadioGroup: SelectFieldOption;
                 Select: SelectFieldOption;
                 Switch: SwitchFieldOption;

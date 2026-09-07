@@ -66,12 +66,18 @@ fields: {
 - `superform.initialize({ components })`：官方产品显式初始化入口；未使用构建插件时同时提供 Adapter 已声明字段的实际 UI 组件。
 - `superform.registerComponent(s)`：注册消费项目自己的 Schema 组件，不得覆盖 Core 或当前 Adapter 字段。
 - `superform-antdv` 与 `superform-element-plus`：官方产品包内置 Core 并重新导出 Core API，但导入时不会初始化 Adapter。
-- `fieldComponents`：两个产品包从包根使用同一名称导出全量字段表，通过 `initialize({ components: fieldComponents })` 快速全量登记。
+- `fieldComponents`：两个产品包从 `/components` 子路径使用同一名称导出全量字段表，通过 `initialize({ components: fieldComponents })` 快速全量登记；产品根入口不引用该组件表。
 - `superform.configure()`：设置 `dictApi`、`customIcon`、默认按钮和 `defaultProps` 等 Core 全局行为。
 - `defaultProps`：覆盖当前适配器提供的默认值；合并顺序需在 P001 定义并补测试。
 - 新版本不保留旧 `components` 底层替换语义，也不增加废弃警告或双路径。
 
 P005 已将项目组件与 Adapter 字段组件分为两套注册入口，并删除旧底层覆盖和 `Ext` 前缀兼容。自动导入组件使用独立的 `auto` 来源注册表。
+
+当前官方 Adapter 的字段支持范围以各自 `FieldName`、字段协议、Schema Props、resolver 和 `/components` 全量表为同一事实集合：
+
+- AntDV：Input 系列、AutoComplete、Cascader、ColorPicker、Select、Radio/Checkbox 系列、日期和时间系列、TreeSelect、Switch、Rate、Mentions、Segmented、Slider、Transfer。
+- Element Plus：Input 系列、Autocomplete、Mention、Select/SelectV2、Cascader、TreeSelect、Radio/Checkbox 系列、Switch、日期和时间系列、ColorPicker、Rate、Slider、Segmented、Transfer；Schema 名称统一移除 `El` 前缀。
+- Upload 继续使用 Core Upload 领域能力，不作为普通字段重复登记；Tree、Calendar 等非标准值输入不进入字段表。
 
 ## P001 已确认决策
 

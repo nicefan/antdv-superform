@@ -13,7 +13,12 @@ export type AntdvFieldName =
   | "Input"
   | "TextArea"
   | "InputNumber"
+  | "InputOTP"
+  | "InputPassword"
+  | "InputSearch"
   | "AutoComplete"
+  | "Cascader"
+  | "ColorPicker"
   | "Select"
   | "Radio"
   | "RadioGroup"
@@ -21,11 +26,19 @@ export type AntdvFieldName =
   | "CheckboxGroup"
   | "DatePicker"
   | "DateRangePicker"
+  | "DateMonthPicker"
+  | "DateQuarterPicker"
+  | "DateWeekPicker"
+  | "DateYearPicker"
   | "TimePicker"
   | "TimeRangePicker"
   | "TreeSelect"
   | "Switch"
-  | "Rate";
+  | "Rate"
+  | "Mentions"
+  | "Segmented"
+  | "Slider"
+  | "Transfer";
 
 /** 创建独立的 AntDV Adapter；调用只组装对象，不初始化 Core 全局状态。 */
 export function createAntdvAdapter(

@@ -1,8 +1,22 @@
 # 不兼容变化与迁移记录
 
-当前状态：已开始记录 P002 实施的不兼容 Schema 类型命名调整。
+当前状态：P010 已按消费场景完成汇总。
 
 本文件只记录用户可观察的 API、类型或行为变化，不重复 Git diff。每项变化必须包含影响、迁移方式和兼容策略；直接移除时明确记录不保留兼容即可。
+
+## 从旧版本升级
+
+按以下顺序迁移，可以避免包入口、组件注册和 Schema 名称同时变化时难以定位问题：
+
+1. 选择一个官方产品包。AntDV 项目安装 `superform-antdv`、`antdv-next`、`@antdv-next/icons`；Element Plus 项目安装 `superform-element-plus`、`element-plus`。业务运行时不再额外导入 Core `superform`。
+2. 将所有公共 API 改为从所选产品包导入，删除 `app.use(superForm, options)` 和官方包场景下的 `useAdapter(antdvAdapter)`；在应用挂载前调用 `superForm.initialize()`，把旧安装配置中的全局行为移到 `configure()`。
+3. 选择字段组件来源。Vite 项目优先使用产品包 `/unplugin`；不用插件时在 `initialize({ components })` 中手动提供字段，或从 `/components` 导入 `fieldComponents` 全量登记。
+4. 将业务组件迁到 `registerComponent(s)`，删除 `Ext` 前缀、`registComponent`、`registerFormComponents` 和 `configureComponents`。业务组件不能覆盖 Core 或 Adapter 字段。
+5. 按“UI 组件 Schema 类型使用真实组件名”替换旧字段别名；Element Plus 使用去掉 `El` 前缀的字段名。把 Radio/Checkbox 的组选项场景改为 `RadioGroup`/`CheckboxGroup`。
+6. 按本文件后续各节处理表单初始值、Table 查询与 CRUD、Upload、Modal、布局属性和按钮配置。删除的 UI 专属透传没有兼容层，必须按当前 Adapter Props 或业务组件重新表达。
+7. 运行类型检查和生产构建。构建插件只支持 Vite；Rollup、Webpack 入口已经删除。动态 Schema 无法扫描时通过插件 `types` 显式声明字段名。
+
+第三方 UI Adapter 不使用官方产品初始化入口：安装独立 `superform`，通过 `superform/sdk` 定义 Adapter，并在渲染前调用 `superForm.useAdapter(customAdapter)`。
 
 ## 记录模板
 
@@ -33,12 +47,6 @@
 
 是否保留兼容；不保留时说明直接移除的原因。
 ```
-
-## 已知潜在变化
-
-以下项目只是计划风险，不代表已经实施；进入对应阶段后必须给出最终方案。
-
-- UI 默认属性的配置归属和索引名称可能调整。
 
 ## 项目组件注册与自动导入来源分离
 
@@ -95,15 +103,16 @@ superform.initialize({ components: { Input, Select, Rate } })
 
 Vite 用户可从 `superform-antdv/unplugin` 或 `superform-element-plus/unplugin` 使用对应 resolver。即使已使用自动导入，也仍需在渲染前调用无参 `initialize()` 初始化 Adapter。Adapter 已声明但未注册的字段会在运行时明确报错。项目自定义组件改用 `superform.registerComponent(s)`。
 
-需要快速全量引入时，从产品包根导入统一命名的字段表：
+需要快速全量引入时，从产品包的 `/components` 子路径导入统一命名的字段表：
 
 ```ts
-import superform, { fieldComponents } from 'superform-element-plus'
+import superform from 'superform-element-plus'
+import { fieldComponents } from 'superform-element-plus/components'
 
 superform.initialize({ components: fieldComponents })
 ```
 
-Element Plus Schema 名称不携带组件库导出的 `El` 前缀：`ElInput`、`ElSelect`、`ElSwitch`、`ElRate` 分别改为 `Input`、`Select`、`Switch`、`Rate`。
+Element Plus Schema 名称不携带组件库导出的 `El` 前缀，例如 `ElInput`、`ElInputNumber`、`ElCascader`、`ElRate` 分别使用 `Input`、`InputNumber`、`Cascader`、`Rate`。
 
 ## UI 组件 Schema 类型使用真实组件名
 
@@ -189,7 +198,7 @@ superform.registerComponents({ UserSelect })
 
 ### 迁移
 
-根据项目实际使用的 UI 框架安装并导入对应产品包。未使用自动导入插件时，在 `initialize({ components })` 中手动提供字段组件，或传入包根的 `fieldComponents`。第三方 Adapter 开发者仍可依赖 `superform/sdk`，使用独立 Core 的 `useAdapter(customAdapter)`。
+根据项目实际使用的 UI 框架安装并导入对应产品包。未使用自动导入插件时，在 `initialize({ components })` 中手动提供字段组件，或从产品包的 `/components` 子路径导入 `fieldComponents`。第三方 Adapter 开发者仍可依赖 `superform/sdk`，使用独立 Core 的 `useAdapter(customAdapter)`。
 
 ### 兼容策略
 
@@ -414,7 +423,7 @@ Descriptions 和 Table Tabs 分别继承完整 `DescriptionsProps` 和 `TabsProp
 
 - 移除安装配置中的 `locale`。AntDV 项目应在 `ConfigProvider` 中设置 locale，其他 UI 框架使用各自的全局化入口。
 - 如果业务代码曾从包根调用上述底层函数，应改为实现 `UIAdapter` capability，由 SuperForm Core 调用。
-- `antdvAdapter` 改从 `superform-antdv` 导入；Element Plus 使用 `superform-element-plus`。
+- 官方产品应用不再直接操作 Adapter 实例；分别从 `superform-antdv` 或 `superform-element-plus` 导入产品实例并调用 `initialize()`。只有独立 Core、第三方组合或 Adapter 测试才使用 `useAdapter()`。
 
 ### 兼容策略
 

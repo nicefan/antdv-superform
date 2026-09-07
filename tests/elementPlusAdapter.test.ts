@@ -37,9 +37,28 @@ describe("Element Plus 最小 Adapter", () => {
   it("全量组件表使用无 El 前缀注册全部字段组件", () => {
     expect(Object.keys(fieldComponents)).toEqual([
       "Input",
+      "InputNumber",
+      "InputOtp",
+      "InputTag",
+      "Autocomplete",
+      "Mention",
       "Select",
+      "SelectV2",
+      "Cascader",
+      "TreeSelect",
+      "Radio",
+      "RadioGroup",
+      "Checkbox",
+      "CheckboxGroup",
       "Switch",
+      "DatePicker",
+      "TimePicker",
+      "TimeSelect",
+      "ColorPicker",
       "Rate",
+      "Slider",
+      "Segmented",
+      "Transfer",
     ]);
     expect(
       createElementPlusAdapter({ components: fieldComponents }).fieldComponents

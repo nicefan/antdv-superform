@@ -21,7 +21,8 @@ import {
   shallowRef,
   toRaw,
 } from 'vue'
-import { reportSchemaDiagnostics, useControl, useInnerSlots } from '../utils'
+import { useControl, useInnerSlots } from '../utils'
+import { reportSchemaDiagnostics } from '../utils/diagnoseSchema'
 import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
@@ -30,7 +31,6 @@ import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
 import { renderUIForm } from '../adapter'
-import { nanoid } from 'nanoid'
 import { set as setObject } from 'lodash-es'
 
 export default defineComponent({

@@ -1,6 +1,6 @@
-# Antdv SuperForm
+# SuperForm
 
-基于 Vue 3 和 Ant Design Vue 的配置式表单与表格组件库。使用统一的 schema 描述字段、校验、查询、编辑和详情展示，适合中后台系统中结构重复、联动较多的业务页面。
+基于 Vue 3 的配置式表单与表格组件库，官方提供 AntDV Next 与 Element Plus 产品包。使用统一的 schema 描述字段、校验、查询、编辑和详情展示，适合中后台系统中结构重复、联动较多的业务页面。
 
 > 用一份清晰的配置统一数据、界面和交互，让复杂的业务页面写得更少、读得更懂、改得更稳。
 
@@ -22,7 +22,7 @@
 
 **配置灵活且易于扩展**
 
-简单场景直接声明，复杂场景可使用函数、Ref、插槽、自定义渲染、数组编辑组件和弹窗编辑；还可注册业务组件、替换底层组件并设置全局默认值。保留配置式开发效率的同时，不被固定模板限制，可以逐步适配复杂业务和项目级设计规范。
+简单场景直接声明，复杂场景可使用函数、Ref、插槽、自定义渲染、数组编辑组件和弹窗编辑；还可注册业务组件、选择 UI Adapter 并设置全局默认值。保留配置式开发效率的同时，不被固定模板限制，可以逐步适配复杂业务和项目级设计规范。
 
 一项字段配置即可同时表达它的数据与界面意图：
 
@@ -42,36 +42,37 @@
 
 ## 环境要求
 
-- Vue `>= 3.3.13`
-- Ant Design Vue `>= 3.2.20`
+- Vue `>= 3.5.0`
+- AntDV Next `>= 1.5.0`，或 Element Plus `>= 2.14.5`
 
-Vue 和 Ant Design Vue 是 peer dependencies，需要由消费项目安装。
+Vue 和所选 UI 框架是 peer dependencies，需要由消费项目安装。
 
 ## 安装
 
 ```bash
-pnpm add superform superform-antdv antdv-next
+pnpm add superform-antdv antdv-next @antdv-next/icons
 ```
 
-也可以使用 npm：
+Element Plus 项目安装：
 
 ```bash
-npm install superform superform-antdv antdv-next
+pnpm add superform-element-plus element-plus
 ```
+
+官方产品包已经包含 Core，业务项目不需要另外安装或导入 `superform`。独立 `superform` 包用于第三方 Adapter 开发和可选 CLI。
 
 ## 应用级配置
 
-Adapter、全局配置和项目组件分别显式注册；无需调用 Vue `app.use()`。
+官方产品包导入时不会立即初始化；应用必须在渲染前调用一次 `initialize()`，无需调用 Vue `app.use()`。
 
 ```ts
 import { createApp } from 'vue'
-import superform from 'superform'
-import { antdvAdapter } from 'superform-antdv'
+import superform from 'superform-antdv'
 import App from './App.vue'
 
 const app = createApp(App)
 
-superform.useAdapter(antdvAdapter)
+superform.initialize()
 superform.configure({
   schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => api.getDictionary(name),
@@ -88,6 +89,46 @@ app.mount('#app')
 
 `dictApi(name)` 应返回 `Promise<{ label, value }[]>`。未使用这些全局能力时可以省略 `configure`，但渲染前仍需初始化 Adapter。
 
+### 字段组件导入
+
+推荐使用官方 Vite 插件扫描 Schema 并按需导入字段组件：
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import SuperFormComponents from 'superform-antdv/unplugin'
+
+export default defineConfig({
+  plugins: [
+    SuperFormComponents({
+      dirs: ['src'],
+      entry: 'src/main.ts',
+      dts: 'src/superform-components.d.ts',
+    }),
+  ],
+})
+```
+
+Element Plus 改为从 `superform-element-plus/unplugin` 导入。产品插件已经内置包名、类型模块和官方字段 resolver；只有扫描目录、入口或声明位置不符合默认值时才需要填写对应参数。
+
+不使用插件时，可以手动提供实际用到的字段组件：
+
+```ts
+import superform from 'superform-antdv'
+import { Input, Rate, Select } from 'antdv-next'
+
+superform.initialize({ components: { Input, Select, Rate } })
+```
+
+需要快速全量登记时使用独立入口：
+
+```ts
+import superform from 'superform-antdv'
+import { fieldComponents } from 'superform-antdv/components'
+
+superform.initialize({ components: fieldComponents })
+```
+
 ## 快速开始
 
 ### 表单
@@ -98,7 +139,7 @@ app.mount('#app')
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from 'superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register, form] = useForm({
   subSpan: 12,
@@ -159,7 +200,7 @@ await form.getForm()
 </template>
 
 <script setup lang="ts">
-import { SuperTable, useTable } from 'superform'
+import { SuperTable, useTable } from 'superform-antdv'
 
 const [register, table] = useTable({
   immediate: true,
@@ -254,16 +295,19 @@ table.detail({ record })
 - `initialValue`：标准初始值。
 - `required`：简单必填校验。
 - `rules`：其他校验，可使用单个对象或规则数组。
-- `attrs`：传给底层 Ant Design Vue 组件的属性。
+- `attrs`：传给当前 UI Adapter 字段组件的属性。
 - `hidden`、`disabled`、`dynamicAttrs`、`computed`：支持根据当前上下文动态计算。
 
-当前常用字段类型：
+AntDV 常用字段类型：
 
 ```text
-Input, TextArea, InputNumber, AutoComplete, Select, TreeSelect,
-DatePicker, DateRangePicker, TimePicker, TimeRangePicker, Switch, RadioGroup, CheckboxGroup,
+Input, TextArea, InputNumber, InputOTP, InputPassword, InputSearch, AutoComplete,
+Cascader, ColorPicker, Select, TreeSelect, DatePicker, DateRangePicker,
+TimePicker, TimeRangePicker, Switch, RadioGroup, CheckboxGroup, Rate, Slider, Transfer,
 Upload, TagInput, TagSelect, Text, HTML, Hidden, InputSlot, InfoSlot
 ```
+
+Element Plus 字段使用去掉 `El` 的组件名，例如 `InputNumber`、`SelectV2`、`Cascader`、`DatePicker`、`ColorPicker`、`Segmented`。完整类型以编辑器提示和对应 Adapter 的 `FieldName` 为准。
 
 当前常用容器类型：
 
@@ -310,7 +354,7 @@ options: [
 通过 Core API 注册项目字段，注册名就是 schema 类型名：
 
 ```ts
-import superform from 'superform'
+import superform from 'superform-antdv'
 import UserPicker from './UserPicker.vue'
 
 superform.registerComponents({ UserPicker })
@@ -329,7 +373,7 @@ superform.registerComponents({ UserPicker })
 ## TypeScript 辅助函数
 
 ```ts
-import { defineForm, defineTable, defineDetail } from 'superform'
+import { defineForm, defineTable, defineDetail } from 'superform-antdv'
 
 const form = defineForm({ /* ... */ })
 const table = defineTable({ /* ... */ })
@@ -340,9 +384,10 @@ const detail = defineDetail({ /* ... */ })
 
 ## AI 编码指引
 
-npm 包会发布 [`AI_GUIDE.md`](AI_GUIDE.md)。安装依赖后，在消费项目根目录执行：
+独立 Core 包会发布 [`AI_GUIDE.md`](AI_GUIDE.md) 和 CLI。需要这些开发辅助能力时额外安装为开发依赖：
 
 ```bash
+pnpm add -D superform
 npx superform init-ai
 ```
 
@@ -368,7 +413,7 @@ npx superform diagnose-schema schema.json --type form --json
 动态函数、Ref 等无法写入 JSON 的 schema，可以在项目代码或测试中调用公共 API：
 
 ```ts
-import { diagnoseSchema } from 'superform'
+import { diagnoseSchema } from 'superform-antdv'
 
 const diagnostics = diagnoseSchema(schema, 'table')
 ```
@@ -379,12 +424,12 @@ const diagnostics = diagnoseSchema(schema, 'table')
 
 ```bash
 pnpm install
-pnpm dev
+pnpm --filter superform-antdv-example dev
 pnpm test
 pnpm run build
 ```
 
-- `pnpm dev`：启动示例开发服务器。
+- `pnpm --filter superform-antdv-example dev`：启动 AntDV 示例；Element Plus 使用对应 example 包名。
 - `pnpm test`：运行 Vitest 单元测试。
 - `pnpm run build`：执行类型检查并生成 `lib/`。
 - `pnpm serve`：预览构建结果。

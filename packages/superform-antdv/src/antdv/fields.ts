@@ -60,10 +60,25 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
         return { type: 'number', placeholder: `请输入${option.label ?? ''}`, ...props, style: [{ width: '100%' }, props.style] }
       },
     },
+    InputOTP: { component: 'InputOTP' },
+    InputPassword: { component: 'InputPassword' },
+    InputSearch: {
+      component: 'InputSearch',
+      processors: ['input'],
+      transformProps(props, { option }) {
+        const rest = { ...props }
+        const searchLoading = rest.searchLoading
+        delete rest.search
+        delete rest.searchLoading
+        return { placeholder: `请输入${option.label ?? ''}`, ...rest, loading: searchLoading }
+      },
+    },
     AutoComplete: {
       component: 'AutoComplete', processors: ['autoComplete'],
       transformProps(props, { option }) { return { filterOption: true, placeholder: `请输入${option.label ?? ''}`, ...props } },
     },
+    Cascader: { component: 'Cascader' },
+    ColorPicker: { component: 'ColorPicker' },
     Select: {
       component: 'Select', processors: ['select'],
       transformProps(props, { option }) { return mapChangeEvent({ optionFilterProp: 'label', placeholder: `请选择${option.label ?? ''}`, ...props }) },
@@ -74,6 +89,10 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
     CheckboxGroup: { component: 'CheckboxGroup', processors: ['checkboxGroup'], transformProps: (props) => mapChangeEvent(props) },
     DatePicker: { component: 'DatePicker', processors: ['picker'] },
     DateRangePicker: { component: 'DateRangePicker', processors: ['picker'] },
+    DateMonthPicker: { component: 'DateMonthPicker', processors: ['picker'] },
+    DateQuarterPicker: { component: 'DateQuarterPicker', processors: ['picker'] },
+    DateWeekPicker: { component: 'DateWeekPicker', processors: ['picker'] },
+    DateYearPicker: { component: 'DateYearPicker', processors: ['picker'] },
     TimePicker: { component: 'TimePicker', processors: ['picker'] },
     TimeRangePicker: { component: 'TimeRangePicker', processors: ['picker'] },
     TreeSelect: {
@@ -90,6 +109,13 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
       },
     },
     Rate: { component: 'Rate' },
+    Mentions: { component: 'Mentions' },
+    Segmented: { component: 'Segmented' },
+    Slider: { component: 'Slider' },
+    Transfer: {
+      component: 'Transfer',
+      model: { prop: 'targetKeys', event: 'update:targetKeys' },
+    },
   }
 }
 

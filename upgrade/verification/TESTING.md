@@ -270,3 +270,35 @@ P005–P007 随各能力迁移逐步建立以下自动检查：
 - 构建修正：官方包的 `/unplugin` 入口将 `unplugin` 和 `node:` 模块保持为 external，避免 Node 代码进入浏览器产物；产品包直接声明 `unplugin` 依赖。
 - 声明修正：`fieldComponents` 使用可移植的 `Record<FieldName, Component>` 类型，声明构建同时纳入产品包所内置的 Core 源码。
 - 执行：`superform-antdv` 和 `superform-element-plus` 定向 build，均通过；`tests/packageDeclarations.test.ts` 3 项通过。
+
+## 2026-09-06 P007 回补：字段类型与组件属性同名冲突
+
+- 修复：字段处理器使用独立的 `fieldType` 传递 Schema 类型，组件 attrs 中的 `type` 不再覆盖内部字段类型。
+- 定向测试：`tests/adapter.test.ts` 16 项通过，覆盖 `Input` 与 `type="number"` 同时传递。
+- 类型检查：Core `vue-tsc --noEmit` 通过。
+- 运行验证：复用用户已启动的 `http://127.0.0.1:5173/`，浏览器控制台为 0 errors、0 warnings；未重启或停止该服务。
+- 未执行 build：本次为运行时回归修复，且尚未进入提交准备阶段。
+
+## 2026-09-08 P007 回补：全量字段组件独立入口
+
+- 修改：AntDV 与 Element Plus 产品包从 `/components` 子路径导出 `fieldComponents`，根入口不再引用全量字段组件模块。
+- 发布边界：两个包均新增 `components.js`、`components.d.ts` 构建目标与 package export。
+- 验证：按用户要求只修改，未执行测试、类型检查或 build；构建产物和发布声明留待提交前验证。
+
+## 2026-09-08 P005/P007 回补：官方 Adapter 输入组件范围
+
+- 修改：两个官方 Adapter 的字段协议、公开字段名、Schema Props、自动导入 resolver 和全量组件表同步补齐常用值输入组件。
+- 边界：Upload 继续由 Core Upload 能力承载；Tree、Calendar、CascaderPanel 等不作为普通表单值字段登记。
+- 验证：按用户要求只修改，未执行测试、类型检查或 build。
+
+## 2026-09-08 P010 发布与迁移
+
+- 类型检查：Core、`superform-antdv`、`superform-element-plus`、AntDV example、Element Plus example 五个工程均通过。
+- 完整测试：19 个测试文件、90 项测试通过；构建后再次执行声明、自动导入和架构保护 3 个文件、10 项定向测试通过。
+- 三包构建：`pnpm run build` 通过，生成 Core 及两个产品包的 JavaScript、CSS 和汇总声明；诊断函数改为直接导入后不再出现跨 chunk 循环依赖警告。
+- 真实消费：`pnpm run build:examples` 通过；AntDV example 的生产模式消费正式 package exports，Element Plus example 继续消费发布产物。两者仅有超过 Vite 默认 500 kB 的示例 chunk 体积提示。
+- 发布边界：产品根入口不导入字段全量表，`/components` 单独包含 29 个 AntDV、23 个 Element Plus 字段；Core 构建产物不包含具体 UI 框架引用；三个库的共享 chunk 均使用稳定文件名，不生成带 hash 的发布文件。
+- npm 清单：Core 与两个产品包 `npm pack --dry-run --json` 均成功；产品包各包含 README、LICENSE、`index`、`components`、`unplugin`、声明和样式，不包含源码或 example。
+- 元数据：两个产品包 exports、peerDependencies、repository、license 和 CSS sideEffects 已检查；产品包不声明运行时 `superform` 依赖。
+- 运行边界：产品入口包含 CSS import，原生 Node ESM 不处理 CSS；本项目以 Vite 前端消费构建为验收环境，SSR 需由构建器接管 CSS。AntDV 依赖自身也不支持直接由原生 Node ESM 加载全部组件入口。
+- 差异检查：`git diff --check` 通过；声明文件仅报告工作区 CRLF/LF 转换提示，无空白错误。

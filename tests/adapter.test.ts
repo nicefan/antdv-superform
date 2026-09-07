@@ -34,6 +34,8 @@ import {
 } from "../src/adapter";
 import { antdvAdapter } from "../packages/superform-antdv/src/adapter";
 import { getFormComponent } from "../src/components";
+import { buildInnerNode } from "../src/components/Collections";
+import FieldProcessorRenderer from "../src/components/processors/FieldProcessorRenderer";
 
 beforeAll(() => {
   plugin.useAdapter(antdvAdapter);
@@ -94,6 +96,25 @@ describe("UIAdapter", () => {
       value: "说明",
       allowClear: true,
       placeholder: "请输入备注",
+    });
+  });
+
+  it("字段处理器不会把组件的 type 属性误认为 Schema 字段类型", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const render = buildInnerNode(
+      { type: "Input" },
+      { refData: undefined, parent: {}, propChain: [] },
+      {},
+      { type: "number" }
+    );
+
+    const vnode = render?.();
+    warn.mockRestore();
+
+    expect(vnode?.type).toBe(FieldProcessorRenderer);
+    expect(vnode?.props).toMatchObject({
+      fieldType: "Input",
+      type: "number",
     });
   });
 

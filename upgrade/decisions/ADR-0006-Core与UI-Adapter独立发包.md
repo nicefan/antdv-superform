@@ -2,6 +2,7 @@
 
 状态：已接受
 日期：2026-09-04
+修订：2026-09-08
 
 ## 背景
 
@@ -15,7 +16,7 @@ ADR-0005 采用单一 npm 包下的 Adapter 子路径。该方案能隔离构建
 - 应用只需安装并导入一个官方产品包，不再额外安装、导入 `superform` 或调用 `useAdapter()`；应用启动时显式调用产品实例的 `initialize()`。
 - `superform` 仍作为独立 Core/SDK 发布，供第三方 Adapter 开发与非官方组合使用；官方产品包构建时复用其源码，但不把它声明为运行时 peer dependency。
 - Core 契约发生不兼容变化时同步更新两个官方 Adapter；仅 Adapter 实现变化时只发布对应 Adapter 包。
-- Adapter 包提供产品入口和 `/unplugin` resolver 入口；全量字段组件统一由包根的 `fieldComponents` 命名导出提供，不再维护 `/full` 入口。
+- Adapter 包提供产品入口、`/components` 全量字段入口和 `/unplugin` resolver 入口；包根不再导出 `fieldComponents`，避免普通产品导入关联全量字段组件。
 - 第三方 Adapter 使用独立 npm 包接入相同契约，不要求修改 Core 包 exports。
 - 官方产品包导入与 Adapter 工厂、SDK 入口都保持无初始化副作用；同一应用不得初始化两个官方产品包。
 - `initialize({ components })` 只提供该 Adapter 已声明字段的实际组件；固定 capability 原语由 Adapter 包直接引入。手动提供的字段组件优先级始终高于自动导入组件，不受两者执行顺序影响。
@@ -40,10 +41,11 @@ superform.configure({ defaultProps, dictApi })
 superform.registerComponents({ UserSelect })
 ```
 
-不使用自动导入插件时，可传入指定字段组件，或使用包根提供的全量组件表：
+不使用自动导入插件时，可传入指定字段组件，或使用 `/components` 提供的全量组件表：
 
 ```ts
-import superform, { fieldComponents } from 'superform-antdv'
+import superform from 'superform-antdv'
+import { fieldComponents } from 'superform-antdv/components'
 
 superform.initialize({ components: fieldComponents })
 ```
@@ -53,6 +55,7 @@ superform.initialize({ components: fieldComponents })
 - 官方 UI 用户只需安装一个产品包；每个产品包包含自己的 Core 实例，因此不能在同一应用中混用。
 - 第三方 Adapter 仍依赖独立的 `superform` Core/SDK，并自行决定是否提供类似的产品聚合包。
 - Adapter 可以独立版本和发布，UI 框架依赖不再出现在 Core 的长期发布边界中。
+- 全量字段组件入口与产品根入口分离；未导入 `/components` 时，不需要依赖消费端 tree-shaking 来移除该组件表。
 - monorepo 需要维护多个 package、构建、声明、测试和发布任务。
 - P006/P007 已完成 Upload、Modal、Table capability 迁移并删除全部 compat，官方产品包具备打入纯 Core 的边界。
 

@@ -25,6 +25,7 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, "src/index.ts"),
+        components: resolve(__dirname, "src/fieldComponents.ts"),
         unplugin: resolve(__dirname, "src/unplugin.ts"),
       },
       formats: ["es"],
@@ -45,6 +46,7 @@ export default defineConfig({
       output: {
         intro: (chunk) =>
           chunk.name === "index" ? 'import "./style.css";' : "",
+        chunkFileNames: "[name].js",
       },
     },
   },

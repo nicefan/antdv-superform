@@ -16,7 +16,7 @@
 | UI 输入组件 | 当前 UI 库真实组件名 | AntDV `Input`、`Select`、`TimeRangePicker` | Adapter 类型扩展 |
 | 项目组件 | 自动导入或显式注册名 | `UserPicker` | 应用类型扩展 |
 
-容器名称跨 Adapter 稳定，由 Core 负责子项结构和业务状态，各 Adapter 只映射最终 UI 组件、model 和 slot。普通输入组件不建立 Core renderer；Element Plus 使用去掉 `El` 前缀的 `Input`、`Select`、`Switch`、`Rate`，再由 Adapter 映射实际组件导出。
+容器名称跨 Adapter 稳定，由 Core 负责子项结构和业务状态，各 Adapter 只映射最终 UI 组件、model 和 slot。普通输入组件不建立 Core renderer；Element Plus 字段统一去掉组件导出的 `El` 前缀，例如 `ElInputNumber`、`ElCascader` 分别使用 `InputNumber`、`Cascader`，再由 Adapter 映射实际组件导出。
 
 具有 SuperForm 业务能力的输入处理器仍可绑定到 UI 真实组件名，例如 AntDV `Select`。该名称是否启用 options、远程搜索等增强，由 Adapter 的 processor 配置决定，不由公共类型根据名称猜测。
 
@@ -41,6 +41,8 @@ export interface CustomFormComponentProps {}
 ```
 
 `UniOption` 由上述映射生成可辨识联合。Adapter 通过命名类型注册表的声明合并预先提供全部受支持 UI 组件的 Props；`UIFormComponentOptionExtensions` 将 Select、Range 等组件关联到 Core 增强配置，避免 Core 根据组件名猜测能力。应用或 Vite 插件只扩展项目组件；这些类型映射都不导入运行时组件代码。
+
+Schema 的 `attrs` 对 UI Props 使用 `Partial`：保留属性名称和值类型提示，但不把 UI 组件声明的必填 Props 强制为静态 Schema 必填，因为它们还可能由 `dynamicAttrs`、Adapter 默认值或字段处理器补充。
 
 多个 Adapter 使用同一 Schema 名称时，按 Adapter 来源分别登记 Props 和增强配置，再将同名字段汇总为联合类型，避免全量构建时发生全局接口重复属性冲突。
 

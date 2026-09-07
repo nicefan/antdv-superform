@@ -1,10 +1,10 @@
 # 当前项目状态
 
-更新时间：2026-09-06
+更新时间：2026-09-08
 
 ## 当前阶段
 
-P006、P007 已完成基础验证；P010 待确认开始。
+P001–P007、P010 均已完成；UI Adapter 升级工程已结束，等待用户确认提交或后续发布操作。
 
 ## 已完成
 
@@ -50,7 +50,7 @@ P006、P007 已完成基础验证；P010 待确认开始。
 - AntDV 与 Element Plus Adapter 分别通过 `superform-antdv`、`superform-element-plus` 独立构建和发布，Core 不再聚合具体实现。
 - Element Plus dev 验证已拆为 `upgrade-dev/element-plus` 独立 package，不再复用根 Vite 插件配置或根 TypeScript 工程。
 - 已回补 Adapter 字段边界：固定 UI 原语由 Adapter 直接引入；Input、Select、Rate 等字段只声明支持，实际组件由自动导入或 Adapter 工厂 `components` 注册。
-- AntDV 与 Element Plus 均从包根导出 `fieldComponents` 全量字段表，不再提供 `/full` 入口；Element Plus Schema 字段统一移除 `El` 前缀。
+- AntDV 与 Element Plus 均从 `/components` 子路径导出 `fieldComponents` 全量字段表，产品根入口不再关联全量字段组件；Element Plus Schema 字段统一移除 `El` 前缀。
 - 根包已更名为 `superform`，官方实现拆为 `superform-antdv` 与 `superform-element-plus`，三者位于同一 pnpm monorepo 并独立构建、独立发布。
 - 官方产品包内置 Core，业务无需额外安装 Core 或调用 `useAdapter()`，但必须在渲染前调用产品实例 `initialize()`；不依赖 Vue `app.use()`。
 - `configure` 只处理全局行为与默认属性，`registerComponent(s)` 只处理项目自定义 Schema 组件；Adapter 的 `components` 只提供已声明字段的运行时组件。
@@ -62,12 +62,14 @@ P006、P007 已完成基础验证；P010 待确认开始。
 - Table、分页、选择、展开、筛选和自动高度 DOM 协议已迁入 Table capability，Element Plus example 已加入简单表格。
 - Core 已删除全部 compat 和具体 UI 样式；AntDV 专属样式迁入 `superform-antdv`。
 - 两个官方产品包构建时打入 Core 并重新导出 Core API；examples 只依赖并导入各自产品包。
+- 字段处理器的内部字段类型已与组件 `type` 属性分离，AntDV Input 使用 `type="number"` 时不会再被误解析为名为 `number` 的 Schema 组件。
+- 两个官方 Adapter 已补齐常用值输入组件的字段协议、Schema Props、自动导入映射和 `/components` 全量表；Upload 等独立领域组件不重复登记为普通字段。
 
 ## 下一步
 
-等待确认进入 P010，执行完整构建、发布声明检查、迁移指南收敛和真实消费验证。
+等待用户检查变更并确认是否提交。发布 npm 包、创建 tag 或 GitHub Release 不在本阶段自动执行。
 
-## 当前临时状态
+## 最终边界与已知限制
 
 - `src/compat` 已完全移除。
 - `components/index.ts` 仍汇总 Core 容器和复合字段，但项目组件与自动导入组件已经使用独立注册表，不再承担 Adapter 底层覆盖职责。
@@ -79,6 +81,8 @@ P006、P007 已完成基础验证；P010 待确认开始。
 - 外部 options/search 回调的并发、取消和异常处理仍由调用方负责，不纳入本轮回补。
 - Form、Field、Layout、Container、Action、Modal、Table 和 Upload 已完成公共类型分层，生成声明验证通过。
 - 本轮回补以逻辑清晰和实现简单为优先，允许删除升级前缺少明确业务价值的能力或规则，不通过增加大量细粒度边界维持表面兼容。
+- 官方产品入口会自动导入产品 CSS，适用于 Vite 等前端构建环境；原生 Node 直接执行 ESM import 不负责处理 CSS，SSR 工程需由构建器处理或将产品包纳入转换范围。
+- 两个 example 的生产 chunk 因完整 UI 框架和示例集合超过 Vite 默认 500 kB 阈值而产生体积提示，不影响构建；业务项目应按路由和页面自行拆包。
 
 ## 重要约束
 

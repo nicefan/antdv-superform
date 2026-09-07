@@ -2,6 +2,13 @@
   "name": "superform-element-plus",
   "version": "1.0.0",
   "description": "SuperForm for Element Plus",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicefan/antdv-superform.git",
+    "directory": "packages/superform-element-plus"
+  },
+  "homepage": "https://nicefan.github.io/antdv-superform/",
   "type": "module",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
@@ -9,10 +16,17 @@
   "files": [
     "lib"
   ],
+  "sideEffects": [
+    "./lib/style.css"
+  ],
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
       "import": "./lib/index.js"
+    },
+    "./components": {
+      "types": "./lib/components.d.ts",
+      "import": "./lib/components.js"
     },
     "./unplugin": {
       "types": "./lib/unplugin.d.ts",

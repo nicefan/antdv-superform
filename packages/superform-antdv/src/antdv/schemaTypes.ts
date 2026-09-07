@@ -66,20 +66,33 @@ declare global {
     interface UIFormComponentPropSources {
       antdv: {
         AutoComplete: AutoCompleteProps
+        Cascader: FormComponentProps<typeof import('antdv-next')['Cascader']>
         Checkbox: FormComponentProps<typeof import('antdv-next')['Checkbox']>
         CheckboxGroup: CheckboxGroupProps
+        ColorPicker: FormComponentProps<typeof import('antdv-next')['ColorPicker']>
+        DateMonthPicker: FormComponentProps<typeof import('antdv-next')['DateMonthPicker']>
         DatePicker: DatePickerProps
+        DateQuarterPicker: FormComponentProps<typeof import('antdv-next')['DateQuarterPicker']>
         DateRangePicker: RangePickerProps
+        DateWeekPicker: FormComponentProps<typeof import('antdv-next')['DateWeekPicker']>
+        DateYearPicker: FormComponentProps<typeof import('antdv-next')['DateYearPicker']>
         Input: InputProps & InputFieldAttrs
         InputNumber: InputNumberProps
+        InputOTP: FormComponentProps<typeof import('antdv-next')['InputOTP']>
+        InputPassword: FormComponentProps<typeof import('antdv-next')['InputPassword']>
+        InputSearch: FormComponentProps<typeof import('antdv-next')['InputSearch']> & InputFieldAttrs
+        Mentions: FormComponentProps<typeof import('antdv-next')['Mentions']>
         Radio: FormComponentProps<typeof import('antdv-next')['Radio']>
         RadioGroup: RadioGroupProps
         Rate: FormComponentProps<typeof import('antdv-next')['Rate']>
+        Segmented: FormComponentProps<typeof import('antdv-next')['Segmented']>
         Select: SelectProps
+        Slider: FormComponentProps<typeof import('antdv-next')['Slider']>
         Switch: SwitchProps & SwitchFieldAttrs
         TextArea: TextAreaProps
         TimePicker: TimePickerProps
         TimeRangePicker: TimeRangePickerProps
+        Transfer: FormComponentProps<typeof import('antdv-next')['Transfer']>
         TreeSelect: TreeSelectProps
       }
     }
@@ -90,6 +103,7 @@ declare global {
         CheckboxGroup: SelectFieldOption
         DateRangePicker: RangeFieldOption
         Input: InputFieldOption
+        InputSearch: InputFieldOption
         RadioGroup: SelectFieldOption
         Select: SelectFieldOption
         Switch: SwitchFieldOption

@@ -9,7 +9,30 @@ export interface ElementPlusAdapterOptions {
   components?: Partial<Record<ElementPlusFieldName, Component>>;
 }
 
-export type ElementPlusFieldName = "Input" | "Select" | "Switch" | "Rate";
+export type ElementPlusFieldName =
+  | "Input"
+  | "InputNumber"
+  | "InputOtp"
+  | "InputTag"
+  | "Autocomplete"
+  | "Mention"
+  | "Select"
+  | "SelectV2"
+  | "Cascader"
+  | "TreeSelect"
+  | "Radio"
+  | "RadioGroup"
+  | "Checkbox"
+  | "CheckboxGroup"
+  | "Switch"
+  | "DatePicker"
+  | "TimePicker"
+  | "TimeSelect"
+  | "ColorPicker"
+  | "Rate"
+  | "Slider"
+  | "Segmented"
+  | "Transfer";
 
 /** 创建 Element Plus Adapter；调用只组装对象，不初始化 Core 全局状态。 */
 export function createElementPlusAdapter(

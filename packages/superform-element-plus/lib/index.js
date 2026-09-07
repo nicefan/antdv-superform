@@ -1,7 +1,7 @@
 import "./style.css";
 import { h, inject, reactive, ref, isRef, watchEffect, computed, toValue, toRef, watch, unref, toRefs, mergeProps, markRaw, defineComponent, openBlock, createBlock, resolveDynamicComponent, provide, watchPostEffect, toRaw, readonly, shallowRef, useAttrs, onMounted, shallowReactive, getCurrentInstance, onUnmounted, nextTick, createVNode, render as render$1, createElementBlock, Fragment, renderList, toDisplayString, Teleport, useSlots } from "vue";
-import { r as reservedSchemaTypes } from "./schemaTypes-ea36ba4a.js";
-import { ElForm, ElFormItem, ElRow, ElCol, ElSpace, ElCard, ElTabs, ElTabPane, ElTooltip, ElCheckTag, ElTag, ElMessage, ElMessageBox, ElDialog, ElButton, ElUpload, ElImageViewer, ElTable, ElTableColumn, ElPagination, ElOption, ElInput, ElSelect, ElSwitch, ElRate } from "element-plus";
+import { r as reservedSchemaTypes } from "./schemaTypes.js";
+import { ElForm, ElFormItem, ElRow, ElCol, ElSpace, ElCard, ElTabs, ElTabPane, ElTooltip, ElCheckTag, ElTag, ElMessage, ElMessageBox, ElDialog, ElButton, ElUpload, ElImageViewer, ElTable, ElTableColumn, ElPagination, ElOption } from "element-plus";
 let activeAdapter;
 const manualUIComponents = {};
 const autoImportedUIComponents = {};
@@ -3964,7 +3964,7 @@ const processors = {
   },
   switch: ({ option, effectData, attrs, model }) => {
     const { optionsRef } = useOptions(option, attrs.options, effectData);
-    const modelValue = toRef(model, "refData");
+    const modelValue2 = toRef(model, "refData");
     const [falseName, trueName] = option.valueLabels || [];
     const valueToNumber = option.valueToNumber ?? attrs.valueToNumber;
     const trueDefault = valueToNumber ? 1 : true;
@@ -3994,7 +3994,7 @@ const processors = {
       () => attrs.options !== void 0 || option.options !== void 0 || Boolean(option.dictName)
     );
     watch(
-      [modelValue, optionsRef],
+      [modelValue2, optionsRef],
       ([value, options]) => {
         if (value === void 0) {
           if (hasOptionsSource.value && !options.length)
@@ -4037,7 +4037,8 @@ const FieldProcessorRenderer = defineComponent({
   name: "FieldProcessorRenderer",
   inheritAttrs: false,
   props: {
-    type: { type: String, required: true },
+    // 不能命名为 type，否则 Input 的 attrs.type 会覆盖 Schema 字段类型。
+    fieldType: { type: String, required: true },
     processors: { type: Array, required: true },
     option: { type: Object, required: true },
     model: { type: Object, required: true },
@@ -4062,7 +4063,7 @@ const FieldProcessorRenderer = defineComponent({
     return () => {
       const processedProps = processorState.transformProps(reactive({ ...ctx.attrs, ...valueProps }));
       return renderUIField(
-        props.type,
+        props.fieldType,
         processedProps,
         {
           option: props.option,
@@ -4256,7 +4257,7 @@ function buildInnerNode(option, model, effectData, attrs) {
     if (!renderSlot) {
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`);
     } else if (adapterComponent && (processors2 == null ? void 0 : processors2.length)) {
-      node = () => h(FieldProcessorRenderer, { type, processors: processors2, option, model, effectData, ...attrs }, slots);
+      node = () => h(FieldProcessorRenderer, { ...attrs, fieldType: type, processors: processors2, option, model, effectData }, slots);
     } else {
       const valueProps = useVModel({ option, model, effectData });
       const allAttrs = { ...attrs, ...valueProps };
@@ -8301,6 +8302,17 @@ const elementPlusCapabilities = {
     }
   }
 };
+const modelValue = { prop: "modelValue", event: "update:modelValue" };
+function mapChangeEvent(props) {
+  const { onValueChange, onChange, ...rest } = props;
+  return {
+    ...rest,
+    onChange: (value) => {
+      onValueChange == null ? void 0 : onValueChange(value);
+      onChange == null ? void 0 : onChange(value);
+    }
+  };
+}
 const inputField = {
   component: "Input",
   model: { prop: "modelValue", event: "update:modelValue" },
@@ -8323,6 +8335,11 @@ const inputField = {
 };
 const elementPlusFields = {
   Input: inputField,
+  InputNumber: { component: "InputNumber", model: modelValue },
+  InputOtp: { component: "InputOtp", model: modelValue },
+  InputTag: { component: "InputTag", model: modelValue },
+  Autocomplete: { component: "Autocomplete", model: modelValue },
+  Mention: { component: "Mention", model: modelValue },
   Switch: {
     component: "Switch",
     processors: ["switch"],
@@ -8362,10 +8379,49 @@ const elementPlusFields = {
       });
     }
   },
+  SelectV2: {
+    component: "SelectV2",
+    processors: ["select"],
+    model: modelValue,
+    transformProps(props, { option }) {
+      return mapChangeEvent({ placeholder: `请选择${option.label ?? ""}`, ...props });
+    }
+  },
+  Cascader: { component: "Cascader", model: modelValue },
+  TreeSelect: { component: "TreeSelect", model: modelValue },
+  Radio: { component: "Radio", model: modelValue },
+  RadioGroup: {
+    component: "RadioGroup",
+    processors: ["radioGroup"],
+    model: modelValue,
+    transformProps: mapChangeEvent
+  },
+  Checkbox: { component: "Checkbox", model: modelValue },
+  CheckboxGroup: {
+    component: "CheckboxGroup",
+    processors: ["checkboxGroup"],
+    model: modelValue,
+    transformProps: mapChangeEvent
+  },
+  DatePicker: {
+    component: "DatePicker",
+    processors: ["picker"],
+    model: modelValue
+  },
+  TimePicker: {
+    component: "TimePicker",
+    processors: ["picker"],
+    model: modelValue
+  },
+  TimeSelect: { component: "TimeSelect", model: modelValue },
+  ColorPicker: { component: "ColorPicker", model: modelValue },
   Rate: {
     component: "Rate",
-    model: { prop: "modelValue", event: "update:modelValue" }
-  }
+    model: modelValue
+  },
+  Slider: { component: "Slider", model: modelValue },
+  Segmented: { component: "Segmented", model: modelValue },
+  Transfer: { component: "Transfer", model: modelValue }
 };
 const elementPlusDefaults = {
   FormItem: { validateEvent: true }
@@ -9306,12 +9362,6 @@ function useDetail(option, data) {
 function defineDetail(option) {
   return option;
 }
-const fieldComponents = {
-  Input: ElInput,
-  Select: ElSelect,
-  Switch: ElSwitch,
-  Rate: ElRate
-};
 const product = createOfficialProduct(
   "superform-element-plus",
   (components) => createElementPlusAdapter({ components })
@@ -9334,7 +9384,6 @@ export {
   elementPlusCapabilities,
   elementPlusDefaults,
   elementPlusFields,
-  fieldComponents,
   registerAutoImportedComponents,
   registerComponent,
   registerComponents,

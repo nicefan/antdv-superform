@@ -1,7 +1,7 @@
 import { promises } from "node:fs";
 import path from "node:path";
 import { createUnplugin } from "unplugin";
-import { c as coreTypes } from "./schemaTypes-ea36ba4a.js";
+import { c as coreTypes } from "./schemaTypes.js";
 const DEFAULT_VIRTUAL_ID = "virtual:superform/components";
 const DEFAULT_EXTENSIONS = [".vue", ".ts", ".tsx", ".js", ".jsx", ".mts", ".mjs"];
 const TYPE_PATTERN = /\btype\s*:\s*(['"`])([A-Z][\w$]*)\1/g;
@@ -208,12 +208,17 @@ ${code}`;
     }
   };
 });
-const vite = unplugin.vite;
+const createSuperFormComponents = unplugin.vite;
 const fields = [
   "Input",
   "TextArea",
   "InputNumber",
+  "InputOTP",
+  "InputPassword",
+  "InputSearch",
   "AutoComplete",
+  "Cascader",
+  "ColorPicker",
   "Select",
   "Radio",
   "RadioGroup",
@@ -221,11 +226,19 @@ const fields = [
   "CheckboxGroup",
   "DatePicker",
   "DateRangePicker",
+  "DateMonthPicker",
+  "DateQuarterPicker",
+  "DateWeekPicker",
+  "DateYearPicker",
   "TimePicker",
   "TimeRangePicker",
   "TreeSelect",
   "Switch",
-  "Rate"
+  "Rate",
+  "Mentions",
+  "Segmented",
+  "Slider",
+  "Transfer"
 ];
 function createAntdvResolver() {
   const resolver = (type) => fields.includes(type) ? {
@@ -238,9 +251,18 @@ function createAntdvResolver() {
   return resolver;
 }
 const antdvResolver = createAntdvResolver();
+function SuperFormComponents(options = {}) {
+  return createSuperFormComponents({
+    ...options,
+    superFormImport: options.superFormImport || "superform-antdv",
+    dtsModule: options.dtsModule || "superform-antdv",
+    typesImport: options.typesImport || "superform-antdv",
+    resolvers: [createAntdvResolver(), ...options.resolvers || []]
+  });
+}
 export {
   antdvResolver,
   createAntdvResolver,
   createLibraryResolver,
-  vite as default
+  SuperFormComponents as default
 };

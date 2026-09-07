@@ -233,7 +233,8 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     if (!renderSlot) {
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
     } else if (adapterComponent && processors?.length) {
-      node = () => h(FieldProcessorRenderer, { type, processors, option, model, effectData, ...attrs }, slots)
+      node = () =>
+        h(FieldProcessorRenderer, { ...attrs, fieldType: type, processors, option, model, effectData }, slots)
     } else {
       const valueProps = useVModel({ option, model, effectData })
       const allAttrs = { ...attrs, ...valueProps }

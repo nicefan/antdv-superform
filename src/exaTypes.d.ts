@@ -781,7 +781,8 @@ type CoreWidgetTypes = {
 
 type UIFormComponentOption<K extends keyof UIFormComponentProps> = ExtFormItemOption &
   (K extends keyof UIFormComponentOptionExtensions ? UIFormComponentOptionExtensions[K] : unknown) & {
-    attrs?: UIFormComponentProps[K] & HTMLAttributes
+    // UI 库的必填 Props 可能由动态属性、Adapter 默认值或增强处理器补充，Schema 静态 attrs 只约束已填写的属性。
+    attrs?: Partial<UIFormComponentProps[K]> & HTMLAttributes
   }
 
 type AdapterWidgetTypes = {

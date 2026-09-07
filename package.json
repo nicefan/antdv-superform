@@ -10,6 +10,7 @@
     "url": "git+https://github.com/nicefan/antdv-superform.git"
   },
   "homepage": "https://nicefan.github.io/antdv-superform/",
+  "license": "MIT",
   "files": [
     "bin",
     "shared",

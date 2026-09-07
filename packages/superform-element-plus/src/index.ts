@@ -8,5 +8,4 @@ const product = createOfficialProduct<ElementPlusFieldName>(
 
 export * from "superform";
 export * from "./adapter";
-export { fieldComponents } from "./fieldComponents";
 export default product;

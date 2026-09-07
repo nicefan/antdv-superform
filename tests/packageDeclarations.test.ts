@@ -31,10 +31,16 @@ describe("发布声明", () => {
         import: "./lib/index.js",
       });
       expect(adapterPackage.exports).not.toHaveProperty("./full");
+      expect(adapterPackage.exports["./components"]).toEqual({
+        types: "./lib/components.d.ts",
+        import: "./lib/components.js",
+      });
       expect(adapterPackage.exports["./unplugin"]).toEqual({
         types: "./lib/unplugin.d.ts",
         import: "./lib/unplugin.js",
       });
+      expect(adapterPackage.license).toBe("MIT");
+      expect(adapterPackage.sideEffects).toEqual(["./lib/style.css"]);
       expect(adapterPackage.peerDependencies).not.toHaveProperty("superform");
       expect(adapterPackage.devDependencies.superform).toBe("workspace:*");
       expect(adapterPackage.dependencies.unplugin).toBe("^3.3.0");
@@ -52,16 +58,32 @@ describe("发布声明", () => {
       path.join(workspace, "packages/superform-element-plus/lib/index.d.ts"),
       "utf8"
     );
+    const antdvComponentsDeclaration = await readFile(
+      path.join(
+        workspace,
+        "packages/superform-antdv/lib/components.d.ts"
+      ),
+      "utf8"
+    );
+    const elementPlusComponentsDeclaration = await readFile(
+      path.join(
+        workspace,
+        "packages/superform-element-plus/lib/components.d.ts"
+      ),
+      "utf8"
+    );
     expect(rootDeclaration).not.toContain("antdvAdapter");
     expect(rootDeclaration).not.toContain("elementPlusAdapter");
     expect(antdvDeclaration).toContain("antdvAdapter");
-    expect(antdvDeclaration).toContain("fieldComponents");
+    expect(antdvDeclaration).not.toContain("fieldComponents");
+    expect(antdvComponentsDeclaration).toContain("fieldComponents");
     expect(antdvDeclaration).toContain("initialize");
     expect(antdvDeclaration).toContain("SuperForm");
     expect(antdvDeclaration).not.toContain("element-plus");
     expect(antdvDeclaration).not.toMatch(/from ['"]superform(?:\/|['"])/);
     expect(elementPlusDeclaration).toContain("elementPlusAdapter");
-    expect(elementPlusDeclaration).toContain("fieldComponents");
+    expect(elementPlusDeclaration).not.toContain("fieldComponents");
+    expect(elementPlusComponentsDeclaration).toContain("fieldComponents");
     expect(elementPlusDeclaration).toContain("initialize");
     expect(elementPlusDeclaration).toContain("SuperForm");
     expect(elementPlusDeclaration).not.toContain("antdv-next");

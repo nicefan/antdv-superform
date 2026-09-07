@@ -209,7 +209,7 @@ export declare const elementPlusCapabilities: Pick<UIAdapter, 'components' | 'fo
 
 export declare const elementPlusDefaults: NonNullable<UIAdapter['defaults']>;
 
-export declare type ElementPlusFieldName = "Input" | "Select" | "Switch" | "Rate";
+export declare type ElementPlusFieldName = "Input" | "InputNumber" | "InputOtp" | "InputTag" | "Autocomplete" | "Mention" | "Select" | "SelectV2" | "Cascader" | "TreeSelect" | "Radio" | "RadioGroup" | "Checkbox" | "CheckboxGroup" | "Switch" | "DatePicker" | "TimePicker" | "TimeSelect" | "ColorPicker" | "Rate" | "Slider" | "Segmented" | "Transfer";
 
 /** 字段名使用 Schema 公开的无 UI 前缀名称，实际组件由 resolver 或 uiComponents 提供。 */
 export declare const elementPlusFields: NonNullable<UIAdapter['fields']>;
@@ -557,9 +557,6 @@ export declare type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upl
 export { FieldAdapter }
 
 export { FieldAdapterContext }
-
-/** Element Plus 字段全量组件，键名统一使用 Schema 的无 El 前缀名称。 */
-export declare const fieldComponents: Record<ElementPlusFieldName, Component>;
 
 export { FormAdapter }
 
@@ -1083,7 +1080,8 @@ declare type UIContainerProps<K extends string> = K extends keyof UIContainerCom
 
 declare type UIFormComponentOption<K extends keyof UIFormComponentProps> = ExtFormItemOption &
 (K extends keyof UIFormComponentOptionExtensions ? UIFormComponentOptionExtensions[K] : unknown) & {
-    attrs?: UIFormComponentProps[K] & HTMLAttributes
+    // UI 库的必填 Props 可能由动态属性、Adapter 默认值或增强处理器补充，Schema 静态 attrs 只约束已填写的属性。
+    attrs?: Partial<UIFormComponentProps[K]> & HTMLAttributes
 }
 
 /** Adapter 为字段组件关联的 Core 增强配置。 */
@@ -1324,17 +1322,41 @@ declare global {
     namespace SuperFormTypeRegistry {
         interface UIFormComponentPropSources {
             elementPlus: {
+                Autocomplete: FormComponentProps<typeof import('element-plus')['ElAutocomplete']>;
+                Cascader: FormComponentProps<typeof import('element-plus')['ElCascader']>;
+                Checkbox: FormComponentProps<typeof import('element-plus')['ElCheckbox']>;
+                CheckboxGroup: FormComponentProps<typeof import('element-plus')['ElCheckboxGroup']>;
+                ColorPicker: FormComponentProps<typeof import('element-plus')['ElColorPicker']>;
+                DatePicker: FormComponentProps<typeof import('element-plus')['ElDatePicker']>;
                 Input: FormComponentProps<typeof import('element-plus')['ElInput']> & InputFieldAttrs;
+                InputNumber: FormComponentProps<typeof import('element-plus')['ElInputNumber']>;
+                InputOtp: FormComponentProps<typeof import('element-plus')['ElInputOtp']>;
+                InputTag: FormComponentProps<typeof import('element-plus')['ElInputTag']>;
+                Mention: FormComponentProps<typeof import('element-plus')['ElMention']>;
+                Radio: FormComponentProps<typeof import('element-plus')['ElRadio']>;
+                RadioGroup: FormComponentProps<typeof import('element-plus')['ElRadioGroup']>;
                 Rate: FormComponentProps<typeof import('element-plus')['ElRate']>;
+                Segmented: FormComponentProps<typeof import('element-plus')['ElSegmented']>;
                 Select: FormComponentProps<typeof import('element-plus')['ElSelect']>;
+                SelectV2: FormComponentProps<typeof import('element-plus')['ElSelectV2']>;
+                Slider: FormComponentProps<typeof import('element-plus')['ElSlider']>;
                 Switch: FormComponentProps<typeof import('element-plus')['ElSwitch']> & SwitchFieldAttrs;
+                TimePicker: FormComponentProps<typeof import('element-plus')['ElTimePicker']>;
+                TimeSelect: FormComponentProps<typeof import('element-plus')['ElTimeSelect']>;
+                Transfer: FormComponentProps<typeof import('element-plus')['ElTransfer']>;
+                TreeSelect: FormComponentProps<typeof import('element-plus')['ElTreeSelect']>;
             };
         }
         interface UIFormComponentOptionExtensionSources {
             elementPlus: {
+                CheckboxGroup: SelectFieldOption;
+                DatePicker: RangeFieldOption;
                 Input: InputFieldOption;
+                RadioGroup: SelectFieldOption;
                 Select: SelectFieldOption;
+                SelectV2: SelectFieldOption;
                 Switch: SwitchFieldOption;
+                TimePicker: RangeFieldOption;
             };
         }
         interface UITableComponentPropSources {

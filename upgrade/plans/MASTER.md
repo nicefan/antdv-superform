@@ -1,7 +1,7 @@
 # UI 适配器升级总计划
 
-状态：活动
-当前状态：P002–P007 已完成基础验证；P010 发布与迁移待确认开始
+状态：已归档
+当前状态：P001–P007、P010 均已完成，UI Adapter 升级工程结束
 基线分支：`next-dev`
 
 ## 全局目标
@@ -463,8 +463,8 @@ P010 发布与迁移
 
 #### 2026-09-04：回补全量字段入口与 Element Plus Schema 命名
 
-- [x] AntDV、Element Plus 从各自包根以 `fieldComponents` 导出全量字段表，并删除 `/full` 发布子入口。
-- [x] Element Plus Schema 字段统一为 `Input`、`Select`、`Switch`、`Rate`，resolver 映射到实际 `El*` 导出。
+- [x] AntDV、Element Plus 以 `fieldComponents` 导出全量字段表，并删除 `/full` 发布子入口；入口位置已在 2026-09-08 回补中调整为 `/components`。
+- [x] Element Plus Schema 字段统一移除 `El` 前缀，resolver 映射到实际 `El*` 导出。
 - [x] Adapter 字段类型按来源登记，同名字段 Props 汇总为联合类型。
 - 验证：按用户要求本轮只修改，未执行测试、typecheck 或 build。
 
@@ -585,11 +585,32 @@ P010 发布与迁移
 - [x] 两个 example 改为显式初始化，Element Plus 手动组件映射使用无 `El` 前缀 Schema 键名。
 - 验证：Core、两个官方包和两个 example 类型检查通过；4 个相关测试文件共 25 项通过；两个官方包的构建与发布声明检查通过。
 
+#### 2026-09-06：回补字段类型与组件属性同名冲突
+
+- [x] 字段处理器的内部字段类型参数改为 `fieldType`，避免 Input 的原生 `type` 属性覆盖 Schema 字段类型。
+- [x] 组件 attrs 继续完整传给 UI 字段，`type="number"` 等底层组件属性保持生效。
+- 验证：Adapter 定向测试 16 项与类型检查通过；在现有 5173 AntDV example 服务中复核为 0 errors、0 warnings；未执行 build。
+
+#### 2026-09-08：回补全量字段组件独立入口
+
+- [x] 两个官方产品包新增 `/components` 构建与发布子路径，统一导出 `fieldComponents`。
+- [x] 产品根入口移除 `fieldComponents` 再导出，普通使用不再关联全量字段组件模块。
+- [x] 发布声明测试、ADR、设计说明和迁移记录同步到新入口。
+- 验证：按用户要求本轮只修改，未执行测试、类型检查或 build；`lib/` 留待提交前构建更新。
+
+#### 2026-09-08：回补官方 Adapter 输入组件范围
+
+- [x] AntDV 补齐 Cascader、ColorPicker、Input 子类型、Mentions、Segmented、Slider、Transfer 和日期子类型等常用值输入。
+- [x] Element Plus 补齐 Input 子类型、Autocomplete、Mention、SelectV2、Cascader、TreeSelect、Radio/Checkbox、日期时间、颜色、滑块、分段和穿梭框等常用值输入。
+- [x] 同步字段协议、公开字段名、Schema Props、resolver、全量组件表和相关文档；Element Plus 继续使用无 `El` 前缀名称。
+- 边界：Upload 保持 Core 领域能力；Tree、Calendar、CascaderPanel 等非标准值输入不纳入普通字段表。
+- 验证：按用户要求本轮只修改，未执行测试、类型检查或 build。
+
 ---
 
 ## P010 发布与迁移
 
-状态：待开始
+状态：已完成
 依赖：P004、P005、P006、P007
 
 ### 目标
@@ -598,15 +619,25 @@ P010 发布与迁移
 
 ### 任务
 
-- [ ] 汇总 `BREAKING-CHANGES.md`，按用户场景整理迁移步骤。
-- [ ] 更新 README、AI_GUIDE 和文档站的公开用法。
-- [ ] 确认所有删除的旧 API 均有直接迁移方式，不遗留过渡入口。
-- [ ] 运行完整 test、typecheck 和 build。
-- [ ] 检查发布产物、exports、peerDependencies 和 d.ts。
-- [ ] 完成真实消费项目的升级演练。
+- [x] 汇总 `BREAKING-CHANGES.md`，按用户场景整理迁移步骤。
+- [x] 更新 README、AI_GUIDE 和公开包 README；仓库没有受版本控制的 VitePress 正文可同步。
+- [x] 确认所有删除的旧 API 均有直接迁移方式，不遗留过渡入口。
+- [x] 运行完整 test、typecheck 和 build。
+- [x] 检查发布产物、exports、peerDependencies 和 d.ts。
+- [x] 完成真实消费项目的升级演练。
 
 ### 验收条件
 
-- [ ] 新用法、旧能力移除影响和直接迁移方式均有文档。
-- [ ] 完整验证通过，构建产物不包含意外 UI 依赖。
-- [ ] `CURRENT.md` 标记工程完成，活动计划归档。
+- [x] 新用法、旧能力移除影响和直接迁移方式均有文档。
+- [x] 完整验证通过，构建产物不包含意外 UI 依赖。
+- [x] `CURRENT.md` 标记工程完成，活动计划归档。
+
+### 进展记录
+
+#### 2026-09-08：完成发布收敛与真实消费验证
+
+- 文档：README、AI_GUIDE、两个产品包 README 和迁移总览统一为官方产品包 `initialize()`、按需插件、手动组件及 `/components` 全量入口用法；删除 API 均给出直接迁移路径。
+- 发布：两个产品包补齐 README、LICENSE、仓库元数据和 CSS sideEffects；官方 `/unplugin` 自动提供产品包名、类型模块及官方 resolver。
+- 构建：修复诊断函数经 barrel 跨 chunk 形成的循环依赖警告；三包完整构建和两个 example 生产构建通过。
+- 验证：五个工程类型检查通过；19 个测试文件、90 项测试通过；声明、架构和插件定向复核 10 项通过；三个 npm 包 dry-run 清单符合发布边界。
+- 消费：AntDV example 在 dev 下保持源码联调、build 下改为正式 exports；Element Plus example 继续消费发布产物。两个生产构建均通过。
