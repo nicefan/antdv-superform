@@ -1,9 +1,8 @@
-import { InfoCircleOutlined } from '../compat/icons'
-import { Tooltip } from '../compat/antdv'
 import { isPlainObject } from 'lodash-es'
 import { h } from 'vue'
 import { toNode } from './toNode'
-import { getIconNode } from './useIcon'
+import { getIconNode, getSemanticIconNode } from './useIcon'
+import { renderUIAction } from '../adapter'
 
 export const createLabelNode = (option, effectData) => {
   const { title, label, labelSlot, tooltip } = option
@@ -14,13 +13,15 @@ export const createLabelNode = (option, effectData) => {
     : () => [
         toNode(_label, effectData),
         tooltip &&
-          h(Tooltip, tipProps, {
+          renderUIAction('tooltip', tipProps, {
             title: () => toNode(tooltip.title, effectData),
             default: () =>
               h(
-                'a',
-                { class: 'ant-typography ant-typography-secondary', style: { marginLeft: '4px' } },
-                getIconNode(tooltip.icon || InfoCircleOutlined)
+                'span',
+                {
+                  class: 'sup-label-tooltip',
+                },
+                (tooltip.icon ? getIconNode(tooltip.icon) : getSemanticIconNode('info')) as any
               ),
           }),
       ]

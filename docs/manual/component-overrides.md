@@ -1,68 +1,77 @@
-# 替换底层组件
+# 组件与 Adapter 边界
 
-`components` 同时是 UI 基础组件和普通字段的注册入口。内置名称用于替换增强器或布局使用的底层组件；其他名称会直接成为可用的 Schema `type`。
+SuperForm 1.0 不再开放一个混合的 `components` 配置来任意替换所有底层组件。组件来源按职责分开，避免业务注册意外覆盖 Adapter 协议。
 
-## 安装时替换
+## 三种组件来源
+
+| 来源 | 负责内容 | 配置入口 |
+| --- | --- | --- |
+| Adapter 固定能力 | Form、FormItem、Modal、Table、布局、反馈等基础能力 | 官方产品内置，或自定义 Adapter 实现 |
+| Adapter 字段 | Input、Select、Rate 等 Adapter 已声明字段 | Vite 自动导入或 `initialize({ components })` |
+| 项目业务字段 | UserPicker、RichEditor 等业务组件 | `registerComponent(s)` |
+
+`initialize({ components })` 的组件名必须已经由当前 Adapter 声明，不能加入任意项目组件：
 
 ```ts
-app.use(SuperFormPlugin, {
-  components: {
-    Input: ProjectInput,
-    Table: ProjectTable,
-    Modal: ProjectModal,
-    Rate,
+import superform from "superform-antdv";
+import { Input, Rate } from "antdv-next";
+
+superform.initialize({ components: { Input, Rate } });
+```
+
+项目组件使用独立入口：
+
+```ts
+superform.registerComponents({ UserPicker, RichEditor });
+```
+
+## 修改默认属性
+
+不改变组件协议时，优先使用 `defaultProps`：
+
+```ts
+superform.configure({
+  defaultProps: {
+    Input: { allowClear: true },
+    Select: { allowClear: true },
+    Table: { size: "small", bordered: true },
   },
 });
 ```
 
-## 可替换名称
+单个字段的 `attrs` 会覆盖全局默认值。
 
-| 分类          | 名称                                                              |
-| ------------- | ----------------------------------------------------------------- |
-| 布局与反馈    | `Divider`、`Tooltip`、`Space`                                     |
-| 表单          | `FormItem`、`InputGroup`                                          |
-| 按钮/菜单     | `Button`、`MenuItem`、`Menu`、`Dropdown`                          |
-| 容器          | `Card`、`ListItem`、`List`、`Modal`、`Table`                      |
-| Tabs/Collapse | `Tabs`、`TabPane`、`Collapse`、`CollapsePanel`                    |
-| 文本输入      | `Input`、`InputSearch`、`InputNumber`                             |
-| 选择          | `Select`、`TreeSelect`、`Switch`                                  |
-| 日期时间      | `DatePicker`、`RangePicker`、`TimePicker`                         |
-| 单复选        | `Radio`、`RadioButton`、`RadioGroup`、`Checkbox`、`CheckboxGroup` |
+## 何时需要自定义 Adapter
 
-名称区分大小写。表格中的内置名称表示组件库内部槽位；未被核心占用的名称（例如 `Rate`）则直接等同于 Schema `type`。
+以下需求属于 Adapter，而不是项目组件注册：
 
-## 包装组件必须保持的契约
+- 替换所有 Form、Modal 或 Table 的底层实现。
+- 改变 `value`、`checked`、`modelValue` 等 model 协议。
+- 映射 UI 框架专属事件、插槽和实例方法。
+- 接入新的消息、确认框、上传、预览或表格能力。
+- 让某个字段名称使用不同的 UI 实现，同时保留 Core 增强处理器。
 
-```vue
-<template>
-  <AInput
-    v-bind="$attrs"
-    :value="value"
-    @update:value="emit('update:value', $event)"
-  >
-    <template v-for="(_, name) in $slots" #[name]="slotProps">
-      <slot :name="name" v-bind="slotProps || {}" />
-    </template>
-  </AInput>
-</template>
+第三方 Adapter 依赖独立 Core：
+
+```ts
+import superform from "superform";
+import { defineUIAdapter } from "superform/sdk";
+
+const adapter = defineUIAdapter({
+  name: "my-ui",
+  // capabilities、fields、processors、defaults...
+});
+
+superform.useAdapter(adapter);
 ```
 
-- 接收对应 Ant Design Vue props 与 HTML attributes。
-- 透传默认和具名插槽。
-- 保持原 v-model 名称与事件，例如 `value` / `update:value`。
-- 不改变 `change`、`search`、`select` 等事件参数。
-- 透传 `ref` 或暴露原组件关键方法。
-- Form、Table、Modal 尤其要保留校验、滚动、关闭等实例能力。
+官方产品用户不需要也不应再调用 `useAdapter()`。
 
-## 替换与扩展字段对比
+## 迁移旧覆盖配置
 
-| 需求                         | 入口                           |
-| ---------------------------- | ------------------------------ |
-| 所有 Input 自动埋点          | `components.Input`             |
-| 所有 Table 统一空状态        | `components.Table`             |
-| 单个页面自定义一次输入       | InputSlot                      |
-| 标准 Rate、Slider 字段       | `components` 直接注册          |
-| 多页面复用“用户选择器”       | `registerComponent`            |
-| 只改一个 Schema 的底层 props | 当前节点 `attrs`               |
+- `components.Input` 等普通字段：改为 Vite 自动导入或 `initialize({ components })`。
+- `components.UserPicker` 等业务字段：改为 `registerComponent(s)`。
+- `components.Form`、`components.Table`、`components.Modal` 等基础能力替换：迁到自定义 Adapter。
+- 只修改 props 的覆盖：迁到 `configure({ defaultProps })`。
 
-替换范围很大，建议为包装组件写 v-model、事件、插槽和 ref 冒烟测试。业务字段扩展见[注册自定义字段](/manual/custom-fields)。
+这种分层使类型声明、运行时注册和 UI 协议各有唯一入口。

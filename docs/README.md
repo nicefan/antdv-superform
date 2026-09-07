@@ -1,6 +1,6 @@
-# Antdv SuperForm 在线文档
+# SuperForm 在线文档
 
-这是主项目 `docs` 分支中的全新文档站，使用 VitePress 与 `@vue/repl`。
+这是主项目 `next-doc` 分支中的文档站，使用 VitePress 与 `@vue/repl`。
 
 ## 本地开发
 

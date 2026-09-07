@@ -44,7 +44,7 @@
 ## 1. 创建 Schema
 
 ```ts
-import { defineForm } from "antdv-superform";
+import { defineForm } from "superform-antdv";
 
 const schema = defineForm({
   subSpan: 12,
@@ -85,7 +85,7 @@ const schema = defineForm({
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from "antdv-superform";
+import { SuperForm, useForm } from "superform-antdv";
 
 const [register, form] = useForm(schema);
 
@@ -134,7 +134,7 @@ const result = await form.submit();
 
 ```ts
 {
-  type: 'Textarea',
+  type: 'TextArea',
   field: 'disableReason',
   label: '停用原因',
   hidden: ({ current }) => current.status !== 0,

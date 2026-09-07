@@ -50,7 +50,7 @@
 
 ```ts
 {
-  type: 'Textarea',
+  type: 'TextArea',
   field: 'rejectReason',
   label: '驳回原因',
   required: ({ current }) => current.result === 'reject',
@@ -65,7 +65,7 @@
 const showReason = ({ current }) => current.result === 'reject'
 
 {
-  type: 'Textarea',
+  type: 'TextArea',
   field: 'rejectReason',
   hidden: (data) => !showReason(data),
   required: showReason,

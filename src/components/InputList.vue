@@ -3,9 +3,8 @@ import { type PropType, defineComponent, h, reactive, shallowRef, toRef, watch, 
 import { cloneModels } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { toNode } from '../utils'
-import { Space } from '../compat/antdv'
-import { MinusOutlined, PlusOutlined } from '../compat/icons'
+import { getSemanticIconNode, toNode } from '../utils'
+import { renderUILayout } from '../adapter'
 import { globalProps } from '../plugin'
 import { nanoid } from 'nanoid'
 
@@ -47,12 +46,12 @@ export default defineComponent({
           orgList.value.splice(index + 1, 0, isSingle ? undefined : {})
           orgList.value = [...toRaw(orgList.value)]
         },
-        icon: () => h(PlusOutlined),
+        icon: () => getSemanticIconNode('add'),
       },
       delete: {
         disabled: () => orgList.value.length === 1,
         confirmText: '',
-        icon: () => h(MinusOutlined),
+        icon: () => getSemanticIconNode('remove'),
         onClick({ index }) {
           orgList.value.splice(index, 1)
           orgList.value = [...toRaw(orgList.value)]
@@ -126,7 +125,11 @@ export default defineComponent({
             })
           } else {
             if (childrenMap.size === 1 || !columns[0].field) {
-              itemOption = { subSpan: 'auto', ...columns[0], field: String(idx) }
+              itemOption = {
+                subSpan: 'auto',
+                ...columns[0],
+                field: String(idx),
+              }
               const oldModel = [...childrenMap.values()][0]
               ghostModel.set(itemOption, {
                 ...oldModel,
@@ -185,19 +188,24 @@ export default defineComponent({
           const { label, labelSlot = label } = columns[0]
           const breakAfter = columns[0].breakAfter ?? columns[0].wrapping
           return () =>
-            h(Space, { direction: breakAfter ? 'vertical' : 'horizontal' }, () =>
-              listItems.value.map(({ refData, key }, index) => {
-                const itemEffectData = {
-                  ...effectData,
-                  parent: effectData,
-                  current: orgList.value,
-                  field: columns[0].field,
-                  value: refData.value,
-                  index,
-                  record: refData.value,
-                }
-                return h('span', { key }, [toNode(labelSlot, itemEffectData), labelSlot ? ': ' : '', refData.value])
-              })
+            renderUILayout(
+              'space',
+              { direction: breakAfter ? 'vertical' : 'horizontal' },
+              {
+                default: () =>
+                  listItems.value.map(({ refData, key }, index) => {
+                    const itemEffectData = {
+                      ...effectData,
+                      parent: effectData,
+                      current: orgList.value,
+                      field: columns[0].field,
+                      value: refData.value,
+                      index,
+                      record: refData.value,
+                    }
+                    return h('span', { key }, [toNode(labelSlot, itemEffectData), labelSlot ? ': ' : '', refData.value])
+                  }),
+              }
             )
         } else {
           return () =>

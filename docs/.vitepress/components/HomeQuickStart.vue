@@ -61,7 +61,7 @@ store.setImportMap({
     vue: asset("vue.runtime.esm-browser.js"),
     "antdv-next": asset("antd.js"),
     "antdv-next/locale/zh_CN": exampleLocaleUrl,
-    "antdv-superform": asset("antdv-superform.js"),
+    "superform-antdv": asset("superform-antdv.js"),
   },
 });
 store.init();

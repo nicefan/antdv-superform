@@ -20,9 +20,23 @@ const propertyNames = new Set();
 // 不应为了通过覆盖校验而出现在面向使用者的手册正文中。
 const reviewOnlyProperties = new Set([
   "advanced",
+  "Card",
+  "Collapse",
+  "Descriptions",
   "defaultHidden",
   "dropdownProps",
+  "fieldName",
   "forceRender",
+  "HTML",
+  "InputGroup",
+  "listData",
+  "modelsMap",
+  "propChain",
+  "refData",
+  "refName",
+  "Tabs",
+  "TagInput",
+  "TagSelect",
 ]);
 
 function collectPropertyNames(node) {

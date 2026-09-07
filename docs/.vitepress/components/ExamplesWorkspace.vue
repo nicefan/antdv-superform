@@ -26,6 +26,11 @@ const manifest = await fetch(`${base}repl/versions.json`).then(async (response) 
 
 if (!manifest.versions.length) throw new Error('尚未生成可用的示例运行环境')
 
+const latestMajor = manifest.latest.split('.')[0]
+const compatibleVersions = manifest.versions.filter(
+  ({ version }) => version.split('.')[0] === latestMajor
+)
+
 const queryId = new URLSearchParams(location.search).get('example')
 const activeId = shallowRef(allExamples.find(({ id }) => id === queryId)?.id ?? allExamples[0].id)
 const selectedVersion = shallowRef(manifest.latest)
@@ -38,8 +43,8 @@ const activeExample = computed(
 )
 const selectedEntry = computed(
   () =>
-    manifest.versions.find(({ version }) => version === selectedVersion.value) ??
-    manifest.versions[0]
+    compatibleVersions.find(({ version }) => version === selectedVersion.value) ??
+    compatibleVersions[0]
 )
 
 function asset(filename: string) {
@@ -72,7 +77,7 @@ body { margin: 0; padding: 20px; color: #1f2329; background: #fff; }
       vue: asset('vue.runtime.esm-browser.js'),
       'antdv-next': asset('antd.js'),
       'antdv-next/locale/zh_CN': exampleLocaleUrl,
-      'antdv-superform': asset('antdv-superform.js'),
+      'superform-antdv': asset('superform-antdv.js'),
     },
   })
   if (currentLoad === loadId) {
@@ -149,7 +154,7 @@ await loadExample()
           <label>
             <span>组件版本</span>
             <select v-model="selectedVersion">
-              <option v-for="item in manifest.versions" :key="item.version" :value="item.version">
+              <option v-for="item in compatibleVersions" :key="item.version" :value="item.version">
                 {{ item.version }}
               </option>
             </select>

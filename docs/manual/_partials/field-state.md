@@ -19,7 +19,7 @@
 
 ```ts
 {
-  type: 'Radio',
+  type: 'RadioGroup',
   field: 'customerType',
   label: '客户类型',
   options: { personal: '个人', company: '企业' },
@@ -79,7 +79,7 @@
 
 ```ts
 {
-  type: 'Textarea',
+  type: 'TextArea',
   field: 'reason',
   label: '原因',
   required: ({ current }) => current.result === 'reject',
@@ -166,7 +166,7 @@ const isRejected = ({ current }) => current.result === "reject";
 const schema = {
   subItems: [
     {
-      type: "Radio",
+      type: "RadioGroup",
       field: "result",
       label: "审核结果",
       options: { pass: "通过", reject: "驳回" },
@@ -176,7 +176,7 @@ const schema = {
       },
     },
     {
-      type: "Textarea",
+      type: "TextArea",
       field: "reason",
       label: "驳回原因",
       hidden: (data) => !isRejected(data),

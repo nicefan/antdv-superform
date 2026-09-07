@@ -10,9 +10,8 @@ export const exampleAppCode = `<template>
 <script>
 import zhCN from 'antdv-next/locale/zh_CN'
 
-// antdv-superform 的插件安装配置，可继续加入 dictApi、defaultProps 等全局策略。
+// SuperForm 的应用级配置，可继续加入 dictApi、defaultProps 等全局策略。
 export const superFormConfig = {
-  locale: zhCN,
   schemaDiagnostics: false,
 }
 </script>
@@ -29,7 +28,11 @@ export const exampleLocaleUrl = `data:text/javascript;charset=utf-8,${encodeURIC
 
 export const examplePreviewOptions: NonNullable<ReplProps['previewOptions']> = {
   customCode: {
-    importCode: `import SuperFormPlugin from 'antdv-superform'`,
-    useCode: `app.use(SuperFormPlugin, __modules__['src/App.vue'].superFormConfig)`,
+    importCode: `import superform, { fieldComponents } from 'superform-antdv'`,
+    useCode: `if (!globalThis['__superformAntdvReplInitialized']) {
+  superform.initialize({ components: fieldComponents })
+  globalThis['__superformAntdvReplInitialized'] = true
+}
+superform.configure(__modules__['src/App.vue'].superFormConfig || {})`,
   },
 }

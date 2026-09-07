@@ -10,7 +10,7 @@ SuperTable 在字段级 Table 容器之上增加独立数据源、查询表单�
 </template>
 
 <script setup lang="ts">
-import { SuperTable, useTable } from "antdv-superform";
+import { SuperTable, useTable } from "superform-antdv";
 
 const [register, table] = useTable({
   isContainer: true,
@@ -163,7 +163,7 @@ searchForm: {
   searchOnChange: false, // 默认值；保留“查询”和“重置”按钮
   subItems: [
     {
-      type: 'DateRange',
+      type: 'DateRangePicker',
       field: 'startDate',
       endField: 'endDate', // 起止日期分别绑定到两个字段
       label: '创建时间',
@@ -455,9 +455,9 @@ const [register] = useTable({
 ### 全局统一底部修正与固定高度
 
 ```ts
-import superForm from "antdv-superform";
+import superForm from "superform-antdv";
 
-app.use(superForm, {
+superForm.configure({
   defaultProps: {
     Table: {
       isFixedHeight: true,

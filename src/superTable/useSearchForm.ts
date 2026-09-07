@@ -2,9 +2,8 @@
 import { ButtonGroup } from '../components/buttons'
 import { ref, reactive, h, toRaw, watch, nextTick } from 'vue'
 import Controls from '../components'
-import { getEffectData } from '../utils'
+import { getEffectData, getSemanticIconNode } from '../utils'
 import type { RootTableOption } from 'src/exaTypes'
-import { DownOutlined, UpOutlined } from '../compat/icons'
 import { omit } from 'lodash-es'
 
 export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) {
@@ -21,7 +20,12 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
     if (typeof item === 'string') {
       const col = columns.find((col) => col.field === item)
       col &&
-        subItems.push({ type: 'Input', ...omit(col as any, 'span', 'disabled', 'hidden'), editable: true, exclude: [] })
+        subItems.push({
+          type: 'Input',
+          ...omit(col as any, 'span', 'disabled', 'hidden'),
+          editable: true,
+          exclude: [],
+        })
     } else {
       return subItems.push({ ...item })
     }
@@ -61,7 +65,10 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
     if (limit && subItems.length > limit)
       buttonsConfig.actions = [
         {
-          label: () => (expanded.value ? ['收起 ', h(UpOutlined)] : ['展开 ', h(DownOutlined)]),
+          label: () => [
+            expanded.value ? '收起 ' : '展开 ',
+            getSemanticIconNode(expanded.value ? 'collapse' : 'expand'),
+          ],
           attrs: { type: 'link' },
           onClick: () => (expanded.value = !expanded.value),
         } as any,

@@ -146,7 +146,7 @@ const schema = {
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   field: 'startDate',
   endField: 'endDate',
   label: '有效期',
@@ -162,7 +162,7 @@ const schema = {
 }
 ```
 
-回显时组件会重新把两个字段组合成范围值；只读模式显示为“开始值 - 结束值”。不配置 `endField` 时，范围字段也可以保存为数组或通过 `stringifyValue` 保存为逗号字符串。详见[日期与时间：DateRange 值模式](/manual/fields/date-time#daterange-的三种值模式)。
+回显时组件会重新把两个字段组合成范围值；只读模式显示为“开始值 - 结束值”。不配置 `endField` 时，范围字段也可以保存为数组或通过 `stringifyValue` 保存为逗号字符串。详见[日期与时间：DateRangePicker 值模式](/manual/fields/date-time#daterangepicker-的三种值模式)。
 
 #### vModelFields：扩展额外 v-model
 

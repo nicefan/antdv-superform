@@ -139,13 +139,13 @@ const keyword = ref('')
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   field: 'startDate',
   endField: 'endDate',
 }
 ```
 
-控件使用 `[startDate, endDate]`，模型保存两个字段。任一模型字段在外部变化时，控件范围都会重新同步。详见[DateRange 值模式](/manual/fields/date-time#daterange-的三种值模式)。
+控件使用 `[startDate, endDate]`，模型保存两个字段。任一模型字段在外部变化时，控件范围都会重新同步。详见[DateRangePicker 值模式](/manual/fields/date-time#daterangepicker-的三种值模式)。
 
 #### 数组与逗号字符串
 

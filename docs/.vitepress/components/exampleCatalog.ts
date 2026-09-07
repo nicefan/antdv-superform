@@ -26,7 +26,7 @@ export const exampleGroups: ExampleGroup[] = [
 
 <script setup>
 import { ref } from 'vue'
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const result = ref()
 const [register] = useForm({
@@ -45,7 +45,7 @@ const [register] = useForm({
         { label: '停用', value: 0 },
       ],
     },
-    { type: 'Textarea', field: 'remark', label: '备注', span: 24 },
+    { type: 'TextArea', field: 'remark', label: '备注', span: 24 },
   ],
 })
 </script>`,
@@ -57,13 +57,13 @@ const [register] = useForm({
         code: `<template><SuperForm @register="register" /></template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register] = useForm({
   subSpan: 12,
   subItems: [
     {
-      type: 'Radio',
+      type: 'RadioGroup',
       field: 'result',
       label: '审核结果',
       initialValue: 'pass',
@@ -73,7 +73,7 @@ const [register] = useForm({
       ],
     },
     {
-      type: 'Textarea',
+      type: 'TextArea',
       field: 'reason',
       label: '驳回原因',
       span: 24,
@@ -108,7 +108,7 @@ const [register] = useForm({
 </template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register, form] = useForm({
   subSpan: 12,
@@ -135,9 +135,9 @@ const [register, form] = useForm({
       attrs: { min: 0, precision: 2, addonAfter: '元' },
     },
     { type: 'AutoComplete', field: 'city', label: '城市', options: ['北京', '上海', '深圳'] },
-    { type: 'Textarea', field: 'fixedRemark', label: '固定行文本域', attrs: { rows: 3 } },
+    { type: 'TextArea', field: 'fixedRemark', label: '固定行文本域', attrs: { rows: 3 } },
     {
-      type: 'Textarea',
+      type: 'TextArea',
       field: 'autoRemark',
       label: '自适应文本域',
       attrs: { autoSize: { minRows: 2, maxRows: 6 }, maxlength: 100, showCount: true },
@@ -193,7 +193,7 @@ const model = form.dataSource
 </template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const options = [
   { label: '研发', value: 'dev' },
@@ -226,13 +226,13 @@ const [register, form] = useForm({
       attrs: { mode: 'multiple' },
     },
     {
-      type: 'Radio',
+      type: 'RadioGroup',
       field: 'role',
       label: '普通单选',
       options: { owner: '负责人', member: '成员' },
     },
     {
-      type: 'Radio',
+      type: 'RadioGroup',
       field: 'priority',
       label: '按钮单选',
       initialValue: 'normal',
@@ -240,13 +240,13 @@ const [register, form] = useForm({
       attrs: { optionType: 'button', buttonStyle: 'solid' },
     },
     {
-      type: 'Checkbox',
+      type: 'CheckboxGroup',
       field: 'skills',
       label: '复选数组',
       options: ['Vue', 'TypeScript', 'Node.js'],
     },
     {
-      type: 'Checkbox',
+      type: 'CheckboxGroup',
       field: 'skillText',
       label: '复选字符串',
       options: ['Vue', 'TypeScript', 'Node.js'],
@@ -296,7 +296,7 @@ const model = form.dataSource
 </template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register, form] = useForm({
   subSpan: 12,
@@ -315,22 +315,28 @@ const [register, form] = useForm({
       attrs: { showTime: true, valueFormat: 'YYYY-MM-DD HH:mm:ss' },
     },
     { type: 'TimePicker', field: 'remindAt', label: '时间点', attrs: { minuteStep: 15 } },
-    { type: 'DateRange', field: 'validRange', label: '范围数组', span: 24 },
+    { type: 'DateRangePicker', field: 'validRange', label: '范围数组', span: 24 },
     {
-      type: 'DateRange',
+      type: 'DateRangePicker',
       field: 'startDate',
       endField: 'endDate',
       label: '开始/结束字段',
       span: 24,
     },
     {
-      type: 'DateRange',
+      type: 'DateRangePicker',
       field: 'rangeText',
       label: '逗号字符串',
       span: 24,
       stringifyValue: true,
     },
-    { type: 'TimeRange', field: 'startTime', endField: 'endTime', label: '时间双字段', span: 24 },
+    {
+      type: 'TimeRangePicker',
+      field: 'startTime',
+      endField: 'endTime',
+      label: '时间双字段',
+      span: 24,
+    },
   ],
 })
 const model = form.dataSource
@@ -346,7 +352,7 @@ const model = form.dataSource
 </template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register, form] = useForm({
   subItems: [
@@ -405,7 +411,7 @@ const model = form.dataSource
 
 <script setup>
 import { h } from 'vue'
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register] = useForm({
   subItems: [
@@ -456,7 +462,7 @@ const [register] = useForm({
         code: `<template><SuperForm @register="register" /></template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register] = useForm({
   subItems: [
@@ -481,11 +487,11 @@ const [register] = useForm({
       subItems: [
         {
           label: '说明',
-          subItems: [{ type: 'Textarea', field: 'description', label: '说明', span: 24 }],
+          subItems: [{ type: 'TextArea', field: 'description', label: '说明', span: 24 }],
         },
         {
           label: '备注',
-          subItems: [{ type: 'Textarea', field: 'remark', label: '备注', span: 24 }],
+          subItems: [{ type: 'TextArea', field: 'remark', label: '备注', span: 24 }],
         },
       ],
     },
@@ -500,7 +506,7 @@ const [register] = useForm({
         code: `<template><SuperForm @register="register" /></template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register] = useForm({
   subItems: [
@@ -520,7 +526,7 @@ const [register] = useForm({
       columns: [
         { type: 'Input', field: 'company', label: '公司', required: true },
         { type: 'Input', field: 'position', label: '职位' },
-        { type: 'DateRange', field: 'startDate', endField: 'endDate', label: '任职时间' },
+        { type: 'DateRangePicker', field: 'startDate', endField: 'endDate', label: '任职时间' },
       ],
     },
   ],
@@ -536,7 +542,7 @@ const [register] = useForm({
 </template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const [register] = useForm({
   subItems: [
@@ -579,7 +585,7 @@ const [register] = useForm({
 
 <script setup>
 import { ref } from 'vue'
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 import { departmentOptions } from './mock'
 
 const submitted = ref()
@@ -620,7 +626,7 @@ const model = form.dataSource
 </template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const isCompany = ({ current }) => current.customerType === 'company'
 const [register, form] = useForm({
@@ -628,7 +634,7 @@ const [register, form] = useForm({
   buttons: { actions: ['submit', 'reset'] },
   subItems: [
     {
-      type: 'Radio',
+      type: 'RadioGroup',
       field: 'customerType',
       label: '客户类型',
       initialValue: 'personal',
@@ -673,9 +679,9 @@ const [register, form] = useForm({
         },
       ],
     },
-    { type: 'Textarea', field: 'address', label: '联系地址', span: 24, attrs: { rows: 2 } },
+    { type: 'TextArea', field: 'address', label: '联系地址', span: 24, attrs: { rows: 2 } },
     {
-      type: 'Textarea',
+      type: 'TextArea',
       field: 'remark',
       label: '客户备注',
       span: 24,
@@ -698,7 +704,7 @@ const model = form.dataSource
 </template>
 
 <script setup>
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 import { cloneMock, customerOptions, mockOrderItems } from './mock'
 
 const [register, form] = useForm({
@@ -773,7 +779,7 @@ const [register, form] = useForm({
       computed: (_value, { current }) =>
         (current.items || []).reduce((sum, item) => sum + Number(item.amount || 0), 0),
     },
-    { type: 'Textarea', field: 'deliveryAddress', label: '交付地址', span: 24, required: true },
+    { type: 'TextArea', field: 'deliveryAddress', label: '交付地址', span: 24, required: true },
   ],
 })
 const model = form.dataSource
@@ -792,7 +798,7 @@ const model = form.dataSource
 
 <script setup>
 import { ref } from 'vue'
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 import { cloneMock, customerOptions, mockPaymentPlans } from './mock'
 
 const submitted = ref()
@@ -822,7 +828,7 @@ const [register, form] = useForm({
           options: { sales: '销售合同', purchase: '采购合同', service: '服务合同' },
         },
         {
-          type: 'DateRange',
+          type: 'DateRangePicker',
           field: 'startDate',
           endField: 'endDate',
           label: '合同期限',
@@ -899,7 +905,7 @@ const [register, form] = useForm({
       ],
     },
     {
-      type: 'Textarea',
+      type: 'TextArea',
       field: 'terms',
       label: '主要条款',
       span: 24,
@@ -936,7 +942,7 @@ const model = form.dataSource
 
 <script setup>
 import { h, ref } from 'vue'
-import { SuperForm, useForm } from 'antdv-superform'
+import { SuperForm, useForm } from 'superform-antdv'
 
 const submitted = ref()
 const needsReason = ({ current }) => ['return', 'reject'].includes(current.approvalResult)
@@ -972,7 +978,7 @@ const [register, form] = useForm({
       subSpan: 12,
       subItems: [
         {
-          type: 'Radio',
+          type: 'RadioGroup',
           field: 'approvalResult',
           label: '审批结果',
           initialValue: 'approve',
@@ -988,7 +994,7 @@ const [register, form] = useForm({
           options: { low: '低风险', medium: '中风险', high: '高风险' },
         },
         {
-          type: 'Textarea',
+          type: 'TextArea',
           field: 'approvalReason',
           label: '退回/拒绝原因',
           span: 24,
@@ -997,7 +1003,7 @@ const [register, form] = useForm({
           attrs: { rows: 3, maxlength: 300, showCount: true },
         },
         {
-          type: 'Textarea',
+          type: 'TextArea',
           field: 'riskOpinion',
           label: '风险意见',
           span: 24,
@@ -1028,7 +1034,7 @@ const model = form.dataSource
 </template>
 
 <script setup>
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from 'superform-antdv'
 import { mockApis, statusOptions } from './mock'
 
 const [register] = useTable({
@@ -1054,7 +1060,7 @@ const [register] = useTable({
 </template>
 
 <script setup>
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from 'superform-antdv'
 import { departmentNameOptions, mockApis, statusOptions } from './mock'
 
 const [register] = useTable({
@@ -1101,7 +1107,7 @@ const [register] = useTable({
 
 <script setup>
 import { reactive, toRef } from 'vue'
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from 'superform-antdv'
 import { mockApis, statusOptions } from './mock'
 
 const filters = reactive({ status: undefined })
@@ -1147,7 +1153,7 @@ const [register] = useTable({
 
 <script setup>
 import { ref } from 'vue'
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from 'superform-antdv'
 import { mockApis, mockDepartments } from './mock'
 
 const departmentId = ref()
@@ -1204,7 +1210,7 @@ const [registerEmployees] = useTable({
         code: `<template><SuperDetail :schema="schema" :data-source="record" /></template>
 
 <script setup>
-import { SuperDetail } from 'antdv-superform'
+import { SuperDetail } from 'superform-antdv'
 
 const record = {
   name: 'Antdv SuperForm',
@@ -1220,8 +1226,8 @@ const schema = {
   subItems: [
     { field: 'name', label: '名称' },
     { field: 'status', label: '状态', options: { 0: '停用', 1: '启用' } },
-    { type: 'DateRange', field: 'startDate', endField: 'endDate', label: '有效期' },
-    { type: 'Textarea', field: 'description', label: '说明', span: 24 },
+    { type: 'DateRangePicker', field: 'startDate', endField: 'endDate', label: '有效期' },
+    { type: 'TextArea', field: 'description', label: '说明', span: 24 },
   ],
 }
 </script>`,
@@ -1236,7 +1242,7 @@ const schema = {
 
 <script setup>
 import { defineComponent, h } from 'vue'
-import { useModalForm } from 'antdv-superform'
+import { useModalForm } from 'superform-antdv'
 
 const ModalDemo = defineComponent({
   setup() {
@@ -1280,7 +1286,7 @@ const ModalDemo = defineComponent({
 </template>
 
 <script setup>
-import { SuperButtons } from 'antdv-superform'
+import { SuperButtons } from 'superform-antdv'
 
 const actions = [
   { name: 'save', label: '保存', attrs: { type: 'primary' }, onClick: () => alert('已保存') },

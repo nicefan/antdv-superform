@@ -18,7 +18,7 @@ SuperDetail 使用与表单、表格相同的字段 Schema 渲染只读详情。
 <SuperDetail @register="register" />
 
 <script setup lang="ts">
-import { SuperDetail, useDetail } from "antdv-superform";
+import { SuperDetail, useDetail } from "superform-antdv";
 
 const [register, detail] = useDetail(detailSchema, initialData);
 detail.setData(record);
@@ -30,7 +30,7 @@ Schema 可以是对象、函数或 Promise；需要在同一详情实例中切�
 ## 根配置
 
 ```ts
-import { defineDetail } from "antdv-superform";
+import { defineDetail } from "superform-antdv";
 
 const detailSchema = defineDetail({
   title: "用户信息",

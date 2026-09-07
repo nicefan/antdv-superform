@@ -1,16 +1,14 @@
 import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, onUnmounted } from 'vue'
 import type { VNode, VNodeTypes } from 'vue'
-import base from '../compat/antdv'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
-import type { ModalProps, ModalFuncProps } from '../compat/antdv'
-import { ConfigProvider, useAntdvConfig } from '../compat/antdv'
+import { renderUIModal, useUIModalContext, wrapUIModalContext } from '../adapter'
 
-import type { ExtButtons, ExtFormOption } from '../exaTypes'
+import type { ExtFormOption, ExtModalProps, ModalOpenOptions } from '../exaTypes'
 import { useForm } from '../superForm'
 import { toNode, getIconNode } from '../utils'
 
-export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }: Obj = {}) {
+export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }: ExtModalProps = {}) {
   const visible = ref(false)
   const config = reactive({ ...__config, ...globalProps.Modal })
   const modalRef = ref()
@@ -31,13 +29,12 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
 
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>
-    h(
-      base.Modal,
+    renderUIModal(
       {
         ref: modalRef,
-        open: visible.value,
+        visible: visible.value,
         class: 'sup-modal',
-        'onUpdate:open': updateVisible,
+        'onUpdate:visible': updateVisible,
         confirmLoading: confirmLoading.value,
         ...config,
         title: undefined,
@@ -47,7 +44,7 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
       { footer, title: titleSlot, ...ctx?.slots, ...(content && { default: content }) }
     )
 
-  const openModal = async (option?: ModalFuncProps | Obj) => {
+  const openModal = async (option?: Partial<ExtModalProps>) => {
     Object.assign(config, option)
     visible.value = true
     return nextTick()
@@ -56,10 +53,11 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
     visible.value = false
     return nextTick()
   }
-  const setModal = (option?: ModalFuncProps | Obj) => {
+  const setModal = (option?: Partial<ExtModalProps>) => {
     Object.assign(config, option)
   }
   return {
+    config,
     modalRef,
     modalSlot,
     setModal,
@@ -68,19 +66,17 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
   }
 }
 
-type ExtModalProps = (ModalFuncProps & ModalProps) | (ModalFuncProps & { buttons?: ExtButtons; [k: string]: any })
 export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
-  const { modalSlot, openModal, modalRef, closeModal, setModal } = createModal(content, config)
+  const { modalSlot, openModal, modalRef, closeModal, setModal, config: modalConfig } = createModal(content, config)
   const ins: any = getCurrentInstance() // || currentInstance
   const wrap: any = document.createDocumentFragment()
   let vm
-  const configContext = useAntdvConfig()
+  const configContext = useUIModalContext()
   const Wrapper = (props) => {
-    const global = configContext.value
-    const rootPrefixCls = global?.getPrefixCls?.()
-    const prefixCls = props.prefixCls || `${rootPrefixCls}-modal`
-    return h(ConfigProvider, { ...global, prefixCls: rootPrefixCls }, () =>
-      modalSlot({ ...props, rootPrefixCls, prefixCls }, {})
+    return wrapUIModalContext(
+      (contextProps = {}) => modalSlot({ ...props, ...contextProps }, {}),
+      configContext,
+      props
     )
   }
 
@@ -92,7 +88,7 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
     vm && destroy()
   })
 
-  const open = (option?: ModalFuncProps | Obj) => {
+  const open = (option?: Partial<ExtModalProps>) => {
     if (modalRef.value) {
       return openModal(option)
     } else {
@@ -100,8 +96,8 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
       vm.appContext = ins?.appContext // 这句很关键，关联起了数据
 
       render(vm, wrap)
-      if (modalRef.value?.destroyOnClose) {
-        const afterClose = modalRef.value?.afterClose
+      if (modalConfig.destroyOnClose) {
+        const afterClose = modalConfig.afterClose
         setModal({
           afterClose() {
             afterClose?.()
@@ -129,7 +125,7 @@ export function useModalForm(formOption: ExtFormOption, config: ExtModalProps = 
   const { title, ...option } = formOption as any
   const [register, form] = useForm(option)
   const modal = useModal(register(), { maskClosable: false, title, ...config })
-  const openModal = ({ data, onOk = config.onOk, ...__config }: ModalFuncProps & { data?: Obj } = {}) => {
+  const openModal = ({ data, onOk = config.onOk, ...__config }: ModalOpenOptions = {}) => {
     const __onOk = () => {
       return form.submit().then((data) => (onOk ? onOk(data) : data))
     }

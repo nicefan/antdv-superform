@@ -1,6 +1,6 @@
 import { defineComponent, ref, render, getCurrentInstance, createVNode, provide, onMounted } from 'vue'
-import type { ModalFuncProps } from '../compat/antdv'
-import base from '../compat/antdv'
+import type { ExtModalProps } from '../exaTypes'
+import { renderUIModal } from '../adapter'
 
 const comp = defineComponent({
   props: {
@@ -19,15 +19,23 @@ const comp = defineComponent({
     const config = ref<Obj>({})
     expose({
       open(_config) {
-        Object.assign(config, _config, { onOk: porxyOk(_config.onOk) })
+        Object.assign(config.value, _config, { onOk: porxyOk(_config.onOk) })
         visible.value = true
       },
     })
-    return () => <base.Modal v-model={[visible.value, 'visible']} {...config} v-slots={slots}></base.Modal>
+    return () =>
+      renderUIModal(
+        {
+          ...config.value,
+          visible: visible.value,
+          'onUpdate:visible': (value) => (visible.value = value),
+        },
+        slots
+      )
   },
 })
 
-export function useModal2(content?: ModalFuncProps['content'], config: Obj = {}) {
+export function useModal2(content?: ExtModalProps['content'], config: ExtModalProps = {}) {
   const wrap = document.createElement('div')
   const ins: any = getCurrentInstance() // || currentInstance
   // currentInstance = currentInstance || ins
@@ -35,7 +43,7 @@ export function useModal2(content?: ModalFuncProps['content'], config: Obj = {})
   vm.appContext = ins?.appContext // 这句很关键，关联起了数据
   onMounted(() => render(vm, wrap))
 
-  const openModal = (option?: ModalFuncProps) => {
+  const openModal = (option?: Partial<ExtModalProps>) => {
     // console.log(refM.value)
     // refM.value.open({..._config, ...option})
     vm.component?.exposed?.open({ ...config, ...option })

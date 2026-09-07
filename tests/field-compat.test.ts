@@ -1,6 +1,5 @@
-import { describe, expect, expectTypeOf, it } from 'vitest'
+import { beforeAll, describe, expect, expectTypeOf, it } from 'vitest'
 import * as AntdvNext from 'antdv-next'
-import base from '../src/compat/antdv'
 import {
   AutoComplete,
   DatePicker,
@@ -13,11 +12,16 @@ import {
   TimeRangePicker,
   TreeSelect,
   Upload,
-  override,
-} from '../src/compat/antdv'
-import type { OptionType } from '../src/exaTypes'
-import DateRangeField from '../src/components/DateRange.vue'
-import TextareaField from '../src/components/Textarea.vue'
+} from 'antdv-next'
+import type { OptionType, UIFormComponentProps } from '../src/exaTypes'
+import { getUIFieldAdapter, registerUIComponents, resolveUIComponent } from '../src/adapter'
+import { antdvAdapter } from '../packages/superform-antdv/src/adapter'
+import plugin from '../src/plugin'
+
+beforeAll(() => {
+  plugin.useAdapter(antdvAdapter)
+  registerUIComponents({ DateRangePicker, TextArea })
+})
 
 function expectProps(component: any, names: string[]) {
   const props = component.props || component.__vccOpts?.props || {}
@@ -36,35 +40,12 @@ describe('antdv-next 导出边界', () => {
   it('只暴露 1.0 使用的新导出名称', () => {
     expect(TextArea).toBe(AntdvNext.TextArea)
     expect(DateRangePicker).toBe(AntdvNext.DateRangePicker)
-    expect(base.TextArea).toBe(AntdvNext.TextArea)
-    expect(base.DateRangePicker).toBe(AntdvNext.DateRangePicker)
-    expect(base.SpaceCompact).toBe(AntdvNext.SpaceCompact)
-    expect(base).not.toHaveProperty('Textarea')
-    expect(base).not.toHaveProperty('RangePicker')
-    expect(base).not.toHaveProperty('InputGroup')
   })
 
   it('字段渲染器使用新导出', () => {
-    const renderDateRange = (DateRangeField as any).setup(
-      { disabledDate: undefined, effectData: {} },
-      { slots: {} }
-    )
-    const renderTextarea = (TextareaField as any).setup({ option: { label: '备注' } })
-
-    expect(renderDateRange().type).toBe(AntdvNext.DateRangePicker)
-    expect(renderTextarea().type).toBe(AntdvNext.TextArea)
-  })
-
-  it('在同一兼容边界维护底层组件覆盖', () => {
-    const original = base.Input
-    const replacement = { name: 'CustomInput' }
-
-    try {
-      override({ Input: replacement })
-      expect(base.Input).toBe(replacement)
-    } finally {
-      override({ Input: original })
-    }
+    expect(resolveUIComponent('DateRangePicker')).toBe(AntdvNext.DateRangePicker)
+    expect(resolveUIComponent('TextArea')).toBe(AntdvNext.TextArea)
+    expect(getUIFieldAdapter('DateRangePicker')?.processors).toEqual(['picker'])
   })
 })
 
@@ -98,23 +79,25 @@ describe('字段使用的规范属性', () => {
 })
 
 describe('字段 schema 类型', () => {
-  it('为各字段暴露对应的 antdv-next 属性类型', () => {
-    const textarea: OptionType['Textarea'] = { type: 'Textarea', attrs: { variant: 'filled' } }
+  it('由 AntDV Adapter 类型目录提供真实组件属性', () => {
+    const textarea: OptionType['TextArea'] = { type: 'TextArea', attrs: { variant: 'filled' } }
     const inputNumber: OptionType['InputNumber'] = { type: 'InputNumber', attrs: { variant: 'underlined' } }
-    const dateRange: OptionType['DateRange'] = {
-      type: 'DateRange',
+    const dateRange: OptionType['DateRangePicker'] = {
+      type: 'DateRangePicker',
       attrs: { variant: 'borderless', needConfirm: true },
     }
-    const timeRange: OptionType['TimeRange'] = {
-      type: 'TimeRange',
+    const timeRange: OptionType['TimeRangePicker'] = {
+      type: 'TimeRangePicker',
       attrs: { variant: 'outlined', renderExtraFooter: () => 'footer' },
     }
-    const radio: OptionType['Radio'] = { type: 'Radio', attrs: { orientation: 'vertical' } }
+    const radio: OptionType['RadioGroup'] = { type: 'RadioGroup', attrs: { orientation: 'vertical' } }
+    const inputProps: UIFormComponentProps['Input'] = { variant: 'filled' }
 
     expectTypeOf(textarea.attrs).toMatchTypeOf<Record<string, any> | undefined>()
     expectTypeOf(inputNumber.attrs).toMatchTypeOf<Record<string, any> | undefined>()
     expect(dateRange.attrs?.needConfirm).toBe(true)
     expect(timeRange.attrs?.variant).toBe('outlined')
     expect(radio.attrs?.orientation).toBe('vertical')
+    expect(inputProps.variant).toBe('filled')
   })
 })

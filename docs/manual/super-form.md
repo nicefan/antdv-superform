@@ -12,7 +12,7 @@ SuperForm 是根表单容器，负责建立标准模型、绑定数据源、组�
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from "antdv-superform";
+import { SuperForm, useForm } from "superform-antdv";
 
 const [register, form] = useForm({
   subSpan: 12,

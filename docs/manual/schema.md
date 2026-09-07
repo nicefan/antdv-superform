@@ -63,7 +63,7 @@ Schema 声明
 
 这段代码用于解释运行效果；组件不会改写传入的原始 Schema。显式配置始终优先，例如 `attrs.placeholder: '填写联系人姓名'` 或自定义 `rules.message` 会覆盖默认文案。
 
-不同字段使用符合交互习惯的提示语：Input、Textarea、InputNumber、AutoComplete 默认使用“请输入…”，Select、TreeSelect 默认使用“请选择…”。各类型的默认值与专属配置见[基础输入](/manual/fields/basic-inputs)和[选择输入](/manual/fields/selections)。
+不同字段使用符合交互习惯的提示语：Input、TextArea、InputNumber、AutoComplete 默认使用“请输入…”，Select、TreeSelect 默认使用“请选择…”。各类型的默认值与专属配置见[基础输入](/manual/fields/basic-inputs)和[选择输入](/manual/fields/selections)。
 
 ## 根节点、容器与字段
 
@@ -156,7 +156,7 @@ const editStatus = {
 ## 类型辅助
 
 ```ts
-import { defineDetail, defineForm, defineTable } from "antdv-superform";
+import { defineDetail, defineForm, defineTable } from "superform-antdv";
 
 const schema = defineForm({
   subItems: [{ type: "Input", field: "name", label: "名称" }],

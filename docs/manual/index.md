@@ -1,6 +1,6 @@
 # 介绍
 
-Antdv SuperForm 是面向 Vue 3 与 Ant Design Vue 的 Schema 驱动界面库。它用同一套字段定义组织表单输入、表格列、详情展示、数组编辑和业务按钮，适合字段重复度高、交互规则集中、需要统一接口契约的中后台应用。
+SuperForm 是面向 Vue 3 的 Schema 驱动界面库，官方提供 AntDV Next 与 Element Plus 产品包。它用同一套字段定义组织表单输入、表格列、详情展示、数组编辑和业务按钮，适合字段重复度高、交互规则集中、需要统一接口契约的中后台应用。
 
 ## 它解决什么问题
 
@@ -40,7 +40,7 @@ Schema 不是为了取代 Vue，而是把重复、结构化的部分标准化。
 └─ InputList / List / ListGroup / Table
         ↓
 字段组件
-└─ Input / Select / DateRange / Upload / Ext* ...
+└─ Input / Select / DateRangePicker / Upload / 项目业务字段 ...
 ```
 
 页面组件负责完整场景，容器负责嵌套和数组结构，字段负责一个具体值的输入与展示。特别需要区分：页面级 SuperTable 管理独立数据与查询 API；字段级 Table 管理模型内部数组及编辑能力。
@@ -53,21 +53,22 @@ Schema 不是为了取代 Vue，而是把重复、结构化的部分标准化。
 | 查询、分页、CRUD 列表            | 优先 SuperTable                       |
 | 详情页或嵌入式只读分组           | SuperDetail / Descriptions            |
 | 对象数组编辑                     | InputList、ListGroup、List 或 Table   |
-| 高度定制的少量输入               | InputSlot 或注册 Ext\* 字段           |
+| 高度定制的少量输入               | InputSlot 或注册项目业务字段           |
 | 自由画布、图表编排、非结构化页面 | 使用普通 Vue 页面，局部接入字段或按钮 |
 
 ## 环境要求
 
-| 依赖           | 版本        |
-| -------------- | ----------- |
-| Vue            | `>= 3.3.13` |
-| Ant Design Vue | `>= 3.2.20` |
+| 依赖 | 版本 |
+| --- | --- |
+| Vue | `>= 3.5.0` |
+| AntDV Next | `>= 1.5.0` |
+| Element Plus | `>= 2.14.5` |
 
 两者是 peer dependency，应由业务应用安装并保持单实例。
 
 ## 推荐阅读路径
 
-1. [安装](/manual/installation)：完成插件与样式接入。
+1. [安装](/manual/installation)：选择产品包、初始化 Adapter 并接入字段组件。
 2. [快速开始](/manual/quick-start)：体验一张包含查询和 CRUD 的完整 SuperTable 页面。
 3. [Schema 与数据模型](/manual/schema)：理解配置、字段路径、初始模型和双向绑定。
 4. 根据当前问题阅读[布局与结构](/manual/layout)、[响应式与联动](/manual/reactivity)、[校验机制](/manual/validation)或[渲染与插槽](/manual/rendering)。

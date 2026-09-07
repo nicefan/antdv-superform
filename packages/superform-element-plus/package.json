@@ -1,0 +1,58 @@
+{
+  "name": "superform-element-plus",
+  "version": "1.0.0",
+  "description": "SuperForm for Element Plus",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicefan/antdv-superform.git",
+    "directory": "packages/superform-element-plus"
+  },
+  "homepage": "https://nicefan.github.io/antdv-superform/",
+  "type": "module",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "sideEffects": [
+    "./lib/style.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
+    },
+    "./components": {
+      "types": "./lib/components.d.ts",
+      "import": "./lib/components.js"
+    },
+    "./unplugin": {
+      "types": "./lib/unplugin.d.ts",
+      "import": "./lib/unplugin.js"
+    }
+  },
+  "scripts": {
+    "build": "pnpm run typecheck && vite build",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "unplugin": "^3.3.0"
+  },
+  "peerDependencies": {
+    "element-plus": ">=2.14.5",
+    "vue": ">=3.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.4.0",
+    "@vitejs/plugin-vue-jsx": "^3.0.2",
+    "element-plus": "^2.14.5",
+    "superform": "workspace:*",
+    "typescript": "~5.3.3",
+    "vite": "^4.5.0",
+    "vite-plugin-dts": "^3.6.0",
+    "vue": "~3.5.41",
+    "vue-tsc": "^1.8.20"
+  }
+}

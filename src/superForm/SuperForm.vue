@@ -4,7 +4,8 @@ import { defaults } from 'lodash-es'
 import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import type { ExtFormOption } from '../exaTypes'
-import { getEffectData, reportSchemaDiagnostics, useInnerSlots } from '../utils'
+import { getEffectData, useInnerSlots } from '../utils'
+import { reportSchemaDiagnostics } from '../utils/diagnoseSchema'
 export default defineComponent({
   name: 'SuperForm',
   props: {

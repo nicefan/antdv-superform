@@ -1,23 +1,23 @@
-# antdv-superform AI 使用指南
+# SuperForm AI 使用指南
 
-> 适用版本：`antdv-superform@0.6.16`  
-> 技术栈：Vue 3.3+、Ant Design Vue 3.2+、TypeScript
+> 适用版本：`superform-antdv@1.0.0` / `superform-element-plus@1.0.0`
+> 技术栈：Vue 3.5+、AntDV Next 1.5+ 或 Element Plus 2.14+、TypeScript
 
-本文只提供使用 `antdv-superform` 编写业务代码时需要遵守的公开 API 和配置规则，不描述组件库内部实现。
+本文只提供使用 SuperForm 官方产品包编写业务代码时需要遵守的公开 API 和配置规则，不描述组件库内部实现。
 
-安装依赖后，可在消费项目根目录执行 `npx antdv-superform init-ai`。命令会检测并安全更新项目已有的 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、Copilot 或 Cursor 指令入口，不覆盖原有约束；没有检测到入口时不会创建文件，而是输出供用户手动添加的提示词。
+需要 AI 指令初始化或 Schema CLI 诊断时，可额外安装独立 `superform` Core 包作为开发依赖，再在消费项目根目录执行 `npx superform init-ai`。命令会检测并安全更新项目已有的 `AGENTS.md`、`CLAUDE.md`、`GEMINI.md`、Copilot 或 Cursor 指令入口，不覆盖原有约束；没有检测到入口时不会创建文件，而是输出供用户手动添加的提示词。
 
-生成可序列化的 schema 后，使用 `npx antdv-superform diagnose-schema <schema.json> --type form|table|detail` 诊断；包含函数或 Ref 的动态 schema 使用包根导出的 `diagnoseSchema(schema, type)`。安装时配置 `schemaDiagnostics: import.meta.env.DEV`，可在组件接收 schema 时把诊断结果输出到开发控制台。
+生成可序列化的 schema 后，使用 `npx superform diagnose-schema <schema.json> --type form|table|detail` 诊断；包含函数或 Ref 的动态 schema 使用包根导出的 `diagnoseSchema(schema, type)`。通过 `superform.configure({ schemaDiagnostics: import.meta.env.DEV })` 可在组件接收 schema 时把诊断结果输出到开发控制台。
 
 ## 1. 生成代码前必须遵守
 
-1. 只从包根入口导入公共 API：
+1. 只从项目选择的官方产品包根入口导入公共 API：
 
    ```ts
-   import { SuperForm, useForm, SuperTable, useTable } from "antdv-superform";
+   import { SuperForm, useForm, SuperTable, useTable } from "superform-antdv";
    ```
 
-   不要从 `antdv-superform/lib/...` 或包内源码路径导入。
+   Element Plus 项目改用 `superform-element-plus`。不要从 `lib/...` 或包内源码路径导入；`/components` 和 `/unplugin` 是明确公开的子路径。
 
 2. 先检查消费项目是否有本地安装器或二次封装。若项目已经统一配置字典、权限、上传、默认按钮、组件替换或扩展字段，应沿用该封装，不要在页面重复安装或复制默认配置。
 
@@ -27,7 +27,7 @@
 
 5. `attrs` 传给底层 Ant Design Vue 组件；表单布局、表格业务行为等库级配置应放在 schema 对应层级，不要把所有配置都塞进 `attrs`。
 
-6. 自定义字段类型必须先通过 `registerComponent` 注册。不要虚构 `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 等当前注册表中不存在的类型。
+6. 项目字段通过 `superForm.registerComponent(s)` 注册，schema 直接使用注册名；Adapter 字段由 Vite 插件自动导入，或在 `initialize({ components })` 中提供。不要使用 `Ext` 前缀或假定未注册的组件存在。
 
 ## 2. 公共导出
 
@@ -40,7 +40,7 @@
 | 详情 | `SuperDetail`、`useDetail`、`defineDetail` | 只读详情                                 |
 | 弹窗 | `createModal`、`useModal`、`useModalForm`  | 命令式弹窗和弹窗表单                     |
 | 按钮 | `SuperButtons`、`useButtons`               | 独立按钮组                               |
-| 插件 | 默认导出 `superForm`                       | 全局安装、默认值、组件替换、扩展字段注册 |
+| 产品 | 默认导出 `superForm`                       | Adapter 初始化、全局配置、项目字段注册   |
 | 诊断 | `diagnoseSchema`                           | 返回 schema 的错误、警告和冗余配置建议   |
 
 常用公开类型包括：
@@ -54,7 +54,7 @@ import type {
   RootTableOption,
   ButtonItem,
   ExtButtons,
-} from "antdv-superform";
+} from "superform-antdv";
 ```
 
 ## 3. 应用级安装
@@ -63,18 +63,32 @@ import type {
 
 ```ts
 import { createApp } from "vue";
-import superForm from "antdv-superform";
+import superForm from "superform-antdv";
 import App from "./App.vue";
 
 const app = createApp(App);
-app.use(superForm);
+superForm.initialize();
 app.mount("#app");
 ```
+
+推荐通过官方 Vite 插件按 Schema 使用情况导入字段组件：
+
+```ts
+import SuperFormComponents from "superform-antdv/unplugin";
+
+SuperFormComponents({
+  dirs: ["src"],
+  entry: "src/main.ts",
+  dts: "src/superform-components.d.ts",
+});
+```
+
+插件已内置产品包名、类型模块和官方 resolver。Element Plus 改用 `superform-element-plus/unplugin`。不使用插件时，在 `initialize({ components })` 中手动传入实际使用的组件；需要全量登记时从 `superform-antdv/components` 或 `superform-element-plus/components` 导入 `fieldComponents`。
 
 常用全局能力：
 
 ```ts
-app.use(superForm, {
+superForm.configure({
   schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => fetchDictionary(name),
   customIcon: (name) => renderProjectIcon(name),
@@ -104,8 +118,7 @@ app.use(superForm, {
 - `dictApi(name)` 必须返回 `Promise<{ label, value }[]>` 或兼容选项数组。
 - `buttonRoles()` 返回当前权限字符串数组。
 - `tableApiSetting.resultTransform` 应返回数组，或 `{ current, size, total, records }`。
-- `components` 可替换库使用的底层组件，例如 `Table`、`Modal`。
-- `superForm.registerComponent('ModalSelect', Comp)` 注册后的 schema 类型是 `ExtModalSelect`，不是 `ModalSelect`。
+- `initialize({ components })` 只登记当前 Adapter 已声明的 UI 字段；项目字段使用 `registerComponent(s)`，两者不能互相替代。
 - `superForm.setDefaultProps()` 可在安装后继续合并全局默认属性。
 
 ## 4. Schema 基础规则
@@ -146,17 +159,17 @@ app.use(superForm, {
 
 ### 常用默认配置：满足需求时不要重复生成
 
-以下是库的内置默认值。生成代码前应先检查消费项目是否通过安装配置、`setDefaultProps()` 或二次封装覆盖了它们；没有覆盖且默认行为满足需求时，省略对应配置。
+以下是库的内置默认值。生成代码前应先检查消费项目是否通过 `configure()`、`setDefaultProps()` 或二次封装覆盖了它们；没有覆盖且默认行为满足需求时，省略对应配置。
 
 | 场景         | 内置默认行为                                                                           | 通常不需要生成                                                 |
 | ------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | 表单栅格     | 子项 `span` 默认 `8`，即一行 3 项；`gutter` 默认 `16`                                  | `subSpan: 8`、逐项 `span: 8`、`gutter: 16`                     |
 | 容器布局     | 未设置 `span` 的容器默认独占一块                                                       | 仅为独占一行而生成 `block: true`                               |
-| 输入占位符   | `Input`、`InputNumber`、`Textarea`、`AutoComplete` 默认“请输入 + label”                | 与默认文案相同的 `attrs.placeholder`                           |
+| 输入占位符   | `Input`、`InputNumber`、`TextArea`、`AutoComplete` 默认“请输入 + label”                | 与默认文案相同的 `attrs.placeholder`                           |
 | 选择占位符   | `Select`、`TreeSelect` 默认“请选择 + label”                                            | 与默认文案相同的 `attrs.placeholder`                           |
 | 表单校验     | `FormItem.validateFirst` 默认 `true`                                                   | `formItemProps: { validateFirst: true }`                       |
 | 输入组合     | `InputGroup` 默认使用紧凑布局                                                          | `attrs: { compact: true }`                                     |
-| 日期时间值   | `DatePicker`、`DateRange` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRange` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat`                                     |
+| 日期时间值   | `DatePicker`、`DateRangePicker` 默认 `YYYY-MM-DD`；`TimePicker`、`TimeRangePicker` 默认 `HH:mm:ss` | 相同的 `attrs.valueFormat`                                     |
 | 选项只读展示 | 配置 `options` 后默认按 Tag 展示，并使用内置颜色组                                     | `tagViewer: true`                                              |
 | 表格首次查询 | `immediate` 默认 `true`                                                                | `immediate: true`                                              |
 | 表格分页     | 默认不分页；启用分页后 `current` 默认 `1`、`pageSize` 默认 `10`                        | 无分页时的 `pagination: false`；标准分页时重复写页码和每页数量 |
@@ -169,15 +182,18 @@ app.use(superForm, {
 - 仅在覆盖默认占位符、格式、布局或行为时输出对应属性。
 - 表单 `buttons` 没有默认动作；只有页面确实需要表单按钮时才配置。查询表单的默认搜索、重置按钮不需要重复声明。
 
-### 当前内置类型
+### 当前字段类型
 
-表单字段：
+Core 字段和 AntDV 常用字段：
 
 ```text
-Input, Textarea, InputNumber, AutoComplete, Select, TreeSelect,
-DatePicker, DateRange, TimePicker, TimeRange, Switch, Radio, Checkbox,
+Input, TextArea, InputNumber, InputOTP, InputPassword, InputSearch, AutoComplete,
+Cascader, ColorPicker, Select, TreeSelect, DatePicker, DateRangePicker,
+TimePicker, TimeRangePicker, Switch, RadioGroup, CheckboxGroup, Rate, Slider, Transfer,
 Upload, TagInput, TagSelect, Text, HTML, Hidden, InputSlot, InfoSlot
 ```
+
+Element Plus 使用去掉 `El` 前缀的实际组件名，例如 `InputNumber`、`InputOtp`、`SelectV2`、`Cascader`、`DatePicker`、`ColorPicker`、`Segmented`。Adapter 已声明但未被插件或 `initialize()` 注册的字段会在运行时报错。
 
 容器：
 
@@ -276,7 +292,7 @@ Descriptions, Table, InputGroup, InputList
 </template>
 
 <script setup lang="ts">
-import { SuperForm, useForm } from "antdv-superform";
+import { SuperForm, useForm } from "superform";
 
 const [register, form] = useForm({
   subSpan: 12,
@@ -333,7 +349,7 @@ form.dataSource
 
 ## 6. 选项、字典和值映射
 
-`Select`、`Radio`、`Checkbox`、`Switch` 等选项型字段支持：
+`Select`、`RadioGroup`、`CheckboxGroup`、`Switch` 等选项型字段支持：
 
 - `{ label, value }[]`
 - 原始值数组
@@ -375,18 +391,18 @@ options: [
 
 远程搜索使用函数形式的 `options(effectData, keyword)`；需要自行控制搜索事件时配置 `onSearch`。
 
-`DateRange` 和 `TimeRange` 可把范围拆到两个字段：
+`DateRangePicker` 和 `TimeRangePicker` 可把范围拆到两个字段：
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   label: '创建时间',
   field: 'startTime',
   endField: 'endTime',
 }
 ```
 
-`field` 保存开始值，`endField` 保存结束值；`DateRange` 默认格式为 `YYYY-MM-DD`，`TimePicker` 和 `TimeRange` 默认格式为 `HH:mm:ss`。不配置 `endField` 时，可设置 `stringifyValue: true`，将范围作为逗号分隔字符串保存到 `field`。`endField` 与 `stringifyValue` 同时配置时优先拆分到两个字段。
+`field` 保存开始值，`endField` 保存结束值；`DateRangePicker` 默认格式为 `YYYY-MM-DD`，`TimePicker` 和 `TimeRangePicker` 默认格式为 `HH:mm:ss`。不配置 `endField` 时，可设置 `stringifyValue: true`，将范围作为逗号分隔字符串保存到 `field`。`endField` 与 `stringifyValue` 同时配置时优先拆分到两个字段。
 
 ## 7. SuperTable
 
@@ -398,7 +414,7 @@ options: [
 </template>
 
 <script setup lang="ts">
-import { SuperTable, useTable } from "antdv-superform";
+import { SuperTable, useTable } from "superform";
 
 const [register, table] = useTable({
   isContainer: true,
@@ -627,7 +643,7 @@ buttons: {
 ```
 
 ```ts
-import { defineDetail } from "antdv-superform";
+import { defineDetail } from "superform";
 
 const detailSchema = defineDetail({
   mode: "table",
@@ -744,17 +760,17 @@ const importModal = useModalForm(
 ## 12. 扩展字段
 
 ```ts
-import superForm from "antdv-superform";
+import superForm from "superform-antdv";
 import ModalSelect from "./ModalSelect.vue";
 
-superForm.registerComponent("ModalSelect", ModalSelect);
+superForm.registerComponents({ ModalSelect });
 ```
 
 使用：
 
 ```ts
 {
-  type: 'ExtModalSelect',
+  type: 'ModalSelect',
   field: 'lawIds',
   labelField: 'lawNames',
   label: '法律依据',
@@ -767,22 +783,21 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 }
 ```
 
-扩展组件会收到：
+项目组件会收到合并后的标准字段属性，包括：
 
-- `option`
-- `effectData`
 - `value` / `onUpdate:value`
-- 合并后的 `attrs`
-- `isView`、`disabled`
+- `attrs` 中声明的组件属性
+- `disabled` 等由 Schema 控制得到的属性
 - `labelField` 对应的 `labelValue` / `onUpdate:labelValue`
 - `vModelFields` 声明的其他双向绑定
 
-业务项目定义的 `ExtModalSelect`、`ExtLinkUnit` 等不是 npm 包内置类型。只有消费项目完成注册后才能使用。
+组件不会收到 Core 内部的 `option`、`model` 或 `effectData`。如组件使用 `modelValue` 等非默认协议，在 `registerComponent(s)` 中注册 `{ component, model }`。项目类型提示可由 Vite 插件生成的声明补充。
 
 ## 13. 不要生成的旧 API
 
 | 不要使用                          | 现行写法                                   |
 | --------------------------------- | ------------------------------------------ |
+| `app.use(superForm, options)`     | 产品包 `initialize()` 与 `configure()`     |
 | `hideInTable`                     | `exclude: ['table']`                       |
 | `hideInForm`                      | `exclude: ['form']`                        |
 | `hideInDescription`               | `exclude: ['description']`                 |
@@ -804,19 +819,19 @@ superForm.registerComponent("ModalSelect", ModalSelect);
 | `wrapping`                        | `breakAfter`                               |
 | 按钮配置 `forSlot`                | `targetSlot`                               |
 | `registComponent`                 | `registerComponent`                        |
-| DateRange `keepField`             | `endField`                                 |
+| `registerFormComponents` / `configureComponents` | `registerComponents`，或 Adapter 的 `initialize({ components })` |
+| DateRangePicker `keepField`       | `endField`                                 |
 
 以下内容也不要假定存在：
 
 - `apis.export` 的自动导出行为
-- `InputPassword`、`RadioGroup`、`CheckboxGroup`、`Rate` 内置字段
 - `rowSelection: true` 的正式类型支持；使用 `{}`
-- 未注册的任意 `Ext*` 组件
+- 任意 `Ext*` 组件解析兼容
 
 ## 14. 生成完成后的自检
 
-1. 所有 import 都来自包根入口或消费项目已有封装。
-2. 字段类型在内置列表中，或已确认存在对应 `registerComponent`。
+1. 所有 import 都来自产品包根入口、公开的 `/components`、`/unplugin`，或消费项目已有封装。
+2. 字段类型属于 Core/当前 Adapter，或已通过 `initialize()`、`registerComponent(s)`、Vite 自动导入明确注册。
 3. 表格显式设置了稳定 `attrs.rowKey`。
 4. 分页需求明确配置了 `pagination`。
 5. `immediate`、`params`、`searchForm` 位于表格 schema 正确层级。

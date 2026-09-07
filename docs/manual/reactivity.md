@@ -16,7 +16,7 @@ Schema 可以是稳定的普通对象，变化留给其中的函数和 Ref。Sup
 
 ```ts
 {
-  type: 'Textarea',
+  type: 'TextArea',
   field: 'rejectReason',
   label: '驳回原因',
   hidden: ({ current }) => current.result !== 'reject',

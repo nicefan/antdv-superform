@@ -21,7 +21,8 @@ import {
   shallowRef,
   toRaw,
 } from 'vue'
-import { reportSchemaDiagnostics, useControl, useInnerSlots } from '../utils'
+import { useControl, useInnerSlots } from '../utils'
+import { reportSchemaDiagnostics } from '../utils/diagnoseSchema'
 import { buildModelsMap } from '../utils/buildModel'
 import { useQuery } from './useQuery'
 import { useSearchForm } from './useSearchForm'
@@ -29,8 +30,7 @@ import { DataProvider } from '../dataProvider'
 import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
-import base from '../compat/antdv'
-import { nanoid } from 'nanoid'
+import { renderUIForm } from '../adapter'
 import { set as setObject } from 'lodash-es'
 
 export default defineComponent({
@@ -43,7 +43,8 @@ export default defineComponent({
   emits: ['register', 'load', 'update:dataSource'],
   setup(props, ctx) {
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
-    const option = shallowReactive({ attrs: ctxAttrs }) as RootTableOption
+    // 注册 schema 前只保留根节点透传属性，完整配置会在 setOption 时合入。
+    const option = shallowReactive({ attrs: ctxAttrs }) as unknown as RootTableOption
     const dataRef = ref([])
     const wrapRef = ref()
 
@@ -231,7 +232,7 @@ export default defineComponent({
         }
         const table = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
         if (option.editable) {
-          tableSlot.value = () => h(base.Form, { model: dataRef.value, ref: tableFormRef }, table)
+          tableSlot.value = () => renderUIForm({ model: dataRef.value, ref: tableFormRef }, { default: table })
         } else {
           tableSlot.value = table
         }
@@ -248,7 +249,7 @@ export default defineComponent({
       })
       const table = () => h(Controls.Table, { option, effectData, model, key: Symbol(), ...tableAttrs } as any, slots.value)
       if (option.editable) {
-        tableSlot.value = () => h(base.Form, { model: dataRef.value, ref: tableFormRef }, table)
+        tableSlot.value = () => renderUIForm({ model: dataRef.value, ref: tableFormRef }, { default: table })
       } else {
         tableSlot.value = table
       }

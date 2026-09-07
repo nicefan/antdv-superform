@@ -2,6 +2,7 @@
 import { computed, shallowRef, watch } from 'vue'
 import { Repl, ReplStore } from '@vue/repl'
 import CodeMirror from '@vue/repl/codemirror-editor'
+import { examplePreviewOptions } from './exampleApp'
 
 interface VersionEntry {
   version: string
@@ -38,6 +39,9 @@ const snippet = snippetId
   ? readJson<{ code: string }>(`${storagePrefix}:snippet:${snippetId}`)
   : null
 const latestMajor = manifest.latest.split('.')[0]
+const compatibleVersions = manifest.versions.filter(
+  (item) => item.version.split('.')[0] === latestMajor,
+)
 const canRestoreVersion =
   saved?.version.split('.')[0] === latestMajor &&
   manifest.versions.some((item) => item.version === saved.version)
@@ -48,7 +52,7 @@ const replStore = shallowRef<ReplStore>()
 const saveLabel = shallowRef('准备就绪')
 
 const selectedEntry = computed(() =>
-  manifest.versions.find((item) => item.version === selectedVersion.value) ?? manifest.versions[0],
+  compatibleVersions.find((item) => item.version === selectedVersion.value) ?? compatibleVersions[0],
 )
 
 const starter = [
@@ -57,7 +61,7 @@ const starter = [
   '</template>',
   '',
   '<script setup>',
-  "import { SuperForm, useForm } from 'antdv-superform'",
+  "import { SuperForm, useForm } from 'superform-antdv'",
   '',
   'const [register] = useForm({',
   "  title: '在线演练',",
@@ -112,7 +116,7 @@ async function loadStore(seed?: { files: Record<string, string>; mainFile: strin
     imports: {
       vue: asset('vue.runtime.esm-browser.js'),
       'antdv-next': asset('antd.js'),
-      'antdv-superform': asset('antdv-superform.js'),
+      'superform-antdv': asset('superform-antdv.js'),
     },
   })
   replStore.value = next
@@ -161,7 +165,7 @@ await loadStore()
         <label>
           <span>组件版本</span>
           <select v-model="selectedVersion">
-            <option v-for="item in manifest.versions" :key="item.version" :value="item.version">
+            <option v-for="item in compatibleVersions" :key="item.version" :value="item.version">
               {{ item.version }}
             </option>
           </select>
@@ -177,6 +181,7 @@ await loadStore()
       :show-import-map="false"
       :show-ts-config="false"
       :ssr="false"
+      :preview-options="examplePreviewOptions"
     />
   </section>
 </template>

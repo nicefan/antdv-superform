@@ -25,7 +25,7 @@
   subItems: [
     { type: 'Input', field: 'name', label: '名称' }, // 继承 12，占半行
     { type: 'Select', field: 'type', label: '类型' }, // 继承 12，占半行
-    { type: 'Textarea', field: 'remark', label: '备注', span: 24 }, // 独占一行
+    { type: 'TextArea', field: 'remark', label: '备注', span: 24 }, // 独占一行
   ],
 }
 ```

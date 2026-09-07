@@ -1,61 +1,25 @@
 <template>
-  <Space class="sup-buttons" @click.stop="" :size="isDivider ? 0 : 'small'" v-bind="attrs">
-    <template
-      v-for="({ attrs, icon, label, tooltipTitle, dropdownProp, menu, render, onClick }, index) of btns"
-      :key="label"
-    >
-      <Tooltip :title="tooltipTitle">
-        <Dropdown v-if="menu" :disabled="attrs.disabled" v-bind="dropdownProp">
-          <template #popupRender>
-            <Menu @click="onClick">
-              <menu-item v-for="item of menu" :key="item.value" :disabled="item.disabled">
-                <template #icon v-if="item.icon"><component :is="getIconNode(item.icon)" /></template>
-                <component :is="() => toNode(item.label, effectData)" />
-              </menu-item>
-            </Menu>
-          </template>
-          <Button v-bind="attrs">
-            <component v-if="icon" :is="getIconNode(icon)" />
-            <component :is="() => toNode(label, effectData)" /><DownOutlined />
-          </Button>
-        </Dropdown>
-        <component v-else-if="render" :is="() => render({ props: attrs, ...effectData })" />
-        <Button v-else v-bind="attrs" @click="onClick"
-          ><component v-if="icon && !labelOnly" :is="getIconNode(icon)" />
-          <component v-if="!icon || !iconOnly" :is="() => toNode(label, effectData)"
-        /></Button>
-      </Tooltip>
-      <Divider type="vertical" class="buttons-divider" v-if="isDivider && index < btns.length - 1" />
-    </template>
-
-    <Dropdown v-if="moreBtns.length">
-      <Button v-bind="defaultAttrs">
-        <component v-if="moreLabel" :is="() => toNode(moreLabel, effectData)" /><ellipsis-outlined v-else />
-      </Button>
-      <template #popupRender>
-        <Menu>
-          <menu-item
-            v-for="{ attrs, icon, label, tooltipTitle, onClick } of moreBtns"
-            :key="label"
-            :disabled="attrs.disabled"
-          >
-            <Tooltip :title="tooltipTitle">
-              <Button block v-bind="attrs" shape="" @click="onClick">
-                <component v-if="icon" :is="getIconNode(icon)" />
-                <component :is="() => toNode(label, effectData)" />
-              </Button>
-            </Tooltip>
-          </menu-item>
-        </Menu>
-      </template>
-    </Dropdown>
-  </Space>
+  <component
+    :is="
+      () =>
+        renderUIAction('group', {
+          groupProps: attrs,
+          buttons: btns,
+          moreButtons: moreBtns,
+          defaultButtonProps: defaultAttrs,
+          divider: isDivider,
+          labelOnly,
+          iconOnly,
+          moreLabel,
+          effectData,
+        })
+    "
+  />
 </template>
 <script setup lang="ts">
 import { ref, watchEffect, reactive, toValue, inject, computed } from 'vue'
-import { Space, Button, Tooltip, Dropdown, Menu, MenuItem, Divider } from '../../compat/antdv'
-import { EllipsisOutlined, DownOutlined } from '../../compat/icons'
-import { getComputedStatus, useDisabled, getIconNode, toNode } from '../../utils'
+import { getComputedStatus, useDisabled } from '../../utils'
+import { renderUIAction } from '../../adapter'
 import { mergeActions } from './actions'
 import { globalConfig } from '../../plugin'
 import type { ExtButtonGroup, ExtButtons } from '../../exaTypes'
@@ -111,17 +75,16 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
   const allBtns = actionBtns.map((item) => {
     const isHide = getComputedStatus(item.hidden, param)
     const disabled = item.disabled !== undefined ? useDisabled(item.disabled, param) : dis
-    const onClick = (e) => {
-      !(e.domEvent || e).stopPropagation()
-      item.onClick?.({ ...param, e })
-    }
-    const _class = item.color && `ant-btn-${item.color}`
+    const onClick = (e) => item.onClick?.({ ...param, e })
     const menu =
       item.dropdown &&
       computed(() => {
         const config = toValue(item.dropdown) as any
         if (isPlainObject(config)) {
-          return Object.entries(config).map(([value, label]) => ({ value, label }))
+          return Object.entries(config).map(([value, label]) => ({
+            value,
+            label,
+          }))
         } else if (typeof config[0] !== 'object') {
           return uniq(config).map((txt) => ({ value: txt, label: txt }))
         }
@@ -142,7 +105,7 @@ function useButton(config: ExtButtonGroup, param: Obj, methods?: Obj) {
       ...item,
       tooltipTitle,
       onClick,
-      attrs: { ...defaultAttrs, class: _class, ...item.attrs, disabled },
+      attrs: { ...defaultAttrs, ...item.attrs, disabled },
     }
   })
 

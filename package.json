@@ -1,5 +1,5 @@
 {
-  "name": "antdv-superform",
+  "name": "superform",
   "version": "1.0.0",
   "author": {
     "name": "nicefan",
@@ -10,6 +10,7 @@
     "url": "git+https://github.com/nicefan/antdv-superform.git"
   },
   "homepage": "https://nicefan.github.io/antdv-superform/",
+  "license": "MIT",
   "files": [
     "bin",
     "shared",
@@ -19,7 +20,7 @@
     "AI_GUIDE.md"
   ],
   "bin": {
-    "antdv-superform": "bin/antdv-superform.mjs"
+    "superform": "bin/antdv-superform.mjs"
   },
   "type": "module",
   "main": "./lib/index.js",
@@ -31,21 +32,19 @@
       "import": "./lib/index.js"
     },
     "./unplugin/vite": {
-      "types": "./lib/unplugin/vite.d.ts",
+      "types": "./lib/vite.d.ts",
       "import": "./lib/unplugin/vite.js"
     },
-    "./unplugin/rollup": {
-      "types": "./lib/unplugin/rollup.d.ts",
-      "import": "./lib/unplugin/rollup.js"
-    },
-    "./unplugin/webpack": {
-      "types": "./lib/unplugin/webpack.d.ts",
-      "import": "./lib/unplugin/webpack.js"
+    "./sdk": {
+      "types": "./lib/sdk.d.ts",
+      "import": "./lib/sdk.js"
     }
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "type-check": "vue-tsc --noEmit",
+    "build:core": "vue-tsc --noEmit && vite build",
+    "build": "pnpm run build:core && pnpm --filter superform-antdv build && pnpm --filter superform-element-plus build",
+    "build:examples": "pnpm --filter superform-antdv-example build && pnpm --filter superform-element-plus-example build",
     "test": "vitest run",
     "build:dist": "vite build --mode dist && node scripts/sync-docs-repl.mjs",
     "hooks:install": "git config core.hooksPath .githooks",
@@ -53,12 +52,9 @@
     "docs:check-types": "pnpm --dir docs check:type-coverage",
     "docs:build": "pnpm --dir docs build",
     "rollup": "rollup -c",
-    "dts": "vue-tsc --declaration --emitDeclarationOnly",
-    "serve": "vite preview"
+    "dts": "vue-tsc --declaration --emitDeclarationOnly"
   },
   "peerDependencies": {
-    "@antdv-next/icons": ">=1.1.1",
-    "antdv-next": ">=1.5.0",
     "vue": ">=3.5.0"
   },
   "dependencies": {
@@ -79,6 +75,7 @@
     "@vueuse/core": "^10.5.0",
     "antdv-next": "1.5.0",
     "dayjs": "^1.11.21",
+    "element-plus": "^2.14.5",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^4.2.1",

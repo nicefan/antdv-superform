@@ -70,7 +70,7 @@ buttons: {
 项目可以通过插件的 `defaultButtons` 统一覆盖内置动作，也可以注册跨页面复用的项目动作：
 
 ```ts
-app.use(SuperFormPlugin, {
+superform.configure({
   defaultButtons: {
     add: { label: "新建", icon: "plus" },
     delete: { confirmText: "确认删除选中的数据？" },

@@ -14,7 +14,7 @@ Schema → 内置/扩展输入控件 → v-model → 数据模型
 数据模型 → labelField / endField / options 映射 → 默认内容或 viewRender
 ```
 
-因此一个 Select 在编辑时绑定 ID，在详情和表格中可以自动显示选项标签；一个配置了 `endField` 的 DateRange 在只读时会显示完整范围。只有默认结果不足时才需要自定义渲染。
+因此一个 Select 在编辑时绑定 ID，在详情和表格中可以自动显示选项标签；一个配置了 `endField` 的 DateRangePicker 在只读时会显示完整范围。只有默认结果不足时才需要自定义渲染。
 
 ## 默认只读映射
 
@@ -24,7 +24,7 @@ Schema → 内置/扩展输入控件 → v-model → 数据模型
 2. 配置 `endField` 时，显示“开始值 - 结束值”。
 3. Select、Radio、Checkbox 等根据 `options` 或字典把值转换为标签。
 4. Switch 配置 `options` 时按选项显示标签；没有选项时才使用 `valueLabels` 补充只读文案。
-5. Text、HTML、Textarea、Upload 等使用各自展示方式。
+5. Text、HTML、TextArea、Upload 等使用各自展示方式。
 6. 配置 `viewRender` 时，以自定义结果为准。
 
 ```ts
@@ -41,14 +41,14 @@ Schema → 内置/扩展输入控件 → v-model → 数据模型
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   field: 'startDate',
   endField: 'endDate',
   label: '有效期',
 }
 ```
 
-只读时自动组合两个字段。范围的存储方式见[日期与时间：值模式](/manual/fields/date-time#daterange-的三种值模式)。
+只读时自动组合两个字段。范围的存储方式见[日期与时间：值模式](/manual/fields/date-time#daterangepicker-的三种值模式)。
 
 ## viewRender：自定义只读内容
 

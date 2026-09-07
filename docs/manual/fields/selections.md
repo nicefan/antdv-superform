@@ -156,13 +156,13 @@ TreeSelect 使用 `treeData`，不走扁平 options 归一化：
 
 字段值形态受 `multiple`、`treeCheckable`、`labelInValue` 等底层属性影响，使用前应与接口类型对齐。
 
-## Radio
+## RadioGroup
 
 Radio 对应 Radio.Group，字段保存单个 value：
 
 ```ts
 {
-  type: 'Radio',
+  type: 'RadioGroup',
   field: 'level',
   label: '等级',
   options: levelOptions,
@@ -175,13 +175,13 @@ Radio 对应 Radio.Group，字段保存单个 value：
 
 专属 `attrs` 是 RadioGroupProps；支持通用 `options`、`dictName`、值转换和 `labelField`。
 
-## Checkbox
+## CheckboxGroup
 
 Checkbox 对应 Checkbox.Group，字段通常是 value 数组：
 
 ```ts
 {
-  type: 'Checkbox',
+  type: 'CheckboxGroup',
   field: 'permissions',
   labelField: 'permissionNames',
   label: '权限',

@@ -2,9 +2,9 @@ import { defineConfig } from 'vitepress'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  title: 'Antdv SuperForm',
+  title: 'SuperForm',
   description:
-    '基于 Vue 3 和 Ant Design Vue 的配置式表单与表格组件库。用一份配置，统一表单、表格与详情，让中后台开发更高效',
+    '基于 Vue 3 的配置式表单与表格组件库，提供 AntDV Next 与 Element Plus 官方产品包',
   lang: 'zh-CN',
   base: '/antdv-superform/',
   srcExclude: ['README.md', 'manual/_partials/**'],
@@ -24,7 +24,7 @@ export default defineConfig({
       'meta',
       {
         name: 'keywords',
-        content: 'Vue 3, Ant Design Vue, schema, 表单, 表格',
+        content: 'Vue 3, AntDV Next, Element Plus, schema, 表单, 表格',
       },
     ],
   ],
@@ -46,7 +46,7 @@ export default defineConfig({
     },
   },
   themeConfig: {
-    siteTitle: 'Antdv SuperForm',
+    siteTitle: 'SuperForm',
     aside: 'left',
     nav: [
       { text: '手册', link: '/manual/' },
@@ -71,6 +71,7 @@ export default defineConfig({
             { text: '响应式与联动', link: '/manual/reactivity' },
             { text: '校验机制', link: '/manual/validation' },
             { text: '渲染与插槽', link: '/manual/rendering' },
+            { text: '配置属性索引', link: '/manual/property-index' },
           ],
         },
         {
@@ -132,16 +133,16 @@ export default defineConfig({
     outline: { level: [2, 3] },
     editLink: {
       pattern:
-        'https://github.com/nicefan/antdv-superform/edit/docs/docs/:path',
+        'https://github.com/nicefan/antdv-superform/edit/next-doc/docs/:path',
       text: '在 GitHub 上编辑此页',
     },
-    footer: { message: '基于 MIT 许可发布', copyright: 'Antdv SuperForm' },
+    footer: { message: '基于 MIT 许可发布', copyright: 'SuperForm' },
   },
   vite: {
     resolve: {
       alias: {
-        'antdv-superform': fileURLToPath(
-          new URL('../../src/index.ts', import.meta.url)
+        'superform-antdv': fileURLToPath(
+          new URL('../../packages/superform-antdv/src/index.ts', import.meta.url)
         ),
       },
     },

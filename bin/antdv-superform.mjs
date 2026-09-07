@@ -5,11 +5,11 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { diagnoseSchema } from '../shared/schema-diagnostics.mjs'
 
-const help = `antdv-superform
+const help = `superform
 
 用法：
-  npx antdv-superform init-ai
-  npx antdv-superform diagnose-schema <schema.json> [--type form|table|detail] [--json]
+  npx superform init-ai
+  npx superform diagnose-schema <schema.json> [--type form|table|detail] [--json]
 
 命令：
   init-ai  检测并更新当前项目已有的 AI 指令入口

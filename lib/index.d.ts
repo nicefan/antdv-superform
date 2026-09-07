@@ -1,54 +1,43 @@
 /// <reference types="../types" />
 
-import { App } from 'vue';
-import { AutoCompleteProps } from './compat/antdv';
-import { ButtonProps } from './compat/antdv';
-import { CheckboxGroupProps } from './compat/antdv';
-import { ColProps } from './compat/antdv';
 import { Component } from 'vue';
 import { ComponentOptionsMixin } from 'vue';
 import { ComponentProvideOptions } from 'vue';
 import { ComputedRef } from 'vue';
-import { DatePickerProps } from './compat/antdv';
+import { CSSProperties } from 'vue';
 import { default as default_2 } from 'vue';
 import { DefineComponent } from 'vue';
-import { DescriptionsProps } from './compat/antdv';
-import { DropdownProps } from './compat/antdv';
 import { ExtractPropTypes } from 'vue';
-import { FormItemProps } from './compat/antdv';
-import { FormProps } from './compat/antdv';
 import { HTMLAttributes } from 'vue';
-import { InputNumberProps } from './compat/antdv';
-import { InputProps } from './compat/antdv';
-import { Locale } from './compat/antdv';
-import { ModalFuncProps } from './compat/antdv';
-import { ModalFuncProps as ModalFuncProps_2 } from '../compat/antdv';
-import { ModalProps } from '../compat/antdv';
-import { PaginationProps } from './compat/antdv';
 import { PropType } from 'vue';
 import { PublicProps } from 'vue';
-import { RadioGroupProps } from './compat/antdv';
-import { RangePickerProps } from './compat/antdv';
 import { Ref as Ref_2 } from 'vue';
 import { RendererElement } from 'vue';
 import { RendererNode } from 'vue';
-import { RowProps } from './compat/antdv';
-import { SelectProps } from './compat/antdv';
-import { SpaceProps } from './compat/antdv';
-import { SwitchProps } from './compat/antdv';
-import { TableColumnType } from './compat/antdv';
-import { TableProps } from './compat/antdv';
-import { TabsProps } from './compat/antdv';
-import { TextAreaProps } from './compat/antdv';
-import { TimePickerProps } from './compat/antdv';
-import { TimeRangePickerProps } from './compat/antdv';
-import { TooltipProps } from './compat/antdv';
-import { TreeSelectProps } from './compat/antdv';
-import { UploadProps } from './compat/antdv';
+import { Slots } from 'vue';
 import { VNode } from 'vue';
+import { VNodeChild } from 'vue';
 import { VNodeTypes } from 'vue';
 
-declare type BaseComps = 'Divider' | 'SpaceCompact' | 'FormItem' | 'Tooltip' | 'Button' | 'MenuItem' | 'Menu' | 'Dropdown' | 'Space' | 'Card' | 'SuperListItem' | 'SuperList' | 'Modal' | 'Table' | 'Tabs' | 'TabPane' | 'CollapsePanel' | 'Collapse' | 'Input' | 'InputNumber' | 'InputSearch' | 'Select' | 'Switch' | 'DateRangePicker' | 'DatePicker' | 'TimePicker' | 'RadioButton' | 'Radio' | 'RadioGroup' | 'Checkbox' | 'CheckboxGroup' | 'TreeSelect';
+export declare interface ActionAdapter {
+    /** 渲染按钮组或提示；具体按钮、菜单和下拉结构由 Adapter 内部处理。 */
+    render: (type: ActionRenderType, props: Obj, slots: Obj) => VNodeChild;
+}
+
+export declare type ActionRenderType = 'group' | 'tooltip';
+
+export declare type AdapterComponent = string | Component;
+
+export declare type AdapterDefaultProps = Record<string, Obj | undefined>;
+
+declare type AdapterWidgetTypes = {
+    [K in keyof UIFormComponentProps]: UIFormComponentOption<K>
+}
+
+export declare interface AutoCompleteFieldOption {
+    options?: SelectOptions
+    dictName?: string
+}
 
 export declare interface ButtonItem {
     label?: VSlot
@@ -68,18 +57,17 @@ export declare interface ButtonItem {
     invalidDisabled?: boolean
     /** @deprecated 使用 `unauthorized` */
     roleMode?: 'hidden' | 'disable'
-    color?: 'success' | 'error' | 'warning' | 'primary' | string
     /** 按钮可见场景 */
     visibleIn?: 'form' | 'detail' | 'both'
     /** @deprecated 使用 `visibleIn` */
     validOn?: 'form' | 'detail' | 'both'
     dropdown?: SelectOptions
-    dropdownProps?: DropdownProps
+    dropdownProps?: UIActionProps<'Dropdown'>
     tooltip?: string
     /** 按钮禁用时的提示 */
     disabledTooltip?: string | Fn<string>
     icon?: string | Component
-    attrs?: ButtonProps & HTMLAttributes
+    attrs?: UIActionProps<'Button'> & HTMLAttributes
     hidden?: boolean | Fn<boolean>
     disabled?: boolean | Fn<boolean>
     /** 传递到内置方法时的所需参数 */
@@ -95,23 +83,58 @@ declare interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
     buttons?: ExtButtons
 }
 
-export declare function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }?: Obj): {
+export declare interface ComponentModelConfig {
+    /** 组件接收主值的属性名，默认 value */
+    prop?: string;
+    /** 组件更新主值时触发的事件名，默认 update:value */
+    event?: string;
+}
+
+/** 配置 Core 的应用级行为和默认属性。 */
+export declare function configure(config?: SuperFormConfig): void;
+
+export declare interface ContainerAdapter {
+    component: AdapterComponent;
+    /** 容器存在受控状态时的 UI model 协议。 */
+    model?: ComponentModelConfig;
+    /** 将 Core 容器状态转换为 UI 组件属性。 */
+    transformProps?: (props: Obj) => Obj;
+    /** 容器的 slot 协议不同时自定义最终渲染。 */
+    render?: (component: Component, props: Obj, slots: Obj) => VNodeChild;
+}
+
+declare type CoreWidgetTypes = {
+    Buttons: ExtBaseOption & ExtButtonGroup
+    Hidden: ExtFormItemOption
+    InputSlot: ExtInputSlotOption
+    InfoSlot: ExtInfoSlotOption
+    Text: ExtFormItemOption
+    HTML: ExtFormItemOption
+    Upload: ExtUpload
+    InputGroup: ExtInputGroupOption
+    InputList: ExtInputList
+    TagInput: ExtTagInputOption
+    TagSelect: ExtTagSelectOption
+}
+
+export declare function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...__config }?: ExtModalProps): {
+    config: any;
     modalRef: Ref_2<any, any>;
-    modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
-        [key: string]: any;
-    }>;
-    setModal: (option?: ModalFuncProps_2 | Obj) => void;
+    modalSlot: (props: any, ctx: any) => VNodeChild;
+    setModal: (option?: Partial<ExtModalProps>) => void;
     closeModal: () => Promise<void>;
-    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
+    openModal: (option?: Partial<ExtModalProps>) => Promise<void>;
 };
 
-declare const _default: {
-    install: (app: App<any>, config?: InstallConfig) => Promise<void>;
-    registerComponent: typeof registerComponent;
-    registComponent: typeof registComponent;
-    setDefaultProps: typeof setDefaultProps;
-};
-export default _default;
+/** 自定义 UI 字段的 attrs 类型映射。 */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export declare interface CustomFormComponentProps {}
+
+declare type CustomWidgetTypes = {
+    [K in keyof CustomFormComponentProps]: ExtFormItemOption & {
+        attrs?: CustomFormComponentProps[K] & HTMLAttributes
+    }
+}
 
 declare type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
 
@@ -128,6 +151,9 @@ export declare function defineDetail(option: ExtDescriptionsOption): ExtDescript
 export declare function defineForm<T extends keyof OptionType = 'Form'>(option: OptionType[T]): OptionType[T];
 
 export declare function defineTable(option: RootTableOption): RootTableOption;
+
+/** 保留 Adapter 的具体类型并提供统一定义入口。 */
+export declare function defineUIAdapter<T extends UIAdapter>(adapter: T): T;
 
 declare type DetailOption = ExtDescriptionsOption | ExtFormOption | (() => ExtDescriptionsOption | ExtFormOption) | (() => Promise<ExtDescriptionsOption | ExtFormOption>);
 
@@ -157,12 +183,6 @@ declare type EffectData =
 })
 | Obj
 
-declare interface ExtAutoCompleteOption extends ExtFormItemOption {
-    options?: SelectOptions
-    dictName?: string
-    attrs?: AutoCompleteProps & HTMLAttributes
-}
-
 export declare interface ExtBaseOption {
     type: string
     field?: string
@@ -170,7 +190,7 @@ export declare interface ExtBaseOption {
     initialValue?: any
     label?: VSlot
     labelSlot?: Fn<VNodeTypes>
-    tooltip?: VSlot | (TooltipProps & { title: VSlot; icon?: VSlot })
+    tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: VSlot })
     // help?: HelpMessage
     /** 校验规则，指定value而没指定field时无效 */
     rules?: RuleConfig | RuleConfig[]
@@ -189,7 +209,7 @@ export declare interface ExtBaseOption {
     disabled?: boolean | Fn
     on?: Obj<Fn>
     // row?: boolean
-    colProps?: ColProps & HTMLAttributes
+    colProps?: LayoutColProps & UIContainerProps<'Col'>
     /** 快捷实现col span */
     span?: number | 'auto'
     /** 当前节点脱离前后栅格组，独立成块；分组元素默认为 true */
@@ -216,7 +236,7 @@ export declare interface ExtBaseOption {
 }
 
 export declare interface ExtButtonGroup<T extends string = string> {
-    attrs?: SpaceProps & HTMLAttributes
+    attrs?: LayoutSpaceProps & UIContainerProps<'Space'>
     limit?: number
     buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'default'
     buttonShape?: 'circle' | 'round' | 'default'
@@ -259,10 +279,6 @@ export declare interface ExtButtonGroup<T extends string = string> {
 
 export declare type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 
-declare interface ExtCheckboxOption extends ExtFormItemOption, ExtSelect {
-    attrs?: CheckboxGroupProps & HTMLAttributes
-}
-
 export declare interface ExtCollapseOption extends ExtBaseOption {
     title?: VSlot
     activeKey?: string | Ref_2<string>
@@ -277,21 +293,7 @@ export declare type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & 
     hideInTable?: boolean
     /** 表格内容渲染 */
     viewRender?: VSlot
-    columnProps?: TableColumnType
-}
-
-declare interface ExtDatePickerOption extends ExtFormItemOption {
-    attrs?: DatePickerProps & HTMLAttributes
-}
-
-declare interface ExtDateRange extends ExtFormItemOption {
-    attrs?: RangePickerProps & HTMLAttributes
-    /** 绑定结束日期字段 */
-    endField?: string
-    /** @deprecated 使用 `endField` */
-    keepField?: string
-    /** 未配置 `endField` 时，将日期范围转换为逗号分隔字符串后写回字段 */
-    stringifyValue?: boolean
+    columnProps?: ExtTableColumnProps
 }
 
 export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
@@ -306,26 +308,30 @@ export declare interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type
 
 declare type ExtDescriptionsProps = {
     mode?: 'table' | 'form' | 'default'
+    bordered?: boolean
+    colon?: boolean
+    column?: number
+    contentStyle?: CSSProperties
+    labelStyle?: CSSProperties
+    layout?: 'horizontal' | 'vertical'
+    size?: 'default' | 'middle' | 'small'
     /** 输入框列属性，置为空对象将清空继承属性 */
-    wrapperCol?: ColProps & HTMLAttributes
+    wrapperCol?: LayoutColProps & UIContainerProps<'Col'>
     /** 标题列属性，置为空对象将清空继承属性 */
-    labelCol?: ColProps & HTMLAttributes
+    labelCol?: LayoutColProps & UIContainerProps<'Col'>
     labelAlign?: 'left' | 'center' | 'right'
     /**分组数据表格模式展示时，设为fixed,让列宽一致 */
     tableLayout?: 'fixed' | 'auto'
-    /**@deprecated */
-    labelBgColor?: string
-    /**@deprecated */
-    borderColor?: string
     /**mode为form模式时，该元素不用input风格包裹 */
     noInput?: boolean
+    /** 隐藏当前标签的冒号 */
+    noColon?: boolean
     span?: number
-} & DescriptionsProps &
-ExtRow &
+} & ExtRow &
 HTMLAttributes
 
 /** 表单元素属性 */
-export declare interface ExtFormItemOption extends ExtBaseOption {
+export declare interface ExtFormItemOption extends ExtBaseOption, RangeFieldOption {
     /** 指定ref对象时，同步变化 */
     value?: any
     /** 指定查看时显示的字段 */
@@ -337,7 +343,7 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
     | string[]
     | { label?: string; value: any; color: string; icon?: Fn }[]
     | Fn<string | { label: string; color?: string; icon?: Fn }>
-    formItemProps?: FormItemProps
+    formItemProps?: FormItemSchemaProps & UIContainerProps<'FormItem'>
     descriptionsProps?: ExtDescriptionsProps
     /**是否可编辑 */
     editable?: boolean | Fn<boolean>
@@ -346,7 +352,7 @@ export declare interface ExtFormItemOption extends ExtBaseOption {
 export declare interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
     // type?: 'Form'
     dataSource?: Obj
-    attrs?: FormProps & HTMLAttributes
+    attrs?: FormSchemaProps & UIContainerProps<'Form'>
     isContainer?: boolean
     /** 减少行距 */
     compact?: boolean
@@ -388,16 +394,6 @@ declare interface ExtInputList extends ExtFormItemOption, ExtRow {
     columns: UniWidgetOption[]
 }
 
-declare interface ExtInputNumberOption extends ExtFormItemOption {
-    attrs?: InputNumberProps & HTMLAttributes
-}
-
-export declare interface ExtInputOption extends ExtFormItemOption {
-    // enterButton?: (effectData: Obj) => Component
-    onSearch?: (effectData: Obj, value: string) => void
-    attrs?: InputProps & { enterButton?: any } & HTMLAttributes
-}
-
 declare type ExtInputSlotOption = ExtFormItemOption & ExtSlotOption
 
 export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
@@ -426,77 +422,35 @@ export declare interface ExtListOption extends ExtBaseOption, ExtRow {
     descriptionsProps?: ExtDescriptionsProps
 }
 
-declare type ExtModalProps = (ModalFuncProps_2 & ModalProps) | (ModalFuncProps_2 & {
-    buttons?: ExtButtons;
-    [k: string]: any;
-});
-
-declare interface ExtRadioOption extends ExtFormItemOption, ExtSelect {
-    attrs?: RadioGroupProps & HTMLAttributes
-}
+export declare type ExtModalProps = ModalSchemaProps & Omit<UIModalProps<'Modal'>, keyof ModalSchemaProps>
 
 declare interface ExtRow {
     /** 行间排版属性 */
-    rowProps?: RowProps & HTMLAttributes
+    rowProps?: LayoutRowProps & UIContainerProps<'Row'>
     subSpan?: number | 'auto'
     gutter?: number
 }
 
-declare interface ExtSelect {
-    options?: SelectOptions
-    /** 字典名称 */
-    dictName?: string
-    /** 选项中的value转成number类型 */
-    valueToNumber?: boolean
-    /** 使用选项 label 作为字段值 */
-    labelAsValue?: boolean
-    /**
-     * 选项中的 value 使用 label
-     * @deprecated 使用 `labelAsValue`
-     */
-    valueToLabel?: boolean
-    /** 将多选结果转换为逗号分隔字符串后写回字段 */
-    stringifyValue?: boolean
-    /**
-     * 多选时保存为逗号分隔字符串
-     * @deprecated 使用 `stringifyValue`
-     */
-    valueToString?: boolean
-}
-
-declare interface ExtSelectOption extends ExtFormItemOption, ExtSelect {
-    attrs?: SelectProps & HTMLAttributes
-}
-
 declare type ExtSlotOption = { render: VSlot }
 
-declare interface ExtSwitchOption extends ExtFormItemOption, ExtSelect {
-    valueLabels?: [string, string]
-    attrs?: {
-        /** 第一个选项为选中值 */
-        firstIsChecked?: boolean
-        /** 默认是否选中 */
-        defaultChecked?: boolean
-    } & SwitchProps &
-    HTMLAttributes
-}
-
-export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type'> {
+export declare interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type' | 'attrs'> {
     label: VSlot
     key?: string
     icon?: string | Component
+    attrs?: {
+        closable?: boolean
+        closeIcon?: VSlot
+        forceRender?: boolean
+    }
     subItems: UniOption[]
 }
+
+export declare type ExtTableColumnProps = UITableProps<'Column'>
 
 export declare interface ExtTableOption extends ExtBaseOption {
     field: string
     title?: VSlot
-    attrs?: Obj &
-    TableProps & {
-        /**数据初始化后默认展开的行 */
-        defaultExpandLevel?: number | 'all'
-        rowSelection?: false | TableProps['rowSelection']
-    }
+    attrs?: ExtTableProps
     /** @deprecated 更名为editable */
     edit?: boolean
     /** 表格全部为编辑状态，开启后rowEdit无效 */
@@ -505,7 +459,7 @@ export declare interface ExtTableOption extends ExtBaseOption {
         editMode?: 'inline' | 'modal'
         addMode?: 'inline' | 'modal'
         form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
-        modalProps?: ModalFuncProps | Obj
+        modalProps?: ExtModalProps
         /**提交保存前 */
         onSave?: Fn
         onCancel?: Fn
@@ -517,22 +471,26 @@ export declare interface ExtTableOption extends ExtBaseOption {
     columns: ExtColumnsItem[]
     tabs?: TabsHeader | false
     /** 公共列配置 */
-    columnProps?: TableColumnType
+    columnProps?: ExtTableColumnProps
     /**序号列*/
-    indexColumn?: boolean | TableColumnType
+    indexColumn?: boolean | ExtTableColumnProps
     buttons?: ExtButtons<'add' | 'delete' | 'edit' | 'detail'> | false
     /** 列表元素右边按钮 */
-    rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: TableColumnType })
+    rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: ExtTableColumnProps })
     /** 弹窗属性 */
-    modalProps?: ModalFuncProps | Obj
-    descriptionsProps?: ExtDescriptionsProps & { modalProps?: ModalFuncProps | Obj }
+    modalProps?: ExtModalProps
+    descriptionsProps?: ExtDescriptionsProps & { modalProps?: ExtModalProps }
     /** @deprecated  弹窗表单配置,移至rowEditor */
-    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ModalFuncProps | Obj }
+    editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ExtModalProps }
 }
 
-export declare interface ExtTabsOption extends ExtBaseOption {
+export declare type ExtTablePaginationProps = TablePaginationSchemaProps &
+Omit<UITableProps<'Pagination'>, keyof TablePaginationSchemaProps>
+
+export declare type ExtTableProps = TableSchemaProps & Omit<UITableProps<'Table'>, keyof TableSchemaProps>
+
+export declare interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
     activeKey?: Ref_2<string | undefined>
-    forceRender?: boolean
     buttons?: ExtButtons<'add' | 'refresh'>
     subItems: ExtTabItem[]
 }
@@ -541,79 +499,105 @@ declare interface ExtTagInputOption extends ExtFormItemOption {
     attrs?: {
         /** 将标签数组转换为逗号分隔字符串后写回字段 */
         stringifyValue?: boolean
-        /** @deprecated 使用 `stringifyValue` */
-        valueToString?: boolean
         /**新增标签名 */
         newLabel?: VSlot
         /** 是否可删除, 默认为true */
         closable?: boolean | ((tag: string, index: number) => boolean)
-    } & HTMLAttributes
+    }
 }
 
-declare interface ExtTagSelectOption extends ExtFormItemOption, ExtSelect {
+declare interface ExtTagSelectOption extends ExtFormItemOption, SelectFieldOption {
     attrs?: {
         multiple?: boolean
         /** 将多选结果转换为逗号分隔字符串后写回字段 */
         stringifyValue?: boolean
-        /** @deprecated 使用 `stringifyValue` */
-        valueToString?: boolean
-    } & HTMLAttributes
-}
-
-declare interface ExtTextareaOption extends ExtFormItemOption {
-    attrs?: TextAreaProps & HTMLAttributes
-}
-
-declare interface ExtTimePickerOption extends ExtFormItemOption {
-    attrs?: TimePickerProps & HTMLAttributes
-}
-
-declare interface ExtTimeRange extends Omit<ExtDateRange, 'attrs'> {
-    attrs?: TimeRangePickerProps & HTMLAttributes
-}
-
-export declare interface ExtTreeOption extends ExtFormItemOption {
-    labelField?: string
-    attrs?: TreeSelectProps & HTMLAttributes
-    /**
-     * @deprecated 使用`treeData`
-     */
-    data?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>>
-    treeData?: TreeSelectProps['treeData'] | Fn<Promise<TreeSelectProps['treeData']>> | Fn<TreeSelectProps['treeData']>
+    }
 }
 
 declare interface ExtUpload extends ExtFormItemOption {
     vModelFields?: {
         fileList?: string | Obj
     }
-    attrs?: UploadProps & {
-        apis?: {
-            upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
-            delete?: (file: Obj) => Promise<any>
-            download?: (file: Obj) => Promise<any>
-        }
-        /** 指定文件信息字段 */
-        infoNames?: { [k in 'uid' | 'name' | 'url']?: string } | Obj<string>
-        /** 指定文件信息中某属性作为同步绑定值，不指定将同步绑定文件对象 */
-        valueKey?: string
-        /** 文件最小MB */
-        minSize?: number
-        /** 文件最大MB */
-        maxSize?: number
-        /** 单文件上传, 绑定值为字符串或文件对象 */
-        isSingle?: boolean
-        /** 达到最大文件数量时，隐藏上传主体 */
-        hideOnMax?: boolean
-        /** 上传模式，默认auto,选择文件后自动上传，submit:提交时上传，custom通过绑定fileList中的文件对象手动上传 */
-        uploadMode?: 'auto' | 'submit' | 'custom' | 'base64' | 'text'
-        tip?: string
-        /** 上传按钮标题 */
-        title?: VSlot
-        /** 是否允许重名文件 */
-        repeatable?: boolean
-        /** 查看模式 */
-        isView?: boolean
-    }
+    attrs?: ExtUploadProps
+}
+
+export declare type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upload'>, keyof UploadSchemaProps>
+
+export declare interface FieldAdapter {
+    /** 初始化或自动导入时使用的组件注册名；Adapter 本身不直接持有字段组件。 */
+    component: string;
+    /** 当前 UI 框架使用的受控值协议 */
+    model?: ComponentModelConfig;
+    /** 该字段在当前 UI 框架下的默认属性 */
+    defaultProps?: Obj;
+    /** 需要依次应用的 Core 字段处理器 */
+    processors?: string[];
+    /** 将核心字段状态转换为当前 UI 组件属性 */
+    transformProps?: (props: Obj, context: FieldAdapterContext) => Obj;
+    /** 当前 UI 框架需要特殊组件或 slot 协议时自定义最终渲染 */
+    render?: (component: Component, props: Obj, context: FieldAdapterContext, slots: Slots) => VNodeChild;
+}
+
+export declare interface FieldAdapterContext {
+    type: string;
+    option: Obj;
+    effectData: Obj;
+}
+
+export declare interface FormAdapter {
+    /** 表单容器组件 */
+    component: AdapterComponent;
+    /** 表单项组件 */
+    item: AdapterComponent;
+    /** 将 Core 表单状态转换为 UI 组件属性 */
+    transformProps?: (props: Obj) => Obj;
+    /** 将 Core 表单项状态转换为 UI 组件属性 */
+    transformItemProps?: (props: Obj) => Obj;
+    /** 执行当前 UI 表单实例的校验。 */
+    validate: (instance: any) => Promise<unknown>;
+    /** 清理当前 UI 表单实例的校验状态。 */
+    clearValidate: (instance: any) => void;
+}
+
+export declare type FormComponent = Component | FormComponentConfig;
+
+export declare interface FormComponentConfig {
+    component: Component;
+    /** 不同 UI 库的受控值协议 */
+    model?: ComponentModelConfig;
+}
+
+export declare type FormComponentProps<T> = T extends new (...args: any[]) => {
+    $props: infer P;
+} ? P : T extends (props: infer P, ...args: any[]) => any ? P : Obj;
+
+/** SuperForm 稳定的表单项属性。 */
+export declare interface FormItemSchemaProps extends HTMLAttributes {
+    colon?: boolean
+    extra?: VSlot
+    hasFeedback?: boolean
+    help?: VSlot
+    htmlFor?: string
+    labelAlign?: 'left' | 'right'
+    labelCol?: LayoutColProps
+    required?: boolean
+    validateStatus?: '' | 'success' | 'warning' | 'error' | 'validating'
+    validateTrigger?: string | string[] | false
+    wrapperCol?: LayoutColProps
+}
+
+/** SuperForm 稳定的表单容器属性。 */
+export declare interface FormSchemaProps extends HTMLAttributes {
+    colon?: boolean
+    disabled?: boolean
+    hideRequiredMark?: boolean
+    labelAlign?: 'left' | 'right'
+    labelCol?: LayoutColProps
+    layout?: 'horizontal' | 'vertical' | 'inline'
+    scrollToFirstError?: boolean | Obj
+    validateOnRuleChange?: boolean
+    validateTrigger?: string | string[]
+    wrapperCol?: LayoutColProps
 }
 
 declare interface GlobalConfig {
@@ -626,7 +610,7 @@ declare interface GlobalConfig {
     buttonRoles?: () => string[];
     /** 内置默认按钮配置 */
     defaultButtons?: Obj<ButtonItem>;
-    /**tag显示时默认颜色组 */
+    /** tag 显示时默认颜色组 */
     tagViewer?: Obj<string> | string[] | false | Fn<string>;
     /** 接口返回数据结构处理 */
     tableApiSetting?: {
@@ -644,35 +628,134 @@ declare interface GlobalConfig {
     };
 }
 
-declare interface InstallConfig extends GlobalConfig {
-    locale?: Locale;
-    components?: {
-        [k in BaseComps]?: Component;
-    };
-    /** 组件默认参数 */
-    defaultProps?: Obj;
+export declare interface IconAdapter {
+    /** Core 内置交互使用的语义图标。 */
+    semantic?: Record<string, AdapterComponent | undefined>;
+    /** 渲染 Schema 传入的字符串、组件或节点。 */
+    render: (icon: unknown, context: IconAdapterContext) => VNodeChild;
 }
 
-export declare type OptionType = WrapperTypes & WidgetTypes
+export declare interface IconAdapterContext {
+    /** 消费项目对字符串图标的自定义解析入口。 */
+    customIcon?: (name: string) => VNodeChild;
+}
 
-/** @deprecated 使用 `registerComponent` */
-declare function registComponent(name: string, component: ((param: RegisterParam) => VNode) | Component): void;
+export declare interface InputFieldAttrs {
+    enterButton?: any
+}
 
-declare function registerComponent(name: string, component: ((param: RegisterParam) => VNode) | Component): void;
+export declare interface InputFieldOption {
+    onSearch?: (effectData: Obj, value: string) => void
+}
+
+declare type KeysOfUnion<T> = T extends unknown ? keyof T : never
+
+export declare interface LayoutAdapter {
+    row: AdapterComponent;
+    col: AdapterComponent;
+    space: AdapterComponent;
+    /** 可选的紧凑空间容器；未提供时回退到普通 space。 */
+    compactSpace?: AdapterComponent;
+    /** 栅格和空间属性的 UI 协议转换。 */
+    transformProps?: Partial<Record<LayoutComponentName, (props: Obj) => Obj>>;
+}
+
+/** Core 保证的栅格列语义，UI 专属断点与外观属性不在此扩展。 */
+export declare interface LayoutColProps extends HTMLAttributes {
+    flex?: string | number
+    offset?: number
+    order?: number
+    pull?: number
+    push?: number
+    span?: number
+}
+
+export declare type LayoutComponentName = 'row' | 'col' | 'space' | 'compactSpace';
+
+declare type LayoutGutter = number | ResponsiveValue<number>
+
+/** Core 保证的栅格行语义。 */
+export declare interface LayoutRowProps extends HTMLAttributes {
+    align?: 'top' | 'middle' | 'bottom' | 'stretch'
+    gutter?: LayoutGutter | [LayoutGutter, LayoutGutter]
+    justify?: 'start' | 'end' | 'center' | 'space-around' | 'space-between' | 'space-evenly'
+    wrap?: boolean
+}
+
+/** Core 保证的间距布局语义。 */
+export declare interface LayoutSpaceProps extends HTMLAttributes {
+    align?: 'start' | 'end' | 'center' | 'baseline'
+    direction?: 'horizontal' | 'vertical'
+    size?: number | 'small' | 'middle' | 'large' | [number, number]
+    wrap?: boolean
+}
+
+declare type MergeRegistrySources<T> = {
+    [K in KeysOfUnion<T>]: ValueOfUnion<T, K>
+}
+
+export declare interface ModalAdapter {
+    /** 渲染受控弹窗；Core 统一使用 visible/onUpdate:visible 协议。 */
+    render: (props: Obj, slots: Obj) => VNodeChild;
+    /** 在组件 setup 中捕获 UI 框架上下文。 */
+    useContext?: () => unknown;
+    /** 为脱离原组件树挂载的弹窗恢复 UI 框架上下文。 */
+    wrapContext?: (content: (props?: Obj) => VNodeChild, context: unknown, props: Obj) => VNodeChild;
+}
+
+export declare type ModalOpenOptions = Partial<ExtModalProps> & { data?: Obj }
+
+/** SuperForm 稳定的弹窗语义，其他外观和交互属性由 Adapter 补充。 */
+export declare interface ModalSchemaProps {
+    title?: VSlot
+    content?: VSlot
+    icon?: string | Component
+    buttons?: ExtButtons
+    destroyOnClose?: boolean
+    maskClosable?: boolean
+    afterClose?: Fn
+    onOk?: Fn
+    onCancel?: Fn
+}
+
+export declare type OptionType = WrapperTypes & WidgetTypes & CustomWidgetTypes
+
+export declare interface PresentationAdapter {
+    /** 渲染轻量展示原语。 */
+    render: (type: PresentationRenderType, props: Obj, slots: Obj) => VNodeChild;
+}
+
+export declare type PresentationRenderType = 'tag' | 'checkableTag';
+
+export declare interface PreviewAdapter {
+    /** 渲染受控图片预览；Core 统一使用 visible/onUpdate:visible 协议。 */
+    render: (props: Obj) => VNodeChild;
+}
+
+export declare interface RangeFieldOption {
+    /** 绑定结束日期字段 */
+    endField?: string
+    /** @deprecated 使用 `endField` */
+    keepField?: string
+    /** 未配置 `endField` 时，将日期范围转换为逗号分隔字符串后写回字段 */
+    stringifyValue?: boolean
+}
+
+/** 仅供构建插件生成的虚拟模块登记按需导入组件。 */
+export declare function registerAutoImportedComponents(components: Record<string, FormComponent | undefined>, adapterFields?: Iterable<string>): void;
+
+/** 注册一个项目自定义 Schema 组件。 */
+export declare function registerComponent(name: string, component: FormComponent): void;
+
+/** 注册项目自定义 Schema 组件。 */
+export declare function registerComponents(components: Record<string, FormComponent | undefined>): void;
 
 declare type RegisterMethod = {
     (): () => VNode;
     (actions?: Obj, _tableRef?: Obj): void;
 };
 
-/** 绑定到组件上的动态属性 */
-declare interface RegisterParam {
-    option: Obj;
-    effectData: Obj;
-    /** 当前值 */
-    value?: any;
-    [K: string]: any;
-}
+declare type ResponsiveValue<T> = Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', T>>
 
 export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
     isContainer?: boolean
@@ -700,8 +783,8 @@ export declare interface RootTableOption extends Omit<ExtTableOption, 'type' | '
         /** 开启高级查询 */
         advanced?: boolean
     }
-    pagination?: PaginationProps | false
-    attrs?: ExtTableOption['attrs'] | (TableProps & TableScanHight) | Obj
+    pagination?: ExtTablePaginationProps | false
+    attrs?: ExtTableProps & TableScanHight
 }
 
 declare interface RuleConfig {
@@ -773,19 +856,51 @@ export declare type SchemaDiagnosticLevel = 'error' | 'warning' | 'suggestion';
 
 export declare type SchemaKind = 'auto' | 'form' | 'table' | 'detail';
 
+export declare interface SelectFieldOption {
+    options?: SelectOptions
+    /** 字典名称 */
+    dictName?: string
+    /** 选项中的value转成number类型 */
+    valueToNumber?: boolean
+    /** 使用选项 label 作为字段值 */
+    labelAsValue?: boolean
+    /**
+     * 选项中的 value 使用 label
+     * @deprecated 使用 `labelAsValue`
+     */
+    valueToLabel?: boolean
+    /** 将多选结果转换为逗号分隔字符串后写回字段 */
+    stringifyValue?: boolean
+    /**
+     * 多选时保存为逗号分隔字符串
+     * @deprecated 使用 `stringifyValue`
+     */
+    valueToString?: boolean
+}
+
 declare type SelectOptions =
 | DefaultOptionsType
 | Readonly<DefaultOptionsType>
 | Ref_2<DefaultOptionsType>
 | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
 
+export declare interface ServiceAdapter {
+    /** 显示轻量消息。 */
+    message: (type: UIMessageType, content: unknown) => void;
+    /** 打开命令式确认框。 */
+    confirm: (props: Obj) => UIServiceHandle;
+    /** 打开命令式信息框，主要用于可更新的加载与错误反馈。 */
+    info: (props: Obj) => UIServiceHandle;
+}
+
+/** 合并组件默认参数。 */
 declare function setDefaultProps(props: Obj): void;
 
 export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"default" | "link" | "primary" | "text" | "dashed">;
+    buttonType: PropType<"link" | "primary" | "text" | "dashed" | "default">;
     buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"small" | "middle" | "large">;
+    size: PropType<"small" | "large" | "middle">;
     /** 按钮显示方式icon/label */
     labelMode: PropType<"label" | "both" | "icon">;
     hidden: PropType<boolean | Fn<boolean>>;
@@ -800,9 +915,9 @@ export declare const SuperButtons: DefineComponent<ExtractPropTypes<{
     [key: string]: any;
 }>, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly< ExtractPropTypes<{
     limit: NumberConstructor;
-    buttonType: PropType<"default" | "link" | "primary" | "text" | "dashed">;
+    buttonType: PropType<"link" | "primary" | "text" | "dashed" | "default">;
     buttonShape: PropType<"default" | "circle" | "round">;
-    size: PropType<"small" | "middle" | "large">;
+    size: PropType<"small" | "large" | "middle">;
     /** 按钮显示方式icon/label */
     labelMode: PropType<"label" | "both" | "icon">;
     hidden: PropType<boolean | Fn<boolean>>;
@@ -861,6 +976,20 @@ export declare const SuperForm: DefineComponent<ExtractPropTypes<{
     ignoreRules: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
 
+declare const superform: {
+    useAdapter: typeof useAdapter;
+    configure: typeof configure;
+    registerComponent: typeof registerComponent;
+    registerComponents: typeof registerComponents;
+    setDefaultProps: typeof setDefaultProps;
+};
+export default superform;
+
+export declare interface SuperFormConfig extends GlobalConfig {
+    /** 组件默认参数 */
+    defaultProps?: AdapterDefaultProps;
+}
+
 export declare const SuperTable: DefineComponent<ExtractPropTypes<{
     dataSource: PropType<Obj<any>[]>;
     schema: PropType<RootTableOption>;
@@ -873,6 +1002,26 @@ export declare const SuperTable: DefineComponent<ExtractPropTypes<{
     "onUpdate:dataSource"?: ((...args: any[]) => any) | undefined;
 }>, {}, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
 
+export declare interface SwitchFieldAttrs {
+    /** 第一个选项为选中值 */
+    firstIsChecked?: boolean
+    /** 默认是否选中 */
+    defaultChecked?: boolean
+}
+
+export declare interface SwitchFieldOption extends SelectFieldOption {
+    valueLabels?: [string, string]
+}
+
+export declare interface TableAdapter {
+    /** 将 Core 表格状态转换为当前 UI 框架的表格、列和分页结构。 */
+    render: (props: UITableRenderProps, slots: Obj) => VNodeChild;
+    /** 渲染表格顶部的选项卡筛选。 */
+    renderFilter: (props: UITableFilterProps, slots: Obj) => VNodeChild;
+    /** 自动高度计算需要访问的 UI 私有 DOM 节点，由 Adapter 明确声明。 */
+    selectors: UITableSelectors;
+}
+
 export declare type TableApis = {
     query?: Fn<Promise<any>>
     info?: Fn<Promise<Obj>>
@@ -880,6 +1029,13 @@ export declare type TableApis = {
     update?: Fn<Promise<any>>
     delete?: Fn<Promise<any>>
     export?: Fn<Promise<any>>
+}
+
+/** 请求分页只依赖这三个字段，其他分页外观属性由 Adapter 补充。 */
+export declare interface TablePaginationSchemaProps {
+    current?: number
+    pageSize?: number
+    total?: number
 }
 
 declare interface TableScanHight {
@@ -894,10 +1050,21 @@ declare interface TableScanHight {
     inheritHeight?: boolean
 }
 
-declare interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
+/** SuperForm 稳定的表格容器语义。 */
+export declare interface TableSchemaProps {
+    /** 数据初始化后默认展开的行。 */
+    defaultExpandLevel?: number | 'all'
+    /** 当前展开行；Core 会在默认展开层级计算完成后更新该值。 */
+    expandedRowKeys?: (string | number)[]
+    /** 显式关闭选择列，具体选择配置由 Adapter 提供。 */
+    rowSelection?: false | (UITableProps<'Table'> extends { rowSelection?: infer T } ? T : Obj)
+}
+
+declare type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
     field?: string
     initialValue?: any
     bordered?: boolean
+    defaultActiveKey?: string | number
     options?: SelectOptions
     /** 字典名称 */
     dictName?: string
@@ -914,13 +1081,235 @@ declare interface TabsHeader extends Omit<TabsProps, 'activeKey'> {
     customTab?: Fn
 }
 
+export declare interface TreeFieldOption<TreeData = unknown> {
+    labelField?: string
+    /**
+     * @deprecated 使用`treeData`
+     */
+    data?: TreeData | Fn<Promise<TreeData>>
+    treeData?: TreeData | Fn<Promise<TreeData>> | Fn<TreeData>
+}
+
+/** Adapter 为按钮、提示和下拉交互提供的 UI Props 类型映射。 */
+export declare type UIActionComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIActionComponentPropSources[keyof SuperFormTypeRegistry.UIActionComponentPropSources]
+>
+
+declare type UIActionProps<K extends string> = K extends keyof UIActionComponentProps ? UIActionComponentProps[K] : unknown
+
+export declare interface UIAdapter {
+    /** 用于诊断和调试的适配器名称 */
+    name: string;
+    /** Core 运行必需、由 Adapter 直接引入的固定 UI 原语；不包含 Schema 字段组件。 */
+    components: Record<string, Component>;
+    /** Adapter 支持的 Schema 字段及其组件协议；这里只声明能力，不负责引入字段组件。 */
+    fields?: Record<string, FieldAdapter | undefined>;
+    /** 初始化 Adapter 时一并注册的字段组件；官方产品通常由 /components 入口提供。 */
+    fieldComponents?: Record<string, Component | undefined>;
+    /** 表单容器、表单项及实例协议。 */
+    form?: FormAdapter;
+    /** 栅格和空间容器协议。 */
+    layout?: LayoutAdapter;
+    /** Card、Tabs、Collapse、List 等容器渲染协议。 */
+    containers?: Record<string, ContainerAdapter | undefined>;
+    /** 语义图标和用户图标的渲染协议。 */
+    icons?: IconAdapter;
+    /** 按钮组使用的按钮、菜单、下拉和提示原语。 */
+    actions?: ActionAdapter;
+    /** 详情展示和 Core 复合字段使用的轻量展示原语。 */
+    presentation?: PresentationAdapter;
+    /** 消息、确认和可更新信息框等命令式 UI 服务。 */
+    services?: ServiceAdapter;
+    /** 声明式与命令式弹窗共用的渲染协议。 */
+    modal?: ModalAdapter;
+    /** Upload 组件的 UI 协议和忽略标记。 */
+    upload?: UploadAdapter;
+    /** 图片预览协议。 */
+    preview?: PreviewAdapter;
+    /** 表格、列、分页、选择、展开和筛选协议。 */
+    table?: TableAdapter;
+    /** 当前 UI 框架的全局组件默认属性 */
+    defaults?: Obj<Obj>;
+}
+
+/** Adapter 对 Core 容器和布局节点提供的 UI Props 类型映射。 */
+export declare type UIContainerComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIContainerComponentPropSources[keyof SuperFormTypeRegistry.UIContainerComponentPropSources]
+>
+
+declare type UIContainerProps<K extends string> = K extends keyof UIContainerComponentProps
+? UIContainerComponentProps[K]
+: unknown
+
+declare type UIFormComponentOption<K extends keyof UIFormComponentProps> = ExtFormItemOption &
+(K extends keyof UIFormComponentOptionExtensions ? UIFormComponentOptionExtensions[K] : unknown) & {
+    // UI 库的必填 Props 可能由动态属性、Adapter 默认值或增强处理器补充，Schema 静态 attrs 只约束已填写的属性。
+    attrs?: Partial<UIFormComponentProps[K]> & HTMLAttributes
+}
+
+/** Adapter 为字段组件关联的 Core 增强配置。 */
+export declare type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormComponentOptionExtensions &
+MergeRegistrySources<UIFormComponentOptionExtensionSource>
+
+declare type UIFormComponentOptionExtensionSource = SuperFormTypeRegistry.UIFormComponentOptionExtensionSources[
+keyof SuperFormTypeRegistry.UIFormComponentOptionExtensionSources
+]
+
+/** Adapter UI 字段的 attrs 类型映射；同名字段按 Adapter 来源合并为联合类型。 */
+export declare type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps &
+MergeRegistrySources<UIFormComponentPropSource>
+
+declare type UIFormComponentPropSource = SuperFormTypeRegistry.UIFormComponentPropSources[
+keyof SuperFormTypeRegistry.UIFormComponentPropSources
+]
+
+export declare type UIMessageType = 'success' | 'error' | 'info' | 'warning';
+
+/** Adapter 为弹窗提供的 UI Props 类型映射。 */
+export declare type UIModalComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIModalComponentPropSources[keyof SuperFormTypeRegistry.UIModalComponentPropSources]
+>
+
+declare type UIModalProps<K extends string> = K extends keyof UIModalComponentProps ? UIModalComponentProps[K] : unknown
+
+export declare interface UIServiceHandle {
+    /** 更新当前命令式提示或确认框。 */
+    update: (props: Obj) => void;
+    /** 销毁当前命令式提示或确认框。 */
+    destroy: () => void;
+}
+
+export declare interface UITableColumn extends Obj {
+    key?: PropertyKey;
+    dataIndex?: string | string[];
+    title?: unknown;
+    children?: UITableColumn[];
+    customRender?: (context: Obj) => unknown;
+}
+
+/** Adapter 为表格、列和分页提供的 UI Props 类型映射。 */
+export declare type UITableComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UITableComponentPropSources[keyof SuperFormTypeRegistry.UITableComponentPropSources]
+>
+
+export declare interface UITableFilterProps {
+    bordered?: boolean;
+    items: Array<Obj & {
+        key: PropertyKey;
+        tab: unknown;
+    }>;
+    value?: unknown;
+    onValueChange: (value: unknown) => void;
+    attrs?: Obj;
+}
+
+export declare interface UITablePagination {
+    current?: number;
+    pageSize?: number;
+    total?: number;
+    pageSizeOptions?: Array<number | string>;
+    onChange?: (page: number, pageSize?: number) => unknown;
+    onShowSizeChange?: (page: number, pageSize: number) => unknown;
+    /** UI 包公开的分页扩展属性，由对应 Adapter 消费。 */
+    attrs?: Obj;
+}
+
+declare type UITableProps<K extends string> = K extends keyof UITableComponentProps ? UITableComponentProps[K] : unknown
+
+export declare interface UITableRenderProps extends Obj {
+    data: Obj[];
+    columns: UITableColumn[];
+    selection?: UITableSelection;
+    pagination?: false | UITablePagination;
+    rowKey: string | ((row: Obj) => PropertyKey);
+    expandedKeys?: unknown[];
+    onExpandedChange?: (keys: unknown[]) => void;
+}
+
+export declare interface UITableSelection {
+    selectedKeys: unknown[];
+    /** Core 统一回传选中 key、行和 UI 框架提供的附加信息。 */
+    onChange?: (keys: unknown[], rows: Obj[], info?: Obj) => void;
+    /** 返回 false 时禁止选择当前行。 */
+    isRowSelectable?: (row: Obj) => boolean;
+    /** UI 包公开的选择扩展属性，由对应 Adapter 消费。 */
+    attrs?: Obj;
+}
+
+export declare interface UITableSelectors {
+    table: string;
+    title?: string;
+    header?: string;
+    footer?: string;
+    pagination?: string;
+    wrapper?: string;
+    empty?: string;
+    emptyCell?: string;
+    body?: string;
+}
+
+/** Adapter 为上传组件提供的 UI Props 类型映射。 */
+export declare type UIUploadComponentProps = MergeRegistrySources<
+SuperFormTypeRegistry.UIUploadComponentPropSources[keyof SuperFormTypeRegistry.UIUploadComponentPropSources]
+>
+
+declare type UIUploadProps<K extends string> = K extends keyof UIUploadComponentProps ? UIUploadComponentProps[K] : unknown
+
 export declare type UniOption = UniWrapperOption | UniWidgetOption
 
 export declare type UniWidgetOption =
 | { [K in keyof WidgetTypes]: { type: K } & WidgetTypes[K] }[keyof WidgetTypes]
-| (ExtFormItemOption & { type: `Ext${Capitalize<string>}${string}` })
+| {
+    [K in keyof CustomWidgetTypes]: { type: K } & CustomWidgetTypes[K]
+}[keyof CustomWidgetTypes]
 
 export declare type UniWrapperOption = { [K in keyof WrapperTypes]: { type: K } & WrapperTypes[K] }[keyof WrapperTypes]
+
+export declare interface UploadAdapter {
+    /** UI 框架拒绝文件但不加入列表时使用的特殊返回值。 */
+    listIgnore: unknown;
+    /** 渲染上传组件，并在内部完成 fileList、事件和 slot 协议转换。 */
+    render: (props: Obj, slots: Obj) => VNodeChild;
+    /** 渲染默认上传触发按钮。 */
+    renderTrigger: (props: Obj, slots: Obj) => VNodeChild;
+}
+
+/** SuperForm 自身消费的上传配置，底层组件属性由 Adapter 补充。 */
+export declare interface UploadSchemaProps {
+    apis?: {
+        upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
+        delete?: (file: Obj) => Promise<any>
+        download?: (file: Obj) => Promise<any>
+    }
+    /** 指定文件信息字段 */
+    infoNames?: { [k in 'uid' | 'name' | 'url']?: string } | Obj<string>
+    /** 指定文件信息中某属性作为同步绑定值，不指定将同步绑定文件对象 */
+    valueKey?: string
+    /** 文件最小 MB */
+    minSize?: number
+    /** 文件最大 MB */
+    maxSize?: number
+    /** 单文件上传，绑定值为字符串或文件对象 */
+    isSingle?: boolean
+    /** 最大文件数量 */
+    maxCount?: number
+    /** 允许的文件类型 */
+    accept?: string
+    /** 达到最大文件数量时隐藏上传主体 */
+    hideOnMax?: boolean
+    /** 上传模式：auto 自动上传；submit 提交时上传；custom 手动上传；base64/text 转换内容。 */
+    uploadMode?: 'auto' | 'submit' | 'custom' | 'base64' | 'text'
+    tip?: string
+    /** 上传按钮标题 */
+    title?: VSlot
+    /** 是否允许重名文件 */
+    repeatable?: boolean
+    /** 查看模式 */
+    isView?: boolean
+}
+
+/** 显式初始化应用级 Adapter；首次初始化后不允许切换协议。 */
+export declare function useAdapter(adapter: UIAdapter): UIAdapter;
 
 export declare function useButtons(option: ExtButtonGroup): (() => VNode<RendererNode, RendererElement, {
     [key: string]: any;
@@ -948,18 +1337,14 @@ declare type UseFormOption = ExtFormOption | (() => ExtFormOption) | (() => Prom
 
 export declare function useModal(content?: () => VNodeTypes, config?: ExtModalProps): {
     modalRef: Ref_2<any, any>;
-    openModal: (option?: ModalFuncProps_2 | Obj) => Promise<void>;
-    modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
-        [key: string]: any;
-    }>;
+    openModal: (option?: Partial<ExtModalProps>) => Promise<void>;
+    modalSlot: (props: any, ctx: any) => VNodeChild;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
+    setModal: (option?: Partial<ExtModalProps> | undefined) => void;
 };
 
 export declare function useModalForm(formOption: ExtFormOption, config?: ExtModalProps): {
-    openModal: ({ data, onOk, ...__config }?: ModalFuncProps_2 & {
-        data?: Obj<any> | undefined;
-    }) => Promise<void>;
+    openModal: ({ data, onOk, ...__config }?: ModalOpenOptions) => Promise<void>;
     formActions: {
         readonly dataSource: ComputedRef<any>;
         readonly getForm: () => Promise<any>;
@@ -971,11 +1356,9 @@ export declare function useModalForm(formOption: ExtFormOption, config?: ExtModa
         readonly setData: (data: any) => void;
     };
     modalRef: Ref_2<any, any>;
-    modalSlot: (props: any, ctx: any) => VNode< RendererNode, RendererElement, {
-        [key: string]: any;
-    }>;
+    modalSlot: (props: any, ctx: any) => VNodeChild;
     closeModal: () => Promise<void>;
-    setModal: (option?: Obj<any> | ModalFuncProps_2 | undefined) => void;
+    setModal: (option?: Partial<ExtModalProps> | undefined) => void;
 };
 
 export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any[]>) => readonly [RegisterMethod, {
@@ -1012,14 +1395,14 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         /** 初始化数据 */
         resetData?: Obj<any> | undefined;
         /** 弹窗标题 */
-        meta?: ModalFuncProps_2 | undefined;
+        meta?: Obj<any> | undefined;
     } | undefined) => any;
     /** 修改行，须判断是否已有选中行 */
     readonly edit: (param?: {
         /** 弹窗标题 */
         title?: string | undefined;
         record?: Obj<any> | undefined;
-        meta?: ModalFuncProps_2 | undefined;
+        meta?: Obj<any> | undefined;
     } | undefined) => any;
     /** 删除行，须判断是否已有选中行 */
     readonly delete: () => any;
@@ -1028,7 +1411,7 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
         /** 弹窗标题 */
         title?: string | undefined;
         record?: Obj<any> | undefined;
-        meta?: ModalFuncProps_2 | undefined;
+        meta?: Obj<any> | undefined;
     } | undefined) => any;
     readonly asyncCall: (key?: string, param?: any) => Promise<any>;
     /** `editable`模式下进行表单校验 */
@@ -1037,34 +1420,11 @@ export declare const useTable: (option: UseTableOption, data?: any[] | Ref_2<any
 
 declare type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>);
 
+declare type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends keyof T ? T[K] : never) : never
+
 declare type VSlot = string | Fn
 
-declare type WidgetTypes = {
-    Buttons: ExtBaseOption & ExtButtonGroup
-    Hidden: ExtFormItemOption
-    InputSlot: ExtInputSlotOption
-    InfoSlot: ExtInfoSlotOption
-    Text: ExtFormItemOption
-    HTML: ExtFormItemOption
-    Textarea: ExtTextareaOption
-    Input: ExtInputOption
-    AutoComplete: ExtAutoCompleteOption
-    InputNumber: ExtInputNumberOption
-    DatePicker: ExtDatePickerOption
-    TimePicker: ExtTimePickerOption
-    DateRange: ExtDateRange
-    TimeRange: ExtTimeRange
-    Select: ExtSelectOption
-    TreeSelect: ExtTreeOption
-    Radio: ExtRadioOption
-    Checkbox: ExtCheckboxOption
-    Switch: ExtSwitchOption
-    Upload: ExtUpload
-    InputGroup: ExtInputGroupOption
-    InputList: ExtInputList
-    TagInput: ExtTagInputOption
-    TagSelect: ExtTagSelectOption
-}
+declare type WidgetTypes = CoreWidgetTypes & AdapterWidgetTypes
 
 declare type WrapperTypes = {
     InfoSlot: ExtInfoSlotOption
@@ -1081,6 +1441,32 @@ declare type WrapperTypes = {
 }
 
 export { }
+
+
+
+declare global {
+  /** Adapter 类型目录的合并入口，带命名空间以避免污染业务全局类型。 */
+  namespace SuperFormTypeRegistry {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIContainerComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIFormComponentProps {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIFormComponentOptionExtensions {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIFormComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIFormComponentOptionExtensionSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIActionComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UITableComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIModalComponentPropSources {}
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface UIUploadComponentPropSources {}
+  }
+}
 
 
 

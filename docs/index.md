@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: antdv-superform
+  name: SuperForm
   text: 面向中后台系统的配置式表单与表格组件库
-  tagline: 基于 Vue 3 和 Ant Design Vue，用一份配置，统一表单、表格与详情，让中后台开发更高效
+  tagline: 基于 Vue 3，支持 AntDV Next 与 Element Plus，用一份配置统一表单、表格与详情
   image:
     src: /favicon.svg
     alt: Antdv SuperForm

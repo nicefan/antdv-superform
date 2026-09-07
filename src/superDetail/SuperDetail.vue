@@ -1,9 +1,9 @@
 <script lang="ts">
-import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, readonly, toRef } from 'vue'
+import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, readonly } from 'vue'
 import { buildModelsMap } from '../utils/buildModel'
 import { DetailLayout } from '../components/Detail'
 import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
-import { reportSchemaDiagnostics } from '../utils'
+import { reportSchemaDiagnostics } from '../utils/diagnoseSchema'
 import { globalConfig } from '../plugin'
 
 export default defineComponent({

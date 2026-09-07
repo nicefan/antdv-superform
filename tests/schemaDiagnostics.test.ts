@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { defineComponent } from 'vue'
+import { registerCustomComponents } from '../src/components'
 import { diagnoseSchema } from '../src/utils/diagnoseSchema'
 
 describe('schema 诊断', () => {
@@ -43,6 +45,15 @@ describe('schema 诊断', () => {
       )
     ).toEqual([])
     expect(diagnoseSchema({ columns: [{ field: 'name', label: '名称' }] }, 'table')).toEqual([])
+  })
+
+  it('识别直接注册名且不再接受 Ext 前缀兼容', () => {
+    registerCustomComponents({ UserPicker: defineComponent(() => () => null) })
+
+    expect(diagnoseSchema({ subItems: [{ type: 'UserPicker', field: 'userId' }] }, 'form')).toEqual([])
+    expect(diagnoseSchema({ subItems: [{ type: 'ExtUserPicker', field: 'userId' }] }, 'form')).toEqual([
+      expect.objectContaining({ code: 'unknown-type', path: 'schema.subItems[0].type' }),
+    ])
   })
 
   it('返回结构化的 schema 根级错误', () => {

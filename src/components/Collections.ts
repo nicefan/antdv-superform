@@ -1,14 +1,21 @@
 import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRaw } from 'vue'
-import { Col, Row } from '../compat/antdv'
 import { defaults, isFunction } from 'lodash-es'
 import Controls, { containers, getFormComponent, hasFormComponent, mapFormComponentModel } from './index'
 import { ButtonGroup } from './buttons'
-import base from '../compat/antdv'
 import { getEffectData, getViewNode, useControl, useInnerSlots, useVModel } from '../utils'
 import { globalProps } from '../plugin'
 import { DataProvider } from '../dataProvider'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
+import {
+  getUIFieldAdapter,
+  mapUIFieldProps,
+  renderUIFormItem,
+  renderUILayout,
+  requireUIComponent,
+  resolveUIComponent,
+} from '../adapter'
+import FieldProcessorRenderer from './processors/FieldProcessorRenderer'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -24,9 +31,9 @@ export default defineComponent({
     },
     effectData: Object,
   },
-  setup(props, ctx) {
+  setup(props) {
     const { type: parentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
-    const rowProps = { gutter, ...props.option.rowProps, ...ctx.attrs }
+    const rowProps = { gutter, ...props.option.rowProps }
     const inheritOptions = inject<Obj>('inheritOptions', {})
     const presetSpan = subSpan ?? inheritOptions.subSpan
 
@@ -70,7 +77,7 @@ export default defineComponent({
       }
       let innerNode = buildInnerNode(option, subData, effectData, attrs)
       if (!innerNode) continue
-      if (hasFormComponent(type) && editable !== undefined && editable !== true) {
+      if ((hasFormComponent(type) || resolveUIComponent(type)) && editable !== undefined && editable !== true) {
         const inputNode = innerNode
         const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
         const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
@@ -103,10 +110,18 @@ export default defineComponent({
         const label = createLabelNode(option, effectData)
 
         node = () =>
-          h(base.FormItem, reactive({ ...formItemAttrs, name: subData.propChain, rules, colon: !!label }), {
-            default: innerNode,
-            label,
-          })
+          renderUIFormItem(
+            reactive({
+              ...formItemAttrs,
+              name: subData.propChain,
+              rules,
+              colon: !!label,
+            }),
+            {
+              default: innerNode,
+              label,
+            }
+          )
       }
       if (independent) {
         // 容器组件转递继承属性
@@ -132,7 +147,6 @@ export default defineComponent({
                 class: ['sup-form-section', type === 'Descriptions' && 'sup-detail'],
                 style: alignStyle,
                 key: idx,
-                ...ctx.attrs,
               },
               node()
             )
@@ -146,17 +160,23 @@ export default defineComponent({
         if (!currentGroup) {
           nodes.push((currentGroup = []))
         }
-        currentGroup.push(() => !hidden.value && h(Col, mergeProps({ style: alignStyle, key: idx }, colProps), node))
+        currentGroup.push(
+          () =>
+            !hidden.value &&
+            renderUILayout('col', mergeProps({ style: alignStyle, key: idx }, colProps), { default: node })
+        )
         if (breakAfter) currentGroup = undefined
       }
     }
 
     let hasWrap = false
     const content = () =>
-      nodes.map((item, idx) => {
+      nodes.map((item) => {
         if (Array.isArray(item)) {
           hasWrap = true
-          return h(Row, rowProps, () => item.map((node) => node()))
+          return renderUILayout('row', rowProps, {
+            default: () => item.map((node) => node()),
+          })
         } else {
           return item()
         }
@@ -165,7 +185,16 @@ export default defineComponent({
     // 根容器下如有表单组件，则使用group包裹
     return () =>
       props.option.isContainer && hasWrap
-        ? h(Controls.Group, { class: 'sup-form-section', ...ctx.attrs, ...props }, { innerContent: content })
+        ? h(
+            Controls.Group,
+            {
+              class: 'sup-form-section',
+              option: props.option,
+              model: props.model,
+              effectData: props.effectData,
+            },
+            { innerContent: content }
+          )
         : content()
   },
 })
@@ -176,8 +205,16 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const slots = useInnerSlots(option.slots, effectData)
-  const definition = getFormComponent(type)
-  const renderSlot = render ? (typeof render === 'function' ? render : rootSlots[render]) : Controls[type]
+  const fieldAdapter = !render ? getUIFieldAdapter(type) : undefined
+  const processors = fieldAdapter?.processors
+  // Adapter 声明的字段始终使用其协议；自动导入只提供实际组件，不能绕过字段适配。
+  const definition = fieldAdapter ? undefined : getFormComponent(type)
+  const adapterComponent = !render && fieldAdapter ? requireUIComponent(type) : undefined
+  const renderSlot = render
+    ? typeof render === 'function'
+      ? render
+      : rootSlots[render]
+    : definition?.component || Controls[type] || adapterComponent
 
   let node
   if (type === 'InfoSlot') {
@@ -193,18 +230,23 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     node = () => h(Controls[type], reactive({ option, model, effectData, ...attrs }), slots)
   } else {
     // 表单输入组件
-    const valueProps = useVModel({ option, model, effectData })
-    const allAttrs = { ...attrs, ...valueProps }
     if (!renderSlot) {
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
-    } else if (type === 'InputSlot') {
-      node = () => renderSlot?.(reactive({ props: allAttrs, ...effectData }))
-    } else if (definition?.source === 'custom') {
-      node = () => h(renderSlot, reactive(mapFormComponentModel(definition, allAttrs)), slots)
-    } else if (definition?.source === 'legacy' || type.startsWith('Ext')) {
-      node = () => h(renderSlot, reactive({ option, effectData, ...allAttrs }), slots)
+    } else if (adapterComponent && processors?.length) {
+      node = () =>
+        h(FieldProcessorRenderer, { ...attrs, fieldType: type, processors, option, model, effectData }, slots)
     } else {
-      node = () => h(renderSlot, reactive({ option, model, effectData, ...allAttrs }), slots)
+      const valueProps = useVModel({ option, model, effectData })
+      const allAttrs = { ...attrs, ...valueProps }
+      if (type === 'InputSlot') {
+        node = () => renderSlot?.(reactive({ props: allAttrs, ...effectData }))
+      } else if (adapterComponent) {
+        node = () => h(adapterComponent, reactive(mapUIFieldProps(type, allAttrs, { option, effectData })), slots)
+      } else if (definition?.source === 'custom' || definition?.source === 'auto') {
+        node = () => h(renderSlot, reactive(mapFormComponentModel(definition, allAttrs)), slots)
+      } else {
+        node = () => h(renderSlot, reactive({ option, model, effectData, ...allAttrs }), slots)
+      }
     }
   }
   return node

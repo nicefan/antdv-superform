@@ -1,97 +1,74 @@
-import { merge } from 'lodash-es'
-import type { App, Component, VNode } from 'vue'
-import { configureComponents, addComponent, type FormComponent } from './components'
-import type { BaseComponentName, Locale } from './compat/antdv'
-import type { ButtonItem } from './exaTypes'
+import { merge } from "lodash-es";
+import {
+  registerAdapterFieldTypes,
+  registerCustomComponents,
+  type FormComponent,
+} from "./components";
+import { initializeUIAdapter, type UIAdapter } from "./adapter";
+import { globalConfig, type GlobalConfig } from "./config";
 
-type Dict = { label: string; value: string | number; [k: string]: string | number }
-export interface InstallConfig extends GlobalConfig {
-  locale?: Locale
-  /** UI 组件注册表；非内置名称可直接作为 schema type。 */
-  components?: Partial<Record<BaseComponentName, FormComponent>> & Record<string, FormComponent | undefined>
+export type AdapterDefaultProps = Record<string, Obj | undefined>;
+
+export interface SuperFormConfig extends GlobalConfig {
   /** 组件默认参数 */
-  defaultProps?: Obj
+  defaultProps?: AdapterDefaultProps;
 }
-interface GlobalConfig {
-  /** 是否在组件接收 schema 时输出诊断信息 */
-  schemaDiagnostics?: boolean
-  dictApi?: (name: string) => Promise<Dict[]>
-  /** 自定义图标处理组件 */
-  customIcon?: (name: string) => VNode
-  /** 动态传递按钮权限 */
-  buttonRoles?: () => string[]
-  /** 内置默认按钮配置 */
-  defaultButtons?: Obj<ButtonItem>
-  /**tag显示时默认颜色组 */
-  tagViewer?: Obj<string> | string[] | false | Fn<string>
-  /** 接口返回数据结构处理 */
-  tableApiSetting?: {
-    /** 当前页请求参数名 */
-    currentField?: string
-    /** 当前每页数量请求参数名 */
-    sizeField?: string
-    /** 返回结果格式转换，无分页时直接返回数组 */
-    resultTransform?: (result: any) =>
-      | any[]
-      | {
-          current: number
-          size: number
-          total: number
-          records: any[]
-        }
+const globalProps: Obj = {};
+let adapterApplied = false;
+let configuredAdapter: UIAdapter | undefined;
+
+function applyAdapter(adapter: UIAdapter) {
+  // 重复传入同一实例可以安全复用；切换检查必须先于字段名注册，避免失败后污染保留类型。
+  if (configuredAdapter) {
+    initializeUIAdapter(adapter);
+    return;
   }
-  /** 全局按钮权限过滤 */
-  // buttonsAuth?: (actions: ButtonItem[]) => ButtonItem[]
-}
-const globalConfig: GlobalConfig = {
-  tagViewer: ['pink', 'red', 'orange', 'green', 'cyan', 'blue', 'purple'],
-}
-
-const globalProps: Obj = {
-  FormItem: {
-    validateFirst: true,
-  },
-  Table: {
-    size: 'small',
-  },
-  TimePicker: {
-    valueFormat: 'HH:mm:ss',
-  },
-  TimeRange: {
-    valueFormat: 'HH:mm:ss',
-  },
+  registerAdapterFieldTypes(Object.keys(adapter.fields || {}));
+  initializeUIAdapter(adapter);
+  configuredAdapter = adapter;
+  if (!adapterApplied) {
+    merge(globalProps, adapter.defaults || {});
+    adapterApplied = true;
+  }
 }
 
-const install = async (app: App, config: InstallConfig = {}) => {
-  const { locale, components, defaultProps, ..._config } = config
-  app.provide('localeData', { locale: locale, exist: true })
-  Object.assign(globalConfig, _config)
-  components && configureComponents(components)
-  defaultProps && setDefaultProps(defaultProps)
+/** 显式初始化应用级 Adapter；首次初始化后不允许切换协议。 */
+export function useAdapter(adapter: UIAdapter) {
+  applyAdapter(adapter);
+  return adapter;
 }
 
-/** 绑定到组件上的动态属性 */
-interface RegisterParam {
-  option: Obj
-  effectData: Obj
-  /** 当前值 */
-  value?: any
-  [K: string]: any
+/** 配置 Core 的应用级行为和默认属性。 */
+export function configure(config: SuperFormConfig = {}) {
+  const { defaultProps, ...runtimeConfig } = config;
+  Object.assign(globalConfig, runtimeConfig);
+  if (defaultProps) setDefaultProps(defaultProps);
 }
-function registerComponent(name: string, component: ((param: RegisterParam) => VNode) | Component) {
-  addComponent(name, component)
+
+/** 注册一个项目自定义 Schema 组件。 */
+export function registerComponent(name: string, component: FormComponent) {
+  registerCustomComponents({ [name]: component });
 }
-/** @deprecated 使用 `registerComponent` */
-function registComponent(name: string, component: ((param: RegisterParam) => VNode) | Component) {
-  registerComponent(name, component)
+
+/** 注册项目自定义 Schema 组件。 */
+export function registerComponents(
+  components: Record<string, FormComponent | undefined>
+) {
+  registerCustomComponents(components);
 }
-function setDefaultProps(props: Obj) {
-  merge(globalProps, props)
+
+/** 合并组件默认参数。 */
+export function setDefaultProps(props: Obj) {
+  merge(globalProps, props);
 }
-export default {
-  install,
+
+const superform = {
+  useAdapter,
+  configure,
   registerComponent,
-  registComponent,
+  registerComponents,
   setDefaultProps,
-}
-export { globalConfig, globalProps }
+};
+
+export { globalConfig, globalProps };
+export default superform;

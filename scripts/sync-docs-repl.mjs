@@ -23,7 +23,7 @@ const files = {
     "dist",
     "antd.css"
   ),
-  "antdv-superform.js": join(projectRoot, "dist", "antdv-superform.js"),
+  "superform-antdv.js": join(projectRoot, "dist", "superform-antdv.js"),
   "style.css": join(projectRoot, "dist", "style.css"),
   "vue.runtime.esm-browser.js": join(
     projectRoot,
@@ -43,7 +43,7 @@ const files = {
 
 const localeMarker = "星期日_星期一_星期二";
 const localeRegistered = await Promise.all(
-  ["antd.js", "antdv-superform.js"].map((filename) =>
+  ["antd.js", "superform-antdv.js"].map((filename) =>
     readFile(files[filename], "utf8")
   )
 ).then((contents) =>
@@ -87,4 +87,4 @@ manifest.versions = [
   ...manifest.versions.filter((item) => item.version !== version),
 ];
 await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-console.log(`演练场依赖已生成：antdv-superform ${version}`);
+console.log(`演练场依赖已生成：superform-antdv ${version}`);

@@ -45,7 +45,7 @@ describe('init-ai', () => {
     expect(agentsContent).toContain('# 项目约束')
     expect(claudeContent).toContain('# Claude 约束')
     expect(agentsContent.match(new RegExp(START_MARKER, 'g'))).toHaveLength(1)
-    expect(claudeContent).toContain('node_modules/antdv-superform/AI_GUIDE.md')
+    expect(claudeContent).toContain('node_modules/superform/AI_GUIDE.md')
     expect(claudeContent).toContain('diagnose-schema')
   })
 

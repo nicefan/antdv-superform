@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Modal } from 'antdv-next'
-import { SuperTable, useTable } from 'antdv-superform'
+import { SuperTable, useTable } from 'superform-antdv'
 import { contractApi, initialContracts } from './homeQuickStartMock'
 
 const dataSource = ref(initialContracts)
@@ -79,7 +79,7 @@ const [register] = useTable({
       onChange: ({ record }, value) => contractApi.setStatus(record.id, value),
     },
     {
-      type: 'Textarea',
+      type: 'TextArea',
       field: 'description',
       label: '合同说明',
       exclude: ['table'],

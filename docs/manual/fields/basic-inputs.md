@@ -1,6 +1,6 @@
 # 基础输入
 
-本页包括 Input、Textarea、InputNumber、AutoComplete、InputGroup 和 TagInput。它们共享 `field`、`value`、`initialValue`、校验、状态、布局和事件等[通用字段配置](/manual/schema#从一项声明到完整行为)。
+本页重点介绍 Input、TextArea、InputNumber、AutoComplete、InputGroup 和 TagInput。AntDV Adapter 还声明了 `InputOTP`、`InputPassword`、`InputSearch`、`Mentions` 等真实组件名；普通字段同样共享 `field`、`value`、`initialValue`、校验、状态、布局和事件等[通用字段配置](/manual/schema#从一项声明到完整行为)。
 
 ## Input
 
@@ -41,15 +41,15 @@ Input 适合单行字符串。默认生成“请输入 + label”占位符并开
 
 `onSearch(effectData, value)` 存在时组件使用 Input.Search，并在 Promise 等待期间维护搜索按钮 loading。`enterButton` 通过 `attrs.enterButton` 控制搜索按钮；没有 `enterButton` 时，`addonAfter` 也可被复用为搜索入口。
 
-需要密码输入时可使用 `attrs.type: 'password'` 或注册业务扩展组件；当前没有名为 InputPassword 的内置字段。
+需要密码或独立搜索组件时，也可以直接使用 Adapter 已声明的 `InputPassword`、`InputSearch`。这些字段仍需由自动导入插件或 `initialize({ components })` 提供实际组件。
 
-## Textarea
+## TextArea
 
-Textarea 适合多行字符串，默认宽度 100%、开启 `allowClear`，占位符为“请输入 + label”。
+TextArea 适合多行字符串，默认宽度 100%、开启 `allowClear`，占位符为“请输入 + label”。
 
 ```ts
 {
-  type: 'Textarea',
+  type: 'TextArea',
   field: 'remark',
   label: '备注',
   span: 24,

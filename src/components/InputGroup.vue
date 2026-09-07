@@ -1,10 +1,10 @@
 <script lang="ts">
-import base from '../compat/antdv'
 import Collections from './Collections'
 import { computed, defineComponent, h, inject, mergeProps, reactive, ref, unref, watch } from 'vue'
 import { globalProps } from '../plugin'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
+import { renderUIFormItem, renderUILayout } from '../adapter'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -82,17 +82,26 @@ export default defineComponent({
     const _label = createLabelNode(option, props.effectData)
 
     return () =>
-      h(
-        base.FormItem,
-        { ...formItemAttrs, rules: rules.value, ref: formItemContext, name: _propChain },
+      renderUIFormItem(
+        {
+          ...formItemAttrs,
+          rules: rules.value,
+          ref: formItemContext,
+          name: _propChain,
+        },
         {
           label: _label,
           default:
             slots?.default ||
             (() =>
-              h(compact ? base.SpaceCompact : base.Space, mergeProps(compact ? { block: true } : {}, attrs), () =>
-                h(Collections, { option, model, effectData: props.effectData })
-              )),
+              renderUILayout(compact ? 'compactSpace' : 'space', mergeProps(compact ? { block: true } : {}, attrs), {
+                default: () =>
+                  h(Collections, {
+                    option,
+                    model,
+                    effectData: props.effectData,
+                  }),
+              })),
         }
       )
   },

@@ -5,7 +5,7 @@
 ## 字典接入
 
 ```ts
-app.use(SuperFormPlugin, {
+superform.configure({
   dictApi: async (name) => {
     const result = await dictionaryApi.get(name);
     return result.map((item) => ({
@@ -75,7 +75,7 @@ tagViewer: { enabled: 'green', disabled: 'default' }
 项目中的状态值通常是稳定的，更推荐在全局函数中把值、显示标签和语义色一起标准化：
 
 ```ts
-app.use(SuperFormPlugin, {
+superform.configure({
   tagViewer(value) {
     const statusMap: Record<string, { label: string; color: string }> = {
       0: { label: "停用", color: "default" },
@@ -92,7 +92,7 @@ app.use(SuperFormPlugin, {
 ## 按钮权限
 
 ```ts
-app.use(SuperFormPlugin, {
+superform.configure({
   buttonRoles: () => permissionStore.currentRoles,
 });
 ```

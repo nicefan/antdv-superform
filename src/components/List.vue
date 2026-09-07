@@ -3,12 +3,11 @@ import { type PropType, defineComponent, h, reactive, ref, toRaw, toRef, useAttr
 import { nanoid } from 'nanoid'
 import { cloneModels } from '../utils/buildModel'
 import { createButtons } from './buttons'
-import base from '../compat/antdv'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { Row, Col } from '../compat/antdv'
 import { toNode } from '../utils'
 import { globalProps } from '../plugin'
+import { renderUIContainer, renderUILayout } from '../adapter'
 
 export default defineComponent({
   props: {
@@ -29,7 +28,7 @@ export default defineComponent({
   setup({ model, option, isView, effectData }, ctx) {
     const { buttons: buttonsConfig, rowButtons, label, title = label } = option
     // 先构建一个数据结构
-    const { modelsMap: childrenMap, rules } = model.listData
+    const { modelsMap: childrenMap } = model.listData
 
     const { propChain } = model
     const orgList = toRef(model, 'refData')
@@ -72,7 +71,12 @@ export default defineComponent({
           return {
             hash,
             model: { refData: ref(record), children: modelsMap, index: idx },
-            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
+            effectData: reactive({
+              parent: effectData,
+              current: orgList,
+              index: idx,
+              record,
+            }),
           }
         })
         // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
@@ -102,10 +106,24 @@ export default defineComponent({
     const { title: titleSlot, extra: extraSlot, ...__slots } = slots
     if (titleSlot || extraSlot) {
       __slots.header = () =>
-        h(Row, { align: 'middle' }, () => [
-          titleSlot && h(Col, { class: 'sup-title', flex: 1 }, titleSlot),
-          extraSlot && h(Col, { class: 'sup-title-buttons', style: { textAlign: buttonsConfig?.['align'] } }, extraSlot),
-        ])
+        renderUILayout(
+          'row',
+          { align: 'middle' },
+          {
+            default: () => [
+              titleSlot && renderUILayout('col', { class: 'sup-title', flex: 1 }, { default: titleSlot }),
+              extraSlot &&
+                renderUILayout(
+                  'col',
+                  {
+                    class: 'sup-title-buttons',
+                    style: { textAlign: buttonsConfig?.['align'] },
+                  },
+                  { default: extraSlot }
+                ),
+            ],
+          }
+        )
     }
     const rowButtonsConfig: any = rowButtons && {
       buttonType: 'link',
@@ -115,25 +133,34 @@ export default defineComponent({
     }
 
     __slots.renderItem = ({ item }) =>
-      h(
-        base.SuperListItem,
+      renderUIContainer(
+        'listItem',
         { key: item.hash, class: attrs.itemClass, style: attrs.itemStyle },
         {
           default: () => [
             isView
-              ? h(DetailLayout, { option, modelsMap: item.model.children, effectData: item.effectData })
-              : h(Collections, { model: item.model, option, class: 'ant-list-item-meta', effectData: item.effectData }),
+              ? h(DetailLayout, {
+                  option,
+                  modelsMap: item.model.children,
+                  effectData: item.effectData,
+                })
+              : h(Collections, {
+                  model: item.model,
+                  option,
+                  class: 'sup-list-item-content',
+                  effectData: item.effectData,
+                }),
             rowButtonsConfig &&
               createButtons({
                 config: rowButtonsConfig,
                 methods,
                 effectData: item.effectData,
                 isView,
-              })?.({ class: 'ant-list-item-action' }),
+              })?.({ class: 'sup-list-item-actions' }),
           ],
         }
       )
-    return () => h(base.SuperList, { ...getListAttrs(), dataSource: listItems.value }, __slots)
+    return () => renderUIContainer('list', { ...getListAttrs(), dataSource: listItems.value }, __slots)
   },
 })
 </script>

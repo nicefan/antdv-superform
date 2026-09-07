@@ -4,10 +4,12 @@
 
 ## CLI：可序列化 Schema
 
+CLI 来自独立 Core 包，先执行 `pnpm add -D superform`。
+
 ```bash
-npx antdv-superform diagnose-schema schema.json --type form
-npx antdv-superform diagnose-schema table.json --type table --json
-cat schema.json | npx antdv-superform diagnose-schema - --type detail
+npx superform diagnose-schema schema.json --type form
+npx superform diagnose-schema table.json --type table --json
+cat schema.json | npx superform diagnose-schema - --type detail
 ```
 
 `--type` 支持 `form`、`table`、`detail`；省略时按是否存在 columns 自动判断。`--json` 适合 CI。存在 error 时退出码非零，warning 和 suggestion 不会单独导致失败。
@@ -17,7 +19,7 @@ cat schema.json | npx antdv-superform diagnose-schema - --type detail
 函数、Ref、VNode 或组件引用无法写入 JSON，应在代码中调用：
 
 ```ts
-import { diagnoseSchema } from "antdv-superform";
+import { diagnoseSchema } from "superform-antdv";
 
 const diagnostics = diagnoseSchema(schema, "table");
 const errors = diagnostics.filter((item) => item.level === "error");
@@ -39,7 +41,7 @@ type SchemaDiagnostic = {
 ## 开发期自动诊断
 
 ```ts
-app.use(SuperFormPlugin, {
+superform.configure({
   schemaDiagnostics: import.meta.env.DEV,
 });
 ```

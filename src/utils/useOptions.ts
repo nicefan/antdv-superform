@@ -1,4 +1,4 @@
-import { globalConfig } from '../plugin'
+import { globalConfig } from '../config'
 import { isArray, isPlainObject } from 'lodash-es'
 import { ref, watchPostEffect, watch, unref, computed } from 'vue'
 

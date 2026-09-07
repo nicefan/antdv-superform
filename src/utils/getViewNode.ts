@@ -1,13 +1,13 @@
-import { globalConfig } from '../plugin'
+import { globalConfig } from '../config'
 import { ref, unref, h, reactive, inject, computed, mergeProps, toValue } from 'vue'
 import { createButtons } from '../components/buttons'
-import Controls from '../components'
+import Controls, { getFormComponent, mapFormComponentModel } from '../components'
 import { isPlainObject, get as objectGet } from 'lodash-es'
 import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
-import { Tag } from '../compat/antdv'
 import { getIconNode } from './'
+import { renderUIPresentation } from '../adapter'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -64,10 +64,13 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
     item.color ??=
       color || tagOption[value] || (value === true && 'success') || (value === false && 'error') || 'default'
   }
-  return h(
-    Tag,
+  return renderUIPresentation(
+    'tag',
     { color: item.color },
-    { default: () => item.label || value, icon: item.icon || (() => getIconNode(item.icon)) }
+    {
+      default: () => item.label || value,
+      icon: item.icon || (() => getIconNode(item.icon)),
+    }
   )
 }
 
@@ -135,9 +138,9 @@ export function getViewNode(option, effectData: Obj = {}) {
   if (colRender) {
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)
-      const {
-        attrs: { disabled, ...attrs },
-      } = useControl({ option, effectData: param })
+      const { attrs: controlledAttrs } = useControl({ option, effectData: param })
+      const attrs = { ...controlledAttrs }
+      delete attrs.disabled
 
       const props: Obj = reactive({
         props: { ...attrs, ...vModels },
@@ -151,7 +154,10 @@ export function getViewNode(option, effectData: Obj = {}) {
     return (param: Obj = effectData) => {
       const text = param.text ?? toValue(initialValue)
       if (typeof text === 'boolean' && tagViewer === true) {
-        return buildTagRender({ label: text ? '是' : '否', color: text ? 'success' : 'error' })
+        return buildTagRender({
+          label: text ? '是' : '否',
+          color: text ? 'success' : 'error',
+        })
       }
       const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
       const tags = arr.map((value) => buildTagRender({ value, tagViewer }))
@@ -170,11 +176,11 @@ export function getViewNode(option, effectData: Obj = {}) {
       const attrs = mergeProps({ ...option.attrs, innerHTML: param.value }, dynamicAttrs)
       return h('span', attrs)
     }
-  } else if (colType === 'Textarea') {
+  } else if (colType === 'TextArea') {
     return (param: Obj = effectData) => {
       return h('pre', { style: 'white-space: break-spaces;' }, param.value ?? toValue(initialValue))
     }
-  } else if (!content && (colType === 'Upload' || colType.startsWith('Ext'))) {
+  } else if (!content && (colType === 'Upload' || getFormComponent(colType))) {
     return (param: Obj = effectData) => {
       const vModels = getVModelProps(option, param.current)
       const slots = useInnerSlots(option.slots, param, rootSlots)
@@ -182,10 +188,28 @@ export function getViewNode(option, effectData: Obj = {}) {
         attrs: { disabled, ...attrs },
       } = useControl({ option, effectData: param })
 
-      return h(
-        Controls[colType],
-        reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true, disabled }),
-        slots
+      if (colType === 'Upload') {
+        return h(
+          Controls.Upload,
+          reactive({ option, effectData: param, ...attrs, ...vModels, value: param.value, isView: true, disabled }),
+          slots
+        )
+      }
+      const definition = getFormComponent(colType)
+      return (
+        definition &&
+        h(
+          definition.component,
+          reactive(
+            mapFormComponentModel(definition, {
+              ...attrs,
+              ...vModels,
+              value: param.value,
+              disabled,
+            })
+          ),
+          slots
+        )
       )
     }
   } else if (colType === 'Buttons') {

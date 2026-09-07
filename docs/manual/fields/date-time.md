@@ -1,15 +1,15 @@
 # 日期与时间
 
-本页包括 DatePicker、DateRange、TimePicker 和 TimeRange。默认通过 `valueFormat` 直接保存字符串，避免业务模型被 Dayjs 实例污染。
+本页包括 DatePicker、DateRangePicker、TimePicker 和 TimeRangePicker。默认通过 `valueFormat` 直接保存字符串，避免业务模型被 Dayjs 实例污染。
 
 ## 默认值格式
 
 | 字段       | 默认 `attrs.valueFormat` | 常见模型                       |
 | ---------- | ------------------------ | ------------------------------ |
 | DatePicker | `YYYY-MM-DD`             | `'2026-08-08'`                 |
-| DateRange  | `YYYY-MM-DD`             | `['2026-08-01', '2026-08-31']` |
+| DateRangePicker | `YYYY-MM-DD`             | `['2026-08-01', '2026-08-31']` |
 | TimePicker | `HH:mm:ss`               | `'09:30:00'`                   |
-| TimeRange  | `HH:mm:ss`               | `['09:00:00', '18:00:00']`     |
+| TimeRangePicker | `HH:mm:ss`               | `['09:00:00', '18:00:00']`     |
 
 `attrs.format` 只控制界面显示，`attrs.valueFormat` 控制模型值：
 
@@ -57,13 +57,13 @@ attrs: {
 
 第一个参数是日期对象，第二个参数是 effectData，适合同一 Schema 内的日期边界联动。
 
-## DateRange 的三种值模式
+## DateRangePicker 的三种值模式
 
 ### 数组模式
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   field: 'validPeriod',
   label: '有效期',
 }
@@ -78,7 +78,7 @@ attrs: {
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   field: 'startDate',
   endField: 'endDate',
   label: '有效期',
@@ -94,7 +94,7 @@ attrs: {
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   field: 'validPeriod',
   stringifyValue: true,
   label: '有效期',
@@ -106,11 +106,11 @@ attrs: {
 
 字符串模式不支持值内逗号转义。`endField` 与 `stringifyValue` 同时存在时优先双字段模式。
 
-## DateRange 常用 attrs
+## DateRangePicker 常用 attrs
 
 ```ts
 {
-  type: 'DateRange',
+  type: 'DateRangePicker',
   field: 'createdAt',
   attrs: {
     allowEmpty: [true, true],
@@ -143,13 +143,13 @@ RangePicker 的 `disabledDate(currentDate, effectData)` 同样支持上下文。
 
 TimePicker 适合单个时间点；日期和时间都需要时用 DatePicker 的 `showTime`，避免拆成无法明确时区/日期关系的两个字段。
 
-## TimeRange
+## TimeRangePicker
 
-TimeRange 使用 Ant Design Vue TimeRangePicker，而不是两个独立 TimePicker：
+TimeRangePicker 使用 AntDV Next 的范围时间组件，而不是两个独立 TimePicker：
 
 ```ts
 {
-  type: 'TimeRange',
+  type: 'TimeRangePicker',
   field: 'startTime',
   endField: 'endTime',
   label: '营业时间',
@@ -160,7 +160,7 @@ TimeRange 使用 Ant Design Vue TimeRangePicker，而不是两个独立 TimePick
 }
 ```
 
-它支持与 DateRange 相同的数组、`endField`、`stringifyValue` 三种模式。
+它支持与 DateRangePicker 相同的数组、`endField`、`stringifyValue` 三种模式。
 
 ## 选择建议
 
