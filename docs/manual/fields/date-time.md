@@ -1,6 +1,8 @@
-# 日期与时间
+# 日期与范围值
 
-本页包括 DatePicker、DateRangePicker、TimePicker 和 TimeRangePicker。默认通过 `valueFormat` 直接保存字符串，避免业务模型被 Dayjs 实例污染。
+本页集中说明范围值映射与日期格式。AntDV 声明 DatePicker、DateRangePicker、DateMonthPicker、DateQuarterPicker、DateWeekPicker、DateYearPicker、TimePicker、TimeRangePicker；Element Plus 使用 DatePicker、TimePicker 及其 UI 范围模式，TimeSelect 按 UI 协议使用。
+
+以下专用范围组件名、默认格式和示例采用 AntDV。Element Plus 的范围选择通过 DatePicker 的 `type` 或 TimePicker 的 `isRange` 配置，并按组件要求显式设置 `valueFormat`；不能直接使用 AntDV 的 DateRangePicker 名称。
 
 ## 默认值格式
 
@@ -168,9 +170,11 @@ TimeRangePicker 使用 AntDV Next 的范围时间组件，而不是两个独立 
 | ------------------ | -------------------------------- |
 | 一个范围字段       | 默认数组模式                     |
 | 独立开始/结束字段  | `endField`                       |
-| 历史逗号字符串     | `stringifyValue`                 |
+| 逗号字符串     | `stringifyValue`                 |
 | 只显示特殊格式     | 只设置 `format`                  |
 | 改变存储格式       | 设置 `valueFormat`               |
 | 与其他字段联动禁选 | `disabledDate(date, effectData)` |
 
 可运行对比见[日期与时间示例](/examples?example=date-time)。
+
+<span id="日期与时间"></span>

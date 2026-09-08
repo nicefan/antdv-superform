@@ -1,52 +1,25 @@
 # 快速开始
 
-先直接体验一张完整的合同管理页面，再看实现它需要多少代码。
+完成[安装与初始化](/manual/installation)后，从一个包含姓名、状态和提交按钮的表单开始。
 
-<HomeQuickStart />
+## 1. 创建表单
 
-## 示例代码
+```vue
+<template>
+  <SuperForm @register="register" @submit="handleSubmit" />
+</template>
 
-<<< ../.vitepress/components/HomeQuickStartDemo.vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { SuperForm, defineForm, useForm } from "superform-antdv";
 
-## 一个示例，覆盖一张业务页面需要的一切
-
-<div class="feature-grid home-feature-grid">
-  <div class="feature-card">
-    <strong>一份字段配置，贯穿四个场景</strong>
-    <p>合同名称、类型、日期、金额和状态同时服务于查询、列表、编辑与详情，不再重复声明。</p>
-  </div>
-  <div class="feature-card">
-    <strong>完整 CRUD，不堆模板代码</strong>
-    <p>查询、新增、修改、删除、批量删除和详情都由稳定的 API 契约驱动，页面只描述业务差异。</p>
-  </div>
-  <div class="feature-card">
-    <strong>字段类型天然懂得如何展示</strong>
-    <p>Select 自动映射标签，日期保持统一格式，金额按数值对齐，Switch 可以直接修改状态。</p>
-  </div>
-  <div class="feature-card">
-    <strong>数据源双向同步</strong>
-    <p>响应式 dataSource 既提供首屏数据，也持续接收查询和 CRUD 后的最新列表。</p>
-  </div>
-  <div class="feature-card">
-    <strong>列表精简，编辑与详情更完整</strong>
-    <p>“合同说明”只在编辑和详情中出现。一处 exclude 配置，就能准确控制字段参与的场景。</p>
-  </div>
-  <div class="feature-card">
-    <strong>按钮理解当前业务状态</strong>
-    <p>自定义“归档”按钮读取当前行状态：活动记录可以操作，普通记录自动禁用并说明原因。</p>
-  </div>
-</div>
-
-**这就是 Antdv SuperForm 的价值：用更少、更集中的代码，交付更完整、更一致的中后台体验。**
-
-下面继续拆解 Schema、模型、自动默认值和动作对象如何配合。
-
-## 1. 创建 Schema
-
-```ts
-import { defineForm } from "superform-antdv";
+const record = ref<{ id?: number; name: string; status: number }>({
+  name: "",
+  status: 1,
+});
 
 const schema = defineForm({
+  dataSource: record,
   subSpan: 12,
   buttons: { actions: ["submit", "reset"] },
   subItems: [
@@ -71,64 +44,40 @@ const schema = defineForm({
     },
   ],
 });
-```
-
-这份 Schema 会建立模型 `{ id, name, status }`，并让 `required: true` 自动生成“姓名不能为空！”规则。
-
-## 2. 选择使用方式
-
-### 注册模式：需要命令式动作
-
-```vue
-<template>
-  <SuperForm @register="register" @submit="handleSubmitted" />
-</template>
-
-<script setup lang="ts">
-import { SuperForm, useForm } from "superform-antdv";
 
 const [register, form] = useForm(schema);
 
-async function save() {
-  const data = await form.submit();
-  await api.save(data);
-}
-
-function handleSubmitted(data) {
-  console.log("通过校验的数据副本", data);
+function handleSubmit(data: typeof record.value) {
+  console.log("通过校验的表单数据", data);
 }
 </script>
 ```
 
-适合提交、回填、弹窗复用或需要从业务代码调用表单实例的页面。
+Schema 描述字段、默认值和校验；`useForm` 返回注册函数和动作对象。姓名为空时，提交会提示“姓名不能为空！”。
 
-### 声明式模式：只由模板驱动
+## 2. 绑定与更新数据
 
-```vue
-<template>
-  <SuperForm :schema="schema" :data-source="record" @submit="api.save" />
-</template>
-```
-
-适合动作很少、外部对象直接作为模型的页面。`dataSource` 会被表单双向修改并按 Schema 补齐字段。
-
-## 3. 回填与局部更新
+`dataSource: record` 将表单绑定到外部 Ref，输入时会同步修改 `record.value`。
 
 ```ts
-// 整条记录回填：缺少字段时回退到 Schema 初始值
-form.resetFields({ id: 8, name: "张三" });
+// 切换到另一条记录，表单随数据源同步
+record.value = { id: 8, name: "张三", status: 1 };
 
-// 只更新传入且模型中已经建立的字段
+// 局部更新表单中的字段
 form.setFieldsValue({ status: 0 });
-
-// 读取当前模型引用
-const current = form.getData();
-
-// 校验并取得深拷贝结果
-const result = await form.submit();
 ```
 
-`resetFields()` 无参数时恢复 Schema 标准初始模型。模型外字段不会被动作自动加入；需要提交的主键应声明为 Hidden。
+需要按 Schema 初始值补齐一条记录时使用 `form.resetFields(data)`；无参数时恢复初始值。完整边界见[数据源与双向绑定](/manual/fields-and-paths#对象与-ref-的差异)。
+
+## 3. 校验与提交
+
+点击内置提交按钮会先执行校验，成功后调用示例中的 `handleSubmit`。业务保存逻辑可放在该回调中。也可以从业务代码主动提交：
+
+```ts
+const data = await form.submit();
+```
+
+`submit()` 返回数据副本，并同样触发 `submit` 事件。接口保存选择事件回调或命令式调用中的一个位置，避免重复请求。
 
 ## 4. 加入一个联动字段
 
@@ -146,8 +95,28 @@ const result = await form.submit();
 
 ## 5. 下一步
 
-- 理解模型初始化：[Schema 与数据模型](/manual/schema#字段与数据路径)。
-- 掌握完整动作：[表单 SuperForm](/manual/super-form)。
-- 查具体字段：[基础输入](/manual/fields/basic-inputs)与[选择输入](/manual/fields/selections)。
-- 修改运行代码：[基础表单示例](/examples?example=form-basics)。
-- 从真实结构继续练习：[员工资料登记](/examples?example=business-employee) → [客户建档](/examples?example=business-customer) → [合同登记](/examples?example=business-contract)。
+- [表单 SuperForm](/manual/super-form)：声明式用法、配置与完整动作。
+- [基础表单示例](/examples?example=form-basics)：修改并运行代码。
+- [员工资料登记](/examples?example=business-employee)与[合同登记](/examples?example=business-contract)：组合字段、容器与联动。
+
+### 完整业务示例 {#完整业务页面}
+
+掌握表单后，可展开合同管理示例，体验查询、列表、编辑与详情。页面配置见 [SuperTable](/manual/super-table)。
+
+<details>
+<summary>合同管理：完整业务页面与源码</summary>
+
+<HomeQuickStart />
+
+<<< ../.vitepress/components/HomeQuickStartDemo.vue
+
+</details>
+
+<!-- 章节定位标识。 -->
+<span id="示例代码"></span>
+<span id="一个示例-覆盖一张业务页面需要的一切"></span>
+<span id="_1-创建-schema"></span>
+<span id="_2-选择使用方式"></span>
+<span id="注册模式-需要命令式动作"></span>
+<span id="声明式模式-只由模板驱动"></span>
+<span id="_3-回填与局部更新"></span>

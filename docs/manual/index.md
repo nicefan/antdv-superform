@@ -70,8 +70,10 @@ Schema 不是为了取代 Vue，而是把重复、结构化的部分标准化。
 
 1. [安装](/manual/installation)：选择产品包、初始化 Adapter 并接入字段组件。
 2. [快速开始](/manual/quick-start)：体验一张包含查询和 CRUD 的完整 SuperTable 页面。
-3. [Schema 与数据模型](/manual/schema)：理解配置、字段路径、初始模型和双向绑定。
+3. 阅读 [Schema 概览](/manual/schema)和[字段与数据模型](/manual/fields-and-paths)，了解配置位置、模型初始化与外部数据绑定。
 4. 根据当前问题阅读[布局与结构](/manual/layout)、[响应式与联动](/manual/reactivity)、[校验机制](/manual/validation)或[渲染与插槽](/manual/rendering)。
 5. 按需求进入“页面组件”或“字段组件”，再到[示例](/examples)中修改完整可运行代码。
+
+查找具体函数、动作或配置时，直接进入 [API 索引](/api)。
 
 准备把组件库交给 AI 编码工具时，再阅读 [AI 编码指引](/manual/ai-guide)和 [Schema 诊断](/manual/schema-diagnostics)。

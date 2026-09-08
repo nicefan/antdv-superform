@@ -1,6 +1,6 @@
 # AI 编码指引
 
-SuperForm Core 包随版本发布 `AI_GUIDE.md` 和项目指令初始化 CLI。AI 应读取当前安装版本附带的指南，而不是复制一份容易过期的 API 摘要。
+SuperForm Core 包提供 `AI_GUIDE.md` 和项目指令初始化 CLI。让 AI 读取当前安装版本附带的指南，并补充项目业务上下文。
 
 ## 初始化项目指令
 
@@ -30,48 +30,9 @@ npx superform init-ai
 
 不要把密钥、生产地址或内部账号写入 AI 指令。
 
-## 当前初始化模型
 
-官方产品导入时不会自动执行：
 
-```ts
-import superform from "superform-antdv";
 
-superform.initialize();
-superform.configure({
-  schemaDiagnostics: import.meta.env.DEV,
-  dictApi,
-  defaultProps,
-});
-superform.registerComponents({ UserPicker });
-```
-
-字段组件通过 Vite 插件、`initialize({ components })` 或 `/components` 全量入口提供。项目业务组件只使用 `registerComponent(s)`。
-
-## 公共导入
-
-运行时 API 和类型都从所选产品包根入口导入：
-
-```ts
-import {
-  SuperButtons,
-  SuperDetail,
-  SuperForm,
-  SuperTable,
-  defineDetail,
-  defineForm,
-  defineTable,
-  diagnoseSchema,
-  useButtons,
-  useDetail,
-  useForm,
-  useModal,
-  useModalForm,
-  useTable,
-} from "superform-antdv";
-```
-
-Element Plus 项目改用 `superform-element-plus`。第三方 Adapter 开发才直接导入 `superform` 和 `superform/sdk`。
 
 ## 生成 Schema 的顺序
 
@@ -84,14 +45,16 @@ Element Plus 项目改用 `superform-element-plus`。第三方 Adapter 开发才
 7. 对 CRUD、并发查询和 Upload 补充失败路径。
 8. 运行 Schema 诊断、TypeScript 和相关测试。
 
-## 重要边界
+## 配套参考
 
-- UI 字段使用真实组件名：`TextArea`、`DateRangePicker`、`TimeRangePicker`、`RadioGroup`、`CheckboxGroup`。
-- Element Plus Schema 名称去掉 `El` 前缀。
-- `useForm` 只接收 Schema；外部对象通过 `dataSource` 绑定。
-- `query()` 回第一页，`reload()` 保留分页，`goPage()` 更新页码后请求。
-- `apis.query` 第二参数为 `{ signal }`，连续查询只有最后一次响应生效。
-- 项目组件不会收到 Core 内部 `option`、`model`、`effectData`。
-- `Ext*` 前缀和旧组件注册方法不再兼容。
+- [安装与初始化](/manual/installation)
+- [API 索引](/api)
+- [unplugin 自动导入](/manual/auto-components)
+- [Schema 诊断](/manual/schema-diagnostics)
 
-完整且可机读的版本规则以安装包中的 `AI_GUIDE.md` 为准；本页只说明如何把它接入项目。
+具体 API 与规则以安装包附带的 `AI_GUIDE.md` 和对应手册章节为准。
+
+<!-- 章节定位标识。 -->
+<span id="当前初始化模型"></span>
+<span id="公共导入"></span>
+<span id="重要边界"></span>

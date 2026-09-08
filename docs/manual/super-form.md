@@ -2,7 +2,9 @@
 
 SuperForm 是根表单容器，负责建立标准模型、绑定数据源、组织校验、等待子组件提交任务并暴露表单动作。`Form` 对应的就是 SuperForm，不需要在 `subItems` 中再放一个 Form 容器。
 
-## 两种使用方式
+<span id="创建与绑定表单"></span>
+
+## 注册与声明式用法 {#两种使用方式}
 
 ### useForm 注册模式
 
@@ -39,7 +41,22 @@ Schema 也可以由函数或 Promise 异步提供，适合根据权限加载配�
 
 只需渲染和监听事件时更直接；需要频繁提交、回填或操作底层实例时优先注册模式。
 
-## 根 Schema 属性
+## 绑定与独立编辑 {#datasource-使用选择}
+
+```ts
+// 需要与外部记录实时双向同步
+const record = ref({ id: 1, name: "张三" });
+const [register] = useForm({ dataSource: record, subItems });
+
+// 不希望编辑时直接修改列表原记录
+form.resetFields(structuredClone(row));
+```
+
+前者适合状态共享，后者适合“确认后才保存”的编辑体验。模型细节见[Schema 与数据模型](/manual/fields-and-paths#数据源与双向绑定)。
+
+<span id="表单配置"></span>
+
+## 根 Schema 配置 {#根-schema-属性}
 
 | 属性                | 类型            | 默认值  | 作用与适用场景                                    |
 | ------------------- | --------------- | ------- | ------------------------------------------------- |
@@ -70,7 +87,22 @@ Schema 也可以由函数或 Promise 异步提供，适合根据权限加载配�
 }
 ```
 
-## 表单按钮
+## 表单与字段外观 {#form-与-formitem-属性}
+
+表单级 UI 属性放在根 `attrs`，字段级帮助、反馈等放在 `formItemProps`。实际支持范围以当前产品包的类型提示为准。
+
+| 属性 | 作用 |
+| --- | --- |
+| `colon` / `noColon` | 控制表单标签冒号；新代码优先使用当前 Adapter 支持的 Form 属性 |
+| `hideRequiredMark` | 隐藏必填标记 |
+| `scrollToFirstError` | 校验失败时滚动到第一个错误字段 |
+| `validateOnRuleChange` | rules 改变后是否重新校验 |
+| `hasFeedback` | 显示字段校验反馈图标 |
+| `help` | 自定义字段帮助或错误内容 |
+| `htmlFor` | 指定标签关联的控件 id |
+| `validateStatus` | 显式设置字段校验状态 |
+
+## 提交与重置按钮 {#表单按钮}
 
 ```ts
 buttons: {
@@ -90,7 +122,9 @@ buttons: {
 
 完整按钮属性见[按钮组 SuperButtons](/manual/super-buttons)。
 
-## Schema 回调与组件事件
+<span id="事件与表单动作"></span>
+
+## 提交与重置事件 {#schema-回调与组件事件}
 
 ```ts
 const schema = {
@@ -104,9 +138,9 @@ const schema = {
 };
 ```
 
-提交顺序：字段校验 → Upload 等注册任务 → `schema.onSubmit(data)` → 组件 `submit` 事件 → 返回深拷贝。`onSubmit` 返回 `false` 或 `{ errMessage }` 会拒绝提交。
+提交顺序：字段校验 → Upload 等注册任务 → `schema.onSubmit(data)` → 组件 `submit` 事件 → 返回深拷贝。`onSubmit` 返回 `false` 或 `{ errMessage }` 会拒绝提交，`errMessage` 会作为消息提示展示。
 
-## useForm 动作
+## 表单动作 {#useform-动作}
 
 | 动作/属性                 | 类型     | 默认值 | 返回与行为                                     |
 | ------------------------- | -------- | ------ | ---------------------------------------------- |
@@ -126,20 +160,11 @@ const data = await form.submit();
 
 `asyncCall` 只在确实没有稳定动作时使用；例如直接调用明确的 `submit()` 比 `asyncCall('submit')` 更清楚。
 
-## dataSource 使用选择
+---
 
-```ts
-// 需要与外部记录实时双向同步
-const record = ref({ id: 1, name: "张三" });
-const [register] = useForm({ dataSource: record, subItems });
+<span id="从字段练习到业务表单"></span>
 
-// 不希望编辑时直接修改列表原记录
-form.resetFields(structuredClone(row));
-```
-
-前者适合状态共享，后者适合“确认后才保存”的编辑体验。模型细节见[Schema 与数据模型](/manual/schema#数据源与双向绑定)。
-
-## 从字段练习到业务表单
+**业务表单示例**
 
 示例区按两条线组织：字段示例用于同屏比较同一组件的不同配置；业务示例按复杂度逐步组合校验、联动、容器和明细数据。
 
@@ -148,3 +173,4 @@ form.resetFields(structuredClone(row));
 3. [销售订单（进阶）](/examples?example=business-order)：可编辑订单明细、行金额与订单合计。
 4. [合同登记（综合）](/examples?example=business-contract)：合同双方、期限、金额、付款计划和附件。
 5. [合同审批（综合）](/examples?example=business-contract-approval)：只读摘要、审批结果与风险意见联动。
+

@@ -14,7 +14,7 @@ pnpm build:dist
 pnpm docs:dev
 ```
 
-`pnpm build:dist` 会在构建组件后，把同源依赖写入 `docs/public/repl/<version>/`，并更新带 SHA-256 的版本清单。旧版本目录会保留，演练场可选择组件版本。
+`pnpm build:dist` 会在构建组件后，把同源依赖写入 `docs/public/repl/<version>/`，并更新带 SHA-256 的版本清单。各版本目录分别保存，演练场可选择组件版本。
 
 ## 发布前检查
 

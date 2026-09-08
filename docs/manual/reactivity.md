@@ -2,9 +2,11 @@
 
 Schema 可以是稳定的普通对象，变化留给其中的函数和 Ref。SuperForm 会在响应式作用域中执行这些配置，并追踪函数实际读取的数据；依赖改变后，只更新对应状态或属性，不要求业务代码重建整份 Schema。
 
-本章按“响应式配置 → 字段状态与模型联动 → 事件和上下文”的顺序组织。状态函数负责描述结果，`computed` 负责派生值，`onUpdate` 与组件事件负责副作用；先区分这三类职责，复杂联动会更容易维护。
+本页按“响应式配置 → 派生数据 → 字段状态 → 联动示例”组织。事件签名与回调参数集中见[事件与上下文](/manual/events-and-context)。
 
-## 三种配置形态
+<span id="响应式配置"></span>
+
+## 静态值、Ref 与函数 {#三种配置形态}
 
 | 形态   | 示例                                        | 适用情况                 |
 | ------ | ------------------------------------------- | ------------------------ |
@@ -27,7 +29,7 @@ Schema 可以是稳定的普通对象，变化留给其中的函数和 Ref。Sup
 
 当 `current.result` 或 `formData.canReview` 改变时，相应结果会自动更新。这里无需手工调用刷新方法。
 
-## effectData 决定依赖范围
+## 联动的数据范围 {#effectdata-决定依赖范围}
 
 状态函数接收当前节点的 `effectData`：
 
@@ -44,9 +46,127 @@ disabled: ({ current }) => !current.country;
 hidden: ({ formData }) => formData.orderType !== "company";
 ```
 
-优先读取距离最近的 `current`，让字段组更容易复用；只有确实跨层级时再读取 `formData`。完整上下文见本页的[事件与上下文](#effectdata-上下文)。
+优先读取距离最近的 `current`，让字段组更容易复用；只有确实跨层级时再读取 `formData`。完整参数见[effectData 上下文](/manual/events-and-context#effectdata-上下文)。
 
-## dynamicAttrs：计算底层组件属性
+<!-- 章节锚点供站外链接与收藏定位。 -->
+<span id="dynamicattrs-联动-ui-参数"></span>
+
+## 选项与数据源更新 {#options-与-datasource-的响应性}
+
+选项和数据源也可以独立响应：
+
+```ts
+const cities = ref([]);
+const record = ref({ province: undefined, city: undefined });
+
+const schema = {
+  dataSource: record,
+  subItems: [
+    {
+      type: "Select",
+      field: "province",
+      label: "省份",
+      options: provinceOptions,
+    },
+    { type: "Select", field: "city", label: "城市", options: cities },
+  ],
+};
+```
+
+- `options` 可以是数组、Ref 或函数；函数可返回数组或 Promise。
+- `dataSource` 可以是对象或 Ref；Ref 指向新对象时，SuperForm 切换到新模型。
+- 字段 `value` 可以绑定 Ref，与模型字段进行双向同步。
+
+选项函数的远程搜索参数和触发条件见[选择输入：远程搜索](/manual/fields/selections#远程搜索)，数据源切换的具体行为见[Schema 与数据模型](/manual/fields-and-paths#数据源与双向绑定)。
+
+<span id="字段状态与计算"></span>
+
+## 显隐、禁用与只读 {#字段状态与联动}
+
+字段联动的关键不是“监听所有变化”，而是先判断业务结果属于哪一类：显示状态、编辑状态、组件属性、派生数据，还是副作用。SuperForm 为这些结果提供了不同入口，让 Schema 的意图保持明确。
+
+### hidden：控制是否渲染
+
+```ts
+{
+  type: 'Input',
+  field: 'companyName',
+  label: '企业名称',
+  hidden: ({ current }) => current.customerType !== 'company',
+}
+```
+
+隐藏后节点不渲染，但 `companyName` 仍在模型中，原值也不会自动清空。这使字段临时隐藏后可以恢复原输入。
+
+如果业务要求隐藏时清空值，应把动作写在控制字段的 `onUpdate` 中：
+
+```ts
+{
+  type: 'RadioGroup',
+  field: 'customerType',
+  label: '客户类型',
+  options: { personal: '个人', company: '企业' },
+  onUpdate: ({ current }) => {
+    if (current.customerType !== 'company') current.companyName = undefined
+  },
+}
+```
+
+隐藏不等于跳过校验。条件字段通常让 `hidden` 和 `required` 使用同一个判断，具体见[动态必填](/manual/validation#动态必填)。
+
+<!-- 章节锚点供站外链接与收藏定位。 -->
+<span id="状态优先级与继承"></span>
+
+### disabled：控制是否允许输入
+
+```ts
+{
+  type: 'Input',
+  field: 'contractNo',
+  label: '合同编号',
+  disabled: ({ current }) => current.status !== 'draft',
+}
+```
+
+禁用字段仍显示、仍保留模型值并进入提交数据，但当前字段规则会暂停。容器的禁用状态向下继承，且父级禁用优先：
+
+```ts
+{
+  type: 'Card',
+  disabled: ({ formData }) => formData.readonly,
+  subItems: [/* 整组字段都会禁用 */],
+}
+```
+
+如果希望不可编辑时仍保持纯文本视觉，表格列或表单字段可使用 `editable` 在输入控件和只读内容之间切换。
+
+### editable：在编辑与只读之间切换
+
+```ts
+{
+  type: 'InputNumber',
+  field: 'approvedAmount',
+  label: '核准金额',
+  editable: ({ current }) => current.status === 'reviewing',
+}
+```
+
+`editable: false` 与 `disabled: true` 不同：
+
+| 状态              | 视觉结果       | 表单值 | 校验               |
+| ----------------- | -------------- | ------ | ------------------ |
+| `disabled`        | 仍是禁用控件   | 保留   | 暂停               |
+| `editable: false` | 切换为只读展示 | 保留   | 字段仍属于表单模型 |
+| `hidden`          | 不渲染         | 保留   | 需自行配合条件规则 |
+
+只读内容如何映射选项、范围和自定义渲染，见[渲染与插槽](/manual/rendering)。
+
+<!-- 章节锚点供站外链接与收藏定位。 -->
+<span id="required-让业务条件成为规则"></span>
+<span id="onupdate-执行值变化后的动作"></span>
+<span id="选择正确的联动入口"></span>
+
+## dynamicAttrs：动态属性 {#dynamicattrs-计算底层组件属性}
 
 固定属性放在 `attrs`，随数据变化的属性放在 `dynamicAttrs`：
 
@@ -77,7 +197,10 @@ hidden: ({ formData }) => formData.orderType !== "company";
 
 因此动态结果可以覆盖同名静态属性。`dynamicAttrs` 应只返回组件属性，不要在其中修改模型；它可能随依赖多次执行，副作用会造成难以追踪的更新。
 
-## computed：计算并写回字段
+<!-- 章节锚点供站外链接与收藏定位。 -->
+<span id="computed-生成派生字段"></span>
+
+## computed：计算字段值 {#computed-计算并写回字段}
 
 节点的 `computed(value, effectData)` 不是 Vue 模板中的只读计算，它会把返回值持续写回当前字段：
 
@@ -109,59 +232,78 @@ hidden: ({ formData }) => formData.orderType !== "company";
 - 不要在函数中反向修改其依赖字段，否则可能形成循环更新。
 - 只想改变只读显示时，使用 [`viewRender`](/manual/rendering#viewrender-自定义只读内容)。
 
-## options 与 dataSource 的响应性
+<span id="组合联动与事件"></span>
 
-选项和数据源也可以独立响应：
+## 联动入口选择 {#联动入口选择}
+
+| 目标               | 首选配置       |
+| ------------------ | -------------- |
+| 是否出现           | `hidden`       |
+| 是否允许操作       | `disabled`     |
+| 输入态与只读态切换 | `editable`     |
+| 是否必填           | [`required`](/manual/validation#required-的自动展开) |
+| 动态组件属性       | `dynamicAttrs` |
+| 计算并存储字段     | `computed`     |
+| 值变化后的业务动作 | [`onUpdate`](/manual/events-and-context#onupdate-与组件事件的区别) |
+| 底层组件特定事件   | `onChange` 等  |
+| 只修改展示结果     | `viewRender`   |
+
+<!-- 章节锚点供站外链接与收藏定位。 -->
+<span id="一个完整联动示例"></span>
+
+### 场景示例：审批联动 {#完整联动示例}
 
 ```ts
-const cities = ref([]);
-const record = ref({ province: undefined, city: undefined });
+const isRejected = ({ current }) => current.result === "reject";
 
 const schema = {
-  dataSource: record,
   subItems: [
     {
-      type: "Select",
-      field: "province",
-      label: "省份",
-      options: provinceOptions,
+      type: "RadioGroup",
+      field: "result",
+      label: "审核结果",
+      options: { pass: "通过", reject: "驳回" },
+      required: true,
+      onUpdate: ({ current }) => {
+        if (current.result !== "reject") current.reason = undefined;
+      },
     },
-    { type: "Select", field: "city", label: "城市", options: cities },
+    {
+      type: "TextArea",
+      field: "reason",
+      label: "驳回原因",
+      hidden: (data) => !isRejected(data),
+      required: isRejected,
+      dynamicAttrs: ({ current }) => ({
+        maxlength: current.urgent ? 200 : 500,
+      }),
+    },
   ],
 };
 ```
 
-- `options` 可以是数组、Ref 或函数；函数可返回数组或 Promise。
-- `dataSource` 可以是对象或 Ref；Ref 指向新对象时，SuperForm 切换到新模型。
-- 字段 `value` 可以绑定 Ref，与模型字段进行双向同步。
+这个 Schema 同时表达了显示、必填、清理依赖字段的值和动态长度限制，各项职责彼此独立。可运行版本见[字段联动示例](/examples?example=form-linkage)。
 
-选项函数的远程搜索参数和触发条件见[选择输入：远程搜索](/manual/fields/selections#远程搜索)，数据源切换的具体行为见[Schema 与数据模型](/manual/schema#数据源与双向绑定)。
-
-## 状态优先级与继承
-
-容器禁用会传递给后代。父级已经禁用时，子项返回 `disabled: false` 也不会重新启用：
-
-```ts
-{
-  type: 'Card',
-  disabled: ({ formData }) => formData.readonly,
-  subItems: [
-    { type: 'Input', field: 'name', disabled: false }, // 父级禁用时仍禁用
-  ],
-}
-```
-
-禁用字段暂停其当前校验规则，但仍保留在模型和提交数据中。隐藏字段同样保留模型值。完整状态语义和选择建议见本页的[字段状态与联动](#字段状态与联动)。
-
-## 保持响应式配置可维护
+## 避免副作用与循环 {#保持响应式配置可维护}
 
 - 让函数尽量只读取参数并返回结果，避免在状态函数中改数据。
 - 复用的条件先提取为具名函数，例如 `canEditPrice(effectData)`。
 - 一个字段需要触发业务请求时使用事件或 `onUpdate`，不要借用 `dynamicAttrs`。
 - 大量字段依赖同一个派生状态时，可在 Schema 外用 Vue `computed` 统一计算，再把 Ref 传入。
 
-前面的内容解释响应式配置如何建立依赖；下面继续说明这些依赖如何落实为字段状态、模型联动和业务事件。
+需要处理业务副作用时，使用 `onUpdate` 或组件事件，参数说明见下方参考。
 
-<!--@include: ./_partials/field-state.md-->
+## 事件与回调参数 {#事件与上下文}
 
-<!--@include: ./_partials/events-and-context.md-->
+<!-- 章节锚点供站外链接与收藏定位。 -->
+<span id="两种事件写法"></span>
+<span id="onupdate-与组件事件的区别"></span>
+<span id="effectdata-上下文"></span>
+<span id="current-与-formdata"></span>
+<span id="parent-不是父数据的别名"></span>
+<span id="数组行上下文"></span>
+<span id="远程选项函数"></span>
+<span id="页面组件的扩展上下文"></span>
+
+完整说明见[事件与上下文](/manual/events-and-context)。
+

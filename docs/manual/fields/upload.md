@@ -39,6 +39,8 @@ Upload 管理文件选择、大小校验、上传、删除、下载和只读预�
 
 `auto`、`submit` 必须提供当前字段 `attrs.apis.upload`，或全局 `defaultProps.Upload.apis.upload`。
 
+通过 `vModelFields.fileList` 可指定附加文件列表字段。
+
 ## 字段值形态
 
 | 配置                  | 模型值       |

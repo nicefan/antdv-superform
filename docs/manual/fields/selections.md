@@ -1,6 +1,18 @@
-# 选择输入
+# 选项与值处理
 
 本页包括 Select、TreeSelect、Radio、Checkbox、Switch 和 TagSelect。选择字段的核心是明确“选项来源、控件值、业务存储值、只读文本”四者的关系。
+
+## 适用字段
+
+| 增强能力 | AntDV | Element Plus |
+| --- | --- | --- |
+| 选择值与选项处理 | Select、RadioGroup、CheckboxGroup | Select、SelectV2、RadioGroup、CheckboxGroup |
+| 输入建议按标签处理 | AutoComplete | Autocomplete 使用 UI 自身的建议接口 |
+| 树选项处理 | TreeSelect | TreeSelect 使用 UI 自身的数据协议 |
+| 开关业务值映射 | Switch | Switch |
+| 可点击标签选项 | 内置 TagSelect | 内置 TagSelect |
+
+以下行为只适用于启用相应处理的字段；单个 Radio、Checkbox、Cascader 等不能因名称相近而套用同一套配置。字段底层 `attrs` 使用所选 UI 库的属性。
 
 ## 通用 options 格式
 
@@ -44,7 +56,6 @@ dictName: 'article_status'
 | `labelAsValue`   | boolean                       | `false` | 字段直接保存选项 label                       | 值与文案完全一致的简单接口 |
 | `labelField`     | string                        | —       | value 存 `field`，label 另存一个字段         | 同时提交 ID 和名称         |
 | `stringifyValue` | boolean                       | `false` | 多选数组转逗号字符串                         | 接口使用逗号分隔值         |
-| `tagViewer`      | boolean/object/array/function | 自动    | 控制只读 Tag 显示                            | 表格、详情状态展示         |
 
 ### 三种存储方式对比
 
@@ -64,7 +75,7 @@ dictName: 'article_status'
 }
 ```
 
-第三种最适合详情回显和提交快照。`labelField` 是同级数据路径，见[Schema 与数据模型](/manual/schema#labelfield-同时保存值与显示文本)。
+第三种最适合详情回显和提交快照。`labelField` 是同级数据路径，见[Schema 与数据模型](/manual/fields-and-paths#labelfield-同时保存值与显示文本)。
 
 ## fieldNames
 
@@ -84,6 +95,8 @@ dictName: 'article_status'
 组件会先归一化为标准 `label/value` 再交给底层控件，表单和只读显示保持一致。全局 `dictApi` 仍应直接返回标准格式。
 
 ## Select
+
+AntDV Select 与 Element Plus Select、SelectV2 都接入选择处理；普通 UI Props 分别遵循对应组件。下面以 AntDV 写法举例。
 
 ```ts
 {
@@ -130,6 +143,8 @@ onSearch: ({ current }, keyword) => {
 显式 `onSearch` 后不会自动用关键词调用 `options`。
 
 ## TreeSelect
+
+本节的增强配置适用于 AntDV TreeSelect。Element Plus TreeSelect 的树数据与选择属性直接使用底层组件协议。
 
 TreeSelect 使用 `treeData`，不走扁平 options 归一化：
 
@@ -244,54 +259,6 @@ Checkbox 对应 Checkbox.Group，字段通常是 value 数组：
 
 ## TagSelect
 
-TagSelect 把少量选项直接展示为可点击 Tag：
+[TagSelect 的配置与事件](/manual/fields/built-in-inputs#tagselect)。
 
-```ts
-{
-  type: 'TagSelect',
-  field: 'topics',
-  label: '主题',
-  options: topicOptions,
-  attrs: {
-    multiple: true,
-    stringifyValue: false,
-    placeholder: '暂无可选主题',
-  },
-}
-```
-
-| 配置                         | 字段值     |
-| ---------------------------- | ---------- |
-| 默认                         | 单个 value |
-| `attrs.multiple: true`       | value 数组 |
-| `attrs.stringifyValue: true` | 逗号字符串 |
-
-顶层 ExtSelect 的 `options`、`dictName`、`valueToNumber`、`labelAsValue`、`stringifyValue` 也可使用。组件事件包括 `onCheck(effectData, tag, checked)` 与 `onChange(effectData, tag, nextSelected)`。
-
-## tagViewer 只读配置
-
-```ts
-// 关闭 Tag，显示普通文本
-tagViewer: false
-
-// 按值映射颜色
-tagViewer: { enabled: 'green', disabled: 'default' }
-
-// 颜色数组，按选项顺序循环
-tagViewer: ['blue', 'green', 'orange']
-
-// 完整条目
-tagViewer: [
-  { value: 1, label: '启用', color: 'green', icon: () => h(CheckOutlined) },
-]
-
-// 动态规则：函数参数是当前值
-tagViewer: (value) => ({
-  label: value ? '启用' : '停用',
-  color: value ? 'green' : 'red',
-})
-```
-
-配置 options 后默认开启 Tag。全局颜色策略见[字典与权限](/manual/dictionaries-and-permissions#标签展示)。
-
-完整可运行代码见[选择输入示例](/examples?example=selections)。
+<span id="选择输入"></span>

@@ -1,8 +1,10 @@
-## 事件与上下文
+# 事件与上下文
 
 Schema 事件不是简单转发底层组件事件。SuperForm 会先注入当前字段的数据上下文，再追加组件原始参数，让同一套回调写法可以用于普通字段、嵌套对象和数组行。
 
-### 两种事件写法
+<span id="字段事件"></span>
+
+## onXxx / on：事件写法 {#两种事件写法}
 
 事件可以直接写在节点顶层：
 
@@ -40,7 +42,7 @@ schemaHandler(effectData, ...componentEventArgs);
 
 后面的参数完全来自底层组件，因此 Input 的 `onChange`、Select 的 `onSelect` 等仍应参照 Ant Design Vue 对应组件。
 
-### onUpdate 与组件事件的区别
+## onUpdate：值变化回调 {#onupdate-与组件事件的区别}
 
 `onUpdate(effectData)` 专门观察字段实际存储值：
 
@@ -64,7 +66,9 @@ schemaHandler(effectData, ...componentEventArgs);
 
 `onUpdate` 不会作为普通 `onXxx` 监听器传给底层组件。它观察的是实际模型值，因此外部数据同步造成的值变化也可能触发；回调应避免无条件重复写回同一字段。
 
-### effectData 上下文
+<span id="回调中的数据上下文"></span>
+
+## effectData：上下文 {#effectdata-上下文}
 
 常用字段如下：
 
@@ -85,7 +89,7 @@ schemaHandler(effectData, ...componentEventArgs);
 hidden: ({ current, value }) => current.status !== "active" || !value;
 ```
 
-#### current 与 formData
+## current 与 formData {#current-与-formdata}
 
 ```ts
 {
@@ -104,7 +108,7 @@ hidden: ({ current, value }) => current.status !== "active" || !value;
 
 这里 `current` 是 `invoice`，`formData` 是整个表单。优先用 `current` 表达组内依赖，能让 Group 被移动或复用时仍保持正确。
 
-#### parent 不是父数据的别名
+## parent：上级上下文 {#parent-不是父数据的别名}
 
 `parent` 指向上一级 `effectData`，因此上一级数据通常通过 `parent.current` 读取：
 
@@ -114,7 +118,7 @@ hidden: ({ parent }) => parent?.current?.mode !== "advanced";
 
 如果只是跨多层读取根数据，直接使用 `formData` 更清楚；`parent` 更适合组件或通用字段组确实需要理解嵌套关系的情况。
 
-#### 数组行上下文
+## record / index：数组行 {#数组行上下文}
 
 在 InputList、ListGroup 和 Table 列中：
 
@@ -129,9 +133,9 @@ hidden: ({ parent }) => parent?.current?.mode !== "advanced";
 }
 ```
 
-`current` 与 `record` 通常都指向当前行对象；`record` 更能表达行级业务语义。数组结构和编辑模式见[数组与表格](/manual/fields/collections)。
+`current` 与 `record` 通常都指向当前行对象；`record` 更能表达行级业务语义。数组结构和编辑模式见[数组容器](/manual/fields/collections)。
 
-### 远程选项函数
+## options：搜索参数 {#远程选项函数}
 
 `options` 为函数时也会收到上下文：
 
@@ -139,21 +143,9 @@ hidden: ({ parent }) => parent?.current?.mode !== "advanced";
 options: ({ current }) => api.getCities({ province: current.province });
 ```
 
-Select 同时满足以下条件时会自动进入远程搜索模式：
+Select 远程搜索时还会传入 `keyword`。开启条件、节流与返回格式见[选择输入：远程搜索](/manual/fields/selections#远程搜索)。
 
-- `attrs.showSearch` 已开启。
-- `options` 是函数。
-- 没有显式配置 `onSearch`。
-
-此时框架约以 600ms 尾部节流调用：
-
-```ts
-options(effectData, keyword);
-```
-
-若显式提供 `onSearch`，业务代码完全接管搜索过程，框架不再自动用关键字调用 `options`。返回格式、字典归一化和原始值数组规则见[选择输入：远程搜索](/manual/fields/selections#远程搜索)。
-
-### 页面组件的扩展上下文
+## 组件扩展上下文 {#页面组件的扩展上下文}
 
 页面组件会在基础字段之上补充自己的上下文。例如 SuperTable 按钮还可能获得 `selectedRows`、`selectedRowKeys`、`tableRef` 及页面动作。不要假设所有字段位置都拥有这些值；可复用回调应只读取当前场景明确提供的数据。
 
@@ -162,3 +154,4 @@ options(effectData, keyword);
 - [字段状态与联动](/manual/reactivity#字段状态与联动)：如何选择状态函数、事件和计算字段。
 - [渲染与插槽](/manual/rendering)：渲染函数中的上下文。
 - [按钮组 SuperButtons](/manual/super-buttons)：按钮动作和上下文。
+

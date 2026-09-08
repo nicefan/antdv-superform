@@ -1,4 +1,4 @@
-# 数组与表格
+# 数组容器
 
 List、ListGroup、InputList 和 Table 都用 `field` 绑定数组，用 `columns` 描述每个元素。它们共享字段校验、只读映射和按钮体系，但布局、空数组行为和编辑能力不同。
 
@@ -153,153 +153,23 @@ List 允许删除最后一项。`rowKey` 缺失时默认读取 `id`，再回退�
 
 ## Table 数组容器
 
-Table 是绑定模型数组的 Schema 容器，负责列、选择、展开、编辑、行操作和 CRUD。嵌在 SuperForm 时 `field` 必填：
+[Table 的列、编辑与 CRUD 配置](/manual/fields/table#table-数组容器)。
 
-```ts
-{
-  type: 'Table',
-  field: 'items',
-  title: '订单明细',
-  attrs: { rowKey: 'itemId', pagination: false },
-  columns: [],
-}
-```
+<span id="列-extcolumnsitem"></span>
+<span id="attrs、选择与展开"></span>
+<span id="序号与按钮"></span>
+<span id="四种编辑方式"></span>
+<span id="modalprops-与-descriptionsprops"></span>
+<span id="tabs-表格标签"></span>
+<span id="crud-接口"></span>
 
-页面级 [SuperTable](/manual/super-table) 复用这套主体能力，但自己持有独立数据源并省略 `field`。
+---
 
-### 列 ExtColumnsItem
+<span id="相关示例"></span>
 
-```ts
-{
-  type: 'InputNumber',
-  field: 'amount',
-  label: '金额',
-  editable: ({ record }) => !record.locked,
-  viewRender: ({ text }) => `¥${text ?? 0}`,
-  columnProps: {
-    width: 140,
-    align: 'right',
-    fixed: 'right',
-  },
-}
-```
-
-列拥有普通字段全部配置，并增加 `columnProps`。未声明 `type` 时是只读文本列；需要进入编辑表单必须指定字段类型。使用 `exclude` 控制字段参与表格、表单和详情的场景。
-
-表格级 `columnProps` 是公共默认，列级同名属性覆盖：
-
-```ts
-{
-  columnProps: { ellipsis: true },
-  columns: [
-    { field: 'name', label: '名称' },
-    { field: 'remark', label: '备注', columnProps: { ellipsis: false } },
-  ],
-}
-```
-
-### attrs、选择与展开
-
-```ts
-attrs: {
-  rowKey: 'itemId',
-  rowSelection: {},
-  defaultExpandLevel: 'all',
-  childrenColumnName: 'children',
-  bordered: true,
-  pagination: false,
-}
-```
-
-`rowSelection` 传 `{}` 开启选择，传 `false` 或省略关闭。`defaultExpandLevel` 为数字或 `'all'`。其他 attrs 继承 Ant Design Vue TableProps。
-
-### 序号与按钮
-
-```ts
-{
-  indexColumn: { title: '#', width: 64 },
-  buttons: { actions: ['add', 'delete'] },
-  rowButtons: {
-    actions: ['detail', 'edit', 'delete', 'add'],
-    columnProps: { title: '操作', width: 180 },
-  },
-}
-```
-
-- `indexColumn: true` 使用默认序号列，也可传 TableColumnProps。
-- `buttons: false` 关闭顶部工具栏；对象/数组配置动作。
-- `rowButtons: false` 关闭操作列；`columnProps` 只配置操作列。
-
-### 四种编辑方式
-
-| 方式     | 配置                           | 适合场景           |
-| -------- | ------------------------------ | ------------------ |
-| 单列编辑 | 列 `editable: true`            | Switch 等即时字段  |
-| 整表编辑 | Table `editable: true`         | 多行多列整体保存   |
-| 行内编辑 | `rowEditor.editMode: 'inline'` | 少量字段、单行确认 |
-| 弹窗编辑 | `rowEditor.editMode: 'modal'`  | 字段多、复杂联动   |
-
-```ts
-rowEditor: {
-  editMode: 'modal',
-  addMode: 'inline',
-  form: {
-    subSpan: 12,
-    subItems: [
-      { type: 'Hidden', field: 'itemId' },
-      { type: 'Input', field: 'name', label: '名称' },
-    ],
-  },
-  modalProps: { width: 760, maskClosable: false },
-  onSave(context) {
-    if (!context.record.name) return false
-  },
-  onCancel(context) {
-    console.log('取消行编辑', context.record)
-  },
-}
-```
-
-`editMode` 和 `addMode` 可独立选择。`form` 省略或未提供 `subItems` 时复用 columns；显式 `subItems` 适合编辑字段与列表列不同。`onSave` 返回 `false` 阻止内置保存；`onCancel` 在取消前执行。
-
-### modalProps 与 descriptionsProps
-
-```ts
-{
-  rowEditor: {
-    modalProps: { width: 800 },
-  },
-  // 表格级编辑弹窗的公共属性
-  modalProps: { centered: true },
-  // 详情布局以及详情弹窗
-  descriptionsProps: {
-    mode: 'table',
-    modalProps: { width: 900 },
-  },
-}
-```
-
-新代码优先把编辑弹窗属性放在 `rowEditor.modalProps`。
-
-### tabs 表格标签
-
-`tabs` 接受 TabsHeader 或 `false`，用于在表格顶部以选项切换过滤值。它包含 `field`、`initialValue`、`bordered`、`options`、`dictName`、`labelAsValue`、`activeKey`、`slots`、`customTab`；详例见[SuperTable：tabs 标签筛选](/manual/super-table#tabs-标签筛选)。
-
-### CRUD 接口
-
-```ts
-apis: {
-  info: (id, row) => api.info(id),
-  save: (data) => api.create(data),
-  update: (data) => api.update(data),
-  delete: (keys, rows) => api.remove(keys),
-}
-```
-
-弹窗编辑先等待可选 `info`，再按当前行 → 接口结果 → `resetData` 合并。嵌入普通表单且无接口时，新增、更新、删除直接操作绑定数组；在 SuperTable 中成功后调用页面 `reload()`。
-
-`apis.query` 属于 SuperTable 页面请求入口；Table 容器本身不主动查询。`apis.export` 没有运行时内置行为。
-
-## 相关示例
+**相关示例**
 
 [数组编辑示例](/examples?example=collections)比较列表容器；[Table 容器示例](/examples?example=table-local)展示列、选择与编辑。进一步可查看[销售订单](/examples?example=business-order)中的行金额联动，以及[合同登记](/examples?example=business-contract)中的付款计划。
+
+<!-- 章节定位标识。 -->
+<span id="数组与表格"></span>

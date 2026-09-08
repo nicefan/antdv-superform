@@ -1,10 +1,36 @@
-# 基础输入
+# UI 输入组件
 
-本页重点介绍 Input、TextArea、InputNumber、AutoComplete、InputGroup 和 TagInput。AntDV Adapter 还声明了 `InputOTP`、`InputPassword`、`InputSearch`、`Mentions` 等真实组件名；普通字段同样共享 `field`、`value`、`initialValue`、校验、状态、布局和事件等[通用字段配置](/manual/schema#从一项声明到完整行为)。
+`type` 使用当前 Adapter 声明的 UI 组件名称。AntDV 与 UI 导出同名；Element Plus 的 Schema 名称去掉 `El` 前缀，例如 `ElInput` 对应 `Input`。实际组件由 [unplugin](/manual/auto-components) 或 `initialize({ components })` 提供。
+
+## AntDV 支持清单
+
+`Input`、`TextArea`、`InputNumber`、`InputOTP`、`InputPassword`、`InputSearch`、`AutoComplete`、`Cascader`、`ColorPicker`、`Select`、`Radio`、`RadioGroup`、`Checkbox`、`CheckboxGroup`、`DatePicker`、`DateRangePicker`、`DateMonthPicker`、`DateQuarterPicker`、`DateWeekPicker`、`DateYearPicker`、`TimePicker`、`TimeRangePicker`、`TreeSelect`、`Switch`、`Rate`、`Mentions`、`Segmented`、`Slider`、`Transfer`。
+
+## Element Plus 支持清单
+
+`Input`、`InputNumber`、`InputOtp`、`InputTag`、`Autocomplete`、`Mention`、`Switch`、`Select`、`SelectV2`、`Cascader`、`TreeSelect`、`Radio`、`RadioGroup`、`Checkbox`、`CheckboxGroup`、`DatePicker`、`TimePicker`、`TimeSelect`、`ColorPicker`、`Rate`、`Slider`、`Segmented`、`Transfer`。
+
+同名不代表两套产品具有完全相同的 Props 或增强能力；`AutoComplete` / `Autocomplete`、`InputOTP` / `InputOtp` 的大小写按清单填写。
+
+## SuperForm 适配能力
+
+| 字段 | AntDV | Element Plus |
+| --- | --- | --- |
+| Input | 默认提示、搜索动作与等待状态 | 默认提示、搜索动作与附加按钮 |
+| TextArea / InputNumber | 提示、宽度等默认属性 | 多行输入使用 Input 的 UI 属性；InputNumber 使用 UI 协议 |
+| AutoComplete | 选项与标签值处理 | Autocomplete 使用 UI 建议接口 |
+| Select / RadioGroup / CheckboxGroup | [选项处理](/manual/fields/selections) | 对应字段及 SelectV2 接入[选项处理](/manual/fields/selections) |
+| TreeSelect | 树选项与关联标签处理 | UI 树选择协议 |
+| Switch | 业务值、标签与 checked 映射 | 业务值、标签与 modelValue 映射 |
+| 日期与时间 | picker 值处理与格式默认值 | DatePicker / TimePicker 接入 picker，格式由 UI 属性指定 |
+| Radio / Checkbox / Transfer | checked 或 targetKeys 受控值映射 | modelValue 受控值映射 |
+| 其他清单字段 | 通用 Schema 绑定与 UI Props | 通用 Schema 绑定与 UI Props |
+
+通用模型、联动和校验见[核心指南](/manual/schema)。UI 原生 Props 放在 `attrs`，动态 Props 使用 `dynamicAttrs`；本页不重复列出每个 UI 组件的全部属性。
 
 ## Input
 
-Input 适合单行字符串。默认生成“请输入 + label”占位符并开启 `allowClear` 的全局默认能力。
+Input 适合单行字符串，按 label 生成输入提示。以下搜索按钮与事件示例采用 AntDV 写法；Element Plus 通过附加按钮提供搜索入口。
 
 ```ts
 {
@@ -19,7 +45,7 @@ Input 适合单行字符串。默认生成“请输入 + label”占位符并开
 }
 ```
 
-`attrs` 属于 Ant Design Vue InputProps，常用项包括 `placeholder`、`maxlength`、`allowClear`、`prefix`、`suffix`、`addonBefore`、`addonAfter`、`type` 和 `status`。
+`attrs` 使用当前 UI 库的 Input Props。
 
 ### 普通输入与搜索输入
 
@@ -43,54 +69,30 @@ Input 适合单行字符串。默认生成“请输入 + label”占位符并开
 
 需要密码或独立搜索组件时，也可以直接使用 Adapter 已声明的 `InputPassword`、`InputSearch`。这些字段仍需由自动导入插件或 `initialize({ components })` 提供实际组件。
 
-## TextArea
+### 场景示例：输入值变化 {#事件示例}
 
-TextArea 适合多行字符串，默认宽度 100%、开启 `allowClear`，占位符为“请输入 + label”。
+基础字段的顶层 `onChange` 会先收到 effectData，再收到组件事件参数：
 
 ```ts
 {
-  type: 'TextArea',
-  field: 'remark',
-  label: '备注',
-  span: 24,
-  attrs: {
-    rows: 4,
-    maxlength: 500,
-    showCount: true,
-    autoSize: { minRows: 3, maxRows: 8 },
+  type: 'Input',
+  field: 'code',
+  onChange: ({ current }, event) => {
+    current.codeTouched = Boolean(event.target.value)
   },
+  onUpdate: ({ value }) => console.log('实际模型值', value),
 }
 ```
 
-固定 `rows` 适合稳定表单布局；`autoSize` 适合内容长度变化较大的录入。只读模式使用保留换行的内容展示。
+完整可运行代码见[基础输入示例](/examples?example=basic-inputs)。
+
+## TextArea
+
+AntDV TextArea 默认宽度为 100%、允许清空，并按 label 生成提示。Element Plus 多行输入使用 `Input` 的 `attrs.type: "textarea"`。
 
 ## InputNumber
 
-InputNumber 负责数字交互，通常存储 `number | undefined`。默认宽度 100%，占位符为“请输入 + label”。
-
-```ts
-{
-  type: 'InputNumber',
-  field: 'price',
-  label: '单价',
-  attrs: {
-    min: 0,
-    max: 999999,
-    step: 0.01,
-    precision: 2,
-    addonAfter: '元',
-  },
-  rules: { type: 'twoDecimal' },
-}
-```
-
-控件限制与数据校验应区分：
-
-- `attrs.min/max/precision` 改善输入体验。
-- `rules.min/max/type` 负责提交前校验。
-- `formatter/parser` 适合货币、百分比展示与解析。
-
-只配置控件 `min/max` 不能替代业务校验，外部回填仍可能带入越界值。
+AntDV InputNumber 补充宽度与输入提示。控件的 min/max 等输入限制与 Schema rules 校验各有职责；外部回填数据仍需业务校验。
 
 ## AutoComplete
 
@@ -124,87 +126,17 @@ dictName: "cities";
 
 需要远程关键词搜索、保存独立 value 时优先使用 [Select 远程搜索](/manual/fields/selections#远程搜索)；需要自由文本且业务协议特殊时使用 InputSlot。
 
-## InputGroup
+## 内置输入入口
 
-InputGroup 是紧凑输入容器，不是页面根 Form。它使用 `subItems` 组合多个字段，并继承 `subSpan`、`gutter`、`rowProps`。
+<span id="inputgroup"></span>
 
-```ts
-{
-  type: 'InputGroup',
-  field: 'phone',
-  label: '联系电话',
-  subItems: [
-    { type: 'Input', field: 'areaCode', span: 8 },
-    { type: 'Input', field: 'number', span: 16 },
-  ],
-}
-```
+[InputGroup](/manual/fields/built-in-inputs#inputgroup)
 
-### 对象绑定与当前对象绑定
+<span id="taginput"></span>
 
-```ts
-// 有 field：形成 phone.areaCode / phone.number
-{ type: 'InputGroup', field: 'phone', subItems: [...] }
+[TagInput](/manual/fields/built-in-inputs#taginput)
 
-// 无 field：子项直接写入当前对象
-{ type: 'InputGroup', subItems: [...] }
-```
+<span id="对象绑定与当前对象绑定"></span>
+<span id="数组与字符串模式"></span>
 
-默认紧凑模式将子项 `span` 换算为百分比宽度并拼接控件。通过 `attrs.compact: false` 使用普通 Row/Col，适合子项需要间距或响应式断点的情况。
-
-InputGroup 会把子项规则汇总到统一 FormItem；`required`、`disabled` 也可由容器统一控制。
-
-## TagInput
-
-TagInput 适合用户自由创建标签，不依赖预设 options。
-
-```ts
-{
-  type: 'TagInput',
-  field: 'keywords',
-  label: '关键词',
-  attrs: {
-    newLabel: '添加关键词',
-    closable: (tag, index) => index > 0 && tag !== 'system',
-  },
-}
-```
-
-### 数组与字符串模式
-
-```ts
-// 推荐：模型为 string[]
-{ type: 'TagInput', field: 'tags' }
-
-// 提交为逗号分隔字符串：模型为 'vue,typescript'
-{
-  type: 'TagInput',
-  field: 'tags',
-  attrs: { stringifyValue: true },
-}
-```
-
-| attrs 属性       | 类型             | 默认值   | 说明                             |
-| ---------------- | ---------------- | -------- | -------------------------------- |
-| `newLabel`       | string/function  | `'添加'` | 新增入口内容                     |
-| `closable`       | boolean/function | `true`   | 是否可删除，也可按标签和下标判断 |
-| `stringifyValue` | boolean          | `false`  | 是否把标签数组保存为逗号字符串   |
-
-重复标签会被忽略。字符串模式没有逗号转义，标签自身可能含逗号时必须使用数组。
-
-## 事件示例
-
-基础字段的顶层 `onChange` 会先收到 effectData，再收到组件事件参数：
-
-```ts
-{
-  type: 'Input',
-  field: 'code',
-  onChange: ({ current }, event) => {
-    current.codeTouched = Boolean(event.target.value)
-  },
-  onUpdate: ({ value }) => console.log('实际模型值', value),
-}
-```
-
-完整可运行代码见[基础输入示例](/examples?example=basic-inputs)。
+<span id="基础输入"></span>

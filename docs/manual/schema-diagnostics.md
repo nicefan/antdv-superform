@@ -99,7 +99,7 @@ SuperForm、SuperTable、SuperDetail 接收 Schema 时把结果分组输出到�
 
 - 后端字段与接口签名是否真实。
 - `rowKey` 是否在每条业务记录中唯一。
-- Ext\* 是否已经注册及其专属 props。
+- 项目字段是否已注册及其专属 props。
 - 回调在运行时是否读取了不存在的上下文。
 - 权限标识和字典名是否有效。
 

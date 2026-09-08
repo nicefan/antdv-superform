@@ -108,45 +108,23 @@ subItems: [
 
 ## InputSlot
 
-InputSlot 保留字段模型、校验、FormItem、状态和布局，只接管实际输入控件：
+通过必填的 `render` 接管输入控件，保留字段模型、校验和 FormItem。可以使用根插槽名：
 
 ```ts
-{
-  type: 'InputSlot',
-  field: 'rating',
-  label: '评分',
-  required: true,
-  render: ({ props, current }) => h(MyRating, {
-    ...props,
-    level: current.level,
-  }),
-}
+{ type: "InputSlot", field: "address", render: "addressEditor" }
 ```
 
-`render` 是必填属性，可以是函数或根插槽名。`props` 已包含 `value`、`onUpdate:value`、合并后的 attrs、事件和 disabled。应完整透传，避免自定义控件脱离模型。
-
-```ts
-// 模板更复杂时引用根插槽
-{ type: 'InputSlot', field: 'address', label: '地址', render: 'addressEditor' }
-```
+函数签名与 `props` 透传要求见 [InputSlot 渲染](/manual/rendering#inputslot-完全接管输入控件)。
 
 ## InfoSlot
 
-InfoSlot 渲染非输入内容，不需要 `field`：
+用于非输入内容，支持 `attrs`、`dynamicAttrs`、`hidden`、`span`、`block` 等通用配置：
 
 ```ts
-{
-  type: 'InfoSlot',
-  block: true,
-  align: 'center',
-  render: ({ formData, props }) => h(OrderSummary, {
-    ...props,
-    data: formData,
-  }),
-}
+{ type: "InfoSlot", render: "orderSummary", block: true }
 ```
 
-它支持 ExtBaseOption 的 `attrs`、`dynamicAttrs`、`hidden`、`span`、`block` 等属性，但不会自动进入模型或校验。若声明成字段形态，也不要把它当作可编辑输入。
+模型边界与渲染示例见 [InfoSlot 渲染](/manual/rendering#infoslot-插入非字段内容)。
 
 ## viewRender 与 editable
 
@@ -161,8 +139,11 @@ InfoSlot 渲染非输入内容，不需要 `field`：
 
 `editable: false` 时字段使用只读渲染而不是禁用控件。`viewRender` 可为函数或根插槽名，完整优先级见[渲染与插槽](/manual/rendering)。
 
-## 何时注册 Ext\* 字段
+## 何时注册自定义字段
 
 InputSlot 适合一次性输入；多个页面重复使用、需要多 v-model 或明确只读模式时，应[注册自定义字段](/manual/custom-fields)。
 
 完整用法见[自定义渲染示例](/examples?example=rendering)。
+
+<!-- 章节定位标识。 -->
+<span id="何时注册-ext-字段"></span>

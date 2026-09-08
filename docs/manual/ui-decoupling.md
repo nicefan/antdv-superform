@@ -1,6 +1,6 @@
-# UI Adapter 架构
+# UI Adapter
 
-SuperForm 1.0 将 Schema 语义、Core 领域逻辑和具体 UI 框架协议拆开。Core 不再直接依赖 AntDV Next 或 Element Plus。
+Schema 语义、Core 领域逻辑和 UI 框架协议分别由独立层负责。Core 通过 Adapter 使用具体 UI 能力。
 
 ```text
 Schema
@@ -12,7 +12,9 @@ UI Adapter：组件、Props、model、事件、默认值和服务协议
 AntDV Next / Element Plus / 第三方 UI
 ```
 
-## 发布方式
+<span id="adapter-架构与组件来源"></span>
+
+## Core 与官方产品包 {#发布方式}
 
 - `superform`：独立 Core 与 Adapter SDK，面向第三方 Adapter 开发。
 - `superform-antdv`：包含 Core 与 AntDV Adapter 的完整产品包。
@@ -20,19 +22,21 @@ AntDV Next / Element Plus / 第三方 UI
 
 业务项目只选择一个官方产品包。两个官方产品不能在同一应用中混用，也不支持运行时切换。
 
-## 初始化与注册
+## 初始化与注册职责 {#初始化与注册}
 
-```ts
-import superform from "superform-antdv";
+官方产品使用 `initialize()` 初始化，`configure()` 设置全局行为，`registerComponent(s)` 登记项目字段。分别见[全局配置](/manual/global-config#统一应用入口)和[unplugin 自动导入](/manual/auto-components)。官方包导入本身不会修改全局状态。
 
-superform.initialize();
-superform.configure({ defaultProps, dictApi });
-superform.registerComponents({ UserPicker });
-```
+## 组件来源 {#三种组件来源}
 
-三个入口分别负责 Adapter、Core 全局行为和项目业务字段。官方包导入本身不会修改全局状态。
+| 来源 | 负责内容 | 配置入口 |
+| --- | --- | --- |
+| Adapter 固定能力 | Form、FormItem、Modal、Table、布局、反馈等基础能力 | 官方产品内置，或自定义 Adapter 实现 |
+| Adapter 字段 | Input、Select、Rate 等 Adapter 已声明字段 | Vite 自动导入或 `initialize({ components })` |
+| 项目业务字段 | UserPicker、RichEditor 等业务组件 | `registerComponent(s)` |
 
-## Schema 组件解析
+`initialize({ components })` 只能提供当前 Adapter 已声明的字段；项目组件使用 `registerComponent(s)`，不能覆盖 Core 或 Adapter 的保留名称。
+
+## type：解析字段组件 {#schema-组件解析}
 
 字段按以下来源解析：
 
@@ -41,19 +45,11 @@ superform.registerComponents({ UserPicker });
 3. `registerComponent(s)` 注册的项目业务字段。
 4. Vite 插件自动导入的普通 UI 字段。
 
-UI 字段使用真实组件名。旧别名直接迁移：
-
-```text
-Textarea  → TextArea
-DateRange → DateRangePicker
-TimeRange → TimeRangePicker
-Radio     → RadioGroup（组选项场景）
-Checkbox  → CheckboxGroup（组选项场景）
-```
+UI 字段使用真实组件名，例如 `TextArea`、`DateRangePicker`、`TimeRangePicker`、`RadioGroup` 和 `CheckboxGroup`。
 
 Element Plus 的 Schema 名称去掉导出上的 `El` 前缀，例如 `ElInput` 对应 `Input`。
 
-## 字段声明不等于组件引入
+## 字段声明与组件引入 {#字段声明不等于组件引入}
 
 Adapter 声明某个字段表示：
 
@@ -62,10 +58,44 @@ Adapter 声明某个字段表示：
 
 它不会自动把实际 UI 组件打进产品根入口。运行时组件由 Vite 插件按需导入，或通过 `initialize({ components })` 手动提供；缺少时会明确提示组件未注册。
 
-## 第三方 Adapter
+<span id="开发第三方-adapter"></span>
+
+## 自定义 Adapter 接入 {#何时需要自定义-adapter}
+
+以下需求属于 Adapter，而不是项目组件注册：
+
+- 替换所有 Form、Modal 或 Table 的底层实现。
+- 改变 `value`、`checked`、`modelValue` 等 model 协议。
+- 映射 UI 框架专属事件、插槽和实例方法。
+- 接入新的消息、确认框、上传、预览或表格能力。
+- 让某个字段名称使用不同的 UI 实现，同时保留 Core 增强处理器。
+
+第三方 Adapter 依赖独立 Core：
+
+```ts
+import superform from "superform";
+import { defineUIAdapter } from "superform/sdk";
+
+const adapter = defineUIAdapter({
+  name: "my-ui",
+  // 按目标 UI 框架实现基础能力、字段协议、处理器和默认配置
+});
+
+superform.useAdapter(adapter);
+```
+
+官方产品用户不需要也不应再调用 `useAdapter()`。
+
+## 跨框架复用范围 {#第三方-adapter}
 
 第三方包依赖 `superform`，通过 `superform/sdk` 实现 UIAdapter。Core 只调用 capability 契约，不认识具体 UI 组件、CSS class 或实例 API。
 
 切换 Adapter 不承诺整份 Schema 原样复用。Core 容器和业务语义保持稳定，UI 组件名称、`attrs` 与事件仍以目标框架为准。
 
-详细设计和迁移记录见仓库中的 `upgrade/ARCHITECTURE.md` 与 `upgrade/migration/BREAKING-CHANGES.md`。
+架构设计见仓库中的 `upgrade/ARCHITECTURE.md`。
+
+
+
+<!-- 章节定位标识。 -->
+<span id="ui-adapter-架构"></span>
+

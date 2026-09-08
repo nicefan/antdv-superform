@@ -2,7 +2,9 @@
 
 SuperButtons 将同一套动作配置用于独立按钮组、表单按钮、表格工具栏、行操作和数组操作。按钮配置分为“按钮组如何排列”与“单个按钮做什么”两层。
 
-## 已集成的组件与功能
+<span id="使用入口与动作定义"></span>
+
+## 支持按钮的组件 {#已集成的组件与功能}
 
 SuperButtons 不只是独立按钮组件，也是页面组件和结构容器共用的动作层。宿主负责注入方法与业务上下文，按钮配置负责文案、权限、状态、确认和交互表现。
 
@@ -19,7 +21,7 @@ SuperButtons 不只是独立按钮组件，也是页面组件和结构容器共�
 
 内置动作只有在宿主提供同名方法时才会执行对应业务。例如 SuperForm 为 `submit`、`reset` 注入表单动作，Table 为 `add`、`edit`、`detail`、`delete` 注入行编辑动作；普通容器中的业务按钮应自行提供 `onClick`。
 
-## 三种使用入口
+## 按钮使用入口 {#三种使用入口}
 
 ```ts
 // 1. 组合函数，返回渲染函数
@@ -40,7 +42,7 @@ const [renderButtons] = useButtons({
 
 宿主已有动作时可以使用字符串；独立业务动作使用完整对象。
 
-## actions 的三种写法
+## actions：动作配置 {#actions-的三种写法}
 
 ```ts
 // 最简数组
@@ -63,7 +65,7 @@ buttons: {
 
 内置名称为 `add`、`delete`、`edit`、`detail`、`submit`、`search`、`reset`。字符串只有在宿主提供同名方法时才有动作；`export`、`import`、`download` 必须自行配置 `onClick`。
 
-## 内置动作与全局默认
+## 内置动作与默认配置 {#内置动作与全局默认}
 
 内置动作提供常用文案、样式、确认提示和禁用条件，宿主组件再注入实际方法。例如 `delete` 默认带危险样式和确认提示，未提供当前记录且没有选中行时自动禁用。
 
@@ -93,7 +95,9 @@ const buttons = {
 
 合并顺序为：库内置动作 → 全局 `defaultButtons` → 宿主方法 → 当前 `actions` 对象。因此，全局配置负责团队默认规范，页面对象只覆盖当前业务差异。自定义动作必须在 `defaultButtons` 或当前对象中提供 `onClick`。
 
-## 按钮组全部属性
+<span id="按钮配置"></span>
+
+## 按钮组属性 {#按钮组全部属性}
 
 | 属性                  | 类型             | 默认值         | 用途                                  |
 | --------------------- | ---------------- | -------------- | ------------------------------------- |
@@ -115,7 +119,7 @@ const buttons = {
 | `methods`             | object           | `{}`           | 为字符串动作提供宿主方法表            |
 | `effectData`          | object           | `{}`           | 独立使用时补充响应式上下文            |
 
-## 单个 ButtonItem 全部属性
+## 单个按钮属性 {#单个-buttonitem-全部属性}
 
 | 属性                  | 类型                      | 默认值   | 说明                                       |
 | --------------------- | ------------------------- | -------- | ------------------------------------------ |
@@ -136,7 +140,7 @@ const buttons = {
 | `meta`                | object                    | `{}`     | 传给内置方法的附加参数                     |
 | `onClick`             | function                  | —        | `(context, originalAction?)`               |
 
-## 覆盖内置动作
+## 自定义内置动作 {#覆盖内置动作}
 
 ```ts
 {
@@ -164,7 +168,7 @@ const buttons = {
 }
 ```
 
-## 下拉按钮
+## dropdown：下拉按钮 {#下拉按钮}
 
 ```ts
 {
@@ -179,20 +183,58 @@ const buttons = {
 
 `dropdown` 使用通用选项格式；适合多个相近动作，不适合承载复杂表单。
 
-## 权限与显示范围
+<span id="权限与上下文"></span>
+
+## 权限与显示策略 {#权限与显示范围}
+
+```ts
+superform.configure({
+  buttonRoles: () => permissionStore.currentRoles,
+});
+```
+
+`buttonRoles()` 在按钮组或表格操作列构建时读取当前权限数组，不会持续监听 store。路由权限模式下，应先在导航守卫或页面进入阶段更新当前页面权限，再挂载页面；同一页面内权限发生变化时，需要让相关按钮组重新创建。
 
 ```ts
 {
   name: 'delete',
   roleName: 'user:delete',
   unauthorized: 'disable',
-  visibleIn: 'detail',
+  disabledTooltip: '当前账号没有删除权限',
 }
 ```
 
-无权限默认隐藏。按钮级策略优先于组级策略；前端隐藏不替代后端鉴权。权限接入见[字典与权限](/manual/dictionaries-and-permissions#按钮权限)。
+| 配置                      | 行为         |
+| ------------------------- | ------------ |
+| 无 `roleName`             | 不做权限过滤 |
+| 命中角色                  | 正常显示     |
+| 未命中，默认              | 隐藏         |
+| `unauthorized: 'hide'`    | 明确隐藏     |
+| `unauthorized: 'disable'` | 显示但禁用   |
 
-## 上下文差异
+按钮组也可设置统一 `unauthorized`，单按钮配置优先。
+
+### 可见场景与业务状态
+
+权限、场景、动态状态是三层不同判断：
+
+```ts
+{
+  name: 'approve',
+  roleName: 'order:approve',
+  visibleIn: 'detail',
+  hidden: ({ record }) => record.status !== 'pending',
+  disabled: ({ record }) => record.locked,
+}
+```
+
+- `roleName`：用户是否有权限。
+- `visibleIn`：表单/详情场景是否展示。
+- `hidden` / `disabled`：当前业务数据是否允许操作。
+
+按钮权限只控制前端界面。后端必须再次校验用户身份、资源范围和动作权限。字段级权限可在生成 Schema 前过滤，或用 `hidden` / `disabled` 响应业务状态。
+
+## 按钮上下文 {#上下文差异}
 
 - 表格工具栏：`selectedRows`、`selectedRowKeys`、`tableRef`。
 - 行按钮：`record`、`index`、当前列上下文。
@@ -201,3 +243,4 @@ const buttons = {
 - 独立 SuperButtons：通过 `effectData` 明确传入。
 
 可运行配置见[按钮组示例](/examples?example=buttons)。
+

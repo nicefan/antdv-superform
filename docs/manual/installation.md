@@ -20,7 +20,7 @@ pnpm add superform-element-plus element-plus
 
 ## 显式初始化
 
-官方产品包导入时没有初始化副作用。应用必须在渲染 SuperForm 组件前调用一次 `initialize()`，不再通过 Vue `app.use()` 安装。
+官方产品包导入时没有初始化副作用。应用必须在渲染 SuperForm 组件前调用一次 `initialize()`。
 
 ```ts
 import { createApp } from "vue";
@@ -61,7 +61,7 @@ export default defineConfig({
 });
 ```
 
-产品插件已经内置官方 resolver、产品包导入路径和类型模块。入口仍需调用无参 `superform.initialize()`。完整规则见 [Schema 组件自动导入](/manual/auto-components)。
+产品插件已经内置官方 resolver、产品包导入路径和类型模块。入口仍需调用无参 `superform.initialize()`。完整规则见 [unplugin 自动导入](/manual/auto-components)。
 
 ### 手动按需登记
 

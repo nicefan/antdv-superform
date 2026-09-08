@@ -234,3 +234,50 @@
     padding-right: 64px;
   }
 }
+
+/* 页内目录完整展示标题，长属性名可换行。 */
+.VPDocAsideOutline .outline-link {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* API 按主题分块；窄屏依次收为两列和单列。 */
+.api-index-page .api-index-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0 36px;
+}
+.api-index-page .api-index-card {
+  min-width: 0;
+  padding: 22px 24px;
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+}
+.api-index-page .api-index-card h3 {
+  margin: 0 0 16px;
+  color: var(--vp-c-brand-1);
+  font-size: 16px;
+}
+.api-index-page .api-index-card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.api-index-page .api-index-card li + li { margin-top: 10px; }
+.api-index-page .api-index-card a {
+  font-size: 14px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+.api-index-page .api-index-card a:hover { text-decoration: underline; }
+@media (max-width: 1100px) {
+  .api-index-page .api-index-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .api-index-page .api-index-grid { grid-template-columns: minmax(0, 1fr); }
+}

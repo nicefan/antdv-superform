@@ -7,7 +7,7 @@ export default defineConfig({
     '基于 Vue 3 的配置式表单与表格组件库，提供 AntDV Next 与 Element Plus 官方产品包',
   lang: 'zh-CN',
   base: '/antdv-superform/',
-  srcExclude: ['README.md', 'manual/_partials/**'],
+  srcExclude: ['README.md'],
   cleanUrls: true,
   lastUpdated: true,
   head: [
@@ -50,6 +50,7 @@ export default defineConfig({
     aside: 'left',
     nav: [
       { text: '手册', link: '/manual/' },
+      { text: 'API', link: '/api' },
       { text: '示例', link: '/examples' },
       {
         text: '演练场',
@@ -70,18 +71,19 @@ export default defineConfig({
           ],
         },
         {
-          text: '核心设计',
+          text: '核心指南',
           items: [
-            { text: 'Schema 与数据模型', link: '/manual/schema' },
+            { text: 'Schema 概览', link: '/manual/schema' },
+            { text: '字段与数据模型', link: '/manual/fields-and-paths' },
             { text: '布局与结构', link: '/manual/layout' },
             { text: '响应式与联动', link: '/manual/reactivity' },
+            { text: '事件与上下文', link: '/manual/events-and-context' },
             { text: '校验机制', link: '/manual/validation' },
             { text: '渲染与插槽', link: '/manual/rendering' },
-            { text: '配置属性索引', link: '/manual/property-index' },
           ],
         },
         {
-          text: '页面组件',
+          text: '业务组件',
           items: [
             { text: '表单 SuperForm', link: '/manual/super-form' },
             { text: '表格 SuperTable', link: '/manual/super-table' },
@@ -91,43 +93,35 @@ export default defineConfig({
           ],
         },
         {
-          text: '字段组件',
+          text: '字段与内置组件',
           items: [
-            { text: '基础输入', link: '/manual/fields/basic-inputs' },
-            { text: '选择输入', link: '/manual/fields/selections' },
-            { text: '日期与时间', link: '/manual/fields/date-time' },
+            { text: 'UI 输入组件', link: '/manual/fields/basic-inputs' },
+            { text: '选项与值处理', link: '/manual/fields/selections' },
+            { text: '日期与范围值', link: '/manual/fields/date-time' },
+            { text: '内置输入组件', link: '/manual/fields/built-in-inputs' },
             { text: '文件上传', link: '/manual/fields/upload' },
             { text: '展示与辅助', link: '/manual/fields/display' },
-            { text: '数组与表格', link: '/manual/fields/collections' },
+            { text: '数组容器', link: '/manual/fields/collections' },
+            { text: 'Table 数组表格', link: '/manual/fields/table' },
             { text: '布局容器', link: '/manual/fields/containers' },
           ],
         },
         {
-          text: '项目集成',
+          text: '项目配置与扩展',
           items: [
             { text: '全局配置', link: '/manual/global-config' },
             { text: '接口与数据适配', link: '/manual/backend-contracts' },
-            {
-              text: '字典与权限',
-              link: '/manual/dictionaries-and-permissions',
-            },
-          ],
-        },
-        {
-          text: '扩展开发',
-          items: [
-            { text: 'UI 组件解耦', link: '/manual/ui-decoupling' },
-            { text: 'Schema 组件自动导入', link: '/manual/auto-components' },
             { text: '自定义字段', link: '/manual/custom-fields' },
-            { text: '替换底层组件', link: '/manual/component-overrides' },
+            { text: 'unplugin 自动导入', link: '/manual/auto-components' },
+            { text: 'UI Adapter', link: '/manual/ui-decoupling' },
           ],
         },
         {
-          text: 'AI 辅助与工程化',
+          text: '工具与迁移',
           items: [
             { text: 'AI 编码指引', link: '/manual/ai-guide' },
             { text: 'Schema 诊断', link: '/manual/schema-diagnostics' },
-            { text: 'antdv-next 升级支持', link: '/manual/antdv-next-upgrade' },
+            { text: '1.0 迁移指南', link: '/manual/antdv-next-upgrade' },
           ],
         },
       ],
@@ -136,7 +130,7 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/nicefan/antdv-superform' },
     ],
     search: { provider: 'local' },
-    outline: { level: [2, 3] },
+    outline: { level: 2, label: '本页内容' },
     editLink: {
       pattern:
         'https://github.com/nicefan/antdv-superform/edit/next-doc/docs/:path',

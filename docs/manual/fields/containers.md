@@ -52,7 +52,7 @@ Group 是通用分组容器：
 | `ignoreTableTitle`  | boolean         | `false`    | Schema 用于表格时忽略分组表头 |
 | `descriptionsProps` | object          | —          | 只读详情布局                  |
 
-`component` 适合项目统一 Section 外壳；只想换全局基础组件时使用[替换底层组件](/manual/component-overrides)。
+`component` 适合项目统一 Section 外壳；只想换全局基础组件时使用[替换底层组件](/manual/ui-decoupling)。
 
 ## Fragment
 
@@ -68,7 +68,7 @@ Fragment 没有视觉包装，会将子项展开到当前位置：
 }
 ```
 
-公开类型仅允许 `type`、`field`、`disabled`、`exclude`、`hidden`、`subItems`、`subSpan`。它会把 hidden/disabled 作用于展开后的直接子项，适合复用逻辑字段组。Fragment 从 0.6.16 提供。
+公开类型仅允许 `type`、`field`、`disabled`、`exclude`、`hidden`、`subItems`、`subSpan`。它会把 hidden/disabled 作用于展开后的直接子项，适合复用逻辑字段组。
 
 ## Card
 
@@ -205,3 +205,7 @@ Descriptions 在其他 Schema 中嵌入只读信息；独立详情页面优先 S
 | 嵌入只读信息          | Descriptions |
 
 完整组合见[布局容器示例](/examples?example=containers)。
+
+## 容器外观属性
+
+Descriptions 使用 `column`、`contentStyle`、`labelStyle` 控制列数和内容样式；Card、Tabs、Collapse 的标题区域可使用 `extra`。Tabs/Collapse 项的初始激活与关闭配置包括 `defaultActiveKey`、`closeIcon`，以当前产品包类型为准。
