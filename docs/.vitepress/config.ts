@@ -51,7 +51,13 @@ export default defineConfig({
     nav: [
       { text: '手册', link: '/manual/' },
       { text: '示例', link: '/examples' },
-      { text: '演练场', link: '/playground' },
+      {
+        text: '演练场',
+        items: [
+          { text: 'AntDV', link: '/playground' },
+          { text: 'Element Plus', link: '/playground-element-plus' },
+        ],
+      },
     ],
     sidebar: {
       '/manual/': [

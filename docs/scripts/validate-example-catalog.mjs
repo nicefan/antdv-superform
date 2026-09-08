@@ -1,31 +1,28 @@
-import { Buffer } from 'node:buffer'
 import { readFile, readdir } from 'node:fs/promises'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
 import prettier from 'prettier'
 import ts from 'typescript'
 
 const docsRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const catalogFile = join(docsRoot, '.vitepress/components/exampleCatalog.ts')
+const catalogFile = join(docsRoot, '.vitepress/components/exampleCatalog.json')
 const mocksFile = join(docsRoot, '.vitepress/components/exampleMocks.ts')
+const examplesRoot = join(docsRoot, 'repl-examples')
 const prettierOptions = { semi: false, singleQuote: true, printWidth: 100 }
 
-async function importTypeScript(file) {
-  const source = await readFile(file, 'utf8')
-  const javascript = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.ESNext,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: file,
-  }).outputText
-  const url = `data:text/javascript;base64,${Buffer.from(javascript).toString('base64')}`
-  return import(url)
-}
+const exampleGroups = JSON.parse(await readFile(catalogFile, 'utf8'))
+const mocksSource = await readFile(mocksFile, 'utf8')
+const mocksFileSource = ts.createSourceFile(mocksFile, mocksSource, ts.ScriptTarget.Latest, true)
+const mockDeclaration = mocksFileSource.statements
+  .filter(ts.isVariableStatement)
+  .flatMap((statement) => statement.declarationList.declarations)
+  .find((item) => item.name.getText(mocksFileSource) === 'sharedMockCode')
 
-const { exampleGroups } = await importTypeScript(catalogFile)
-const { sharedMockCode } = await importTypeScript(mocksFile)
+if (!mockDeclaration || !ts.isNoSubstitutionTemplateLiteral(mockDeclaration.initializer)) {
+  throw new Error('未找到共享 mock.ts 源码')
+}
+const sharedMockCode = mockDeclaration.initializer.text
 const formattedMockCode = prettier.format(sharedMockCode, {
   ...prettierOptions,
   parser: 'typescript',
@@ -48,6 +45,7 @@ if (mockErrors?.length) {
 }
 
 const ids = new Set()
+const exampleFiles = new Set()
 let count = 0
 
 const tableOptionOrder = new Map([
@@ -102,25 +100,31 @@ for (const group of exampleGroups) {
 
   for (const item of group.items) {
     count += 1
-    if (!item.id || !item.title || !item.description || !item.code) {
+    if (!item.id || !item.title || !item.description || !item.file) {
       throw new Error(`“${group.title}”中存在信息不完整的示例`)
     }
     if (ids.has(item.id)) throw new Error(`示例 ID 重复：${item.id}`)
     ids.add(item.id)
-    if (/\bConfigProvider\b/.test(item.code)) {
+    if (exampleFiles.has(item.file)) throw new Error(`示例文件重复：${item.file}`)
+    exampleFiles.add(item.file)
+    const filename = resolve(examplesRoot, item.file)
+    if (!filename.startsWith(`${examplesRoot}${sep}`)) {
+      throw new Error(`${item.id} 的示例路径超出 repl-examples 目录`)
+    }
+    const code = await readFile(filename, 'utf8')
+    if (/\bConfigProvider\b/.test(code)) {
       throw new Error(`${item.id}.vue 不应在示例内部使用 ConfigProvider`)
     }
 
-    const formattedCode = prettier.format(item.code, {
+    const formattedCode = prettier.format(code, {
       ...prettierOptions,
       parser: 'vue',
     })
-    if (formattedCode.trimEnd() !== item.code) {
+    if (formattedCode !== code) {
       throw new Error(`${item.id}.vue 未格式化，请运行 pnpm --dir docs format:examples`)
     }
 
-    const filename = `${item.id}.vue`
-    const { descriptor, errors } = parse(item.code, { filename })
+    const { descriptor, errors } = parse(code, { filename })
     if (errors.length) throw new Error(`${filename} 解析失败：${errors.join('\n')}`)
     if (descriptor.scriptSetup) validateTableOptionOrder(descriptor.scriptSetup.content, filename)
 
@@ -138,6 +142,19 @@ for (const group of exampleGroups) {
       if (result.errors.length) throw new Error(`${filename} 模板编译失败：${result.errors.join('\n')}`)
     }
   }
+}
+
+async function* vueFiles(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = join(directory, entry.name)
+    if (entry.isDirectory()) yield* vueFiles(file)
+    else if (entry.name.endsWith('.vue')) yield file
+  }
+}
+
+for await (const file of vueFiles(examplesRoot)) {
+  const catalogPath = relative(examplesRoot, file).split(sep).join('/')
+  if (!exampleFiles.has(catalogPath)) throw new Error(`未登记的示例文件：${catalogPath}`)
 }
 
 async function* markdownFiles(directory) {

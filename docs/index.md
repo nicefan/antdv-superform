@@ -16,8 +16,11 @@ hero:
       text: 查看示例
       link: /examples
     - theme: alt
-      text: 在线演练
+      text: AntDV 演练
       link: /playground
+    - theme: alt
+      text: Element Plus 演练
+      link: /playground-element-plus
 
 features:
   - icon: 🧬

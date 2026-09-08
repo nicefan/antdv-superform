@@ -1,6 +1,6 @@
 ---
 layout: page
-title: AntDV 在线演练场
+title: Element Plus 在线演练场
 sidebar: false
 aside: false
 footer: false
@@ -8,5 +8,5 @@ pageClass: playground-page
 ---
 
 <ClientOnly>
-  <DocsRepl product="antdv" />
+  <DocsRepl product="element-plus" />
 </ClientOnly>

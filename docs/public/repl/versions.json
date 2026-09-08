@@ -5,11 +5,15 @@
       "version": "1.0.0",
       "vue": "3.5.41",
       "path": "repl/1.0.0",
-      "createdAt": "2026-09-07T18:17:14.120Z",
+      "createdAt": "2026-09-08T01:10:15.025Z",
       "hashes": {
         "antd.js": "sha256-hvy00ae2vvLDFi7Lb5gJSgdvuXLZNEqggr8PqBO3cew=",
         "antd.css": "sha256-nxQ+orJrCMtfG83lT7usP9UVMbaGutpzWI6vgEWGGKs=",
         "superform-antdv.js": "sha256-GWqKJLFmNeG0T/s94laeOvwNiZLevwQnp0ZRyUap98s=",
+        "element-plus.js": "sha256-KzfFXF3102SfaF3rSTxyjVkTIzy/w85AAuW6PGItcRg=",
+        "element-plus.css": "sha256-uOAoWpL1fVLWbI0H/i0eE162ss8/RnhA3bcrt26StNw=",
+        "superform-element-plus.js": "sha256-1L7/cb2oek8itLSHKJdDL1ZMbs08JTqg1tkOr96Hdd0=",
+        "superform-element-plus.css": "sha256-cD9sE10SxCGwEuuBp/ZFrn1m7eq3u6FMnDiZNV/E8EY=",
         "style.css": "sha256-wDeUfnv9eJrMoD5Mp6hjte/kJjwb43duYGN1A4fSo3Q=",
         "vue.runtime.esm-browser.js": "sha256-OnrmGGZbLKzCU5bPgSUPdsUGCi5U/P2h28+frC6Pm90=",
         "vue.runtime.esm-browser.prod.js": "sha256-1wQNIqyC6wvdvRS46+dJfJJiS9NMJ+0l7A7kFrRaf+k="

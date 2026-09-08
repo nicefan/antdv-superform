@@ -2,6 +2,10 @@
 
 这是主项目 `next-doc` 分支中的文档站，使用 VitePress 与 `@vue/repl`。
 
+在线 REPL 示例源码按分类存放在 `repl-examples/`，目录元数据位于 `.vitepress/components/exampleCatalog.json`；不要再把 Vue 源码内嵌到目录 TypeScript 文件中。
+
+`/playground` 与 `/playground-element-plus` 分别使用 AntDV 和 Element Plus 产品资源；执行 `pnpm build:dist` 会同步生成两个产品的 REPL bundle。
+
 ## 本地开发
 
 ```bash

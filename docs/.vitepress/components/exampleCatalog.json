@@ -1,0 +1,167 @@
+[
+  {
+    "title": "表单",
+    "items": [
+      {
+        "id": "form-basics",
+        "title": "基础表单",
+        "description": "字段、校验、提交和重置。",
+        "file": "form/form-basics.vue"
+      },
+      {
+        "id": "form-linkage",
+        "title": "状态与联动",
+        "description": "动态显隐、必填、属性和计算字段。",
+        "file": "form/form-linkage.vue"
+      }
+    ]
+  },
+  {
+    "title": "字段配置对比",
+    "items": [
+      {
+        "id": "basic-inputs",
+        "title": "基础输入配置对比",
+        "description": "同屏比较 Input、数字、文本域和标签的不同配置。",
+        "file": "fields/basic-inputs.vue"
+      },
+      {
+        "id": "selections",
+        "title": "选择输入配置对比",
+        "description": "比较单选、多选、标签同步、字符串值和按钮形态。",
+        "file": "fields/selections.vue"
+      },
+      {
+        "id": "date-time",
+        "title": "日期时间配置对比",
+        "description": "比较显示格式、存储格式和范围的三种数据模型。",
+        "file": "fields/date-time.vue"
+      },
+      {
+        "id": "upload",
+        "title": "文件上传配置对比",
+        "description": "比较单文件、多文件、base64、文本和完整 fileList。",
+        "file": "fields/upload.vue"
+      },
+      {
+        "id": "rendering",
+        "title": "展示与自定义渲染",
+        "description": "Text、HTML、Hidden、InputSlot 与 InfoSlot。",
+        "file": "fields/rendering.vue"
+      }
+    ]
+  },
+  {
+    "title": "容器与数组",
+    "items": [
+      {
+        "id": "containers",
+        "title": "布局容器",
+        "description": "Group、Fragment、Card、Tabs 与 Collapse。",
+        "file": "containers/containers.vue"
+      },
+      {
+        "id": "collections",
+        "title": "数组编辑",
+        "description": "InputList、ListGroup 和 List 的数据形态与布局。",
+        "file": "containers/collections.vue"
+      },
+      {
+        "id": "table-local",
+        "title": "Table 数组表格",
+        "description": "表单内的本地数组、列渲染和整表编辑。",
+        "file": "containers/table-local.vue"
+      }
+    ]
+  },
+  {
+    "title": "业务表单",
+    "items": [
+      {
+        "id": "business-employee",
+        "title": "员工资料登记",
+        "level": "基础",
+        "description": "基础资料、联系方式、岗位与标签。",
+        "file": "business/business-employee.vue"
+      },
+      {
+        "id": "business-customer",
+        "title": "客户建档",
+        "level": "进阶",
+        "description": "个人/企业客户切换、动态显隐和条件必填。",
+        "file": "business/business-customer.vue"
+      },
+      {
+        "id": "business-order",
+        "title": "销售订单",
+        "level": "进阶",
+        "description": "客户、订单明细、行金额与订单合计。",
+        "file": "business/business-order.vue"
+      },
+      {
+        "id": "business-contract",
+        "title": "合同登记",
+        "level": "综合",
+        "description": "合同主体、金额、期限、付款计划和附件。",
+        "file": "business/business-contract.vue"
+      },
+      {
+        "id": "business-contract-approval",
+        "title": "合同审批",
+        "level": "综合",
+        "description": "只读摘要、审批结果、条件原因和风险意见。",
+        "file": "business/business-contract-approval.vue"
+      }
+    ]
+  },
+  {
+    "title": "页面组件",
+    "items": [
+      {
+        "id": "table-query",
+        "title": "SuperTable 查询",
+        "description": "搜索、分页、请求参数和最后一次响应生效。",
+        "file": "pages/table-query.vue"
+      },
+      {
+        "id": "table-search-on-change",
+        "title": "查询条件即时生效",
+        "level": "进阶",
+        "description": "searchOnChange 让任意查询字段变化后自动刷新。",
+        "file": "pages/table-search-on-change.vue"
+      },
+      {
+        "id": "table-mixed-query",
+        "title": "手动与即时混合查询",
+        "level": "进阶",
+        "description": "文本条件手动提交，选择条件通过 params 即时查询。",
+        "file": "pages/table-mixed-query.vue"
+      },
+      {
+        "id": "table-master-detail",
+        "title": "主从表联动",
+        "level": "综合",
+        "description": "左表选择记录，通过响应式 params 驱动右表查询。",
+        "file": "pages/table-master-detail.vue"
+      },
+      {
+        "id": "detail",
+        "title": "SuperDetail",
+        "description": "选项映射、范围和自定义只读展示。",
+        "file": "pages/detail.vue"
+      },
+      {
+        "id": "modal-form",
+        "title": "弹窗表单",
+        "description": "useModalForm 的打开、回填和确认提交。",
+        "file": "pages/modal-form.vue"
+      },
+      {
+        "id": "buttons",
+        "title": "按钮组",
+        "description": "按钮外观、确认、禁用与更多菜单。",
+        "file": "pages/buttons.vue"
+      }
+    ]
+  }
+]

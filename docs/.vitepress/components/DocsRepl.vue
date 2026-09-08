@@ -2,13 +2,19 @@
 import { computed, shallowRef, watch } from 'vue'
 import { Repl, ReplStore } from '@vue/repl'
 import CodeMirror from '@vue/repl/codemirror-editor'
-import { examplePreviewOptions } from './exampleApp'
+
+type ReplProduct = 'antdv' | 'element-plus'
+
+const props = withDefaults(defineProps<{ product?: ReplProduct }>(), {
+  product: 'antdv',
+})
 
 interface VersionEntry {
   version: string
   vue: string
   path: string
   createdAt: string
+  hashes: Record<string, string>
 }
 
 interface Manifest {
@@ -23,7 +29,29 @@ interface Workspace {
   updatedAt?: string
 }
 
-const storagePrefix = 'antdv-superform:repl'
+const productConfig = props.product === 'element-plus'
+  ? {
+      title: 'Element Plus 在线演练场',
+      packageName: 'superform-element-plus',
+      uiPackageName: 'element-plus',
+      productBundle: 'superform-element-plus.js',
+      productStyle: 'superform-element-plus.css',
+      uiBundle: 'element-plus.js',
+      uiStyle: 'element-plus.css',
+      initializedKey: '__superformElementPlusReplInitialized',
+    }
+  : {
+      title: 'AntDV 在线演练场',
+      packageName: 'superform-antdv',
+      uiPackageName: 'antdv-next',
+      productBundle: 'superform-antdv.js',
+      productStyle: 'style.css',
+      uiBundle: 'antd.js',
+      uiStyle: 'antd.css',
+      initializedKey: '__superformAntdvReplInitialized',
+    }
+
+const storagePrefix = `${productConfig.packageName}:repl`
 const workspaceKey = `${storagePrefix}:workspace`
 const base = import.meta.env.BASE_URL
 const manifest = await fetch(`${base}repl/versions.json`).then(async (response) => {
@@ -40,13 +68,18 @@ const snippet = snippetId
   : null
 const latestMajor = manifest.latest.split('.')[0]
 const compatibleVersions = manifest.versions.filter(
-  (item) => item.version.split('.')[0] === latestMajor,
+  (item) =>
+    item.version.split('.')[0] === latestMajor &&
+    Boolean(item.hashes[productConfig.productBundle]),
 )
+if (!compatibleVersions.length) {
+  throw new Error(`${productConfig.packageName} 尚未生成可用版本`)
+}
 const canRestoreVersion =
   saved?.version.split('.')[0] === latestMajor &&
-  manifest.versions.some((item) => item.version === saved.version)
+  compatibleVersions.some((item) => item.version === saved.version)
 const selectedVersion = shallowRef(
-  canRestoreVersion ? saved!.version : manifest.latest,
+  canRestoreVersion ? saved!.version : compatibleVersions[0].version,
 )
 const replStore = shallowRef<ReplStore>()
 const saveLabel = shallowRef('准备就绪')
@@ -61,7 +94,7 @@ const starter = [
   '</template>',
   '',
   '<script setup>',
-  "import { SuperForm, useForm } from 'superform-antdv'",
+  `import { SuperForm, useForm } from '${productConfig.packageName}'`,
   '',
   'const [register] = useForm({',
   "  title: '在线演练',",
@@ -73,6 +106,16 @@ const starter = [
   '})',
   '</' + 'script>',
 ].join('\n')
+
+const previewOptions = {
+  customCode: {
+    importCode: `import superform, { fieldComponents } from '${productConfig.packageName}'`,
+    useCode: `if (!globalThis['${productConfig.initializedKey}']) {
+  superform.initialize({ components: fieldComponents })
+  globalThis['${productConfig.initializedKey}'] = true
+}`,
+  },
+}
 
 function readJson<T>(key: string): T | null {
   try {
@@ -110,13 +153,13 @@ async function loadStore(seed?: { files: Record<string, string>; mainFile: strin
   })
   await next.setFiles({
     ...initial.files,
-    'main.css': `@import '${asset('antd.css')}';\n@import '${asset('style.css')}';\nbody { margin: 0; padding: 20px; }`,
+    'main.css': `@import '${asset(productConfig.uiStyle)}';\n@import '${asset(productConfig.productStyle)}';\nbody { margin: 0; padding: 20px; }`,
   }, initial.mainFile)
   next.setImportMap({
     imports: {
       vue: asset('vue.runtime.esm-browser.js'),
-      'antdv-next': asset('antd.js'),
-      'superform-antdv': asset('superform-antdv.js'),
+      [productConfig.uiPackageName]: asset(productConfig.uiBundle),
+      [productConfig.packageName]: asset(productConfig.productBundle),
     },
   })
   replStore.value = next
@@ -158,7 +201,7 @@ await loadStore()
   <section class="repl-shell">
     <header class="repl-toolbar">
       <div class="repl-toolbar__title">
-        <strong>在线演练场</strong>
+        <strong>{{ productConfig.title }}</strong>
         <span>{{ saveLabel }}</span>
       </div>
       <div class="repl-toolbar__actions">
@@ -181,7 +224,7 @@ await loadStore()
       :show-import-map="false"
       :show-ts-config="false"
       :ssr="false"
-      :preview-options="examplePreviewOptions"
+      :preview-options="previewOptions"
     />
   </section>
 </template>
