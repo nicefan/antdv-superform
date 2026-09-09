@@ -78,7 +78,6 @@ export default defineComponent({
       goPage,
       reload,
       query,
-      throttleRequest,
       cancelQuery,
       setQueryParams,
       getQueryParams,
@@ -182,7 +181,7 @@ export default defineComponent({
           searchForm.value = useSearchForm(opt, tableRef, (data) => {
             // 初始化时同步表单数据
             setQueryParams(data, 'form')
-            initQuery && throttleRequest()
+            initQuery && query()
           })
         }
         const tabsField = opt.tabs && opt.tabs.field
@@ -195,7 +194,7 @@ export default defineComponent({
               if (key === undefined) return
               setObject(tabParam, tabsField, key)
               setQueryParams(tabParam)
-              initQuery && throttleRequest()
+              initQuery && query()
             },
             { immediate: true }
           )
@@ -204,14 +203,14 @@ export default defineComponent({
           ref(opt.params),
           (p) => {
             setQueryParams(p, 'dynamic')
-            initQuery && throttleRequest()
+            initQuery && query()
           },
           { deep: true, immediate: true }
         )
         nextTick(() => {
           initQuery = true
           if (option.immediate !== false) {
-            throttleRequest()
+            query()
           }
         })
         if (isScanHeight || inheritHeight || maxHeight) {

@@ -48,7 +48,7 @@ const getOptions = (option, _effectData, optionsArr) => {
 
 const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }: Obj) => {
   const item: Obj = { color, label, icon }
-  if (tagViewer !== true || !color) {
+  if (!color) {
     const tagOption = tagViewer === true ? globalConfig.tagViewer : tagViewer
     if (typeof tagOption === 'function') {
       const res = tagOption(value)

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw } from 'vue'
-import { cloneModels } from '../utils/buildModel'
+import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import Controls from '.'
 import { nanoid } from 'nanoid'
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons-vue'
@@ -38,7 +38,6 @@ export default defineComponent({
         icon: () => h(PlusOutlined),
         onClick({ index }) {
           orgList.value.splice(index + 1, 0, {})
-          orgList.value = [...toRaw(orgList.value)]
         },
       },
       delete: {
@@ -47,7 +46,7 @@ export default defineComponent({
         confirmText: '',
         icon: () => h(MinusOutlined),
         onClick({ index }) {
-          orgList.value = orgList.value.filter((_, idx) => idx !== index)
+          orgList.value.splice(index, 1)
         },
       },
     }
@@ -65,29 +64,39 @@ export default defineComponent({
       }
 
     const keyMap = new WeakMap()
+    const keySet = new Set()
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
-      orgList,
-      (list) => {
+      [orgList, () => orgList.value.length],
+      ([list]) => {
         if (list.length === 0) {
-          list.push({})
+          return list.push({})
         }
 
-        listItems.value = list.map((record, idx) => {
+        listItems.value = orgList.value.map((record, idx) => {
           const raw = toRaw(record)
-          if (!keyMap.has(raw)) {
-            keyMap.set(raw, record[rowKey] || nanoid(12))
+          const newPropChain = [...propChain, idx]
+          // let item = listItems.value.find(({model}) => model.refData.value === record)
+          let item = keyMap.get(raw)
+          if (item) {
+            if (item.model.index !== idx) {
+              updateModelIndex(item.model, newPropChain, idx)
+              item.effectData.index = idx
+            }
+          } else {
+            const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
+            item = {
+              key: record[rowKey] || nanoid(12),
+              model: { refData: ref(record), children: modelsMap, index: idx, propChain: newPropChain },
+              effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
+            }
+            keyMap.set(raw, item)
           }
-          // 原数据已经存在, 此处建立表单绑定
-          const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
-
-          return {
-            key: keyMap.get(raw),
-            model: { refData: ref(record), children: modelsMap, index: idx },
-            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
-          }
+          return item
         })
+        // keySet.clear()
+        // listItems.value.forEach((item) => keySet.add(item.key))
       },
       {
         immediate: true,

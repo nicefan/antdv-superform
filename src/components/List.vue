@@ -1,7 +1,7 @@
 <script lang="ts">
 import { type PropType, defineComponent, h, reactive, ref, toRaw, toRef, useAttrs, watch } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneModels } from '../utils/buildModel'
+import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import { createButtons } from './buttons'
 import base from './base'
 import Collections from './Collections'
@@ -47,7 +47,7 @@ export default defineComponent({
       },
     }
 
-    const keyMap = new WeakMap<object, PropertyKey>()
+    const keyMap = new WeakMap<object, any>()
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
@@ -55,18 +55,25 @@ export default defineComponent({
       (org) => {
         listItems.value = org.map((record, idx) => {
           const raw = toRaw(record)
-          if (!keyMap.has(raw)) {
-            keyMap.set(raw, record[rowKey] || nanoid(12))
-          }
-          const hash = keyMap.get(raw)
-          // 原数据已经存在, 此处建立表单绑定
-          const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
+          const newPropChain = [...propChain, idx]
+          let item = keyMap.get(raw)
+          if (item) {
+            if (item.model.index !== idx) {
+              updateModelIndex(item.model, newPropChain, idx)
+              item.effectData.index = idx
+            }
+          } else {
+            // 原数据已经存在, 此处建立表单绑定
+            const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
 
-          return {
-            hash,
-            model: { refData: ref(record), children: modelsMap, index: idx },
-            effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
+            item = {
+              key: record[rowKey] || nanoid(12),
+              model: { refData: ref(record), children: modelsMap, index: idx, propChain: newPropChain },
+              effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
+            }
+            keyMap.set(raw, item)
           }
+          return item
         })
         // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
       },
@@ -110,7 +117,7 @@ export default defineComponent({
     __slots.renderItem = ({ item }) =>
       h(
         base.ListItem,
-        { key: item.hash },
+        { key: item.key },
         {
           default: () => [
             isView

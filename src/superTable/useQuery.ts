@@ -85,13 +85,14 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     return request()
   }
 
+  /** 仅供组件初始化阶段合并异步触发，只执行最后一次查询。 */
+  const throttleRequest = throttle(request, 300, { leading: false })
+
   const query = (param?: Obj) => {
     if (pagination.value) pageParam.current = 1
-    return request(param)
+    return throttleRequest(param)
   }
 
-  /** 仅供组件初始化阶段合并异步触发，只执行最后一次查询。 */
-  const throttleRequest = throttle(query, 300, { leading: false })
   const cancelQuery = () => {
     activeController?.abort()
     activeController = undefined
@@ -146,8 +147,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
 
   return {
     goPage,
-    reload: request,
-    throttleRequest,
+    reload: throttleRequest,
     cancelQuery,
     setQueryParams,
     getQueryParams,
