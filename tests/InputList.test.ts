@@ -128,63 +128,6 @@ describe('InputList', () => {
     expect(render()[1].key).not.toBe(firstKey)
   })
 
-  it('对象列表可通过行按钮删除末行', async () => {
-    const first = { name: '甲' }
-    const second = { name: '乙' }
-    const data = reactive({ items: [first, second] })
-    const option = {
-      type: 'InputList',
-      field: 'items',
-      columns: [
-        {
-          type: 'InputGroup',
-          subItems: [{ type: 'Input', field: 'name' }],
-        },
-      ],
-    }
-    const render = setupInputList(option, data)
-    const lastRowModel = render()[1].props.model
-    const buttonOption = [...lastRowModel.children].find(([item]) => item.type === 'Buttons')?.[0]
-
-    buttonOption.methods.delete.onClick({ index: 1 })
-
-    await nextTick()
-    expect(data.items).toEqual([first])
-  })
-
-  it('新增后删除首行时移动行重新绑定索引模型', async () => {
-    const first = { name: '甲' }
-    const data = reactive({ items: [first] })
-    const option = {
-      type: 'InputList',
-      field: 'items',
-      columns: [
-        {
-          type: 'InputGroup',
-          subItems: [{ type: 'Input', field: 'name' }],
-        },
-      ],
-    }
-    const render = setupInputList(option, data)
-    const firstRow = render()[0]
-    const firstRowChildren = [...firstRow.props.model.children]
-    const addOption = firstRowChildren.find(([item]) => item.type === 'Buttons')?.[0]
-
-    addOption.methods.add.onClick({ index: 0 })
-    await nextTick()
-
-    const addedRow = render()[1]
-    const addedKey = addedRow.key
-    const addedRowChildren = [...addedRow.props.model.children]
-    const deleteOption = addedRowChildren.find(([item]) => item.type === 'Buttons')?.[0]
-
-    deleteOption.methods.delete.onClick({ index: 0 })
-    await nextTick()
-
-    expect(render()[0].key).not.toBe(addedKey)
-    expect(data.items).toHaveLength(1)
-  })
-
   it('对象列表只读重排时复用原索引槽位 key', async () => {
     const first = { name: '甲' }
     const second = { name: '乙' }

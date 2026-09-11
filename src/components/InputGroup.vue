@@ -22,7 +22,7 @@ export default defineComponent({
 
     const formItemContext = ref()
     let ruleObj = formatRule(model.rules, props.effectData)
-    let _propChain = model.propChain
+    let _propChain 
     const extProps: Obj = {}
     // InputGroup 表单校验
     const objectRule = {
@@ -30,6 +30,8 @@ export default defineComponent({
       required: false,
       fields: {} as Obj,
     }
+    const isBind = model.refName !== undefined || model.index !== undefined
+
     if (model.children && compact) {
       for (const val of model.children.values()) {
         if (val.rules?.length && val.fieldName) {
@@ -43,9 +45,9 @@ export default defineComponent({
           })
 
           const rule = (objectRule.fields[val.fieldName] = formatRule(val.rules, effectData))
-          if (!model.refName) {
+          if (!isBind) {
             // Group 未绑定字段，取第一个子项的字段作为校验字段
-            _propChain = val.propChain
+            _propChain = val
             ruleObj = rule
             watch(
               () => unref(val.refData),
@@ -58,12 +60,14 @@ export default defineComponent({
     } else {
       extProps.style = 'margin: 0'
     }
-
-    if (model.refName) {
+    const propChain = computed(() => {
+      return _propChain ? _propChain.propChain : model.propChain
+    })
+    if (isBind) {
       ruleObj = (ruleObj || []).concat([objectRule])
       extProps.required = !!ruleObj[0]?.required
       watch(
-        () => model.refData,
+        () => unref(model.refData),
         () => formItemContext.value?.onFieldChange(),
         { deep: true }
       )
@@ -80,7 +84,7 @@ export default defineComponent({
     return () =>
       h(
         base.FormItem,
-        { ...formItemAttrs, rules: rules.value, ref: formItemContext, name: _propChain },
+        { ...formItemAttrs, rules: rules.value, ref: formItemContext, name: propChain.value },
         {
           label: _label,
           default:

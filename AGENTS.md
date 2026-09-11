@@ -19,14 +19,15 @@
 ## 表格内部实现
 
 - `request` 是所有读取请求的统一入口，负责合并分页、搜索、动态和临时参数，并维护 `loading`。
-- 公开的 `query`、`reload`、`goPage` 必须直接调用请求并返回对应 Promise，不使用节流。
+- 公开的 `query`、`reload` 使用 300ms 尾部节流并合并窗口内的调用；`goPage` 取消待执行调度后立即请求。
 - `query` 回到第一页；`reload` 保留当前分页；`goPage` 更新分页后请求。
-- `throttleRequest` 只供 `SuperTable` 初始化及内部响应式参数同步使用，采用 300ms 尾部节流，只处理该窗口最后一次触发。
+- `query`、`reload`、`SuperTable` 初始化及内部响应式参数同步共用 300ms 尾部节流，只处理该窗口最后一次触发。
+- `query`、`reload` 只负责触发调度，不承诺返回可等待的请求 Promise；`goPage` 仍返回实际请求 Promise。
 - 新请求通过 `AbortController` 取消旧请求，并使用递增请求编号保证只有最后一次响应可以更新表格。
 - `apis.query` 的运行时第二参数是 `{ signal }`。请求实现未消费 `signal` 时，仍必须依靠请求编号丢弃过期响应。
 - `SuperTable` 向内部 `Table` 传递 `reload`，不重复传递 `apis`；内部 `Table` 的保存、更新、删除接口直接读取 `option.apis`。
 - 不恢复 `query(true)`。CRUD 完成后的刷新统一调用传入的 `reload`。
-- 组件卸载时取消进行中的查询。当前不取消已经进入等待期的 `throttleRequest`，修改该行为前需要确认。
+- 新查询进入等待期时立即取消进行中的请求并使旧请求编号失效；组件卸载时同时取消进行中的查询和等待期调度。
 
 ## 测试位置
 
@@ -34,6 +35,7 @@
 
 ## 其他内部实现
 
+- `InputList` 的普通非紧凑对象行将 `rowButtons` 交给生成的 `Group`；紧凑模式和原始值列表使用独立按钮模型。单个独立容器不会额外生成外层 `Group`。
 - Select 远程搜索在 `showSearch` 开启、`options` 为函数且未显式配置 `onSearch` 时，以约 600ms 节流调用 `options(effectData, keyword)`。
 - 原始值 options 数组强制使用元素本身作为 label 和 value；配置 `valueToNumber` 时改用数字下标作为兼容 value。不要把 `labelAsValue: false` 解释为关闭此规则。
 - options 支持扁平的对象数组、原始值数组、`{ value: label }` 对象、Ref、函数和标准字典结果，当前不支持 Select 分组选项或 `fieldNames.options`。

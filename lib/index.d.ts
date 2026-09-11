@@ -382,7 +382,7 @@ export declare interface ExtListGroupOption extends Omit<ExtGroupOption, 'subIte
     attrs?: {
         /** 标签后加序号 */
         labelIndex?: boolean
-        rowKey?: string
+        rowKey?: string | Fn<PropertyKey>
     }
 }
 
@@ -390,7 +390,7 @@ export declare interface ExtListOption extends ListCommon {
     attrs?:
     | (ListProps & {
         /** 列表项业务主键字段 */
-        rowKey?: string
+        rowKey?: string | Fn<PropertyKey>
     })
     | Obj
     buttons?: ExtButtons<'add' | 'refresh'>

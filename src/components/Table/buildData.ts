@@ -45,14 +45,13 @@ type BuildDataParam = {
   option: RootTableOption
   model: ModelDataGroup
   orgList: Ref<Obj[]>
-  rowKey: Fn<string>
-  setRowKey: Fn
+  rowKey: Fn<PropertyKey>
   listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
   isView?: boolean
   effectData?: Obj
 }
 
-function buildData({ option, model, orgList, rowKey, setRowKey, listener, isView, effectData }: BuildDataParam) {
+function buildData({ option, model, orgList, rowKey, listener, isView, effectData }: BuildDataParam) {
   const { modelsMap: childrenMap } = model.listData
   const context: {
     list: Ref
@@ -78,7 +77,7 @@ function buildData({ option, model, orgList, rowKey, setRowKey, listener, isView
   if (!isView && editable) {
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
 
-    const { methods, ..._context } = useTableEdit({ model, orgList, rowKey, setRowKey, editableRef })
+    const { methods, ..._context } = useTableEdit({ model, orgList, editableRef })
     Object.assign(context.methods, methods)
     Object.assign(context, _context)
   } else if (editMode === 'inline') {

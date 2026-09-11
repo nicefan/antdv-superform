@@ -1,13 +1,12 @@
 <script lang="ts">
 import { type PropType, defineComponent, h, reactive, ref, toRaw, toRef, useAttrs, watch } from 'vue'
-import { nanoid } from 'nanoid'
 import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import { createButtons } from './buttons'
 import base from './base'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { Row, Col } from 'ant-design-vue'
-import { toNode } from '../utils'
+import { toNode, useRowKey } from '../utils'
 import { globalProps } from '../plugin'
 
 export default defineComponent({
@@ -35,7 +34,7 @@ export default defineComponent({
     const orgList = toRef(model, 'refData')
 
     const attrs: Obj = useAttrs()
-    const rowKey = attrs.rowKey || 'id'
+    const { getKey } = useRowKey(attrs.rowKey || 'id')
 
     const methods = {
       add() {
@@ -47,31 +46,34 @@ export default defineComponent({
       },
     }
 
-    const keyMap = new WeakMap<object, any>()
+    const itemMap = new WeakMap<object, any>()
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
-      () => [...orgList.value],
-      (org) => {
-        listItems.value = org.map((record, idx) => {
+      [() => [...orgList.value], () => [...model.propChain]],
+      () => {
+        listItems.value = orgList.value.map((record, idx) => {
           const raw = toRaw(record)
           const newPropChain = [...propChain, idx]
-          let item = keyMap.get(raw)
+          let item = itemMap.get(raw)
           if (item) {
+            item.refData.value = record
             if (item.model.index !== idx) {
               updateModelIndex(item.model, newPropChain, idx)
               item.effectData.index = idx
             }
           } else {
+            const refData = ref(record)
             // 原数据已经存在, 此处建立表单绑定
-            const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
+            const { modelsMap } = cloneModels(childrenMap, refData, propChain, idx)
 
             item = {
-              key: record[rowKey] || nanoid(12),
-              model: { refData: ref(record), children: modelsMap, index: idx, propChain: newPropChain },
+              key: getKey(record),
+              refData,
+              model: reactive({ children: modelsMap, index: idx, propChain: newPropChain }),
               effectData: reactive({ parent: effectData, current: orgList, index: idx, record }),
             }
-            keyMap.set(raw, item)
+            itemMap.set(raw, item)
           }
           return item
         })

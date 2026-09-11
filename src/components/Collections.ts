@@ -45,7 +45,7 @@ export default defineComponent({
         parent: props.effectData,
         current: parent,
         field: subData.refName,
-        value: refData,
+        value: subData.refName && refData,
         ...(index.value !== undefined && {
           index,
           record: !subData.refName ? refData : parent,

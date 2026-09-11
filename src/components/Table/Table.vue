@@ -1,12 +1,11 @@
 <script lang="ts">
-import { h, ref, reactive, unref, type PropType, defineComponent, toRaw, toRef, watch } from 'vue'
-import { nanoid } from 'nanoid'
+import { h, ref, reactive, unref, type PropType, defineComponent, toRef, watch } from 'vue'
 import { createButtons } from '../buttons'
 import base from '../base'
 import { buildData } from './buildData'
 import { Col, Row } from 'ant-design-vue'
 import type { RootTableOption } from '../../exaTypes'
-import { toNode, createLabelNode } from '../../utils'
+import { toNode, createLabelNode, useRowKey } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
 import { buildColumns } from './buildColumns'
@@ -37,19 +36,7 @@ export default defineComponent({
   setup({ option, model, reload, effectData, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
-    const keyMap = new WeakMap<object, PropertyKey>()
-    const rowKeyField = attrs.rowKey || 'id'
-    const rowKey = (record) => {
-      const key = record[rowKeyField]
-      if (key) return key
-
-      const raw = toRaw(record)
-      if (!keyMap.has(raw)) {
-        keyMap.set(raw, nanoid(12))
-      }
-      return keyMap.get(raw)
-    }
-    const setRowKey = (record, key) => keyMap.set(toRaw(record), key)
+    const { getKey: rowKey } = useRowKey(attrs.rowKey || 'id')
     const orgList = toRef(model, 'refData')
     const __rowSelection = option.attrs?.rowSelection || undefined //?? (editInline ? {} : undefined)
     const selectedRowKeys = ref<any[]>(__rowSelection?.selectedRowKeys || [])
@@ -152,7 +139,7 @@ export default defineComponent({
       },
     }
 
-    const context = buildData({ option, model, orgList, rowKey, setRowKey, listener, isView, effectData })
+    const context = buildData({ option, model, orgList, rowKey, listener, isView, effectData })
     const columns = buildColumns({ childrenMap: model.listData.modelsMap, context, option, attrs, isView, effectData })
 
     const { list, methods, buttonMethods = methods, modalSlot } = context

@@ -31,13 +31,19 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     callbacks.push(option.onLoaded)
   }
 
+  const invalidateRequest = () => {
+    activeController?.abort()
+    activeController = undefined
+    latestRequestId += 1
+  }
+
   const request = async (param?: Obj) => {
     const _params = merge({}, pageTransform(pageParam), searchParam, param)
     const _data = option.beforeQuery?.(_params) || _params
     const queryApi = option.apis?.query
 
-    activeController?.abort()
-    const requestId = ++latestRequestId
+    invalidateRequest()
+    const requestId = latestRequestId
     if (!queryApi) {
       activeController = undefined
       loading.value = false
@@ -79,14 +85,19 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
     return Promise.all(callbacks.map((cb) => cb(res)))
   }
 
+  const requestThrottle = throttle(request, 300, { leading: false })
+  const throttleRequest = (param?: Obj) => {
+    // 新查询进入等待期时立即使旧请求失效，不能等到节流结束后再取消。
+    invalidateRequest()
+    return requestThrottle(param)
+  }
+
   const goPage = (current, size = pageParam.size) => {
+    requestThrottle.cancel()
     pageParam.current = current
     pageParam.size = size
     return request()
   }
-
-  /** 仅供组件初始化阶段合并异步触发，只执行最后一次查询。 */
-  const throttleRequest = throttle(request, 300, { leading: false })
 
   const query = (param?: Obj) => {
     if (pagination.value) pageParam.current = 1
@@ -94,9 +105,8 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   }
 
   const cancelQuery = () => {
-    activeController?.abort()
-    activeController = undefined
-    latestRequestId += 1
+    requestThrottle.cancel()
+    invalidateRequest()
     loading.value = false
   }
 

@@ -7,6 +7,8 @@
 
     <Space class="test-actions">
       <Button data-testid="validate-empty" @click="validateForm">校验当前值</Button>
+      <Button data-testid="replace-value" @click="replace">替换第二行</Button>
+      <Button data-testid="delete-row" @click="deleteRow">删除第二行</Button>
       <Button data-testid="fill-value1" @click="fillValue1">填写 value1</Button>
       <Button data-testid="fill-value2" @click="fillValue2">填写 value2</Button>
       <Button data-testid="fill-array-value" @click="fillArrayValue">填写普通数组</Button>
@@ -110,6 +112,12 @@ async function validateForm() {
   }
 }
 
+  function replace() {
+   dataSource.list.splice(1, 1, { value1: 'filled by value1', value2: '' })
+  }
+function deleteRow() {
+  dataSource.plainList.splice(1, 1)
+}
 function fillValue1() {
   form.setFieldsValue({ list: [{ value1: 'filled by value1', value2: '' }] })
   validationState.value = 'idle'

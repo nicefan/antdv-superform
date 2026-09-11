@@ -148,7 +148,7 @@ export function cloneModelsFlat<T extends GetBaseOption>(
   chain?: any[],
   index?: number
 ) {
-  const { modelsMap, rules } = cloneModels(orgMaps, data, chain, index)
+  const { modelsMap: rootModels, rules } = cloneModels(orgMaps, data, chain, index)
   const newMaps: [T, ModelData][] = []
   ;(function deepCopy(_maps) {
     for (const [option, model] of _maps) {
@@ -157,6 +157,7 @@ export function cloneModelsFlat<T extends GetBaseOption>(
         deepCopy(model.children)
       }
     }
-  })(modelsMap as any)
-  return { modelsMap: new Map(newMaps), rules }
+  })(rootModels as any)
+  // 层级模型用于重排时原位更新路径，平铺模型继续供表格按列配置快速查找。
+  return { modelsMap: new Map(newMaps), rootModels, rules }
 }

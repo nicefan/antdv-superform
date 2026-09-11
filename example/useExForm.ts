@@ -54,7 +54,7 @@ export default function exampleForm() {
     attrs: {
       layout: 'horizontal',
       labelCol: { style: 'width:120px;' },
-      wrapperCol: { style: 'margin-right: 20px' },
+      // wrapperCol: { style: 'margin-right: 20px' },
     },
     descriptionsProps: {
       mode: 'table',
@@ -501,7 +501,7 @@ export default function exampleForm() {
           },
           {
             type: 'InputNumber',
-            label: '合计',
+            label: '累计金额',
             field: 'total',
             attrs: {
               readonly: true,
@@ -518,7 +518,7 @@ export default function exampleForm() {
           },
           {
             type: 'InputNumber',
-            label: '合计2',
+            label: '总数加1',
             field: 'total2',
             attrs: {
               readonly: true,
@@ -638,10 +638,11 @@ export default function exampleForm() {
             field: 'nameList',
             rules: { required: true, min: 2 },
             label: '客户', // 唯一子元素有定义label时，此处无效
+            // span: 12, // 默认24
             attrs: {
-              // labelIndex: true, // 自动给标签加序号
+              // labelIndex: true, //每行独立FormItem,自动给标签加序号，
             },
-            // labelSlot: (data) =>{
+            // labelSlot: (data) =>{ // 开启labelIndex后，data为当前行effectData
             //   return '姓名' + '一二三四'[data.index]
             // },
             // rowButtons: ['add', 'delete'],
@@ -662,7 +663,6 @@ export default function exampleForm() {
           {
             type: 'InputList',
             field: 'datelist',
-            // subSpan: 12,
             descriptionsProps: {
               span: 24,
               column: 2,
@@ -672,9 +672,9 @@ export default function exampleForm() {
             label: '付款日期',
             // rules: { min: 2 },
             rowButtons: ['add', 'delete'],
-            // attrs: {
-            //   labelIndex: true,
-            // },
+            attrs: {
+              labelIndex: true,
+            },
             // labelSlot:(data)=> {
             //   // labelIndex为true时，可以为每行生成一个label
             //   return '付款日期' + data.index

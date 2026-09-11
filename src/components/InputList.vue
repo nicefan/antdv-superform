@@ -1,6 +1,6 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, shallowRef, toRef, watch, computed, ref, inject, nextTick } from 'vue'
-import { cloneModels } from '../utils/buildModel'
+import { type PropType, defineComponent, h, shallowRef, toRef, watch, computed, ref, unref, toRaw, reactive } from 'vue'
+import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { toNode } from '../utils'
@@ -34,21 +34,19 @@ export default defineComponent({
     const { modelsMap: childrenMap } = model.listData
 
     const fristItem = columns[0] as MixOption & { type: string }
+    const orgModel = childrenMap.get(fristItem) as any
 
     // 普通数组，值对应下标
     const isSingle = columns.length === 1 && fristItem.field === '$index'
 
     const isFormItem = !labelIndex && (label || labelSlot)
 
-    // const { propChain } = model
     const orgList = toRef(model, 'refData')
-    const extProvider = inject<Obj>('exaProvider') || {}
     const methods = {
       add: {
-        onClick({ index }) {
-          // const list = [...orgList.value]
+        onClick({ index, ...rest }) {
           orgList.value.splice(index + 1, 0, isSingle ? undefined : {})
-          // orgList.value = list
+          backList.splice(index + 1, 0, undefined)
         },
         icon: () => h(PlusOutlined),
       },
@@ -58,11 +56,12 @@ export default defineComponent({
         icon: () => h(MinusOutlined),
         onClick({ index }) {
           orgList.value.splice(index, 1)
+          backList.splice(index, 1)
         },
       },
     }
 
-    const rowButtonsConfig: any = !isView &&
+    let rowButtonsConfig: any = !isView &&
       rowButtons !== false && {
         type: 'Buttons',
         buttonType: 'link',
@@ -74,90 +73,98 @@ export default defineComponent({
         actions: ['add', 'delete'],
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
       }
-
+    let backList: any[] = []
     const listItems = shallowRef<any[]>([])
-    // 监听数据变化
+    // 监听数据变化,普通数组只监听整体变化和长度变化
     watch(
-      [orgList, () => orgList.value.length],
+      [() => (isSingle ? orgList.value : [...orgList.value]), () => orgList.value.length, () => [...model.propChain]],
       ([list]) => {
         if (list.length === 0) {
-          list.push(isSingle ? undefined : {})
+          orgList.value.push(isSingle ? undefined : {})
           return
         }
-        listItems.value = list.map((record, idx) => {
+        listItems.value = orgList.value.map((record, idx) => {
           const propChain = [...model.propChain, idx]
 
-          if (listItems.value.length && extProvider.formRef) {
-            nextTick(() => {
-              extProvider.formRef.value?.validate([propChain])
-            })
+          let oldItem
+          if (backList.length === list.length) {
+            oldItem = backList[idx]
+          } else {
+            const oldIdx = backList.findIndex((item) => toRaw(unref(item.refData)) === toRaw(record))
+            if (oldIdx !== -1) {
+              oldItem = backList[oldIdx]
+              backList.splice(oldIdx, 1)
+            }
           }
-
-          const oldItem = listItems.value[idx]
           if (oldItem) {
-            oldItem.refData.value = record
+            if (!isSingle) oldItem.refData.value = record
+            if (oldItem.model.index !== idx) {
+              updateModelIndex(oldItem.model, propChain, idx)
+              oldItem.effectData.index = idx
+            }
             return oldItem
           }
 
-          const refData = computed({
-            get: () => orgList.value[idx],
-            set: (val) => (orgList.value[idx] = val),
-          })
-          const newModel: Obj = {
+          const newModel: Obj = reactive({
+            initialValue: fristItem.initialValue,
             index: idx,
             parent: orgList,
-            refData,
             propChain,
-          }
+          })
+          const refData = !isSingle
+            ? ref(record)
+            : computed({
+                get: () => orgList.value[newModel.index],
+                set: (val) => (orgList.value[newModel.index] = val),
+              })
+          newModel.refData = refData
+
           const ghostModel = new Map()
           let itemOption: Obj
           if (isSingle) {
             itemOption = { ...fristItem }
-            ghostModel.set(itemOption, {
-              ...childrenMap.get(fristItem),
-              ...newModel,
-            })
+            Object.assign(newModel, { initialValue: orgModel.initialValue, rules: orgModel.rules })
+            ghostModel.set(itemOption, newModel)
           } else {
             if (childrenMap.size === 1 && !fristItem.field && independentTypes.includes(fristItem.type)) {
-              itemOption = { ...fristItem, field: String(idx) }
-              const oldModel = [...childrenMap.values()][0]
-              ghostModel.set(itemOption, {
-                ...oldModel,
-                ...newModel,
-                refName: String(idx),
-                children: cloneModels(oldModel.children || new Map(), refData, propChain).modelsMap,
+              itemOption = { ...fristItem }
+              Object.assign(newModel, {
+                initialValue: orgModel.initialValue,
+                rules: orgModel.rules,
+                children: cloneModels(orgModel.children || new Map(), refData, propChain).modelsMap,
               })
+              ghostModel.set(itemOption, newModel)
             } else {
-              itemOption = compact
-                ? {
-                    ..._option,
-                    type: 'InputGroup',
-                    initialValue: undefined,
-                    field: String(idx),
-                  }
-                : { type: 'Group', span: 'auto' }
-
-              ghostModel.set(itemOption, {
-                ...newModel,
-                refName: String(idx),
-                children: cloneModels(childrenMap, refData, propChain).modelsMap,
-              })
+              // 不推荐写法，根选项的动态选项配置不能带进来，所以无法补充配置
+              itemOption = {
+                // ..._option,
+                type: compact ? 'InputGroup' : 'Group',
+                // initialValue: undefined,
+                span: 'auto',
+              }
+              newModel.children = cloneModels(childrenMap, refData, propChain).modelsMap
+              ghostModel.set(itemOption, newModel)
             }
           }
           if (labelIndex) {
             itemOption.label ??= label
-            itemOption.labelSlot ??= labelSlot || itemOption.label + String(idx + 1)
+            itemOption.labelSlot ??= labelSlot || (({ index }) => itemOption.label + String(index + 1))
           }
           //将按钮加入排板
-          rowButtonsConfig && ghostModel.set(rowButtonsConfig, { parent: orgList, index: idx })
+          if (itemOption.type === 'Group' && labelIndex) {
+            itemOption.buttons = rowButtonsConfig
+          } else if (rowButtonsConfig) {
+            ghostModel.set(rowButtonsConfig, reactive({ parent: orgList, index: idx, propChain, refData }))
+          }
           return {
-            children: ghostModel,
-            model: { parent: orgList, children: ghostModel, index: idx },
+            model: reactive({ parent: orgList, children: ghostModel, index: idx, propChain }),
             refData,
             key: nanoid(),
-            // effectData: reactive({ parent: effectData, current: orgList, index: idx, record: refData }),
+            effectData: reactive({ parent: effectData, current: orgList, index: idx }),
           }
         })
+        // 新行生成后替换增删操作的临时缓存，避免输入时因占位仍为空而重建组件。
+        backList = [...listItems.value]
       },
       {
         immediate: true,
@@ -165,7 +172,7 @@ export default defineComponent({
     )
 
     const render = () => {
-      return listItems.value.map(({ model, key }) => {
+      return listItems.value.map(({ model, effectData, key }) => {
         return h(Collections, { model, option: { subSpan: 'auto', ...option }, effectData, key })
       })
     }
@@ -192,14 +199,14 @@ export default defineComponent({
             )
         } else {
           return () =>
-            listItems.value.map(({ children, key }) => {
+            listItems.value.map(({ model, key }) => {
               // const [_option, model] = [...children][0]
               // const option = _option.descriptionsProps
               //   ? _option
               //   : { ..._option, descriptionsProps: { mode: 'default', labelCol: {} } }
               return h(DetailLayout, {
                 key,
-                modelsMap: children,
+                modelsMap: model.children,
                 option,
                 effectData,
               })
@@ -208,7 +215,7 @@ export default defineComponent({
       }
       const attrs: Obj = {}
       const children = computed(() => {
-        return new Map(listItems.value.flatMap(({ children }) => [...children])) as ModelsMap
+        return new Map(listItems.value.flatMap(({ model }) => [...model.children])) as ModelsMap
       })
 
       return () =>
@@ -236,7 +243,8 @@ export default defineComponent({
             label,
             labelSlot,
             type: 'InfoSlot',
-            block: false,
+            // block: false,
+            span: 24,
             render,
           },
           model,

@@ -1,36 +1,45 @@
-import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, shallowReactive, toRef, ref } from 'vue'
+import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, toRef } from 'vue'
 import { isFunction } from 'lodash-es'
 import Controls from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
 import base from '../base'
 import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
-import { formatRule } from '../../utils/buildModel'
+import { formatRule, updateModelIndex } from '../../utils/buildModel'
 
-export default function ({ model, orgList, rowKey, setRowKey, editableRef }) {
+export default function ({ model, orgList, editableRef }) {
   const { modelsMap: childrenMap } = model.listData
-  const editList = ref<any[]>([])
+  const propChain = toRef(model, 'propChain', [])
   const listMap = new WeakMap()
-  const keyMap = new WeakMap()
   // 监听数据变化
   watch(
-    () => [...orgList.value],
-    (org) => {
-      // 使用原响应列表拿到的子集才是同一引用
-      editList.value = org.map((record, idx) => {
-        const listItem = listMap.get(toRaw(record)) || shallowReactive({})
+    [() => [...orgList.value], () => [...propChain.value]],
+    ([org]) => {
+      org.forEach((record, idx) => {
+        const raw = toRaw(record)
+        const newPropChain = [...propChain.value, idx]
+        let listItem = listMap.get(raw)
 
-        if (listItem.index !== idx) {
-          listItem.index = idx
-          const { modelsMap } = cloneModelsFlat<ExtColumnsItem>(toRaw(childrenMap), record, model.propChain, idx)
-          listItem.modelsMap = modelsMap
+        if (listItem) {
+          const oldPropChain = listItem.model.propChain
+          const pathChanged =
+            oldPropChain.length !== newPropChain.length || oldPropChain.some((part, index) => part !== newPropChain[index])
+          if (listItem.model.index !== idx || pathChanged) {
+            updateModelIndex(listItem.model, newPropChain, idx)
+          }
+        } else {
+          const { modelsMap, rootModels } = cloneModelsFlat<ExtColumnsItem>(
+            toRaw(childrenMap),
+            record,
+            model.propChain,
+            idx
+          )
+          listItem = {
+            modelsMap,
+            model: reactive({ children: rootModels, index: idx, propChain: newPropChain }),
+          }
+          listMap.set(raw, listItem)
         }
-        listItem.record ??= reactive({ ...toRefs(record) })
-        const hash = rowKey(record)
-        setRowKey(listItem.record, hash)
-        listMap.set(toRaw(record), listItem)
-        keyMap.set(toRaw(listItem.record), listItem)
-        return listItem.record
       })
     },
     {
@@ -61,7 +70,7 @@ export default function ({ model, orgList, rowKey, setRowKey, editableRef }) {
     setup({ option }, ctx) {
       const { record } = ctx.attrs as Obj
       const model = computed(() => {
-        const row = keyMap.get(toRaw(record))
+        const row = listMap.get(toRaw(record))
         return row.modelsMap.get(option)
       })
       const { index, parent, refData } = toRefs(model.value)
@@ -106,7 +115,7 @@ export default function ({ model, orgList, rowKey, setRowKey, editableRef }) {
   }
 
   return {
-    list: editList,
+    list: orgList,
     methods,
     getEditRender,
   }

@@ -387,7 +387,7 @@ interface ExtListOption extends ListCommon {
   attrs?:
     | (ListProps & {
         /** 列表项业务主键字段 */
-        rowKey?: string
+        rowKey?: string | Fn<PropertyKey>
       })
     | Obj
   buttons?: ExtButtons<'add' | 'refresh'>
@@ -396,7 +396,7 @@ interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'>, ListCommo
   attrs?: {
     /** 标签后加序号 */
     labelIndex?: boolean
-    rowKey?: string
+    rowKey?: string | Fn<PropertyKey>
   }
 }
 interface ExtInputList extends ExtFormItemOption, ListCommon {
