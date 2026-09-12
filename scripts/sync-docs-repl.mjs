@@ -15,7 +15,7 @@ if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
 }
 
 const files = {
-  "antd.js": join(projectRoot, "dist", "antd.js"),
+  "antd.js": join(projectRoot, ".repl-dist", "antd.js"),
   "antd.css": join(
     projectRoot,
     "node_modules",
@@ -23,8 +23,28 @@ const files = {
     "dist",
     "antd.css"
   ),
-  "superform-antdv.js": join(projectRoot, "dist", "superform-antdv.js"),
-  "style.css": join(projectRoot, "dist", "style.css"),
+  "superform-antdv.js": join(projectRoot, ".repl-dist", "superform-antdv.js"),
+  "element-plus.js": join(projectRoot, ".repl-dist", "element-plus", "element-plus.js"),
+  "element-plus.css": join(
+    projectRoot,
+    "node_modules",
+    "element-plus",
+    "dist",
+    "index.css"
+  ),
+  "superform-element-plus.js": join(
+    projectRoot,
+    ".repl-dist",
+    "element-plus",
+    "superform-element-plus.js"
+  ),
+  "superform-element-plus.css": join(
+    projectRoot,
+    ".repl-dist",
+    "element-plus",
+    "style.css"
+  ),
+  "style.css": join(projectRoot, ".repl-dist", "style.css"),
   "vue.runtime.esm-browser.js": join(
     projectRoot,
     "node_modules",
@@ -87,4 +107,4 @@ manifest.versions = [
   ...manifest.versions.filter((item) => item.version !== version),
 ];
 await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
-console.log(`演练场依赖已生成：superform-antdv ${version}`);
+console.log(`演练场依赖已生成：SuperForm ${version}（AntDV + Element Plus）`);

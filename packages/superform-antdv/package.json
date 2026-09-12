@@ -10,23 +10,23 @@
   },
   "homepage": "https://nicefan.github.io/antdv-superform/",
   "type": "module",
-  "main": "./lib/index.js",
-  "module": "./lib/index.js",
-  "types": "./lib/index.d.ts",
-  "files": ["lib"],
-  "sideEffects": ["./lib/style.css"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "sideEffects": ["./dist/style.css"],
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./components": {
-      "types": "./lib/components.d.ts",
-      "import": "./lib/components.js"
+      "types": "./dist/components.d.ts",
+      "import": "./dist/components.js"
     },
     "./unplugin": {
-      "types": "./lib/unplugin.d.ts",
-      "import": "./lib/unplugin.js"
+      "types": "./dist/unplugin.d.ts",
+      "import": "./dist/unplugin.js"
     }
   },
   "scripts": {

@@ -27,48 +27,48 @@ describe("发布声明", () => {
     expect(packageJson.exports).not.toHaveProperty("./adapter/element-plus");
     for (const adapterPackage of [antdvPackage, elementPlusPackage]) {
       expect(adapterPackage.exports["."]).toEqual({
-        types: "./lib/index.d.ts",
-        import: "./lib/index.js",
+        types: "./dist/index.d.ts",
+        import: "./dist/index.js",
       });
       expect(adapterPackage.exports).not.toHaveProperty("./full");
       expect(adapterPackage.exports["./components"]).toEqual({
-        types: "./lib/components.d.ts",
-        import: "./lib/components.js",
+        types: "./dist/components.d.ts",
+        import: "./dist/components.js",
       });
       expect(adapterPackage.exports["./unplugin"]).toEqual({
-        types: "./lib/unplugin.d.ts",
-        import: "./lib/unplugin.js",
+        types: "./dist/unplugin.d.ts",
+        import: "./dist/unplugin.js",
       });
       expect(adapterPackage.license).toBe("MIT");
-      expect(adapterPackage.sideEffects).toEqual(["./lib/style.css"]);
+      expect(adapterPackage.sideEffects).toEqual(["./dist/style.css"]);
       expect(adapterPackage.peerDependencies).not.toHaveProperty("superform");
       expect(adapterPackage.devDependencies.superform).toBe("workspace:*");
       expect(adapterPackage.dependencies.unplugin).toBe("^3.3.0");
     }
 
     const rootDeclaration = await readFile(
-      path.join(workspace, "lib/index.d.ts"),
+      path.join(workspace, "dist/index.d.ts"),
       "utf8"
     );
     const antdvDeclaration = await readFile(
-      path.join(workspace, "packages/superform-antdv/lib/index.d.ts"),
+      path.join(workspace, "packages/superform-antdv/dist/index.d.ts"),
       "utf8"
     );
     const elementPlusDeclaration = await readFile(
-      path.join(workspace, "packages/superform-element-plus/lib/index.d.ts"),
+      path.join(workspace, "packages/superform-element-plus/dist/index.d.ts"),
       "utf8"
     );
     const antdvComponentsDeclaration = await readFile(
       path.join(
         workspace,
-        "packages/superform-antdv/lib/components.d.ts"
+        "packages/superform-antdv/dist/components.d.ts"
       ),
       "utf8"
     );
     const elementPlusComponentsDeclaration = await readFile(
       path.join(
         workspace,
-        "packages/superform-element-plus/lib/components.d.ts"
+        "packages/superform-element-plus/dist/components.d.ts"
       ),
       "utf8"
     );
@@ -95,19 +95,19 @@ describe("发布声明", () => {
       await readFile(path.join(workspace, "package.json"), "utf8")
     );
     expect(packageJson.exports["./unplugin/vite"].types).toBe(
-      "./lib/vite.d.ts"
+      "./dist/vite.d.ts"
     );
     expect(packageJson.exports).not.toHaveProperty("./unplugin/rollup");
     expect(packageJson.exports).not.toHaveProperty("./unplugin/webpack");
     await expect(
-      access(path.join(workspace, "lib/unplugin/rollup.js"))
+      access(path.join(workspace, "dist/unplugin/rollup.js"))
     ).rejects.toThrow();
     await expect(
-      access(path.join(workspace, "lib/unplugin/webpack.js"))
+      access(path.join(workspace, "dist/unplugin/webpack.js"))
     ).rejects.toThrow();
 
     const declaration = await readFile(
-      path.join(workspace, "lib/vite.d.ts"),
+      path.join(workspace, "dist/vite.d.ts"),
       "utf8"
     );
     expect(declaration).not.toContain("../src");
@@ -116,7 +116,7 @@ describe("发布声明", () => {
 
   it("主声明不包含开发环境的类型扩展或内部依赖路径", async () => {
     const declaration = await readFile(
-      path.join(workspace, "lib/index.d.ts"),
+      path.join(workspace, "dist/index.d.ts"),
       "utf8"
     );
 

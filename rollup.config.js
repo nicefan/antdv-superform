@@ -14,7 +14,7 @@ const require = createRequire(import.meta.url)
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('./package.json')
 const name = pkg.name
-const dir = 'dist'
+const dir = '.rollup-dist'
 const banner = `/*!
   * ${pkg.name} v${pkg.version}
   * (c) ${new Date().getFullYear()} 范阳峰 covien@msn.com
@@ -62,7 +62,7 @@ const types = {
   output: {
     format: 'es',
     dir: '.',
-    entryFileNames: 'lib/index.d.ts',
+    entryFileNames: 'dist/index.d.ts',
   },
   plugins: [dts()],
 }

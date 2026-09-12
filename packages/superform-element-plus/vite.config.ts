@@ -31,7 +31,7 @@ export default defineConfig({
       formats: ["es"],
       fileName: (_, entryName) => `${entryName}.js`,
     },
-    outDir: "lib",
+    outDir: "dist",
     minify: false,
     rollupOptions: {
       external: ["vue", "unplugin", /^node:/, /^element-plus(?:\/|$)/],
@@ -48,7 +48,7 @@ export default defineConfig({
     viteDts({
       entryRoot: resolve(__dirname, "../.."),
       include: ["src", "../../src", "../../types"],
-      outDir: "lib",
+      outDir: "dist",
       rollupTypes: true,
       insertTypesEntry: false,
       copyDtsFiles: true,

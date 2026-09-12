@@ -117,7 +117,7 @@ import {
 import type { ExtFormOption, RootTableOption, UniOption } from "superform-antdv";
 ```
 
-不要从 `lib/`、`src/` 或其他内部路径导入。第三方 Adapter 开发者才直接安装 `superform` 并使用 `superform/sdk`。
+不要从 `dist/`、`src/` 或其他内部路径导入。第三方 Adapter 开发者才直接安装 `superform` 并使用 `superform/sdk`。
 
 ## AI 工具初始化
 

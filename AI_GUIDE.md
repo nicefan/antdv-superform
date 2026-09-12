@@ -17,7 +17,7 @@
    import { SuperForm, useForm, SuperTable, useTable } from "superform-antdv";
    ```
 
-   Element Plus 项目改用 `superform-element-plus`。不要从 `lib/...` 或包内源码路径导入；`/components` 和 `/unplugin` 是明确公开的子路径。
+   Element Plus 项目改用 `superform-element-plus`。不要从 `dist/...` 或包内源码路径导入；`/components` 和 `/unplugin` 是明确公开的子路径。
 
 2. 先检查消费项目是否有本地安装器或二次封装。若项目已经统一配置字典、权限、上传、默认按钮、组件替换或扩展字段，应沿用该封装，不要在页面重复安装或复制默认配置。
 

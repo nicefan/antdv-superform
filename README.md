@@ -431,7 +431,7 @@ pnpm run build
 
 - `pnpm --filter superform-antdv-example dev`：启动 AntDV 示例；Element Plus 使用对应 example 包名。
 - `pnpm test`：运行 Vitest 单元测试。
-- `pnpm run build`：执行类型检查并生成 `lib/`。
+- `pnpm run build`：执行类型检查并生成 `dist/`。
 - `pnpm serve`：预览构建结果。
 
 ## 文档

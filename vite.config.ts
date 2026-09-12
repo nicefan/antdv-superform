@@ -9,17 +9,27 @@ import viteDts from 'vite-plugin-dts'
 import { resolve } from 'path'
 import { readFile, rm, writeFile } from 'node:fs/promises'
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) =>
-  mode === 'dist'
+export default defineConfig(({ mode }) => {
+  const isElementPlusRepl = mode === 'dist-element-plus'
+  return mode === 'dist' || isElementPlusRepl
     ? {
         build: {
           lib: {
-            entry: resolve(__dirname, 'scripts/repl-entry.ts'),
+            entry: resolve(
+              __dirname,
+              isElementPlusRepl
+                ? 'scripts/repl-element-plus-entry.ts'
+                : 'scripts/repl-entry.ts'
+            ),
             name: 'superform',
             formats: ['es'],
-            fileName: 'superform-antdv',
+            fileName: isElementPlusRepl
+              ? 'superform-element-plus'
+              : 'superform-antdv',
           },
-          outDir: 'dist',
+          outDir: isElementPlusRepl
+            ? '.repl-dist/element-plus'
+            : '.repl-dist',
           // minify: false,
           rollupOptions: {
             external: ['vue'],
@@ -29,7 +39,14 @@ export default defineConfig(({ mode }) =>
               minifyInternalExports: false,
               // 在线 REPL 需要同时映射产品包和 UI 包，保持在同一构建图中以共享依赖实例。
               manualChunks(id) {
-                if (id.includes('antdv-next')) return 'antd'
+                if (!isElementPlusRepl && id.includes('antdv-next')) return 'antd'
+                if (
+                  isElementPlusRepl &&
+                  id.includes('/node_modules/') &&
+                  id.includes('element-plus')
+                ) {
+                  return 'element-plus'
+                }
               },
             },
           },
@@ -53,7 +70,7 @@ export default defineConfig(({ mode }) =>
             name: 'superform',
             fileName: (_, entryName) => `${entryName}.js`,
           },
-          outDir: 'lib',
+          outDir: 'dist',
           minify: false,
           rollupOptions: {
             external: [
@@ -66,12 +83,6 @@ export default defineConfig(({ mode }) =>
               /lodash/,
               '@vueuse/core',
             ],
-            // input: [`dist/index.d.ts`],
-            // output: {
-            //   format: 'es',
-            //   dir: '.',
-            //   entryFileNames: 'lib/[name].ts',
-            // },
             output: {
               intro: (chunk) => (chunk.name === 'index' ? 'import "./style.css";' : ''),
               chunkFileNames: '[name].js',
@@ -86,7 +97,6 @@ export default defineConfig(({ mode }) =>
           vueJsx(),
           viteDts({
             include: ['src'],
-            // outDir: 'dist',
             staticImport: true,
             // declarationOnly: true,
             rollupTypes: true,
@@ -97,13 +107,13 @@ export default defineConfig(({ mode }) =>
               // 汇总过程需要代理声明作为入口，结束后只保留 package exports 指向的汇总声明。
               await Promise.all(
                 ['unplugin/vite'].map((name) =>
-                  rm(resolve(__dirname, `lib/${name}.d.ts`), { force: true })
+                  rm(resolve(__dirname, `dist/${name}.d.ts`), { force: true })
                 )
               )
               // API Extractor 在 Windows 下输出 CRLF，统一为仓库使用的 LF。
               await Promise.all(
                 ['index', 'vite', 'sdk'].map(async (name) => {
-                  const file = resolve(__dirname, `lib/${name}.d.ts`)
+                  const file = resolve(__dirname, `dist/${name}.d.ts`)
                   const content = await readFile(file, 'utf8')
                   await writeFile(file, content.replace(/\r\n/g, '\n'), 'utf8')
                 })
@@ -127,4 +137,4 @@ export default defineConfig(({ mode }) =>
           },
         },
       }
-)
+})

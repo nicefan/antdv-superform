@@ -31,7 +31,7 @@ export default defineConfig({
       formats: ["es"],
       fileName: (_, entryName) => `${entryName}.js`,
     },
-    outDir: "lib",
+    outDir: "dist",
     minify: false,
     rollupOptions: {
       external: [

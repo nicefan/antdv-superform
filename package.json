@@ -14,7 +14,7 @@
   "files": [
     "bin",
     "shared",
-    "lib",
+    "dist",
     "types",
     "index.d.ts",
     "AI_GUIDE.md"
@@ -23,30 +23,31 @@
     "superform": "bin/antdv-superform.mjs"
   },
   "type": "module",
-  "main": "./lib/index.js",
-  "module": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./unplugin/vite": {
-      "types": "./lib/vite.d.ts",
-      "import": "./lib/unplugin/vite.js"
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/unplugin/vite.js"
     },
     "./sdk": {
-      "types": "./lib/sdk.d.ts",
-      "import": "./lib/sdk.js"
+      "types": "./dist/sdk.d.ts",
+      "import": "./dist/sdk.js"
     }
   },
   "scripts": {
+    "dev:antdv": "pnpm --filter superform-antdv-example dev",
+    "dev:element-plus": "pnpm --filter superform-element-plus-example dev",
     "type-check": "vue-tsc --noEmit",
     "build:core": "vue-tsc --noEmit && vite build",
     "build": "pnpm run build:core && pnpm --filter superform-antdv build && pnpm --filter superform-element-plus build",
-    "build:examples": "pnpm --filter superform-antdv-example build && pnpm --filter superform-element-plus-example build",
     "test": "vitest run",
-    "build:dist": "vite build --mode dist && node scripts/sync-docs-repl.mjs",
+    "build:repl": "vite build --mode dist && vite build --mode dist-element-plus && node scripts/sync-docs-repl.mjs",
     "hooks:install": "git config core.hooksPath .githooks",
     "docs:dev": "pnpm --dir docs dev",
     "docs:check-types": "pnpm --dir docs check:type-coverage",
