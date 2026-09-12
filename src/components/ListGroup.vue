@@ -1,6 +1,6 @@
 <script lang="ts">
 import { type PropType, defineComponent, h, reactive, ref, toRef, watch, toRaw } from 'vue'
-import { cloneModels } from '../utils/buildModel'
+import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import Controls from '.'
 import { nanoid } from 'nanoid'
 import { globalProps } from '../plugin'
@@ -30,7 +30,6 @@ export default defineComponent({
     const { columns, rowButtons, slots: optionSlots, ...option } = props.option
     const { modelsMap: childrenMap, rules } = model.listData
 
-    const { propChain } = model
     const orgList = toRef(model, 'refData')
 
     const methods = {
@@ -68,23 +67,30 @@ export default defineComponent({
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
-      orgList,
-      (list) => {
+      [() => [...orgList.value], () => [...model.propChain]],
+      () => {
+        const list = orgList.value
         if (list.length === 0) {
           list.push({})
         }
 
         listItems.value = list.map((record, idx) => {
           const raw = toRaw(record)
-          if (!keyMap.has(raw)) {
-            keyMap.set(raw, record[rowKey] || nanoid(12))
+          const previousItem = keyMap.get(raw)
+          if (previousItem) {
+            previousItem.refData.value = record
+            updateModelIndex(previousItem.model, [...model.propChain, idx], idx)
+            previousItem.effectData.index = idx
+            return previousItem
           }
           // 原数据已经存在, 此处建立表单绑定
-          const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
+          const refData = ref(record)
+          const { modelsMap } = cloneModels(childrenMap, refData, model.propChain, idx)
 
-          return {
-            key: keyMap.get(raw),
-            model: { refData: ref(record), children: modelsMap, index: idx },
+          const item = {
+            key: record[rowKey] || nanoid(12),
+            refData,
+            model: reactive({ refData, children: modelsMap, index: idx, propChain: [...model.propChain, idx] }),
             effectData: reactive({
               parent: effectData,
               current: orgList,
@@ -92,6 +98,8 @@ export default defineComponent({
               record,
             }),
           }
+          keyMap.set(raw, item)
+          return item
         })
       },
       {

@@ -25,10 +25,24 @@ describe('ListGroup', () => {
       { slots: {} }
     ) as () => any[]
     const initialKeys = render().map((node) => node.key)
+    const secondModel = render()[1].props.model
+    const secondField = [...secondModel.children.values()][0] as ModelData
 
     data.items = [second, first]
     await nextTick()
 
     expect(render().map((node) => node.key)).toEqual(initialKeys.reverse())
+    expect(render()[0].props.model).toBe(secondModel)
+    expect(secondField.propChain).toEqual(['items', 0, 'name'])
+
+    data.items.unshift({ name: '新增' })
+    await nextTick()
+    expect(render()).toHaveLength(3)
+    expect(render()[1].props.model).toBe(secondModel)
+    expect(secondField.propChain).toEqual(['items', 1, 'name'])
+
+    data.items.splice(0, 1)
+    await nextTick()
+    expect(secondField.propChain).toEqual(['items', 0, 'name'])
   })
 })

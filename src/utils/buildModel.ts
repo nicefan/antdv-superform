@@ -99,6 +99,25 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
   }
 }
 
+/** 行组件会持有初次传入的模型，移动行时保留模型身份并同步整个子树的校验路径。 */
+export function updateModelIndex(model: Obj, propChain: any[], index: number) {
+  const previousChain = model.propChain
+  if (
+    model.index === index &&
+    previousChain.length === propChain.length &&
+    previousChain.every((part, idx) => part === propChain[idx])
+  ) return
+  const updateModel = (current: Obj) => {
+    if (current.propChain?.length && previousChain.every((part, idx) => current.propChain[idx] === part)) {
+      current.propChain = [...propChain, ...current.propChain.slice(previousChain.length)]
+    }
+    if (current.index !== undefined) current.index = index
+    current.children?.forEach(updateModel)
+  }
+  // listData 是共享的 schema 模板；嵌套列表通过监听自身路径更新实际行模型。
+  updateModel(model)
+}
+
 export function cloneModels<T extends ModelsMap>(orgModels: T, data, parentChain: any[] = [], index?: number) {
   const currentData = toRef(data || {})
   const newRules = {}

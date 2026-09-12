@@ -1,6 +1,6 @@
 <script lang="ts">
 import Collections from './Collections'
-import { computed, defineComponent, h, inject, mergeProps, reactive, ref, unref, watch } from 'vue'
+import { computed, defineComponent, h, inject, mergeProps, reactive, ref, toRef, unref, watch } from 'vue'
 import { globalProps } from '../plugin'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
@@ -21,37 +21,31 @@ export default defineComponent({
 
     const formItemContext = ref()
     let ruleObj = formatRule(model.rules, props.effectData)
-    let _propChain = model.propChain
+    let _propChain = toRef(model, 'propChain')
     const extProps: Obj = {}
-    // InputGroup 表单校验
-    if (ruleObj) {
-      watch(
-        () => model.refData,
-        () => formItemContext.value?.onFieldChange?.(),
-        { deep: true }
-      )
-    } else if (model.children && compact) {
-      const rule = {
-        type: 'object',
-        required: false,
-        fields: {} as Obj,
-      }
+    const objectRule = {
+      type: 'object',
+      required: false,
+      fields: {} as Obj,
+    }
+    // 列表行由 index 绑定，即使没有 refName，也应按整行对象校验子字段。
+    const isBind = model.refName !== undefined || model.index !== undefined
+    if (model.children && compact) {
       for (const val of model.children.values()) {
-        if (val.rules && val.fieldName) {
-          if (val.rules[0].required) rule.required = true
+        if (val.rules?.length && val.fieldName) {
+          if (val.rules[0].required) objectRule.required = true
           const effectData = reactive({
             ...props.effectData,
             parent: props.effectData,
-            current: val.parent,
+            current: toRef(val, 'parent'),
             field: val.fieldName,
-            value: val.refData,
+            value: toRef(val, 'refData'),
           })
-
-          rule.fields[val.fieldName] = formatRule(val.rules, effectData)
-          if (!model.refName) {
-            // Group 未绑定字段，取第一个子项的字段作为校验字段
-            _propChain = val.propChain
-            ruleObj = rule.fields[val.fieldName]
+          const childRules = (objectRule.fields[val.fieldName] = formatRule(val.rules, effectData))
+          if (!isBind) {
+            // 未绑定对象的分组沿用第一个子字段作为校验入口。
+            _propChain = toRef(val, 'propChain')
+            ruleObj = childRules
             watch(
               () => unref(val.refData),
               () => formItemContext.value?.onFieldChange?.()
@@ -60,18 +54,20 @@ export default defineComponent({
           }
         }
       }
-      if (model.refName) {
-        ruleObj = [rule]
-        watch(
-          () => model.refData,
-          () => formItemContext.value?.onFieldChange?.(),
-          { deep: true }
-        )
-      }
     } else {
       extProps.style = 'margin: 0'
     }
-    extProps.required = !!ruleObj[0]?.required
+    if (isBind) {
+      // 自身规则与紧凑布局的子字段规则都要生效，不能因已有规则而跳过子字段。
+      ruleObj = (ruleObj || []).concat([objectRule])
+      watch(
+        () => unref(model.refData),
+        () => formItemContext.value?.onFieldChange?.(),
+        { deep: true }
+      )
+    }
+    ruleObj ||= []
+    extProps.required = ruleObj.some((rule) => rule.required)
     const inheritAttrs = inject<Obj>('inheritOptions', {})
 
     // 生成FormItem
@@ -87,7 +83,7 @@ export default defineComponent({
           ...formItemAttrs,
           rules: rules.value,
           ref: formItemContext,
-          name: _propChain,
+          name: _propChain.value,
         },
         {
           label: _label,

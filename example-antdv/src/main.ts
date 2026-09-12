@@ -74,7 +74,7 @@ const defaultProps = {
     indexColumn: true,
   },
   Form: {
-    layout: "vertical",
+    // layout: "vertical",
   },
   Upload: {
     uploadMode: "submit",

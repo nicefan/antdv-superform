@@ -1,7 +1,8 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, reactive, shallowRef, toRef, watch, toRaw, computed } from 'vue'
-import { cloneModels } from '../utils/buildModel'
+import { type PropType, defineComponent, h, reactive, shallowRef, toRef, watch, toRaw, computed, ref } from 'vue'
+import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import Collections from './Collections'
+import { containers } from '.'
 import { DetailLayout } from './Detail'
 import { getSemanticIconNode, toNode } from '../utils'
 import { renderUILayout } from '../adapter'
@@ -36,15 +37,16 @@ export default defineComponent({
 
     const isFormItem = !labelIndex && (label || labelSlot)
 
-    // const { propChain } = model
     const orgList = toRef(model, 'refData')
-    let singleVersion = 0
+    let backList: any[] = []
+    let pendingSplice = false
 
     const methods = {
       add: {
         onClick({ index }) {
           orgList.value.splice(index + 1, 0, isSingle ? undefined : {})
-          orgList.value = [...toRaw(orgList.value)]
+          backList.splice(index + 1, 0, undefined)
+          pendingSplice = true
         },
         icon: () => getSemanticIconNode('add'),
       },
@@ -54,7 +56,8 @@ export default defineComponent({
         icon: () => getSemanticIconNode('remove'),
         onClick({ index }) {
           orgList.value.splice(index, 1)
-          orgList.value = [...toRaw(orgList.value)]
+          backList.splice(index, 1)
+          pendingSplice = true
         },
       },
     }
@@ -72,113 +75,102 @@ export default defineComponent({
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
       }
 
-    //将配置选项下沉
-    // const groupOption = {
-    //   ..._option,
-    //   type: 'InputGroup',
-    //   label,
-    //   labelSlot,
-    //   subSpan: option.subSpan ?? 'auto',
-    // }
-
-    const keyMap = new WeakMap<object, PropertyKey>()
+    const rowCache = new WeakMap<object, any>()
     const listItems = shallowRef<any[]>([])
-    // 监听数据变化
     watch(
-      () => orgList.value.map((record) => toRaw(record)),
-      (currentList) => {
+      [() => orgList.value.map((record) => toRaw(record)), () => [...model.propChain]],
+      ([currentList]) => {
         if (currentList.length === 0) {
           orgList.value.push(isSingle ? undefined : {})
         }
-        const list = currentList.length ? currentList : orgList.value.map((record) => toRaw(record))
-        const previousItems = listItems.value
-        if (isSingle && previousItems.length !== list.length) {
-          singleVersion += 1
-        }
-        const keys = list.map((record, idx) => {
-          const rawRecord = toRaw(record)
-          if (rawRecord !== null && typeof rawRecord === 'object') {
-            if (!keyMap.has(rawRecord)) {
-              keyMap.set(rawRecord, nanoid(12))
-            }
-            return keyMap.get(rawRecord)
-          }
-          // $index 模式按索引槽位绑定普通数组，字段值变化不应改变行 key
-          return previousItems[idx]?.baseKey ?? nanoid(12)
-        })
+        const list = currentList.length ? currentList : [...orgList.value]
+        const previousItems = [...backList]
+        // 内部按钮明确知道增删位置；外部普通数组没有行标识，长度变化时按旧值逐项匹配。
+        const reuseSlots = pendingSplice || previousItems.length === list.length
         listItems.value = list.map((record, idx) => {
-          const refData = toRef(orgList.value, idx)
           const propChain = [...model.propChain, idx]
-          const newModel: Obj = {
-            index: idx,
-            parent: orgList,
-            refData,
-            propChain,
+          const raw = toRaw(record)
+          let oldItem
+          if (isSingle) {
+            if (reuseSlots) {
+              oldItem = previousItems[idx]
+            } else {
+              const oldIndex = previousItems.findIndex((item) => item && Object.is(item.snapshot, raw))
+              if (oldIndex !== -1) oldItem = previousItems.splice(oldIndex, 1)[0]
+            }
+          } else {
+            // 对象始终按身份复用，不能因长度相同而把重排行绑定到原槽位。
+            oldItem = rowCache.get(raw)
           }
+          if (oldItem) {
+            if (!isSingle) oldItem.refData.value = record
+            updateModelIndex(oldItem.model, propChain, idx)
+            oldItem.effectData.index = idx
+            oldItem.snapshot = raw
+            return oldItem
+          }
+
+          const firstItem = columns[0]
+          const orgModel = childrenMap.get(firstItem)!
+          const rowModel: Obj = reactive({ index: idx, parent: orgList, propChain })
+          // 对象子字段绑定稳定 Ref；普通数组通过最新行号访问当前数组，避免捕获旧下标。
+          const refData = isSingle
+            ? computed({
+                get: () => orgList.value[rowModel.index],
+                set: (value) => {
+                  orgList.value[rowModel.index] = value
+                },
+              })
+            : ref(record)
+          rowModel.refData = refData
           const ghostModel = new Map()
           let itemOption: Obj
           if (isSingle) {
-            itemOption = { ...columns[0] }
-            ghostModel.set(itemOption, {
-              ...childrenMap.get(columns[0]),
-              ...newModel,
+            itemOption = { ...firstItem }
+            Object.assign(rowModel, { initialValue: orgModel.initialValue, rules: orgModel.rules })
+          } else if (childrenMap.size === 1 && !firstItem.field && [...containers, 'InputGroup'].includes(firstItem.type)) {
+            itemOption = { subSpan: 'auto', ...firstItem }
+            Object.assign(rowModel, {
+              initialValue: orgModel.initialValue,
+              rules: orgModel.rules,
+              listData: orgModel.listData,
+              children: cloneModels(orgModel.children || new Map(), refData, propChain).modelsMap,
             })
           } else {
-            if (childrenMap.size === 1 || !columns[0].field) {
-              itemOption = {
-                subSpan: 'auto',
-                ...columns[0],
-                field: String(idx),
-              }
-              const oldModel = [...childrenMap.values()][0]
-              ghostModel.set(itemOption, {
-                ...oldModel,
-                ...newModel,
-                refName: String(idx),
-                children: cloneModels(oldModel.children || new Map(), record, propChain).modelsMap,
-              })
-            } else {
-              itemOption = compact
-                ? {
-                    ..._option,
-                    type: 'InputGroup',
-                    initialValue: undefined,
-                    subSpan: option.subSpan ?? 'auto',
-                    field: String(idx),
-                  }
-                : { type: 'Group', span: 'auto' }
-
-              ghostModel.set(itemOption, {
-                ...newModel,
-                refName: String(idx),
-                children: cloneModels(childrenMap, record, propChain).modelsMap,
-              })
-            }
+            itemOption = compact
+              ? { ..._option, type: 'InputGroup', initialValue: undefined, subSpan: option.subSpan ?? 'auto' }
+              : { type: 'Group', span: 'auto' }
+            rowModel.children = cloneModels(childrenMap, refData, propChain).modelsMap
           }
+          ghostModel.set(itemOption, rowModel)
           if (labelIndex) {
             itemOption.label ??= label
-            itemOption.labelSlot ??= labelSlot || itemOption.label + String(idx + 1)
+            itemOption.labelSlot ??= labelSlot || (({ index }) => itemOption.label + String(index + 1))
           }
-          //将按钮加入排板
-          rowButtonsConfig && ghostModel.set(rowButtonsConfig, { parent: orgList, index: idx })
-          return {
-            children: ghostModel,
-            model: { parent: orgList, children: ghostModel, index: idx },
+          rowButtonsConfig && ghostModel.set(rowButtonsConfig, reactive({ parent: orgList, index: idx, propChain }))
+          // 布局模型与字段模型分开，避免 children 指回自身形成循环。
+          const itemModel = reactive({ parent: orgList, children: ghostModel, index: idx, propChain })
+          const item = {
+            children: itemModel.children,
+            model: itemModel,
             refData,
-            baseKey: keys[idx],
-            key: isSingle ? `${String(keys[idx])}:${idx}:${singleVersion}` : keys[idx],
-            // effectData: reactive({ parent: effectData, current: orgList, index: idx, record: refData }),
+            snapshot: raw,
+            key: nanoid(12),
+            effectData: reactive({ parent: effectData, current: orgList, index: idx }),
           }
+          if (!isSingle) rowCache.set(raw, item)
+          return item
         })
+        // 清除按钮增删留下的占位，使后续输入继续复用已建立的行模型。
+        backList = [...listItems.value]
+        pendingSplice = false
       },
-      {
-        immediate: true,
-      }
+      { immediate: true }
     )
 
     const render = () => {
-      return listItems.value.map(({ model, key }) => {
-        return h(Collections, { model, option, effectData, key })
+      return listItems.value.map(({ model, effectData, key }) => {
+        return h(Collections, { model, option: { subSpan: 'auto', ...option }, effectData, key })
       })
     }
 

@@ -43,7 +43,8 @@ const [register, form] = useForm({
       type: 'InputList',
       field: 'list',
       label: '至少填写一项',
-      compact: true,
+      // compact: true,
+      required: true,
       rowButtons: {
         actions: [
           { name: 'add', attrs: { 'data-testid': 'object-add' } },
@@ -67,6 +68,31 @@ const [register, form] = useForm({
           type: 'Input',
           field: 'value2',
           label: 'value2',
+        },
+      ],
+    },
+    {
+      type: 'ListGroup',
+      field: 'listGroup',
+      label: '至少填写一项',
+      // rowButtons: {
+      //   actions: [
+      //     { name: 'add', attrs: { 'data-testid': 'object-add' } },
+      //     { name: 'delete', attrs: { 'data-testid': 'object-delete' } },
+      //   ],
+      // },
+      columns: [
+        {
+          type: 'Input',
+          field: 'value1',
+          label: 'value1',
+          required: true,
+        },
+        {
+          type: 'Input',
+          field: 'value2',
+          label: 'value2',
+          required: true,
         },
       ],
     },

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { type PropType, defineComponent, h, reactive, ref, toRaw, toRef, useAttrs, watch } from 'vue'
 import { nanoid } from 'nanoid'
-import { cloneModels } from '../utils/buildModel'
+import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import { createButtons } from './buttons'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -30,7 +30,6 @@ export default defineComponent({
     // 先构建一个数据结构
     const { modelsMap: childrenMap } = model.listData
 
-    const { propChain } = model
     const orgList = toRef(model, 'refData')
 
     const attrs: Obj = useAttrs()
@@ -53,24 +52,29 @@ export default defineComponent({
       },
     }
 
-    const keyMap = new WeakMap<object, PropertyKey>()
+    const keyMap = new WeakMap<object, any>()
     const listItems = ref<any[]>([])
     // 监听数据变化
     watch(
-      () => [...orgList.value],
-      (org) => {
+      [() => [...orgList.value], () => [...model.propChain]],
+      ([org]) => {
         listItems.value = org.map((record, idx) => {
           const raw = toRaw(record)
-          if (!keyMap.has(raw)) {
-            keyMap.set(raw, record[rowKey] || nanoid(12))
+          const previousItem = keyMap.get(raw)
+          if (previousItem) {
+            previousItem.refData.value = record
+            updateModelIndex(previousItem.model, [...model.propChain, idx], idx)
+            previousItem.effectData.index = idx
+            return previousItem
           }
-          const hash = keyMap.get(raw)
           // 原数据已经存在, 此处建立表单绑定
-          const { modelsMap } = cloneModels(childrenMap, record, propChain, idx)
+          const refData = ref(record)
+          const { modelsMap } = cloneModels(childrenMap, refData, model.propChain, idx)
 
-          return {
-            hash,
-            model: { refData: ref(record), children: modelsMap, index: idx },
+          const item = {
+            hash: record[rowKey] || nanoid(12),
+            refData,
+            model: reactive({ refData, children: modelsMap, index: idx, propChain: [...model.propChain, idx] }),
             effectData: reactive({
               parent: effectData,
               current: orgList,
@@ -78,6 +82,8 @@ export default defineComponent({
               record,
             }),
           }
+          keyMap.set(raw, item)
+          return item
         })
         // Object.keys(currentRules).forEach((key, idx) => idx > org.length - 1 && delete currentRules[key])
       },
