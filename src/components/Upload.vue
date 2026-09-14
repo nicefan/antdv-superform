@@ -458,7 +458,7 @@ export default defineComponent({
         if (apis.download && !downloading.value) {
           const downModal = createLoadModal('文件下载中，请稍候...')
           apis
-            .download(reconvert(file))
+            .download({...file, ...reconvert(file) })
             .then((result) => downloadByData(result, file.name))
             .then(() => downModal.destroy())
             .catch((err) => {
@@ -481,7 +481,7 @@ export default defineComponent({
 
     const filePreview = async (file) => {
       if (onPreview) {
-        const src = await onPreview(reconvert(file))
+        const src = await onPreview({ ...file, ...reconvert(file) })
         src && preview.open(src)
       } else if (isImageUrl(file)) {
         let current
