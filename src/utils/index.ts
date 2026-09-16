@@ -1,4 +1,4 @@
-export { getIconNode, getSemanticIconNode } from './useIcon'
+export { getSemanticIconNode } from './useIcon'
 export { getEffectData, getComputedAttr, getComputedStatus, getListener, useDisabled } from './reactivity'
 export { default as useVModel } from './useVModel'
 export { default as useControl } from './useControl'

@@ -27,7 +27,7 @@ import {
 } from 'superform-antdv'
 import { getTableOption } from './fristTable/formOption'
 import { nanoid } from 'nanoid'
-import { SyncOutlined } from '@antdv-next/icons'
+import { SyncIcon } from './icons'
 
 export default defineComponent({
   components: {
@@ -56,7 +56,7 @@ export default defineComponent({
     const [tableRegister, myTable] = useTable(getTableOption())
     const myTableModal = useModal(tableRegister(), {
       title: '弹窗表格',
-      icon: () => h(SyncOutlined),
+      icon: SyncIcon,
       width: 1400,
       height: 300,
       // buttons: [

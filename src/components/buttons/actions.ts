@@ -4,17 +4,20 @@ import { defaults, merge } from 'lodash-es'
 import { isRef, ref } from 'vue'
 import { toNode } from '../../utils'
 import { openUIConfirm } from '../../adapter'
+import { builtInIcons } from '../../icons'
 
 const getDefault = () => {
-  return merge(
+  const actions: Obj<ButtonItem> = merge(
     {
       add: {
+        icon: builtInIcons.add,
         label: '新增',
         attrs: {
           type: 'primary',
         },
       },
       delete: {
+        icon: builtInIcons.delete,
         label: '删除',
         attrs: {
           danger: true,
@@ -23,31 +26,41 @@ const getDefault = () => {
         disabled: (param) => !param.record && !(param.selectedRows?.length > 0),
       },
       edit: {
+        icon: builtInIcons.edit,
         label: '修改',
         disabled: (param) => !param.record && !(param.selectedRows?.length === 1),
       },
       detail: {
+        icon: builtInIcons.detail,
         label: '查看',
         disabled: (param) => !param.record && !(param.selectedRows?.length === 1),
       },
       submit: {
+        icon: builtInIcons.submit,
         label: '提交',
         attrs: {
           type: 'primary',
         },
       },
       search: {
+        icon: builtInIcons.search,
         label: '查询',
         attrs: {
           type: 'primary',
         },
       },
       reset: {
+        icon: builtInIcons.reset,
         label: '重置',
       },
     },
     globalConfig.defaultButtons
   )
+  // merge 会忽略 undefined，这里允许显式清空全局默认图标。
+  Object.entries(globalConfig.defaultButtons || {}).forEach(([name, config]) => {
+    if (Object.prototype.hasOwnProperty.call(config, 'icon')) actions[name].icon = config.icon
+  })
+  return actions
 }
 
 function buildDefaultActions(methods) {
@@ -57,7 +70,9 @@ function buildDefaultActions(methods) {
       if (typeof methods[key] === 'function') {
         actions[key].onClick = methods[key]
       } else {
-        merge(actions[key], { attrs: { title: actions[key].label } }, methods[key])
+        const { icon, ...config } = methods[key]
+        merge(actions[key], { attrs: { title: actions[key].label } }, config)
+        if (Object.prototype.hasOwnProperty.call(methods[key], 'icon')) actions[key].icon = icon
       }
     } else {
       actions[key] = methods[key]

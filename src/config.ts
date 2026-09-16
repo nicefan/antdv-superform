@@ -1,4 +1,3 @@
-import type { VNode } from 'vue'
 import type { ButtonItem } from './exaTypes'
 
 type Dict = { label: string; value: string | number; [k: string]: string | number }
@@ -7,8 +6,6 @@ export interface GlobalConfig {
   /** 是否在组件接收 schema 时输出诊断信息 */
   schemaDiagnostics?: boolean
   dictApi?: (name: string) => Promise<Dict[]>
-  /** 自定义图标处理组件 */
-  customIcon?: (name: string) => VNode
   /** 动态传递按钮权限 */
   buttonRoles?: () => string[]
   /** 内置默认按钮配置 */

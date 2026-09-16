@@ -220,11 +220,11 @@ describe("UIAdapter", () => {
         effectData: {},
       }).type
     ).toBe(antdvAdapter.components.Space);
-    expect(renderUISemanticIcon("add")?.type).toBe(
-      antdvAdapter.icons?.semantic?.add
+    expect((renderUISemanticIcon("add") as any)?.type).toBe(
+      "svg"
     );
-    expect(renderUISemanticIcon("remove")?.type).toBe(
-      antdvAdapter.icons?.semantic?.remove
+    expect((renderUISemanticIcon("remove") as any)?.type).toBe(
+      "svg"
     );
     expect(renderUIPresentation("tag").type).toBe(antdvAdapter.components.Tag);
     expect((renderUIModal({ visible: true }) as any).props?.open).toBe(true);

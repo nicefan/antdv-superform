@@ -1,8 +1,6 @@
 import { h } from 'vue'
 import { Button } from 'antdv-next'
 import type { UIAdapter } from 'superform/sdk'
-import { renderAntdvIcon } from './capabilities'
-import { globalConfig } from 'superform/sdk'
 
 function toNode(node: any, param: any = {}) {
   if (!node) return null
@@ -39,7 +37,7 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
         if (!enterButtonSlot && enterButtonProp && typeof enterButtonProp === 'object') {
           const { label, icon, ...buttonProps } = enterButtonProp
           enterButtonSlot = () => [h(Button, { loading: searchLoading, ...buttonProps }, {
-            icon: () => renderAntdvIcon(icon, { customIcon: globalConfig.customIcon }),
+            icon,
             default: () => toNode(label),
           })]
         } else if (!enterButtonSlot && typeof enterButtonProp === 'function') {

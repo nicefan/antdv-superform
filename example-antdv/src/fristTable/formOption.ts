@@ -1,6 +1,6 @@
 import { h, ref } from 'vue'
 import { defineTable } from 'superform-antdv'
-import { EditOutlined } from '@antdv-next/icons'
+import { EditIcon } from '../icons'
 import { Modal } from 'antdv-next'
 
 export const getTableOption = () => {
@@ -29,7 +29,7 @@ export const getTableOption = () => {
       },
       modalProps: {
         title: ({ isNew }) => {
-          return h('div', [h(EditOutlined), ' 数据' + (isNew ? '新增' : '修改')])
+          return h('div', [EditIcon(), ' 数据' + (isNew ? '新增' : '修改')])
         },
       },
     },

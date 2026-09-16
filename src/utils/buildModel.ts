@@ -65,7 +65,8 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
     const subModel: ModelData = buildModelData(child, currentData, propChain)
     const { required, label, subItems, columns } = child
 
-    if ((child.rules || required) && subModel.propChain.length) {
+    // 列表模板中的无字段分组尚未绑定行路径，也必须保留规则供克隆后的行模型使用。
+    if (child.rules || required) {
       const _rules = child.rules || [] 
       const _r = Array.isArray(_rules) ? _rules : [_rules]
       if (required) {
@@ -82,7 +83,7 @@ export function buildModelsMap(items: any[], data?: Obj | Ref<Obj>, propChain: s
         ruleType = baseType === 'object' && Array.isArray(subModel.refData) ? 'array' : baseType
       }
       subModel.rules = _r.map((item) => buildRule({ type: ruleType, ...item }, label)).flat()
-      rules[subModel.propChain.join('.')] = subModel.rules
+      if (subModel.propChain.length) rules[subModel.propChain.join('.')] = subModel.rules
     }
     if (subItems) {
       const children = buildModelsMap(subItems, toRef(subModel, 'refData'), subModel.propChain)
@@ -152,7 +153,7 @@ export function cloneModelsFlat<T extends GetBaseOption>(
   chain?: any[],
   index?: number
 ) {
-  const { modelsMap, rules } = cloneModels(orgMaps, data, chain, index)
+  const { modelsMap: rootModels, rules } = cloneModels(orgMaps, data, chain, index)
   const newMaps: [T, ModelData][] = []
   ;(function deepCopy(_maps) {
     for (const [option, model] of _maps) {
@@ -161,6 +162,7 @@ export function cloneModelsFlat<T extends GetBaseOption>(
         deepCopy(model.children)
       }
     }
-  })(modelsMap as any)
-  return { modelsMap: new Map(newMaps), rules }
+  })(rootModels as any)
+  // 平铺索引用于按列查找，层级树用于重排行时更新同一批字段模型的校验路径。
+  return { modelsMap: new Map(newMaps), rootModels, rules }
 }

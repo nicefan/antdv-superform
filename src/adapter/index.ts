@@ -5,7 +5,6 @@ import type {
   ContainerAdapter,
   FieldAdapter,
   FieldAdapterContext,
-  IconAdapterContext,
   LayoutComponentName,
   PresentationRenderType,
   UIMessageType,
@@ -164,6 +163,14 @@ export function validateUIForm(instance: unknown) {
   return form.validate(instance);
 }
 
+/** 调用当前 UI 表单实例的局部校验，不能回退为整表校验。 */
+export function validateUIFormField(instance: unknown, path: (string | number)[]) {
+  const form = getUIAdapter().form;
+  if (!form?.validateField)
+    throw new Error(`UIAdapter '${getUIAdapter().name}' 未提供字段校验能力`);
+  return form.validateField(instance, path);
+}
+
 /** 清理当前 UI 表单实例的校验状态。 */
 export function clearUIFormValidation(instance: unknown) {
   const form = getUIAdapter().form;
@@ -216,16 +223,6 @@ export function renderUIContainer(
     : h(component, mapped, slots);
 }
 
-/** 使用当前 Adapter 渲染 Schema 图标。 */
-export function renderUIIcon(icon: unknown, context: IconAdapterContext = {}) {
-  const icons = getUIAdapter().icons;
-  if (!icons)
-    throw new Error(
-      `UIAdapter '${getUIAdapter().name}' 未提供 Icon capability`
-    );
-  return icons.render(icon, context);
-}
-
 /** 渲染 Core 内置交互使用的语义图标。 */
 export function renderUISemanticIcon(name: string) {
   const icons = getUIAdapter().icons;
@@ -233,10 +230,7 @@ export function renderUISemanticIcon(name: string) {
     throw new Error(
       `UIAdapter '${getUIAdapter().name}' 未提供 Icon capability`
     );
-  const component = icons.semantic?.[name];
-  return component
-    ? h(requireAdapterComponent(component, `Icon(${name})`))
-    : undefined;
+  return icons.semantic?.[name]?.();
 }
 
 /** 获取布局类型对应的实际 UI 组件。 */
@@ -442,7 +436,6 @@ export type {
   FieldAdapterContext,
   FormAdapter,
   IconAdapter,
-  IconAdapterContext,
   LayoutAdapter,
   LayoutComponentName,
   PresentationAdapter,

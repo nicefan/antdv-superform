@@ -17,7 +17,6 @@ export type {
   FieldAdapterContext,
   FormAdapter,
   IconAdapter,
-  IconAdapterContext,
   LayoutAdapter,
   LayoutComponentName,
   PresentationAdapter,
@@ -39,3 +38,5 @@ export type {
 } from "./adapter";
 export { globalConfig } from "./config";
 export { toNode } from "./utils/toNode";
+
+export { builtInIcons } from "./icons";

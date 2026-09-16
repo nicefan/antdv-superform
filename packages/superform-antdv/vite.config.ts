@@ -40,7 +40,6 @@ export default defineConfig({
         /^node:/,
         "antdv-next",
         /^antdv-next\//,
-        "@antdv-next/icons",
         /^@antdv-next\//,
       ],
       output: {

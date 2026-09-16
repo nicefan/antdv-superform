@@ -62,7 +62,6 @@
     "unplugin": "^3.3.0"
   },
   "devDependencies": {
-    "@antdv-next/icons": "1.1.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/lodash-es": "^4.17.10",

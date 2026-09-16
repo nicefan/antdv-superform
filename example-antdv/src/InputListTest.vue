@@ -53,21 +53,27 @@ const [register, form] = useForm({
       },
       columns: [
         {
-          type: 'Input',
-          field: 'value1',
-          label: 'value1',
+          type: 'InputGroup',
           rules: {
-            validator: ({ current }) => {
-              const value1 = String(current.value1 || '').trim()
-              const value2 = String(current.value2 || '').trim()
-              return !!(value1 || value2) || new Error('value1 或 value2 至少填写一项')
+            validator: (data, val) => {
+              const value1 = String(val.value1 || '').trim()
+              const value2 = String(val.value2 || '').trim()
+              return value1 || value2 || new Error('value1 或 value2 至少填写一项')
             },
           },
-        },
-        {
-          type: 'Input',
-          field: 'value2',
-          label: 'value2',
+          subItems: [
+            {
+              type: 'Input',
+              field: 'value1',
+              label: 'value1',
+              rules: { min: 2 },
+            },
+            {
+              type: 'Input',
+              field: 'value2',
+              label: 'value2',
+            },
+          ],
         },
       ],
     },

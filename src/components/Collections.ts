@@ -30,8 +30,9 @@ export default defineComponent({
       type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
     effectData: Object,
+    compact: { type: Boolean, default: undefined },
   },
-  setup(props) {
+  setup(props, { slots }) {
     const { type: parentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
     const rowProps = { gutter, ...props.option.rowProps }
     const inheritOptions = inject<Obj>('inheritOptions', {})
@@ -89,10 +90,10 @@ export default defineComponent({
         colProps.span = undefined
       }
 
-      if (parentType === 'InputGroup' && parentAttrs?.compact !== false) {
-        const width = Number(colProps.span) && (100 / (24 / colProps.span)).toFixed(2) + '%'
-        // const _class = colProps.span && 'ant-col-' + colProps.span
-        nodes.push(() => !hidden.value && h(innerNode, mergeProps({ style: { width } }, colProps)))
+      if (parentType === 'InputGroup' && (props.compact ?? parentAttrs?.compact !== false)) {
+        const width = Number(colProps.span) ? (Number(colProps.span) / 24 * 100).toFixed(2) + '%' : undefined
+        const flex = colProps.flex ?? (colProps.span === 'auto' ? '1 1 0' : undefined)
+        nodes.push(() => !hidden.value && h(innerNode, { style: { width, flex, minWidth: 0 } }))
         continue
       }
 
@@ -184,7 +185,8 @@ export default defineComponent({
 
     // 根容器下如有表单组件，则使用group包裹
     return () =>
-      props.option.isContainer && hasWrap
+      // 由布局容器直接接收字段节点，才能逐项提供紧凑布局的首尾上下文。
+      slots.default ? slots.default({ nodes: content().filter(Boolean) }) : props.option.isContainer && hasWrap
         ? h(
             Controls.Group,
             {

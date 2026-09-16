@@ -60,7 +60,6 @@ export default defineComponent({
       }
       return keyMap.get(raw)
     }
-    const setRowKey = (record, key) => keyMap.set(toRaw(record), key)
     const orgList = toRef(model, 'refData')
     const __rowSelection = option.attrs?.rowSelection || undefined
     const configuredSelectedKeys = __rowSelection?.selectedRowKeys
@@ -168,7 +167,10 @@ export default defineComponent({
           )
         }
         items.forEach((item) => {
-          orgList.value.splice(list.value.indexOf(item), 1)
+          const key = rowKey(item)
+          const index = orgList.value.findIndex((record) => record === item || rowKey(record) === key)
+          // 接口等待期间源数组可能已变化，未找到目标时不能用 -1 误删末行。
+          if (index !== -1) orgList.value.splice(index, 1)
         })
         return reload?.()
       },
@@ -179,7 +181,6 @@ export default defineComponent({
       model,
       orgList,
       rowKey,
-      setRowKey,
       listener,
       isView,
       effectData,

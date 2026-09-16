@@ -23,7 +23,6 @@ export type {
   FieldAdapterContext,
   FormAdapter,
   IconAdapter,
-  IconAdapterContext,
   LayoutAdapter,
   LayoutComponentName,
   PresentationAdapter,

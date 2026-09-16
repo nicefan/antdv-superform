@@ -30,7 +30,7 @@ export default defineConfig(({ command }) => ({
             },
           ]
         : [],
-    dedupe: ['vue', 'antdv-next', '@antdv-next/icons'],
+    dedupe: ['vue', 'antdv-next'],
   },
   server: {
     host: '127.0.0.1',

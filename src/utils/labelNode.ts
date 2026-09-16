@@ -1,7 +1,7 @@
 import { isPlainObject } from 'lodash-es'
 import { h } from 'vue'
 import { toNode } from './toNode'
-import { getIconNode, getSemanticIconNode } from './useIcon'
+import { getSemanticIconNode } from './useIcon'
 import { renderUIAction } from '../adapter'
 
 export const createLabelNode = (option, effectData) => {
@@ -21,7 +21,7 @@ export const createLabelNode = (option, effectData) => {
                 {
                   class: 'sup-label-tooltip',
                 },
-                (tooltip.icon ? getIconNode(tooltip.icon) : getSemanticIconNode('info')) as any
+                (tooltip.icon ? tooltip.icon() : getSemanticIconNode('info')) as any
               ),
           }),
       ]

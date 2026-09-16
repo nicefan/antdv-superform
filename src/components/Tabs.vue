@@ -2,7 +2,7 @@
 import { defineComponent, h, onMounted, reactive, ref, toRef, unref, watchEffect, type PropType } from 'vue'
 import { DetailLayout } from './Detail'
 import type { ExtTabItem } from '../exaTypes'
-import { getIconNode, useControl, getEffectData, toNode } from '../utils'
+import { useControl, getEffectData, toNode } from '../utils'
 import Collections from './Collections'
 import { ButtonGroup } from './buttons'
 import { renderUIContainer } from '../adapter'
@@ -36,7 +36,7 @@ export default defineComponent({
       })
       const { hidden, attrs } = useControl({ option, effectData })
       const tabKey = key || field || String(idx)
-      const tabLabel = () => [getIconNode(icon), toNode(label, effectData)]
+      const tabLabel = () => [icon?.(), toNode(label, effectData)]
       watchEffect(() => updatePaneVisibility(idx, tabKey, unref(hidden) || unref(attrs.disabled)))
       return {
         attrs: reactive({ ...attrs, key: tabKey, label: tabLabel }),

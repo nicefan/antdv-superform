@@ -1,4 +1,4 @@
-import { h, toRaw, unref, type Component, type VNodeChild } from 'vue'
+import { h, unref, type Component, type VNodeChild } from 'vue'
 import {
   Button,
   Card,
@@ -26,21 +26,9 @@ import {
   Upload,
   message,
 } from 'antdv-next'
-import {
-  CloseCircleOutlined,
-  DownOutlined,
-  EllipsisOutlined,
-  InfoCircleOutlined,
-  LoadingOutlined,
-  MinusOutlined,
-  PaperClipOutlined,
-  PlusOutlined,
-  SyncOutlined,
-  UpOutlined,
-  UploadOutlined,
-} from '@antdv-next/icons'
+import { builtInIcons } from 'superform/sdk'
 import { useConfig as useAntdvConfig } from 'antdv-next/config-provider/context'
-import { globalConfig, type UIAdapter } from 'superform/sdk'
+import type { UIAdapter } from 'superform/sdk'
 import AntdvDescriptions from './Descriptions'
 import { SuperList, SuperListItem } from './List'
 
@@ -52,15 +40,6 @@ function toNode(node: any, param: any = {}) {
     : h(node, { effectData: param })
 }
 
-export function renderAntdvIcon(
-  icon: unknown,
-  { customIcon }: { customIcon?: (name: string) => any } = {}
-) {
-  if (typeof icon === 'string')
-    return customIcon?.(icon) || h('span', { class: `anticon ${icon}` })
-  return icon ? h(toRaw(icon) as any) : undefined
-}
-
 function stopActionEvent(event: any) {
   ;(event?.domEvent || event)?.stopPropagation?.()
 }
@@ -69,12 +48,11 @@ function renderActionContent(
   button: Obj,
   effectData: Obj,
   labelOnly: boolean,
-  iconOnly: boolean,
-  customIcon?: (name: string) => any
+  iconOnly: boolean
 ) {
   return [
     button.icon && !labelOnly
-      ? renderAntdvIcon(button.icon, { customIcon })
+      ? button.icon()
       : undefined,
     !button.icon || !iconOnly ? toNode(button.label, effectData) : undefined,
   ]
@@ -84,8 +62,7 @@ function renderActionButton(
   button: Obj,
   effectData: Obj,
   labelOnly: boolean,
-  iconOnly: boolean,
-  customIcon?: (name: string) => any
+  iconOnly: boolean
 ) {
   const attrs = { ...button.attrs, disabled: unref(button.attrs?.disabled) }
   const callAction = (event: any) => {
@@ -106,9 +83,7 @@ function renderActionButton(
                 MenuItem,
                 { key: item.value, disabled: item.disabled },
                 {
-                  icon: item.icon
-                    ? () => renderAntdvIcon(item.icon, { customIcon })
-                    : undefined,
+                  icon: item.icon,
                   default: () => toNode(item.label, effectData),
                 }
               )
@@ -120,10 +95,9 @@ function renderActionButton(
               button,
               effectData,
               labelOnly,
-              iconOnly,
-              customIcon
+              iconOnly
             ),
-            h(DownOutlined),
+            builtInIcons.expand(),
           ]),
       }
     )
@@ -131,7 +105,7 @@ function renderActionButton(
     content = button.render({ props: attrs, ...effectData })
   } else {
     content = h(Button, { ...attrs, onClick: callAction }, () =>
-      renderActionContent(button, effectData, labelOnly, iconOnly, customIcon)
+      renderActionContent(button, effectData, labelOnly, iconOnly)
     )
   }
   return h(
@@ -141,7 +115,7 @@ function renderActionButton(
   )
 }
 
-function renderActionGroup(props: Obj, customIcon?: (name: string) => any) {
+function renderActionGroup(props: Obj) {
   const {
     groupProps,
     buttons,
@@ -154,7 +128,7 @@ function renderActionGroup(props: Obj, customIcon?: (name: string) => any) {
     effectData,
   } = props
   const content = buttons.flatMap((button: Obj, index: number) => [
-    renderActionButton(button, effectData, labelOnly, iconOnly, customIcon),
+    renderActionButton(button, effectData, labelOnly, iconOnly),
     divider && index < buttons.length - 1
       ? h(Divider, { type: 'vertical', class: 'sup-buttons-divider' })
       : undefined,
@@ -167,7 +141,7 @@ function renderActionGroup(props: Obj, customIcon?: (name: string) => any) {
         {
           default: () =>
             h(Button, defaultButtonProps, () =>
-              moreLabel ? toNode(moreLabel, effectData) : h(EllipsisOutlined)
+              moreLabel ? toNode(moreLabel, effectData) : builtInIcons.more()
             ),
           popupRender: () =>
             h(Menu, {}, () =>
@@ -183,9 +157,7 @@ function renderActionGroup(props: Obj, customIcon?: (name: string) => any) {
                     },
                   },
                   {
-                    icon: button.icon
-                      ? () => renderAntdvIcon(button.icon, { customIcon })
-                      : undefined,
+                    icon: button.icon,
                     default: () => toNode(button.label, effectData),
                   }
                 )
@@ -249,6 +221,7 @@ export function createAntdvCapabilities(): Pick<
     form: {
       component: 'Form',
       item: 'FormItem',
+      validateField: (instance, path) => instance.validateFields([path]),
       validate: (instance) => instance.validate(),
       clearValidate: (instance) => instance.clearValidate(),
     },
@@ -275,8 +248,8 @@ export function createAntdvCapabilities(): Pick<
       tab: {
         component: 'TabPane',
         transformProps(props) {
-          const { label, ...rest } = props
-          return { ...rest, tab: label }
+          const { label, closeIcon, ...rest } = props
+          return { ...rest, tab: label, closeIcon: closeIcon?.() }
         },
       },
       collapse: {
@@ -295,25 +268,12 @@ export function createAntdvCapabilities(): Pick<
       descriptions: { component: AntdvDescriptions },
     },
     icons: {
-      semantic: {
-        add: PlusOutlined,
-        remove: MinusOutlined,
-        more: EllipsisOutlined,
-        expand: DownOutlined,
-        collapse: UpOutlined,
-        info: InfoCircleOutlined,
-        upload: UploadOutlined,
-        attachment: PaperClipOutlined,
-        loading: LoadingOutlined,
-        sync: SyncOutlined,
-        error: CloseCircleOutlined,
-      },
-      render: renderAntdvIcon,
+      semantic: builtInIcons,
     },
     actions: {
       render: (type, props, slots) =>
         type === 'group'
-          ? renderActionGroup(props, globalConfig.customIcon)
+          ? renderActionGroup(props)
           : h(Tooltip, props, slots),
     },
     presentation: {

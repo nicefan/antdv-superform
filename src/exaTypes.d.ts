@@ -3,7 +3,7 @@
 /* eslint-disable no-use-before-define */
 import Vue from 'vue'
 
-import type { Component, CSSProperties, HTMLAttributes, VNodeTypes, Ref } from 'vue'
+import type { Component, CSSProperties, HTMLAttributes, VNodeChild, VNodeTypes, Ref } from 'vue'
 
 import { RuleConfig } from './utils/buildRule'
 
@@ -166,7 +166,7 @@ interface ExtBaseOption {
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
-  tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: VSlot })
+  tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: () => VNodeChild })
   // help?: HelpMessage
   /** 校验规则，指定value而没指定field时无效 */
   rules?: RuleConfig | RuleConfig[]
@@ -303,7 +303,7 @@ interface ButtonItem {
   tooltip?: string
   /** 按钮禁用时的提示 */
   disabledTooltip?: string | Fn<string>
-  icon?: string | Component
+  icon?: () => VNodeChild
   attrs?: UIActionProps<'Button'> & HTMLAttributes
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
@@ -386,7 +386,7 @@ type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
 export interface ModalSchemaProps {
   title?: VSlot
   content?: VSlot
-  icon?: string | Component
+  icon?: () => VNodeChild
   buttons?: ExtButtons
   destroyOnClose?: boolean
   maskClosable?: boolean
@@ -557,10 +557,10 @@ interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
 interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type' | 'attrs'> {
   label: VSlot
   key?: string
-  icon?: string | Component
+  icon?: () => VNodeChild
   attrs?: {
     closable?: boolean
-    closeIcon?: VSlot
+    closeIcon?: () => VNodeChild
     forceRender?: boolean
   }
   subItems: UniOption[]
@@ -573,7 +573,7 @@ interface ExtCollapseOption extends ExtBaseOption {
 interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
   label: VSlot
   key?: string
-  icon?: string | Component
+  icon?: () => VNodeChild
   subItems: UniOption[]
   buttons?: ExtButtons
 }
@@ -588,8 +588,8 @@ interface ExtFormItemOption extends ExtBaseOption, RangeFieldOption {
     | boolean
     | Obj<string>
     | string[]
-    | { label?: string; value: any; color: string; icon?: Fn }[]
-    | Fn<string | { label: string; color?: string; icon?: Fn }>
+    | { label?: string; value: any; color: string; icon?: () => VNodeChild }[]
+    | Fn<string | { label: string; color?: string; icon?: () => VNodeChild }>
   formItemProps?: FormItemSchemaProps & UIContainerProps<'FormItem'>
   descriptionsProps?: ExtDescriptionsProps
   /**是否可编辑 */

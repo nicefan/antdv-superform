@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
+import { MoreIcon } from '../../src/icons'
 import { SuperDetail, SuperForm, type ExtDescriptionsOption, type ExtFormOption } from 'superform-antdv'
 import { antdvAdapter } from 'superform-antdv'
 
@@ -51,7 +52,7 @@ const formSchema: ExtFormOption = {
   buttons: {
     actions: [
       { label: '保存', onClick: () => undefined },
-      { label: '更多', icon: 'demo-more', onClick: () => undefined },
+      { label: '更多', icon: MoreIcon, onClick: () => undefined },
     ],
   },
   subItems: [

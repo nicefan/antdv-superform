@@ -1,6 +1,6 @@
 import { h, ref, toRaw, watchEffect } from 'vue'
 import { useForm, defineForm, useModal } from 'superform-antdv'
-import { AppleOutlined, AndroidOutlined, UserOutlined, SearchOutlined } from '@antdv-next/icons'
+import { LeafIcon, RobotIcon, UserIcon, SearchIcon } from './icons'
 import { Button, message, Modal } from 'antdv-next'
 import { uniq } from 'lodash-es'
 import CustomGroup from './CustomGroup.vue'
@@ -93,8 +93,8 @@ export default function exampleForm() {
             {
               label: '开始',
               dropdown: [
-                { label: '按钮一', value: 'start1', icon: AndroidOutlined },
-                { label: '按钮二', value: 'start2', icon: AndroidOutlined },
+                { label: '按钮一', value: 'start1', icon: RobotIcon },
+                { label: '按钮二', value: 'start2', icon: RobotIcon },
               ],
               onClick(data) {
                 console.log(data)
@@ -201,13 +201,13 @@ export default function exampleForm() {
               addonAfter: '查询',
               // suffix: 'a',
               enterButton: {
-                icon: SearchOutlined,
+                icon: SearchIcon,
                 type: 'primary',
               },
             },
             slots: {
               prefix: (...args) => {
-                return h(UserOutlined)
+                return UserIcon()
               },
             },
             // 可个性化查询按钮
@@ -455,7 +455,7 @@ export default function exampleForm() {
             block: true,
             actions: [
               {
-                icon: AndroidOutlined,
+                icon: RobotIcon,
                 label: '导入',
                 onClick() {},
               },
@@ -566,7 +566,7 @@ export default function exampleForm() {
             },
             {
               label: '删除',
-              icon: AndroidOutlined,
+              icon: RobotIcon,
               confirmText: '确定删除吗？',
               disabled: ({ formData }) => formData.forever === 2,
               attrs: { danger: true },
@@ -833,7 +833,7 @@ export default function exampleForm() {
           {
             key: 'tab1',
             label: '第一页',
-            icon: AppleOutlined,
+            icon: LeafIcon,
             field: 'tab1',
             disabled: (data) => {
               return false
@@ -972,7 +972,7 @@ export default function exampleForm() {
                 },
                 {
                   label: '删除',
-                  icon: UserOutlined,
+                  icon: UserIcon,
                   confirmText: '确定删除吗？',
                   disabled: ({ formData }) => formData.forever === 2,
                   attrs: { danger: true },

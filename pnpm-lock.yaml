@@ -12,9 +12,6 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0(esbuild@0.28.0)(rollup@3.30.0)(vite@4.5.14)
     devDependencies:
-      '@antdv-next/icons':
-        specifier: 1.1.1
-        version: 1.1.1(vue@3.5.41)
       '@rollup/plugin-node-resolve':
         specifier: ^15.2.3
         version: 15.3.1(rollup@3.30.0)
@@ -126,9 +123,6 @@ importers:
 
   example-antdv:
     dependencies:
-      '@antdv-next/icons':
-        specifier: 1.1.1
-        version: 1.1.1(vue@3.5.41)
       antdv-next:
         specifier: 1.5.0
         version: 1.5.0(vue@3.5.41)
@@ -207,9 +201,6 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0(esbuild@0.28.0)(rollup@3.30.0)(vite@4.5.14)
     devDependencies:
-      '@antdv-next/icons':
-        specifier: 1.1.1
-        version: 1.1.1(vue@3.5.41)
       '@types/node':
         specifier: ^18.18.6
         version: 18.19.130

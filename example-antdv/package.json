@@ -8,7 +8,6 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@antdv-next/icons": "1.1.1",
     "antdv-next": "1.5.0",
     "superform-antdv": "workspace:*",
     "dayjs": "^1.11.21",

@@ -3,6 +3,8 @@ import type { Component, Slots, VNodeChild } from 'vue'
 export type AdapterComponent = string | Component
 
 export interface FormAdapter {
+  /** 只校验指定字段路径，供复合字段更新时使用。 */
+  validateField?: (instance: any, path: (string | number)[]) => Promise<unknown>
   /** 表单容器组件 */
   component: AdapterComponent
   /** 表单项组件 */
@@ -39,16 +41,9 @@ export interface ContainerAdapter {
   render?: (component: Component, props: Obj, slots: Obj) => VNodeChild
 }
 
-export interface IconAdapterContext {
-  /** 消费项目对字符串图标的自定义解析入口。 */
-  customIcon?: (name: string) => VNodeChild
-}
-
 export interface IconAdapter {
-  /** Core 内置交互使用的语义图标。 */
-  semantic?: Record<string, AdapterComponent | undefined>
-  /** 渲染 Schema 传入的字符串、组件或节点。 */
-  render: (icon: unknown, context: IconAdapterContext) => VNodeChild
+  /** Core 内置交互使用的语义图标渲染函数。 */
+  semantic?: Record<string, (() => VNodeChild) | undefined>
 }
 
 export type ActionRenderType = 'group' | 'tooltip'
@@ -226,7 +221,7 @@ export interface UIAdapter {
   layout?: LayoutAdapter
   /** Card、Tabs、Collapse、List 等容器渲染协议。 */
   containers?: Record<string, ContainerAdapter | undefined>
-  /** 语义图标和用户图标的渲染协议。 */
+  /** 内部语义图标的渲染函数映射；业务图标直接消费配置函数。 */
   icons?: IconAdapter
   /** 按钮组使用的按钮、菜单、下拉和提示原语。 */
   actions?: ActionAdapter

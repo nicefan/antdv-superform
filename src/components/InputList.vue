@@ -39,14 +39,12 @@ export default defineComponent({
 
     const orgList = toRef(model, 'refData')
     let backList: any[] = []
-    let pendingSplice = false
 
     const methods = {
       add: {
         onClick({ index }) {
           orgList.value.splice(index + 1, 0, isSingle ? undefined : {})
           backList.splice(index + 1, 0, undefined)
-          pendingSplice = true
         },
         icon: () => getSemanticIconNode('add'),
       },
@@ -57,7 +55,6 @@ export default defineComponent({
         onClick({ index }) {
           orgList.value.splice(index, 1)
           backList.splice(index, 1)
-          pendingSplice = true
         },
       },
     }
@@ -78,35 +75,34 @@ export default defineComponent({
     const rowCache = new WeakMap<object, any>()
     const listItems = shallowRef<any[]>([])
     watch(
-      [() => orgList.value.map((record) => toRaw(record)), () => [...model.propChain]],
-      ([currentList]) => {
-        if (currentList.length === 0) {
+      [() => (isSingle ? orgList.value : [...orgList.value]), () => orgList.value.length, () => [...model.propChain]],
+      ([currentList, length]) => {
+        if (length === 0) {
           orgList.value.push(isSingle ? undefined : {})
+          return
         }
-        const list = currentList.length ? currentList : [...orgList.value]
-        const previousItems = [...backList]
-        // 内部按钮明确知道增删位置；外部普通数组没有行标识，长度变化时按旧值逐项匹配。
-        const reuseSlots = pendingSplice || previousItems.length === list.length
-        listItems.value = list.map((record, idx) => {
+        // 对象可能重排，匹配后需要从临时池移除，避免重复对象错误复用同一个行模型。
+        const isSync = backList.length === length
+        listItems.value = orgList.value.map((record, idx) => {
           const propChain = [...model.propChain, idx]
           const raw = toRaw(record)
           let oldItem
           if (isSingle) {
-            if (reuseSlots) {
-              oldItem = previousItems[idx]
+            if (isSync) {
+              // 普通数组没有稳定行身份，按槽位复用；内部增删已提前同步 backList 的对应位置。
+              oldItem = backList[idx]
             } else {
-              const oldIndex = previousItems.findIndex((item) => item && Object.is(item.snapshot, raw))
-              if (oldIndex !== -1) oldItem = previousItems.splice(oldIndex, 1)[0]
+              // 对象行按身份复用，使模型在插入、删除和重排后继续跟随原对象。
+              const oldIndex = backList.findIndex((item) => item && Object.is(toRaw(item.refData.value), raw))
+              if (oldIndex !== -1) oldItem = backList.splice(oldIndex, 1)[0]
             }
           } else {
-            // 对象始终按身份复用，不能因长度相同而把重排行绑定到原槽位。
             oldItem = rowCache.get(raw)
           }
           if (oldItem) {
             if (!isSingle) oldItem.refData.value = record
             updateModelIndex(oldItem.model, propChain, idx)
             oldItem.effectData.index = idx
-            oldItem.snapshot = raw
             return oldItem
           }
 
@@ -128,7 +124,11 @@ export default defineComponent({
           if (isSingle) {
             itemOption = { ...firstItem }
             Object.assign(rowModel, { initialValue: orgModel.initialValue, rules: orgModel.rules })
-          } else if (childrenMap.size === 1 && !firstItem.field && [...containers, 'InputGroup'].includes(firstItem.type)) {
+          } else if (
+            childrenMap.size === 1 &&
+            !firstItem.field &&
+            [...containers, 'InputGroup'].includes(firstItem.type)
+          ) {
             itemOption = { subSpan: 'auto', ...firstItem }
             Object.assign(rowModel, {
               initialValue: orgModel.initialValue,
@@ -147,23 +147,22 @@ export default defineComponent({
             itemOption.label ??= label
             itemOption.labelSlot ??= labelSlot || (({ index }) => itemOption.label + String(index + 1))
           }
-          rowButtonsConfig && ghostModel.set(rowButtonsConfig, reactive({ parent: orgList, index: idx, propChain }))
+          // 行按钮只需要操作上下文，不绑定字段路径，避免与整行分组重复注册校验。
+          rowButtonsConfig && ghostModel.set(rowButtonsConfig, reactive({ parent: orgList, index: idx }))
           // 布局模型与字段模型分开，避免 children 指回自身形成循环。
           const itemModel = reactive({ parent: orgList, children: ghostModel, index: idx, propChain })
           const item = {
             children: itemModel.children,
             model: itemModel,
             refData,
-            snapshot: raw,
             key: nanoid(12),
             effectData: reactive({ parent: effectData, current: orgList, index: idx }),
           }
-          if (!isSingle) rowCache.set(raw, item)
+          !isSingle && rowCache.set(raw, item)
           return item
         })
-        // 清除按钮增删留下的占位，使后续输入继续复用已建立的行模型。
+        // 用本轮行模型替换增删操作的临时占位。
         backList = [...listItems.value]
-        pendingSplice = false
       },
       { immediate: true }
     )

@@ -6,7 +6,6 @@ import { isPlainObject, get as objectGet } from 'lodash-es'
 import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
-import { getIconNode } from './'
 import { renderUIPresentation } from '../adapter'
 
 const getVModelProps = (options, parent: Obj) => {
@@ -69,7 +68,7 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
     { color: item.color },
     {
       default: () => item.label || value,
-      icon: item.icon || (() => getIconNode(item.icon)),
+      icon: item.icon,
     }
   )
 }

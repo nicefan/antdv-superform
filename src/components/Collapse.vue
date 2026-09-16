@@ -11,7 +11,7 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     option: { type: Object as PropType<GetOption<'Collapse'>>, required: true },
-    model: { type: Object as PropType<ModelDataGroup>, required: true },
+    model: { type: Object as PropType<ModelDataGroup<GetOption<'Collapse'>['subItems'][number]>>, required: true },
     effectData: { type: Object as PropType<Obj>, required: true },
     isView: Boolean,
   },
@@ -34,7 +34,7 @@ export default defineComponent({
         option: { ...option, type: 'CollapsePanel' },
         effectData,
         model,
-        header: () => toNode(option.label),
+        header: () => [option.icon?.(), toNode(option.label)],
         key: key || field || String(idx),
         hidden,
         disabled,

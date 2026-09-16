@@ -1,4 +1,4 @@
-import { defineComponent, h, nextTick, toRaw, unref } from 'vue'
+import { h, nextTick, unref } from 'vue'
 import {
   ElButton,
   ElCard,
@@ -21,20 +21,9 @@ import {
   ElTooltip,
   ElUpload,
 } from 'element-plus'
-import { toNode, type UIAdapter } from 'superform/sdk'
+import { builtInIcons, toNode, type UIAdapter } from 'superform/sdk'
 
-const AddIcon = defineComponent({
-  name: 'SuperFormElementPlusAddIcon',
-  setup: () => () => h('span', { 'aria-hidden': 'true' }, '+'),
-})
-
-const semanticIcon = (name: string, text: string) =>
-  defineComponent({
-    name,
-    setup: () => () => h('span', { 'aria-hidden': 'true' }, text),
-  })
-
-function renderButton(button: Obj, effectData: Obj) {
+function renderButton(button: Obj, effectData: Obj, iconOnly: boolean, labelOnly: boolean) {
   const attrs = { ...button.attrs, disabled: unref(button.attrs?.disabled) }
   if (button.render) return button.render({ props: attrs, ...effectData })
   return h(
@@ -48,7 +37,10 @@ function renderButton(button: Obj, effectData: Obj) {
         h(
           ElButton,
           { ...attrs, onClick: (event) => button.onClick?.(event) },
-          () => toNode(button.label, effectData)
+          () => [
+            button.icon && !labelOnly ? button.icon() : undefined,
+            !button.icon || !iconOnly ? toNode(button.label, effectData) : undefined,
+          ]
         ),
     }
   )
@@ -86,6 +78,7 @@ export const elementPlusCapabilities: Pick<
   form: {
     component: 'Form',
     item: 'FormItem',
+    validateField: (instance, path) => instance.validateField(path.join('.')),
     validate: (instance) => instance.validate(),
     clearValidate: (instance) => instance.clearValidate(),
   },
@@ -109,21 +102,7 @@ export const elementPlusCapabilities: Pick<
     },
   },
   icons: {
-    semantic: {
-      add: AddIcon,
-      upload: semanticIcon('SuperFormElementPlusUploadIcon', '↑'),
-      attachment: semanticIcon('SuperFormElementPlusAttachmentIcon', '⌕'),
-      loading: semanticIcon('SuperFormElementPlusLoadingIcon', '…'),
-      sync: semanticIcon('SuperFormElementPlusSyncIcon', '↻'),
-      error: semanticIcon('SuperFormElementPlusErrorIcon', '×'),
-    },
-    render(icon) {
-      return typeof icon === 'string'
-        ? h('span', icon)
-        : icon
-        ? h(toRaw(icon) as any)
-        : undefined
-    },
+    semantic: builtInIcons,
   },
   actions: {
     render(type, props, slots) {
@@ -131,10 +110,10 @@ export const elementPlusCapabilities: Pick<
         const { title, ...rest } = props
         return h(ElTooltip, { ...rest, content: title }, slots)
       }
-      const { buttons, moreButtons, groupProps, effectData } = props
+      const { buttons, moreButtons, groupProps, effectData, iconOnly, labelOnly } = props
       return h(ElSpace, groupProps, () =>
         [...buttons, ...moreButtons].map((button) =>
-          renderButton(button, effectData)
+          renderButton(button, effectData, iconOnly, labelOnly)
         )
       )
     },
@@ -149,11 +128,12 @@ export const elementPlusCapabilities: Pick<
           slots
         )
       }
+      // Element Plus Tag 不提供 icon slot，标准图标内容合入默认插槽。
       const { removable, onRemove, ...rest } = props
       return h(
         ElTag,
         { ...rest, closable: removable, onClose: onRemove },
-        slots
+        { ...slots, default: () => [slots.icon?.(), slots.default?.()] }
       )
     },
   },

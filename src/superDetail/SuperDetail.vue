@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, readonly } from 'vue'
+import { defineComponent, type PropType, ref, watch, h, provide, shallowRef, readonly, unref } from 'vue'
 import { buildModelsMap } from '../utils/buildModel'
 import { DetailLayout } from '../components/Detail'
 import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
@@ -14,12 +14,20 @@ export default defineComponent({
   emits: ['register'],
   setup(props, ctx) {
     const option: Obj = shallowRef(props.schema || {})
-    if (globalConfig.schemaDiagnostics && props.schema) reportSchemaDiagnostics(props.schema, 'detail', 'SuperDetail')
-    const dataRef = ref(props.schema?.dataSource || {})
+    const dataRef = ref<Obj>({})
     watch(
-      () => props.dataSource,
+      () => props.schema,
+      (schema) => {
+        if (globalConfig.schemaDiagnostics && schema) reportSchemaDiagnostics(schema, 'detail', 'SuperDetail')
+        option.value = schema || {}
+      },
+      { immediate: true }
+    )
+    // Schema 替换时仍优先采用显式数据源；无新数据源时保留 setData 设置的数据。
+    watch(
+      () => unref(props.dataSource ?? option.value.dataSource),
       (data) => {
-        data && (dataRef.value = data)
+        if (data != null) dataRef.value = data
       },
       { immediate: true }
     )
@@ -28,19 +36,20 @@ export default defineComponent({
       setOption: (_option: ExtFormOption) => {
         if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'detail', 'SuperDetail')
         option.value = _option
-        _option.dataSource && (dataRef.value = _option.dataSource)
       },
       setData: (data) => {
         dataRef.value = data
       },
     }
-    // watch(() => props.dataSource, exposed.setData)
 
     const modelsMap = ref()
     watch(
       option,
       (opt) => {
-        if (!opt?.subItems) return
+        if (!opt?.subItems) {
+          modelsMap.value = undefined
+          return
+        }
         const data = buildModelsMap(opt.subItems, dataRef)
         modelsMap.value = data.modelsMap
       },

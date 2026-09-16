@@ -66,6 +66,5 @@ export const antdvAdapter = createAntdvAdapter();
 export {
   antdvCapabilities,
   createAntdvCapabilities,
-  renderAntdvIcon,
 } from "./antdv/capabilities";
 export { antdvDefaults, antdvFields, createAntdvFields } from "./antdv/fields";

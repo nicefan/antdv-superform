@@ -1,6 +1,6 @@
 <script lang="ts">
 import Collections from './Collections'
-import { computed, defineComponent, h, inject, mergeProps, reactive, ref, toRef, unref, watch } from 'vue'
+import { computed, defineComponent, h, inject, mergeProps, reactive, toRef, unref, watch } from 'vue'
 import { globalProps } from '../plugin'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
@@ -19,7 +19,7 @@ export default defineComponent({
     const { option, model, compact } = props
     const { slots } = option
 
-    const formItemContext = ref()
+    let validationModel = model
     let ruleObj = formatRule(model.rules, props.effectData)
     let _propChain = toRef(model, 'propChain')
     const extProps: Obj = {}
@@ -46,10 +46,7 @@ export default defineComponent({
             // 未绑定对象的分组沿用第一个子字段作为校验入口。
             _propChain = toRef(val, 'propChain')
             ruleObj = childRules
-            watch(
-              () => unref(val.refData),
-              () => formItemContext.value?.onFieldChange?.()
-            )
+            validationModel = val
             break
           }
         }
@@ -60,11 +57,6 @@ export default defineComponent({
     if (isBind) {
       // 自身规则与紧凑布局的子字段规则都要生效，不能因已有规则而跳过子字段。
       ruleObj = (ruleObj || []).concat([objectRule])
-      watch(
-        () => unref(model.refData),
-        () => formItemContext.value?.onFieldChange?.(),
-        { deep: true }
-      )
     }
     ruleObj ||= []
     extProps.required = ruleObj.some((rule) => rule.required)
@@ -77,27 +69,39 @@ export default defineComponent({
     const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps, extProps)
     const _label = createLabelNode(option, props.effectData)
 
+    const provider = inject<{ validateField?: (path: (string | number)[]) => Promise<unknown> }>('exaProvider', {})
+    // 对象内字段修改不会改变整组引用；等行路径更新后，仅校验当前分组。
+    watch(
+      () => unref(validationModel.refData),
+      () => {
+        if (!props.disabled && rules.value?.length) {
+          // 校验错误由表单项展示，输入过程不向外抛出校验失败。
+          provider.validateField?.(_propChain.value).catch(() => {})
+        }
+      },
+      { deep: true, flush: 'post' }
+    )
+
     return () =>
       renderUIFormItem(
         {
           ...formItemAttrs,
           rules: rules.value,
-          ref: formItemContext,
           name: _propChain.value,
         },
         {
           label: _label,
-          default:
-            slots?.default ||
-            (() =>
-              renderUILayout(compact ? 'compactSpace' : 'space', mergeProps(compact ? { block: true } : {}, attrs), {
-                default: () =>
-                  h(Collections, {
-                    option,
-                    model,
-                    effectData: props.effectData,
-                  }),
-              })),
+          default: slots?.default || (() => h(
+            Collections,
+            { option, model, compact, effectData: props.effectData },
+            {
+              default: ({ nodes }) => renderUILayout(
+                compact ? 'compactSpace' : 'space',
+                mergeProps(compact ? { block: true } : {}, attrs),
+                { default: () => nodes }
+              ),
+            }
+          )),
         }
       )
   },

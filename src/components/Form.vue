@@ -5,7 +5,7 @@ import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
 import { ButtonGroup } from './buttons'
-import { clearUIFormValidation, renderUIForm, showUIMessage, validateUIForm } from '../adapter'
+import { clearUIFormValidation, renderUIForm, showUIMessage, validateUIForm, validateUIFormField } from '../adapter'
 
 export default {
   name: 'SuperForm',
@@ -51,6 +51,11 @@ export default {
       data: readonly(modelData),
       attrs,
       onSubmit: submitRegister,
+      validateField: async (path: (string | number)[]) => {
+        // 挂载前或空路径不能触发校验，避免底层将空路径解释为整表校验。
+        if (!formRef.value || ignoreRules || !path.length) return
+        return validateUIFormField(formRef.value, path)
+      },
     })
     provide('inheritOptions', {
       disabled: attrs.disabled,
