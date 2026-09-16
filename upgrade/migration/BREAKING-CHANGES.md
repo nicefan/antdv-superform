@@ -1,5 +1,7 @@
 # 不兼容变化与迁移记录
 
+> 升级已完成，本文保留为历史记录。最终架构统一见 [架构总览](../ARCHITECTURE.md)，后续改造进入 [独立任务](../../tasks/README.md)，人工确认完成后再同步正式文档。
+
 当前状态：P010 已按消费场景完成汇总。
 
 本文件只记录用户可观察的 API、类型或行为变化，不重复 Git diff。每项变化必须包含影响、迁移方式和兼容策略；直接移除时明确记录不保留兼容即可。
@@ -8,7 +10,7 @@
 
 按以下顺序迁移，可以避免包入口、组件注册和 Schema 名称同时变化时难以定位问题：
 
-1. 选择一个官方产品包。AntDV 项目安装 `superform-antdv`、`antdv-next`、`@antdv-next/icons`；Element Plus 项目安装 `superform-element-plus`、`element-plus`。业务运行时不再额外导入 Core `superform`。
+1. 选择一个官方产品包。AntDV 项目安装 `superform-antdv`、`antdv-next`；Element Plus 项目安装 `superform-element-plus`、`element-plus`。业务运行时不再额外导入 Core `superform`。
 2. 将所有公共 API 改为从所选产品包导入，删除 `app.use(superForm, options)` 和官方包场景下的 `useAdapter(antdvAdapter)`；在应用挂载前调用 `superForm.initialize()`，把旧安装配置中的全局行为移到 `configure()`。
 3. 选择字段组件来源。Vite 项目优先使用产品包 `/unplugin`；不用插件时在 `initialize({ components })` 中手动提供字段，或从 `/components` 导入 `fieldComponents` 全量登记。
 4. 将业务组件迁到 `registerComponent(s)`，删除 `Ext` 前缀、`registComponent`、`registerFormComponents` 和 `configureComponents`。业务组件不能覆盖 Core 或 Adapter 字段。
@@ -17,6 +19,46 @@
 7. 运行类型检查和生产构建。构建插件只支持 Vite；Rollup、Webpack 入口已经删除。动态 Schema 无法扫描时通过插件 `types` 显式声明字段名。
 
 第三方 UI Adapter 不使用官方产品初始化入口：安装独立 `superform`，通过 `superform/sdk` 定义 Adapter，并在渲染前调用 `superForm.useAdapter(customAdapter)`。
+
+## 移除 customIcon 全局图标注册表
+
+阶段：P003 回补
+状态：已实施
+影响版本：下一大版本
+
+### 以前
+
+可通过 `configure()` 为字符串图标注册全局解析函数：
+
+```ts
+superform.configure({
+  customIcon: (name) => iconRegistry[name]?.(),
+})
+```
+
+### 现在
+
+`customIcon` 和 `IconAdapterContext` 已移除。业务图标直接作为 Schema 或按钮的 `icon` 传入组件或节点；Core 内置交互继续由 Adapter 的语义图标提供。
+
+### 影响
+
+依赖字符串名称映射业务图标的配置、类型声明和第三方 Adapter 实现需要修改。字符串图标不再调用宿主项目注册表。
+
+### 迁移
+
+```ts
+import { DownloadOutlined } from '@antdv-next/icons'
+
+const actions = {
+  export: { label: '导出', icon: DownloadOutlined, onClick: exportCurrentData },
+}
+```
+
+第三方 Adapter 将 `icons.render(icon, context)` 改为 `icons.render(icon)`，并自行处理它支持的组件或节点。
+
+### 兼容策略
+
+不保留全局注册表兼容。该入口只在 AntDV Adapter 中生效，无法形成跨 Adapter 的一致图标协议。
 
 ## 记录模板
 
@@ -485,3 +527,14 @@ declare global {
 - AntDV 的 `dataSource/rowSelection/expandedRowKeys` 与 Element Plus 的列、选择、展开和分页事件均由各自 Adapter 映射。
 - Core 不再包含具体 UI 框架导入、私有 class 或 compat；AntDV 专属样式迁入 `superform-antdv`。
 - 第三方 Adapter 若提供 SuperTable，需要实现 `table.render`、`table.renderFilter` 和自动高度所需的选择器声明。
+
+## 2026-09-16 接受的补充变化
+
+- 图标统一为 () => VNodeChild，旧字符串和组件对象需改写渲染函数。七个默认动作无需再配置图标。移除图标库直接依赖不代表 UI 框架不再传递依赖图标包。
+- 第三方 Adapter 的 Icon 仅配置 semantic 渲染函数；复合字段局部校验实现 FormAdapter.validateField(instance, path)。旧 render 转发协议不保留。
+- useTable 的 query/reload/goPage 等异步方法等待注册并返回结果；确保对应组件挂载。
+- SuperDetail 支持整体替换 schema，显式 dataSource 优先，无 subItems 时清空旧模型。
+- InputGroup 保留行级及子字段规则，局部校验只作用于该路径。行按钮模型不携带 propChain。
+- 表格编辑保持源记录和模型身份，删除未匹配的记录时跳过。
+
+完成依据与未执行的回归范围见 [更新归档](../status/ACCEPTED-2026-09-16.md)。

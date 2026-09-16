@@ -3,7 +3,7 @@
 SuperForm 的 AntDV Next 官方产品包，已经内置 Core。业务项目不需要另外安装或导入 `superform`。
 
 ```bash
-pnpm add superform-antdv antdv-next @antdv-next/icons
+pnpm add superform-antdv antdv-next
 ```
 
 ```ts
@@ -34,3 +34,5 @@ superForm.initialize({ components: fieldComponents })
 ```
 
 完整说明见[项目 README](https://github.com/nicefan/antdv-superform)。
+
+内置按钮及内部交互图标由 Core SVG 提供，不需要直接安装图标库。业务 `icon` 配置使用 `() => VNodeChild`，例如 `icon: () => h(MyIcon)`。

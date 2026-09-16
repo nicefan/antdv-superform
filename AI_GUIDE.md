@@ -91,7 +91,6 @@ SuperFormComponents({
 superForm.configure({
   schemaDiagnostics: import.meta.env.DEV,
   dictApi: (name) => fetchDictionary(name),
-  customIcon: (name) => renderProjectIcon(name),
   buttonRoles: () => permissionStore.currentRoles,
   defaultButtons: {
     add: { label: "新增" },
@@ -842,3 +841,12 @@ superForm.registerComponents({ ModalSelect });
 10. Upload 模式、字段值形态和后端接口一致。
 11. 动态回调只读取当前上下文确实提供的数据。
 12. 运行消费项目的 TypeScript 检查；不要仅凭 schema 能渲染就认为 API 正确。
+
+## 当前图标、动态配置与校验约定
+
+- 所有业务图标配置使用 `() => VNodeChild`，例如 `() => h(UserIcon)`。不能传图标名或直接传组件对象；`h` 从 Vue 导入。
+- `add/delete/edit/detail/submit/search/reset` 自带图标；`icon: undefined` 可显式移除，`labelMode` 控制图标与文字显示。
+- `useTable` 的 `query/reload/goPage` 等异步包装等待组件注册，透传参数并返回结果及异常。
+- SuperDetail 整体替换 schema 会重建字段，没有 subItems 时清空。选中数据源为 `unref(props.dataSource ?? option.dataSource)`；没有新数据源时保留已有数据。
+- InputList 单个无 field 的 InputGroup 绑定整行对象，组规则与紧凑子字段规则共同生效；行按钮只有 parent/index，不设置 propChain。
+- Form 通过 exaProvider.validateField(path) 封装内部 formRef；Adapter 转换局部校验方法，不依赖 UI 私有上下文。忽略规则、尚未挂载或空路径不触发局部校验。

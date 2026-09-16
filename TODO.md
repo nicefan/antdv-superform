@@ -18,3 +18,9 @@ table行编辑保存和取消事件✅
 - [ ] 表格弹窗编辑时只保留定义的属性，始终使用resetFields,而不应该更换dataSource,此改动将导致监听未定义的属性值失效，副作用效大；
 - [ ] visibleIn：('table'|'form'|'details')[]
 - [ ] ?decriptionProps -> detailOptions
+  
+- [ ] fieldNames回归交由UI
+- [ ] Input.search，TreeSelect 回归
+- [ ] rules 与required, 无rules时自动生成，有rules, required仅作星号显示
+- [ ] RootTable 加入rowViewer 和rowEditor 对齐， descriptionProps 用于Group
+- [ ] collections 拆分，先构建nodes,再交由组件渲染，子场景中可对nodes进行操作

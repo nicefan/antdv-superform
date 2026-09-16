@@ -1,5 +1,7 @@
 # UIAdapter 设计草案
 
+> 升级已完成，本文保留为历史记录。最终架构统一见 [架构总览](../ARCHITECTURE.md)，后续改造进入 [独立任务](../../tasks/README.md)，人工确认完成后再同步正式文档。
+
 状态：P001 基础契约与 P002 字段处理器能力已确认，复杂能力将在对应阶段扩展。
 
 ## 设计目标
@@ -67,7 +69,7 @@ fields: {
 - `superform.registerComponent(s)`：注册消费项目自己的 Schema 组件，不得覆盖 Core 或当前 Adapter 字段。
 - `superform-antdv` 与 `superform-element-plus`：官方产品包内置 Core 并重新导出 Core API，但导入时不会初始化 Adapter。
 - `fieldComponents`：两个产品包从 `/components` 子路径使用同一名称导出全量字段表，通过 `initialize({ components: fieldComponents })` 快速全量登记；产品根入口不引用该组件表。
-- `superform.configure()`：设置 `dictApi`、`customIcon`、默认按钮和 `defaultProps` 等 Core 全局行为。
+- `superform.configure()`：设置 `dictApi`、默认按钮和 `defaultProps` 等 Core 全局行为。
 - `defaultProps`：覆盖当前适配器提供的默认值；合并顺序需在 P001 定义并补测试。
 - 新版本不保留旧 `components` 底层替换语义，也不增加废弃警告或双路径。
 
@@ -86,7 +88,7 @@ P005 已将项目组件与 Adapter 字段组件分为两套注册入口，并删
 - Adapter 首次初始化后锁定；同一 Adapter 实例可重复使用，不同实例会明确报错。
 - `globalConfig` 视为应用初始化配置，不为同一 Adapter 的重复安装定义缺省项重置语义。
 - Core 只公开 Adapter 定义辅助函数和相关类型；AntDV、Element Plus 分别通过独立 npm 包构建和发布。
-- 字段标准状态、默认值索引规则、复杂服务 capability 和 `customIcon` 的最终归属，在实际迁移对应能力时确认；P001 不用假设接口锁死后续设计。
+- 字段标准状态、默认值索引规则和复杂服务 capability 的最终归属，在实际迁移对应能力时确认；P001 不用假设接口锁死后续设计。`customIcon` 已在 P003 回补中删除，业务图标直接传入组件或节点。
 - `locale` 不属于 Core 安装配置；应用在当前 UI 框架的 ConfigProvider 中设置语言。
 
 ## P002 已确认决策
