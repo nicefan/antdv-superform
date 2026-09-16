@@ -486,6 +486,8 @@ superForm.configure({
 
 ## 表格动作与状态 {#usetable-动作与状态}
 
+`query`、`reload`、`goPage` 会等待组件注册，并返回请求 Promise。
+
 | API                                                        | 说明                 |
 | ---------------------------------------------------------- | -------------------- |
 | `getTable()` / `tableRef`                                  | 获取内部动作实例     |
@@ -500,4 +502,3 @@ superForm.configure({
 | `asyncCall()`                                              | 底层逃生口           |
 
 可运行查询见[远程表格示例](/examples?example=table-query)，本地编辑见[Table 容器示例](/examples?example=table-local)。
-

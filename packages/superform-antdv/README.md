@@ -34,5 +34,3 @@ superForm.initialize({ components: fieldComponents })
 ```
 
 完整说明见[项目 README](https://github.com/nicefan/antdv-superform)。
-
-内置按钮及内部交互图标由 Core SVG 提供，不需要直接安装图标库。业务 `icon` 配置使用 `() => VNodeChild`，例如 `icon: () => h(MyIcon)`。

@@ -92,7 +92,7 @@ Schema 普通字段使用对应 UI 库的组件名，不建立跨框架组件名
 
 单根、语义透明包装允许自然 attrs fallthrough；多根、跨层扩散、受控状态冲突时才显式接管。不把同一份 attrs、slots 或事件重复传到多个内部层级。
 
-业务图标统一为 `() => VNodeChild`，直接作为 icon slot，非 slot 场景调用函数取得节点。不支持字符串注册表或直接传组件对象；不保留 getIconNode/renderUIIcon 包装层。Core 的 builtInIcons 提供 Vue SVG 渲染函数，SDK 导出供 Adapter 复用；七个默认按钮动作内置图标。Icon capability 只保留 semantic 映射。项目不直接依赖图标库，UI 框架自身仍可能传递依赖图标包。
+业务图标类型为 `() => VNodeChild`，icon slot 直接使用函数，其他场景调用取得节点。Core 提供 `builtInIcons` SVG 渲染函数，官方 Adapter 共用；Icon capability 负责内部语义映射。
 
 ## 6. 公共类型与构建插件
 
@@ -112,9 +112,9 @@ Schema 的 UI `attrs` 使用 Partial，保留属性和值类型提示，允许�
 
 `resetFields` 遍历已建立的目标模型；`setFieldsValue` 只更新目标中已有且本次传入的字段。`useForm` 只接收 Schema，外部对象经 Schema dataSource 绑定，不恢复第二个 record 参数或内部 setData。
 
-紧凑 InputGroup 通过 Collections 的默认插槽将字段节点直接交给 compactSpace，保持逐项首尾上下文和自动宽度。无 field 的列表模板分组保留规则，绑定行后再使用实际路径；行按钮模型只包含 parent/index，不注册校验路径。
+InputGroup 的字段节点直接交给紧凑布局组件。列表模板保留组级规则，绑定行后使用实际路径；行按钮只有操作上下文，不注册字段路径。
 
-Form 在 exaProvider 提供 validateField(path)，内部复用 formRef 并调用 Adapter 局部校验；挂载前、ignoreRules 或空路径直接返回。InputGroup 深度监听组数据，在视图更新后校验当前路径，校验失败由 FormItem 展示。AntDV Next 使用 validateFields([path])，Element Plus 使用 validateField(path.join('.'))，不调用框架内部 context。
+Form 通过 `exaProvider.validateField(path)` 复用表单实例，Adapter 转换局部校验协议。InputGroup 监听组数据变化并校验当前路径。设计理由见 [ADR-0007](./decisions/ADR-0007-图标函数与复合字段局部校验.md)。
 
 ### 表格
 
@@ -126,13 +126,13 @@ SuperTable 向内部 Table 传 reload，CRUD 从 option.apis 读取接口并在�
 
 弹窗编辑先等待可选 apis.info，再按当前行、接口结果、resetData 顺序合并；未配置 info 不报错。搜索项引用列名时复制对应列配置，移除 span、disabled、hidden，并设置为可编辑查询字段。
 
-useTable 的异步方法等待实例注册，透传参数、结果和异常；query/reload/goPage 保持公开直接请求语义。Table 删除在源数组按引用或 rowKey 查找，未命中不删除；0 是有效 rowKey。TableEdit 直接绑定源记录，以对象身份复用模型，移动时同步整棵模型树路径。cloneModelsFlat 返回平铺 modelsMap 和共用字段对象的 rootModels，分别用于列查找和路径更新。
+useTable 的异步方法等待实例注册并透传参数、结果与异常。TableEdit 绑定源记录并按对象身份复用模型，移动行时更新模型树的校验路径。`cloneModelsFlat` 返回共享字段对象的平铺索引与层级树，分别用于列查找和路径更新。
 
 ### 详情与列表
 
 SuperDetail 监听 schema 整体替换，无 subItems 时清空模型。数据源统一使用 unref(props.dataSource ?? option.dataSource)；setOption 采用相同选择规则，无新数据源时保留现有数据。
 
-InputList 对象行按身份缓存；普通数组按槽位复用，内部增删同步行缓存，无稳定标识时采用现有匹配逻辑。行模型移动只更新已有 propChain，不为无路径按钮补建路径。详情数据与编辑模型均保留原有绑定职责。
+InputList 对象行按身份缓存；普通数组按槽位复用，内部增删同步行缓存。行模型移动只更新已有 propChain，不为无路径按钮补建路径。
 
 ### 选项与上传
 
@@ -150,4 +150,4 @@ Select 在 showSearch 开启、options 为函数且无显式 onSearch 时，以�
 
 单元测试统一放在 `tests/`。历史验证覆盖核心业务、Adapter、类型、自动导入、架构依赖、发布声明与真实消费项目；具体执行时间和结果留在归档验证记录，不能视为后续代码已通过验证。
 
-2026-09-16 按用户确认将当前代码与任务完成归档，同步正式文档；本次未新增测试，也未运行测试、类型检查、安装或构建。完成状态不等于验证通过。后续阶段记录需求、变更及建议验证范围，正式文档按明确要求同步。
+完成范围及验证状态见[更新归档](./status/ACCEPTED-2026-09-16.md)。后续工作按[开发阶段记录](../tasks/README.md)管理。

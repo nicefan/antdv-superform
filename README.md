@@ -442,11 +442,3 @@ pnpm run build
 ## License
 
 [MIT](LICENSE)
-
-## 图标与行为约定
-
-七个内置按钮动作自带 SVG 图标，无需额外安装图标库。业务图标使用渲染函数：`icon: () => h(UserIcon)` 或 `icon: () => h('span', { class: 'i-icon-user' })`，其中 `h` 从 Vue 导入，组件和样式由业务项目提供。
-
-`useTable` 查询方法等待组件注册并返回 Promise；SuperDetail 支持整体替换 Schema。InputList 中的 InputGroup 可以校验整行对象，行按钮不占用字段校验路径。
-
-维护入口：[架构总览](upgrade/ARCHITECTURE.md)、[升级更新归档](upgrade/status/ACCEPTED-2026-09-16.md)。

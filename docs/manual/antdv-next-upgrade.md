@@ -6,11 +6,10 @@
 
 - Vue `>= 3.5.0`
 - AntDV Next `>= 1.5.0`
-- `@antdv-next/icons >= 1.1.0`
 
 ```bash
 pnpm remove antdv-superform ant-design-vue @ant-design/icons-vue
-pnpm add superform-antdv antdv-next @antdv-next/icons
+pnpm add superform-antdv antdv-next
 ```
 
 业务运行时不再单独安装 Core `superform`。需要 CLI 时才把 `superform` 添加为开发依赖。
@@ -137,6 +136,10 @@ SuperFormComponents({
 | `searchSchema` | `searchForm` |
 | `editForm` | `rowEditor.form` |
 | TreeSelect `data` | `treeData` |
+
+## 图标配置
+
+图标配置使用渲染函数，例如 `icon: () => h(MyIcon)`。覆盖和移除方式见[按钮配置](/manual/super-buttons#按钮配置)。
 
 ## 检查清单
 

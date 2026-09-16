@@ -116,13 +116,14 @@ superform.configure({
 });
 ```
 
-业务图标直接在 Schema 或按钮配置中传入图标组件，不再通过全局字符串注册表解析：
+`icon` 接收渲染函数：
 
 ```ts
-import { DownloadOutlined } from '@antdv-next/icons'
+import { h } from 'vue'
+import DownloadIcon from './icons/DownloadIcon.vue'
 
 const actions = {
-  export: { label: '导出', icon: DownloadOutlined, onClick: exportCurrentData },
+  export: { label: '导出', icon: () => h(DownloadIcon), onClick: exportCurrentData },
 }
 ```
 

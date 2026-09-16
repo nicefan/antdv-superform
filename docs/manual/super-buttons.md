@@ -67,18 +67,20 @@ buttons: {
 
 ## 内置动作与默认配置 {#内置动作与全局默认}
 
-内置动作提供常用文案、样式、确认提示和禁用条件，宿主组件再注入实际方法。例如 `delete` 默认带危险样式和确认提示，未提供当前记录且没有选中行时自动禁用。
+内置动作提供默认图标、文案、样式、确认提示和禁用条件，宿主组件再注入实际方法。例如 `delete` 默认带危险样式和确认提示，未提供当前记录且没有选中行时自动禁用。
 
 项目可以通过插件的 `defaultButtons` 统一覆盖内置动作，也可以注册跨页面复用的项目动作：
 
 ```ts
+import { h } from 'vue'
+
 superform.configure({
   defaultButtons: {
-    add: { label: "新建", icon: "plus" },
+    add: { label: "新建" },
     delete: { confirmText: "确认删除选中的数据？" },
     export: {
       label: "导出",
-      icon: "download",
+      icon: () => h('span', { class: 'i-icon-download' }),
       onClick: ({ selectedRows }) => api.export(selectedRows),
     },
   },
@@ -126,7 +128,7 @@ const buttons = {
 | `name`                | string                    | —        | 动作标识；命中内置动作时继承默认配置和方法 |
 | `label`               | string/function           | 按动作名 | 文本、插槽名或上下文函数                   |
 | `customRender`        | string/function           | —        | 完全自定义按钮内容                         |
-| `icon`                | string/Component          | —        | 图标名或组件                               |
+| `icon` | `() => VNodeChild` | 内置动作图标 | 渲染函数；显式 `undefined` 移除图标 |
 | `color`               | string                    | —        | 语义色或自定义颜色                         |
 | `attrs`               | object                    | `{}`     | Ant Design Vue Button 属性                 |
 | `confirmText`         | string/function           | —        | 点击后先确认                               |
@@ -243,4 +245,3 @@ superform.configure({
 - 独立 SuperButtons：通过 `effectData` 明确传入。
 
 可运行配置见[按钮组示例](/examples?example=buttons)。
-

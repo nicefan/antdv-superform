@@ -173,3 +173,22 @@ FormItem 全局默认 `validateFirst: true`，即同一字段遇到首个失败�
 
 SuperForm 的完整提交、重置和动作 API 见[表单 SuperForm](/manual/super-form)。
 
+## InputGroup 紧凑分组校验
+
+`InputGroup` 的 `rules.validator` 可校验整个绑定对象。在 `InputList.columns` 中配置单个无 `field` 的 InputGroup 时，分组绑定当前行，validator 的第二参数就是行对象；子项仍可配置各自的规则。
+
+```ts
+columns: [{
+  type: 'InputGroup',
+  rules: {
+    validator: (_context, row) =>
+      !!(row.value1?.trim() || row.value2?.trim()) || new Error('至少填写一项'),
+  },
+  subItems: [
+    { type: 'Input', field: 'value1', rules: { min: 2 } },
+    { type: 'Input', field: 'value2' },
+  ],
+}]
+```
+
+组规则与子字段规则均参与校验。

@@ -86,6 +86,12 @@ superform.useAdapter(adapter);
 
 官方产品用户不需要也不应再调用 `useAdapter()`。
 
+### 局部校验与语义图标
+
+支持 InputGroup 局部校验时，实现 `form.validateField(instance, path)`。其中 `path` 为 `(string | number)[]`，方法只校验该路径并返回 Promise。
+
+`icons.semantic` 将语义名映射为 `() => VNodeChild`。可从 `superform/sdk` 导入 `builtInIcons` 复用默认图标。
+
 ## 跨框架复用范围 {#第三方-adapter}
 
 第三方包依赖 `superform`，通过 `superform/sdk` 实现 UIAdapter。Core 只调用 capability 契约，不认识具体 UI 组件、CSS class 或实例 API。
@@ -98,4 +104,3 @@ superform.useAdapter(adapter);
 
 <!-- 章节定位标识。 -->
 <span id="ui-adapter-架构"></span>
-

@@ -7,7 +7,7 @@ SuperForm 1.0 将 Core 与官方 UI 实现分开发布。业务项目只安装�
 AntDV Next：
 
 ```bash
-pnpm add superform-antdv antdv-next @antdv-next/icons
+pnpm add superform-antdv antdv-next
 ```
 
 Element Plus：

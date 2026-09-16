@@ -38,7 +38,7 @@ const [register, detail] = useDetail(schema, firstRecord);
 detail.setData(nextRecord);
 ```
 
-声明式模式则直接更新 `dataSource`。需要注意：详情数据用于读取，不提供表单式 `setFieldsValue` 或 `resetFields` 语义。
+声明式模式直接更新 `dataSource`，其优先级高于 Schema 中的数据源。替换 `schema` 或调用 `setOption()` 可更新详情字段；仅替换配置时保留当前数据。需要注意：详情数据用于读取，不提供表单式 `setFieldsValue` 或 `resetFields` 语义。
 
 完整效果见[详情示例](/examples?example=detail)。
 
@@ -154,4 +154,3 @@ subItems: [
 ```
 
 详细映射见[渲染与插槽](/manual/rendering#默认只读映射)。
-

@@ -114,10 +114,12 @@ const activeTab = ref('base')
 ### 页签项 ExtTabItem
 
 ```ts
+import { h } from 'vue'
+
 {
   label: '基本信息',
   key: 'base',
-  icon: 'user',
+  icon: () => h('span', { class: 'i-icon-user' }),
   disabled: ({ formData }) => formData.lockBase,
   hidden: ({ formData }) => !formData.showBase,
   buttons: { actions: [{ label: '刷新', onClick: refreshBase }] },
@@ -131,6 +133,8 @@ const activeTab = ref('base')
 ## Collapse
 
 ```ts
+import { h, ref } from 'vue'
+
 const activePanel = ref('base')
 
 {
@@ -142,7 +146,7 @@ const activePanel = ref('base')
     {
       label: '基本信息',
       key: 'base',
-      icon: 'info',
+      icon: () => h('span', { class: 'i-icon-info' }),
       buttons: { actions: [{ label: '刷新', onClick: refresh }] },
       subItems: [],
     },
