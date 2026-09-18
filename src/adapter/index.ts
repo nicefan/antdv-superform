@@ -1,90 +1,20 @@
-import { h, type Component, type Slots, type VNodeChild } from "vue";
+import { h, type Component, type VNodeChild } from "vue";
 import type {
   AdapterComponent,
   ActionRenderType,
   ContainerAdapter,
-  FieldAdapter,
-  FieldAdapterContext,
   LayoutComponentName,
   PresentationRenderType,
   UIMessageType,
-  UIAdapter,
   UITableFilterProps,
   UITableRenderProps,
 } from "./types";
 
-let activeAdapter: UIAdapter | undefined;
-const manualUIComponents: Record<string, Component> = {};
-const autoImportedUIComponents: Record<string, Component> = {};
-
-export type UIComponentSource = "manual" | "auto";
-
-/** 保留 Adapter 的具体类型并提供统一定义入口。 */
-export function defineUIAdapter<T extends UIAdapter>(adapter: T): T {
-  return adapter;
-}
-
-/** 获取当前应用已经初始化的 UIAdapter。 */
-export function getUIAdapter() {
-  if (!activeAdapter) {
-    throw new Error(
-      "SuperForm 尚未初始化 UIAdapter；官方产品请先调用 superForm.initialize()，独立 Core 请调用 superForm.useAdapter(adapter)"
-    );
-  }
-  return activeAdapter;
-}
-
-/** Adapter 在插件首次安装时锁定，组件树运行期间不允许切换 UI 协议。 */
-export function initializeUIAdapter(adapter: UIAdapter) {
-  if (activeAdapter && activeAdapter !== adapter) {
-    throw new Error(
-      `UIAdapter 已初始化为 '${activeAdapter.name}'，不能切换为 '${adapter.name}'`
-    );
-  }
-  activeAdapter = adapter;
-  registerUIComponents(adapter.fieldComponents || {}, "manual");
-}
-
-/** 获取指定 Schema 字段的 Adapter 协议。 */
-export function getUIFieldAdapter(type: string): FieldAdapter | undefined {
-  return getUIAdapter().fields?.[type];
-}
-
-/** 按来源登记 Adapter 字段组件；手动配置始终覆盖自动导入。 */
-export function registerUIComponents(
-  components: Record<string, Component | undefined>,
-  source: UIComponentSource = "manual"
-) {
-  const registry =
-    source === "manual" ? manualUIComponents : autoImportedUIComponents;
-  Object.entries(components).forEach(([name, component]) => {
-    if (component) registry[name] = component;
-  });
-}
-
-/** 解析 Adapter 字段对应的已注册 UI 组件。 */
-export function resolveUIComponent(type: string): Component | undefined {
-  const field = getUIFieldAdapter(type);
-  if (!field) return;
-  return (
-    manualUIComponents[field.component] ??
-    autoImportedUIComponents[field.component]
-  );
-}
-
-/** 获取字段组件，并在缺少注册时给出明确错误。 */
-export function requireUIComponent(type: string) {
-  const component = resolveUIComponent(type);
-  if (!component) {
-    const registeredName = getUIFieldAdapter(type)?.component ?? type;
-    throw new Error(
-      `UIAdapter '${getUIAdapter().name}' 支持字段 '${type}'，但组件 '${String(
-        registeredName
-      )}' 尚未注册；请启用自动导入插件，或在 superForm.initialize({ components }) 中提供`
-    );
-  }
-  return component;
-}
+import { getUIAdapter } from './runtime';
+export { defineUIAdapter, getUIAdapter, initializeUIAdapter } from './runtime';
+export { registerUIComponents, resolveUIComponent, requireUIComponent, useUIComponent } from './fieldRegistry';
+export type { UIComponentSource } from './fieldRegistry';
+export { resolveUIField } from './fields';
 
 /** 解析 Adapter 内部固定 UI 原语。 */
 function resolveAdapterComponent(
@@ -395,37 +325,6 @@ export function getUITableSelectors() {
   return table.selectors;
 }
 
-/** 合并并转换指定字段的 UI 属性。 */
-export function mapUIFieldProps(
-  type: string,
-  props: Obj,
-  context: Omit<FieldAdapterContext, "type">
-): Obj {
-  const field = getUIFieldAdapter(type);
-  let mapped = mapModelBinding(
-    { ...field?.defaultProps, ...props },
-    field?.model
-  );
-  if (field?.transformProps)
-    mapped = field.transformProps(mapped, { type, ...context });
-  return mapped;
-}
-
-/** 使用字段协议和已注册组件渲染 Schema 字段。 */
-export function renderUIField(
-  type: string,
-  props: Obj,
-  context: Omit<FieldAdapterContext, "type">,
-  slots: Slots = {}
-) {
-  const component = requireUIComponent(type);
-  const field = getUIFieldAdapter(type);
-  const mapped = mapUIFieldProps(type, props, context);
-  return field?.render
-    ? field.render(component, mapped, { type, ...context }, slots)
-    : h(component, mapped, slots);
-}
-
 export type {
   AdapterComponent,
   ActionAdapter,
@@ -434,6 +333,9 @@ export type {
   ComponentModelConfig,
   FieldAdapter,
   FieldAdapterContext,
+  FieldPropsAdapter,
+  FieldState,
+  ResolvedField,
   FormAdapter,
   IconAdapter,
   LayoutAdapter,

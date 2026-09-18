@@ -1,19 +1,12 @@
 <template>
   <component v-for="(tag, index) in tags" :key="tag" :is="() => renderTag(tag, index)" />
-  <component
-    :is="Input"
-    v-if="inputVisible"
-    ref="inputRef"
-    v-bind="inputProps"
-    class="sup-tag-input"
-    @blur="handleInputConfirm"
-  />
+  <component :is="renderInput" v-if="inputVisible" />
   <component :is="renderAddTag" v-else />
 </template>
 <script lang="ts" setup>
-import { computed, nextTick, ref } from 'vue'
+import { computed, h, nextTick, ref } from 'vue'
 import { getSemanticIconNode, toNode } from '../utils'
-import { mapUIFieldProps, renderUIAction, renderUIPresentation, requireUIComponent } from '../adapter'
+import { resolveUIField, renderUIAction, renderUIPresentation } from '../adapter'
 
 defineOptions({
   inheritAttrs: false,
@@ -41,18 +34,23 @@ const emit = defineEmits(['update:value'])
 const inputRef = ref()
 const inputValue = ref('')
 const inputVisible = ref(false)
-// 延迟到组件渲染阶段解析，避免模块加载早于 app.use 初始化 Adapter。
-const Input = computed(() => requireUIComponent('Input'))
-const inputProps = computed(() =>
-  mapUIFieldProps(
-    'Input',
-    {
-      value: inputValue.value,
-      'onUpdate:value': (value) => (inputValue.value = value),
-    },
-    { option: props.option, effectData: props.effectData }
-  )
-)
+// 延迟到实际显示输入框时解析，并复用字段配置中的 UI 协议。
+const inputField = computed(() => resolveUIField('Input')!)
+const renderInput = () => {
+  const field = inputField.value
+  const context = {
+    type: 'Input', option: props.option, model: props.model, effectData: props.effectData, state: {},
+    binding: { value: inputValue.value, 'onUpdate:value': (value) => (inputValue.value = value) },
+  }
+  const attrs = field.getAttrs({
+    ref: (instance) => (inputRef.value = instance),
+    class: 'sup-tag-input',
+    onBlur: handleInputConfirm,
+  }, props.option, context.state)
+  return field.adapted
+    ? h(field.component, { ...context, attrs })
+    : h(field.component, field.adaptProps(attrs, context))
+}
 
 // watch(
 //   () => props.value,

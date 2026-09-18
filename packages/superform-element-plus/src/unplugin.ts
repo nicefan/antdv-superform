@@ -1,3 +1,4 @@
+import { elementPlusFieldAliases, elementPlusFieldImports } from './fieldNames'
 import createSuperFormComponents, {
   type SuperFormComponentResolver,
   type SuperFormComponentsOptions,
@@ -9,46 +10,20 @@ export type ElementPlusSuperFormComponentsOptions = Omit<SuperFormComponentsOpti
   resolvers?: SuperFormComponentResolver[]
 }
 
-const fields = {
-  Input: 'ElInput',
-  InputNumber: 'ElInputNumber',
-  InputOtp: 'ElInputOtp',
-  InputTag: 'ElInputTag',
-  Autocomplete: 'ElAutocomplete',
-  Mention: 'ElMention',
-  Select: 'ElSelect',
-  SelectV2: 'ElSelectV2',
-  Cascader: 'ElCascader',
-  TreeSelect: 'ElTreeSelect',
-  Radio: 'ElRadio',
-  RadioGroup: 'ElRadioGroup',
-  Checkbox: 'ElCheckbox',
-  CheckboxGroup: 'ElCheckboxGroup',
-  Switch: 'ElSwitch',
-  DatePicker: 'ElDatePicker',
-  TimePicker: 'ElTimePicker',
-  TimeSelect: 'ElTimeSelect',
-  ColorPicker: 'ElColorPicker',
-  Rate: 'ElRate',
-  Slider: 'ElSlider',
-  Segmented: 'ElSegmented',
-  Transfer: 'ElTransfer',
-}
-
 /** Element Plus 字段自动导入 resolver；只描述映射，不注册 Adapter 或修改全局状态。 */
 export function createElementPlusResolver(): SuperFormComponentResolver {
   const resolver = ((type: string) => {
-    const importName = fields[type as keyof typeof fields]
+    const importName = elementPlusFieldImports[type as keyof typeof elementPlusFieldImports]
     return importName
       ? {
           from: 'element-plus',
           importName,
           adapterField: true,
-          registrationName: type,
+          registrationName: elementPlusFieldAliases[type as keyof typeof elementPlusFieldAliases] ?? type,
         }
       : undefined
   }) as SuperFormComponentResolver
-  resolver.adapterFields = Object.keys(fields)
+  resolver.adapterFields = Object.keys(elementPlusFieldImports)
   return resolver
 }
 

@@ -1,5 +1,5 @@
 import { globalConfig } from '../config'
-import { ref, unref, h, reactive, inject, computed, mergeProps, toValue } from 'vue'
+import { h, reactive, inject, computed, mergeProps, toValue } from 'vue'
 import { createButtons } from '../components/buttons'
 import Controls, { getFormComponent, mapFormComponentModel } from '../components'
 import { isPlainObject, get as objectGet } from 'lodash-es'
@@ -7,6 +7,7 @@ import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
 import { renderUIPresentation } from '../adapter'
+import { findOption, useOptions } from './useOptions'
 
 const getVModelProps = (options, parent: Obj) => {
   const vModels = {}
@@ -16,33 +17,6 @@ const getVModelProps = (options, parent: Obj) => {
     })
   }
   return vModels
-}
-
-const formatOptions = (opt, labelName, valueName) => {
-  if (isPlainObject(opt) || !isPlainObject(opt?.[0])) {
-    return Object.entries(opt).map(([key, label]) => ({ value: key, label }))
-  } else {
-    return Array.isArray(opt) ? opt.map((item) => ({ label: item[labelName], value: item[valueName] })) : []
-  }
-}
-const getOptions = (option, _effectData, optionsArr) => {
-  const { options, dictName } = option as any
-  const labelName = option.attrs?.fieldNames?.label || 'label'
-  const valueName = option.attrs?.fieldNames?.value || 'value'
-  const __options = unref(options)
-  if (dictName && globalConfig.dictApi) {
-    globalConfig.dictApi(dictName).then((data) => (optionsArr.value = data))
-  } else if (typeof options === 'function') {
-    Promise.resolve(options(_effectData))
-      .then((data) => {
-        optionsArr.value = formatOptions(data, labelName, valueName)
-      })
-      .catch((err) => {
-        console.warn('useOptionsLabel', err)
-      })
-  } else {
-    optionsArr.value = formatOptions(__options, labelName, valueName)
-  }
 }
 
 const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }: Obj) => {
@@ -78,14 +52,12 @@ export function getViewNode(option, effectData: Obj = {}) {
     type: colType = '',
     viewRender,
     render,
-    options: colOptions,
-    dictName,
     labelField,
-    valueToNumber,
     tagViewer,
     initialValue,
   } = option as any
-  const endField = option.endField ?? option.keepField
+  const colOptions = option.options
+  const endField = option.endField
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const __render = viewRender || (colType === 'InfoSlot' && render)
@@ -97,39 +69,32 @@ export function getViewNode(option, effectData: Obj = {}) {
       return ({ current } = effectData) => String(objectGet(current, labelField) ?? '')
     } else if (endField) {
       return ({ current, text } = effectData) => (text || '') + ' - ' + (objectGet(current, endField) || '')
-    } else if ((colOptions || dictName) && colType !== 'AutoComplete') {
+    } else if (colOptions !== undefined) {
       autoTag = !(tagViewer === false || (!tagViewer && globalConfig.tagViewer === false))
-      let labelAsValue = option.labelAsValue ?? option.valueToLabel
-      if (unref(colOptions)?.[0] && !isPlainObject(unref(colOptions)?.[0]) && !valueToNumber) {
-        labelAsValue = true
-      }
-      const optionsArr = ref<any[]>()
+      // 编辑与展示共用顶层选项配置和子节点查找规则。
+      const { optionsRef, load } = useOptions(colOptions, effectData, false)
+      let loaded = false
       return (param = effectData, inner?: boolean) => {
-        const tags: any[] = []
-        const text = (param.text || param.value) ?? toValue(initialValue) ?? ''
+        // 表格列的行上下文在调用展示函数时才可用，保留首次展示时加载的时机。
+        if (!loaded) {
+          loaded = true
+          void load(param)
+        }
+        const text = param.text ?? param.value ?? toValue(initialValue) ?? ''
         if (text === '') return ''
-        // 绑定值为Label时直接返回原值
-        if (labelAsValue) {
-          return !inner && autoTag ? buildTagRender({ value: text, label: text, tagViewer }) : text
-        }
-        if (!optionsArr.value) {
-          getOptions(option, param, optionsArr)
-        }
-        const arr = Array.isArray(text) ? text : typeof text === 'string' ? text.split(',') : [text]
-        const values = arr.map((val) => {
-          const item = unref(optionsArr)?.find(({ value }) => value == val) // 字符串数字都匹配
-          // 内部调用时不进行标签化
-          if (!inner && autoTag) {
-            tags.push(buildTagRender({ value: val, label: val, ...item, tagViewer }))
-          }
-          return item ? item.label : val
+        const values = Array.isArray(text) ? text : option.stringifyValue && typeof text === 'string' ? text.split(',') : [text]
+        const labels = values.map(value => {
+          const item = findOption(optionsRef.value, value, option.stringifyValue)
+          const label = item?.label ?? value
+          return !inner && autoTag ? buildTagRender({ ...item, value, label, tagViewer }) : label
         })
-        return tags.length ? tags : values.join(',')
+        return !inner && autoTag ? labels : labels.join(',')
       }
     } else if (colType === 'Switch') {
-      return ({ text } = effectData) => (option.valueLabels || '否是')[text ?? toValue(initialValue)]
-      // } else {
-      //   //textRender为undefined将直接返回绑定的值
+      return ({ text, value } = effectData) => {
+        const current = text ?? value ?? toValue(initialValue)
+        return current === true ? '是' : current === false ? '否' : current
+      }
     }
   })() //as false | undefined | ((param?: Obj) => VNode)
 

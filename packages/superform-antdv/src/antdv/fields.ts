@@ -1,120 +1,74 @@
-import { h } from 'vue'
-import { Button } from 'antdv-next'
-import type { UIAdapter } from 'superform/sdk'
+import {
+  combineFieldHandlers,
+  createFieldPropsAdapter,
+  defineFieldAdapters,
+  type UIAdapter,
+} from 'superform/sdk'
 
-function toNode(node: any, param: any = {}) {
-  if (!node) return null
-  if (typeof node === 'function') return node(param || {}, {})
-  return typeof node !== 'object' ? h('span', node) : h(node, { effectData: param })
-}
-
-function mapChangeEvent(props: Obj, normalize: (...args: any[]) => any[] = (value) => [value]) {
-  const { onValueChange, onChange, ...rest } = props
-  if (!onValueChange) return props
-  return {
-    ...rest,
-    onChange: (...args: any[]) => {
-      onValueChange(...normalize(...args))
-      return onChange?.(...args)
-    },
-  }
-}
+export const adaptAntdvFieldProps = createFieldPropsAdapter()
 
 export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
-  return {
-    Input: {
-      component: 'Input',
-      processors: ['input'],
-      transformProps(props, { option }) {
-        return { placeholder: `请输入${option.label ?? ''}`, ...props }
-      },
-      render(component, props, _context, slots) {
-        const { search, searchLoading, addonAfter, enterButton, ...rest } = props
-        if (!search) return h(component, { ...rest, addonAfter }, slots)
-        const { addonAfter: addonAfterSlot, ...restSlots } = slots
-        let enterButtonSlot = slots.enterButton || (enterButton ? undefined : addonAfterSlot)
-        const enterButtonProp = enterButton || addonAfter
-        if (!enterButtonSlot && enterButtonProp && typeof enterButtonProp === 'object') {
-          const { label, icon, ...buttonProps } = enterButtonProp
-          enterButtonSlot = () => [h(Button, { loading: searchLoading, ...buttonProps }, {
-            icon,
-            default: () => toNode(label),
-          })]
-        } else if (!enterButtonSlot && typeof enterButtonProp === 'function') {
-          enterButtonSlot = () => [h(Button, { type: 'primary', loading: searchLoading }, enterButtonProp)]
-        }
-        return h((component as any).Search || component, { ...rest, enterButton: enterButtonSlot ? undefined : enterButtonProp }, enterButtonSlot ? { ...restSlots, enterButton: enterButtonSlot } : restSlots)
-      },
-    },
+  return defineFieldAdapters({
     TextArea: {
-      component: 'TextArea',
-      transformProps(props, { option }) {
-        return { allowClear: true, placeholder: `请输入${option.label ?? ''}`, ...props, style: [{ width: '100%' }, props.style] }
-      },
+      defaults: { allowClear: true, style: { width: '100%' } },
     },
     InputNumber: {
-      component: 'InputNumber',
-      transformProps(props, { option }) {
-        return { type: 'number', placeholder: `请输入${option.label ?? ''}`, ...props, style: [{ width: '100%' }, props.style] }
-      },
-    },
-    InputOTP: { component: 'InputOTP' },
-    InputPassword: { component: 'InputPassword' },
-    InputSearch: {
-      component: 'InputSearch',
-      processors: ['input'],
-      transformProps(props, { option }) {
-        const rest = { ...props }
-        const searchLoading = rest.searchLoading
-        delete rest.search
-        delete rest.searchLoading
-        return { placeholder: `请输入${option.label ?? ''}`, ...rest, loading: searchLoading }
-      },
+      defaults: { type: 'number', style: { width: '100%' } },
     },
     AutoComplete: {
-      component: 'AutoComplete', processors: ['autoComplete'],
-      transformProps(props, { option }) { return { filterOption: true, placeholder: `请输入${option.label ?? ''}`, ...props } },
+      processors: ['options'],
+      defaults: { filterOption: true },
     },
-    Cascader: { component: 'Cascader' },
-    ColorPicker: { component: 'ColorPicker' },
     Select: {
-      component: 'Select', processors: ['select'],
-      transformProps(props, { option }) { return mapChangeEvent({ optionFilterProp: 'label', placeholder: `请选择${option.label ?? ''}`, ...props }) },
+      processors: ['options'],
+      defaults: { optionFilterProp: 'label' },
     },
-    Radio: { component: 'Radio', model: { prop: 'checked', event: 'update:checked' } },
-    RadioGroup: { component: 'RadioGroup', processors: ['radioGroup'], transformProps: (props) => mapChangeEvent(props, (event) => [event?.target?.value]) },
-    Checkbox: { component: 'Checkbox', model: { prop: 'checked', event: 'update:checked' } },
-    CheckboxGroup: { component: 'CheckboxGroup', processors: ['checkboxGroup'], transformProps: (props) => mapChangeEvent(props) },
-    DatePicker: { component: 'DatePicker', processors: ['picker'] },
-    DateRangePicker: { component: 'DateRangePicker', processors: ['picker'] },
-    DateMonthPicker: { component: 'DateMonthPicker', processors: ['picker'] },
-    DateQuarterPicker: { component: 'DateQuarterPicker', processors: ['picker'] },
-    DateWeekPicker: { component: 'DateWeekPicker', processors: ['picker'] },
-    DateYearPicker: { component: 'DateYearPicker', processors: ['picker'] },
-    TimePicker: { component: 'TimePicker', processors: ['picker'] },
-    TimeRangePicker: { component: 'TimeRangePicker', processors: ['picker'] },
+    Radio: { model: { prop: 'checked', event: 'update:checked' } },
+    Checkbox: { model: { prop: 'checked', event: 'update:checked' } },
+    RadioGroup: { processors: ['options'] },
+    CheckboxGroup: { processors: ['options'] },
+    // 清除 Core 通用提示兜底，使用组件库默认文案；用户 attrs.placeholder 仍优先。
+    DatePicker: { defaults: { placeholder: undefined } },
+    DateRangePicker: { defaults: { placeholder: undefined } },
+    DateMonthPicker: { defaults: { placeholder: undefined } },
+    DateQuarterPicker: { defaults: { placeholder: undefined } },
+    DateWeekPicker: { defaults: { placeholder: undefined } },
+    DateYearPicker: { defaults: { placeholder: undefined } },
+    TimePicker: { defaults: { placeholder: undefined } },
+    TimeRangePicker: { defaults: { placeholder: undefined } },
     TreeSelect: {
-      component: 'TreeSelect', processors: ['treeSelect'],
-      transformProps(props, { option }) {
-        return mapChangeEvent({ allowClear: true, placeholder: `请选择${option.label ?? ''}`, ...props }, (value, labels) => [value, Array.isArray(value) ? labels : Array.isArray(labels) ? labels[0] : labels])
-      },
+      processors: ['tree'],
+      defaults: { allowClear: true },
+      adaptProps: (attrs, { state, binding }) => ({
+        ...attrs,
+        ...(state.treeData !== undefined && { treeData: state.treeData }),
+        ...(binding['onUpdate:labelValue'] && {
+          onChange: combineFieldHandlers(
+            (value, labels) =>
+              binding['onUpdate:labelValue'](Array.isArray(value) ? labels : Array.isArray(labels) ? labels[0] : labels),
+            attrs.onChange
+          ),
+        }),
+      }),
     },
     Switch: {
-      component: 'Switch', processors: ['switch'], model: { prop: 'checked', event: 'update:checked' },
-      transformProps(props) {
-        const { trueValue, falseValue, trueLabel, falseLabel, ...rest } = props
-        return { ...rest, checkedValue: trueValue, unCheckedValue: falseValue, checkedChildren: trueLabel, unCheckedChildren: falseLabel }
+      processors: ['switch'],
+      model: { prop: 'checked', event: 'update:checked' },
+      adaptProps(attrs, { state }) {
+        const config = state.switch
+        return config
+          ? {
+              ...attrs,
+              checkedValue: config.checked.value,
+              unCheckedValue: config.unchecked.value,
+              checkedChildren: config.checked.label,
+              unCheckedChildren: config.unchecked.label,
+            }
+          : attrs
       },
     },
-    Rate: { component: 'Rate' },
-    Mentions: { component: 'Mentions' },
-    Segmented: { component: 'Segmented' },
-    Slider: { component: 'Slider' },
-    Transfer: {
-      component: 'Transfer',
-      model: { prop: 'targetKeys', event: 'update:targetKeys' },
-    },
-  }
+    Transfer: { model: { prop: 'targetKeys', event: 'update:targetKeys' } },
+  })
 }
 
 export const antdvFields = createAntdvFields()

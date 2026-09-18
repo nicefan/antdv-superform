@@ -6,7 +6,7 @@ import { update, get as objectGet, set as objectSet } from 'lodash-es'
 /** 当前控件数据初始化 */
 function buildModelData(option: Obj, origin: Ref<Obj>, __chain: string[]) {
   const { field, columns, subItems, initialValue, value } = option
-  const relatedField = option.endField ?? option.keepField ?? option.labelField
+  const relatedField = option.endField ?? option.labelField
   const nameArr = field ? field.split('.') : []
   const propChain = __chain.concat(nameArr)
   const refName = nameArr.splice(-1)[0]

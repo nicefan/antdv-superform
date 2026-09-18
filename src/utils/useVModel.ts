@@ -1,7 +1,6 @@
 import { toRef, watch, ref, unref, toValue, computed, isRef } from 'vue'
 import { get as objectGet, set as objectSet } from 'lodash-es'
 import type { ExtFormItemOption } from '../exaTypes'
-import type { FieldModelBehavior } from '../processors'
 
 type Param = {
   option: ExtFormItemOption
@@ -11,22 +10,17 @@ type Param = {
 
 export default function useVModel(
   { option, model, effectData }: Param,
-  defaultValue?: any,
-  behavior: FieldModelBehavior = {}
+  defaultValue?: any
 ) {
   const {
     field,
-    endField: newEndField,
-    keepField,
+    endField,
     labelField,
-    stringifyValue: newStringifyValue,
-    valueToString,
+    stringifyValue,
     computed: __computed,
     value,
     onUpdate,
   }: MixOption = option
-  const endField = newEndField ?? keepField
-  const stringifyValue = newStringifyValue ?? valueToString
   const vModels: Obj = {}
 
   const vModelFields: Obj = option.vModelFields || {}
@@ -87,7 +81,7 @@ export default function useVModel(
   let raw = toValue(model.refData) // 阻止监听自身数据变化
   // 表单绑定值，变更后同步处理后再改到实际存储变量中
   let effect: Fn
-  if (behavior.splitRange && endField) {
+  if (endField) {
     tempData.value = [refValue.value, model.parent[endField]]
     effect = (val) => {
       const [start, end] = val || []

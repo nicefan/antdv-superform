@@ -158,10 +158,10 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
 
       const ruleName = model.propChain.join('.')
       const effectData = getEffectData({ current: parent, value: refData, index })
-      const { attrs, hidden } = useControl({ option, effectData })
+      const { attrs, hidden, nativeAttrs, disabled } = useControl({ option, effectData })
       const editableRef = computed(() => !hidden.value && (isFunction(editable) ? editable(effectData) : editable))
 
-      const inputSlot = buildInnerNode(option, model, effectData, attrs)
+      const inputSlot = buildInnerNode(option, model, effectData, attrs, { attrs: nativeAttrs, disabled })
       const rules = formatRule(model.rules, effectData)
       const activeRules = computed(() => (unref(attrs.disabled) || unref(hidden) ? [] : rules))
       return () =>

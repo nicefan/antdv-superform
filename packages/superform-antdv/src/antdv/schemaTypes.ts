@@ -29,11 +29,8 @@ import type { ModalFuncProps, ModalProps } from 'antdv-next/dist/modal/interface
 import type { Ref } from 'vue'
 import type {
   AutoCompleteFieldOption,
-  InputFieldAttrs,
-  InputFieldOption,
   RangeFieldOption,
   SelectFieldOption,
-  SwitchFieldAttrs,
   SwitchFieldOption,
   TreeFieldOption,
 } from 'superform'
@@ -76,11 +73,11 @@ declare global {
         DateRangePicker: RangePickerProps
         DateWeekPicker: FormComponentProps<typeof import('antdv-next')['DateWeekPicker']>
         DateYearPicker: FormComponentProps<typeof import('antdv-next')['DateYearPicker']>
-        Input: InputProps & InputFieldAttrs
+        Input: InputProps
         InputNumber: InputNumberProps
         InputOTP: FormComponentProps<typeof import('antdv-next')['InputOTP']>
         InputPassword: FormComponentProps<typeof import('antdv-next')['InputPassword']>
-        InputSearch: FormComponentProps<typeof import('antdv-next')['InputSearch']> & InputFieldAttrs
+        InputSearch: FormComponentProps<typeof import('antdv-next')['InputSearch']>
         Mentions: FormComponentProps<typeof import('antdv-next')['Mentions']>
         Radio: FormComponentProps<typeof import('antdv-next')['Radio']>
         RadioGroup: RadioGroupProps
@@ -88,7 +85,7 @@ declare global {
         Segmented: FormComponentProps<typeof import('antdv-next')['Segmented']>
         Select: SelectProps
         Slider: FormComponentProps<typeof import('antdv-next')['Slider']>
-        Switch: SwitchProps & SwitchFieldAttrs
+        Switch: SwitchProps
         TextArea: TextAreaProps
         TimePicker: TimePickerProps
         TimeRangePicker: TimeRangePickerProps
@@ -102,8 +99,6 @@ declare global {
         AutoComplete: AutoCompleteFieldOption
         CheckboxGroup: SelectFieldOption
         DateRangePicker: RangeFieldOption
-        Input: InputFieldOption
-        InputSearch: InputFieldOption
         RadioGroup: SelectFieldOption
         Select: SelectFieldOption
         Switch: SwitchFieldOption

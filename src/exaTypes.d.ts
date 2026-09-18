@@ -366,16 +366,7 @@ type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
   initialValue?: any
   bordered?: boolean
   defaultActiveKey?: string | number
-  options?: SelectOptions
-  /** 字典名称 */
-  dictName?: string
-  /** 使用选项 label 作为字段值 */
-  labelAsValue?: boolean
-  /**
-   * 选项中的 value 使用 label
-   * @deprecated 使用 `labelAsValue`
-   */
-  valueToLabel?: boolean
+  options?: OptionsConfig
   activeKey?: Ref<string | number | undefined>
   slots?: Obj<VSlot>
   /** 设置tab标签 */
@@ -620,40 +611,25 @@ export type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormCompon
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface CustomFormComponentProps {}
 
-export interface InputFieldOption {
-  onSearch?: (effectData: Obj, value: string) => void
-}
+type DefaultOptionsType = (string | number | boolean)[] | DefaultOptionType[] | { [k: string | number]: any }
+export type OptionsSource = DefaultOptionsType | Readonly<DefaultOptionsType> | Ref<DefaultOptionsType>
+  | ((effectData: Obj) => DefaultOptionsType | Promise<DefaultOptionsType>)
 
-export interface InputFieldAttrs {
-  enterButton?: any
-}
+// 动作下拉仍使用数据源类型，不参与输入字段配置包的迁移。
+type SelectOptions = OptionsSource
 
-type DefaultOptionsType = (string | number)[] | DefaultOptionType[] | { [k: string | number]: any }
-type SelectOptions =
-  | DefaultOptionsType
-  | Readonly<DefaultOptionsType>
-  | Ref<DefaultOptionsType>
-  | Fn<DefaultOptionsType | Promise<DefaultOptionsType>>
-export interface SelectFieldOption {
-  options?: SelectOptions
-  /** 字典名称 */
+export type OptionsConfig = {
+  /** 与 dictName 同时配置时优先使用 source，并给出警告。 */
+  source?: OptionsSource
   dictName?: string
-  /** 选项中的value转成number类型 */
+  fieldNames?: { label?: string; value?: string; children?: string }
   valueToNumber?: boolean
-  /** 使用选项 label 作为字段值 */
   labelAsValue?: boolean
-  /**
-   * 选项中的 value 使用 label
-   * @deprecated 使用 `labelAsValue`
-   */
-  valueToLabel?: boolean
-  /** 将多选结果转换为逗号分隔字符串后写回字段 */
+}
+
+export interface SelectFieldOption {
+  options?: OptionsConfig
   stringifyValue?: boolean
-  /**
-   * 多选时保存为逗号分隔字符串
-   * @deprecated 使用 `stringifyValue`
-   */
-  valueToString?: boolean
 }
 interface ExtTagSelectOption extends ExtFormItemOption, SelectFieldOption {
   attrs?: {
@@ -674,36 +650,22 @@ interface ExtTagInputOption extends ExtFormItemOption {
 }
 export interface TreeFieldOption<TreeData = unknown> {
   labelField?: string
-  /**
-   * @deprecated 使用`treeData`
-   */
-  data?: TreeData | Fn<Promise<TreeData>>
   treeData?: TreeData | Fn<Promise<TreeData>> | Fn<TreeData>
 }
 
-export interface SwitchFieldOption extends SelectFieldOption {
-  valueLabels?: [string, string]
-}
-
-export interface SwitchFieldAttrs {
-  /** 第一个选项为选中值 */
-  firstIsChecked?: boolean
-  /** 默认是否选中 */
-  defaultChecked?: boolean
-}
+export interface SwitchFieldOption extends SelectFieldOption {}
 
 export interface RangeFieldOption {
+  /** 保留 UI 原生日期及临时选择参数，额外接收表单上下文。 */
+  disabledDate?: (effectData: Obj, ...args: any[]) => boolean
   /** 绑定结束日期字段 */
   endField?: string
-  /** @deprecated 使用 `endField` */
-  keepField?: string
   /** 未配置 `endField` 时，将日期范围转换为逗号分隔字符串后写回字段 */
   stringifyValue?: boolean
 }
 
 export interface AutoCompleteFieldOption {
-  options?: SelectOptions
-  dictName?: string
+  options?: OptionsConfig
 }
 
 /** SuperForm 自身消费的上传配置，底层组件属性由 Adapter 补充。 */

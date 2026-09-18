@@ -44,7 +44,7 @@ export function createOfficialProduct<FieldName extends string>(
 
       const adapter = createAdapter(components);
       for (const name of componentNames) {
-        if (!adapter.fields?.[name]) {
+        if (!adapter.supportedFields.includes(name)) {
           throw new Error(
             `UIAdapter '${adapter.name}' 未声明字段 '${name}'，不能初始化对应 UI 组件`
           );

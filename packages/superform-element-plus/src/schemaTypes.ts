@@ -1,10 +1,8 @@
 import type {
   FormComponentProps,
-  InputFieldAttrs,
-  InputFieldOption,
   RangeFieldOption,
+  TreeFieldOption,
   SelectFieldOption,
-  SwitchFieldAttrs,
   SwitchFieldOption,
 } from 'superform'
 
@@ -19,8 +17,8 @@ declare global {
         CheckboxGroup: FormComponentProps<typeof import('element-plus')['ElCheckboxGroup']>
         ColorPicker: FormComponentProps<typeof import('element-plus')['ElColorPicker']>
         DatePicker: FormComponentProps<typeof import('element-plus')['ElDatePicker']>
-        Input: FormComponentProps<typeof import('element-plus')['ElInput']> &
-          InputFieldAttrs
+        DateRangePicker: FormComponentProps<typeof import('element-plus')['ElDatePicker']>
+        Input: FormComponentProps<typeof import('element-plus')['ElInput']>
         InputNumber: FormComponentProps<typeof import('element-plus')['ElInputNumber']>
         InputOtp: FormComponentProps<typeof import('element-plus')['ElInputOtp']>
         InputTag: FormComponentProps<typeof import('element-plus')['ElInputTag']>
@@ -32,9 +30,9 @@ declare global {
         Select: FormComponentProps<typeof import('element-plus')['ElSelect']>
         SelectV2: FormComponentProps<typeof import('element-plus')['ElSelectV2']>
         Slider: FormComponentProps<typeof import('element-plus')['ElSlider']>
-        Switch: FormComponentProps<typeof import('element-plus')['ElSwitch']> &
-          SwitchFieldAttrs
+        Switch: FormComponentProps<typeof import('element-plus')['ElSwitch']>
         TimePicker: FormComponentProps<typeof import('element-plus')['ElTimePicker']>
+        TimeRangePicker: FormComponentProps<typeof import('element-plus')['ElTimePicker']>
         TimeSelect: FormComponentProps<typeof import('element-plus')['ElTimeSelect']>
         Transfer: FormComponentProps<typeof import('element-plus')['ElTransfer']>
         TreeSelect: FormComponentProps<typeof import('element-plus')['ElTreeSelect']>
@@ -45,12 +43,14 @@ declare global {
       elementPlus: {
         CheckboxGroup: SelectFieldOption
         DatePicker: RangeFieldOption
-        Input: InputFieldOption
+        DateRangePicker: RangeFieldOption
         RadioGroup: SelectFieldOption
         Select: SelectFieldOption
         SelectV2: SelectFieldOption
         Switch: SwitchFieldOption
+        TreeSelect: TreeFieldOption
         TimePicker: RangeFieldOption
+        TimeRangePicker: RangeFieldOption
       }
     }
 

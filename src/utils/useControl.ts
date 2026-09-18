@@ -23,6 +23,7 @@ export default function render({ option, effectData, inheritDisabled }: Param) {
       ? undefined
       : computed(() => {
           let bool = toValue(inheritDisabled)
+          if (!bool && __disabled === undefined) return undefined
           if (!bool) {
             if (typeof __disabled === 'function') {
               bool = !!__disabled(effectData)
@@ -41,7 +42,11 @@ export default function render({ option, effectData, inheritDisabled }: Param) {
 
   // 浅层props合并
   const __merged = mergeProps({ ...globalProps[type] }, { ...option.attrs }, listener, computedAttr)
-  const attrs: Obj = merge({}, option.attrs, __merged, { disabled })
+  const nativeAttrs: Obj = merge({}, option.attrs, __merged)
+  // 输入字段将专项禁用状态单独交给 Adapter；其它组件仍消费合成后的 attrs。
+  const attrs: Obj = { ...nativeAttrs, ...(disabled && {
+    disabled: computed(() => disabled.value ?? toValue(nativeAttrs.disabled)),
+  }) }
 
-  return { attrs, hidden, required }
+  return { attrs, nativeAttrs, disabled, hidden, required }
 }

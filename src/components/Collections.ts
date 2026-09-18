@@ -8,11 +8,9 @@ import { DataProvider } from '../dataProvider'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
 import {
-  getUIFieldAdapter,
-  mapUIFieldProps,
+  resolveUIField,
   renderUIFormItem,
   renderUILayout,
-  requireUIComponent,
   resolveUIComponent,
 } from '../adapter'
 import FieldProcessorRenderer from './processors/FieldProcessorRenderer'
@@ -62,7 +60,7 @@ export default defineComponent({
         useVModel({ option, model: subData, effectData })
         continue
       }
-      const { hidden, required, attrs } = useControl({
+      const { hidden, required, attrs, nativeAttrs, disabled } = useControl({
         option,
         effectData,
         inheritDisabled: inheritOptions.disabled,
@@ -76,7 +74,7 @@ export default defineComponent({
           )
         continue
       }
-      let innerNode = buildInnerNode(option, subData, effectData, attrs)
+      let innerNode = buildInnerNode(option, subData, effectData, attrs, { attrs: nativeAttrs, disabled })
       if (!innerNode) continue
       if ((hasFormComponent(type) || resolveUIComponent(type)) && editable !== undefined && editable !== true) {
         const inputNode = innerNode
@@ -201,22 +199,23 @@ export default defineComponent({
   },
 })
 
-export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj) {
+export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj, control?: { attrs: Obj; disabled?: Ref<boolean | undefined> }) {
   const { type, render } = option
   if (!type) return
 
   const rootSlots = inject<Obj>('rootSlots', {})
   const slots = useInnerSlots(option.slots, effectData)
-  const fieldAdapter = !render ? getUIFieldAdapter(type) : undefined
-  const processors = fieldAdapter?.processors
+  const field = !render ? resolveUIField(type) : undefined
+  const processors = field?.processors
+  const fieldAttrs = control?.attrs ?? attrs
+  const state = reactive({ disabled: control?.disabled })
   // Adapter 声明的字段始终使用其协议；自动导入只提供实际组件，不能绕过字段适配。
-  const definition = fieldAdapter ? undefined : getFormComponent(type)
-  const adapterComponent = !render && fieldAdapter ? requireUIComponent(type) : undefined
+  const definition = field ? undefined : getFormComponent(type)
   const renderSlot = render
     ? typeof render === 'function'
       ? render
       : rootSlots[render]
-    : definition?.component || Controls[type] || adapterComponent
+    : definition?.component || Controls[type] || field?.component
 
   let node
   if (type === 'InfoSlot') {
@@ -234,16 +233,22 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     // 表单输入组件
     if (!renderSlot) {
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
-    } else if (adapterComponent && processors?.length) {
+    } else if (field && processors?.length) {
       node = () =>
-        h(FieldProcessorRenderer, { ...attrs, fieldType: type, processors, option, model, effectData }, slots)
+        h(FieldProcessorRenderer, { inputAttrs: fieldAttrs, state, field, option, model, effectData }, slots)
     } else {
       const valueProps = useVModel({ option, model, effectData })
       const allAttrs = { ...attrs, ...valueProps }
       if (type === 'InputSlot') {
         node = () => renderSlot?.(reactive({ props: allAttrs, ...effectData }))
-      } else if (adapterComponent) {
-        node = () => h(adapterComponent, reactive(mapUIFieldProps(type, allAttrs, { option, effectData })), slots)
+      } else if (field) {
+        node = () => {
+          const context = { type, option, model, effectData, binding: reactive(valueProps), state }
+          const native = reactive(field.getAttrs(fieldAttrs, option, context.state))
+          return field.adapted
+            ? h(field.component, { ...context, attrs: native }, slots)
+            : h(field.component, field.adaptProps(native, context), field.adaptSlots?.(slots, context) ?? slots)
+        }
       } else if (definition?.source === 'custom' || definition?.source === 'auto') {
         node = () => h(renderSlot, reactive(mapFormComponentModel(definition, allAttrs)), slots)
       } else {

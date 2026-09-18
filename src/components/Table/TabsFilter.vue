@@ -9,12 +9,6 @@ export default defineComponent({
     effectData: Object,
     options: null as any,
     bordered: Boolean,
-    /** 字典名称 */
-    dictName: String,
-    /** 使用选项 label 作为字段值 */
-    labelAsValue: Boolean,
-    /** @deprecated 使用 `labelAsValue` */
-    valueToLabel: Boolean,
     activeKey: [String, Number, Object],
     defaultActiveKey: [String, Number],
     customTab: Function,
@@ -22,11 +16,7 @@ export default defineComponent({
   },
   emits: ['update:activeKey'],
   setup(props, { attrs, slots, emit }) {
-    const { optionsRef } = useOptions(
-      { ...props, labelAsValue: props.labelAsValue || props.valueToLabel },
-      [],
-      props.effectData
-    )
+    const { optionsRef } = useOptions(props.options, props.effectData)
     const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<
       string | number | undefined
     >

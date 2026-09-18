@@ -70,11 +70,11 @@ export default function ({ model, orgList, editableRef }) {
         index,
       })
       const { editable = true } = option
-      const { attrs, hidden } = useControl({ option, effectData })
+      const { attrs, hidden, nativeAttrs, disabled } = useControl({ option, effectData })
       const selfEditableRef = computed(
         () => !hidden.value && editableRef.value && (isFunction(editable) ? editable(effectData) : editable)
       )
-      const inputSlot = buildInnerNode(option, model.value, effectData, attrs)
+      const inputSlot = buildInnerNode(option, model.value, effectData, attrs, { attrs: nativeAttrs, disabled })
       const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
       const __rules = formatRule(model.value.rules, effectData)
       const rules = __rules && computed(() => (unref(attrs.disabled) ? undefined : __rules))

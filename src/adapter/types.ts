@@ -184,26 +184,43 @@ export interface FieldAdapterContext {
   type: string
   option: Obj
   effectData: Obj
+  model: ModelData
+  binding: Obj
+  state: FieldState
 }
 
+/** Core 专项处理结果；缺省项表示不接管对应的原生配置。 */
+export interface FieldState {
+  disabled?: boolean
+  options?: Obj[]
+  treeData?: any[]
+  /** Core 提供默认提示；range 处理器输出两端提示，UI package 只转换属性协议。 */
+  placeholder?: string | [string, string]
+  switch?: { unchecked: { value: unknown; label?: unknown }; checked: { value: unknown; label?: unknown } }
+}
+
+export type FieldPropsAdapter = (attrs: Obj, context: FieldAdapterContext) => Obj
+
 export interface FieldAdapter {
-  /** 初始化或自动导入时使用的组件注册名；Adapter 本身不直接持有字段组件。 */
-  component: string
-  /** 当前 UI 框架使用的受控值协议 */
-  model?: ComponentModelConfig
-  /** 该字段在当前 UI 框架下的默认属性 */
-  defaultProps?: Obj
-  /** 需要依次应用的 Core 字段处理器 */
+  /** 字符串指定原始组件别名目标；独立适配组件接收 Core 上下文。 */
+  component?: Component | string
+  defaults?: Obj
+  /** 固定原生属性，在用户 attrs 和专项 props 合成后覆盖，适用于各类别名。 */
+  fixedProps?: Obj
   processors?: string[]
-  /** 将核心字段状态转换为当前 UI 组件属性 */
-  transformProps?: (props: Obj, context: FieldAdapterContext) => Obj
-  /** 当前 UI 框架需要特殊组件或 slot 协议时自定义最终渲染 */
-  render?: (
-    component: Component,
-    props: Obj,
-    context: FieldAdapterContext,
-    slots: Slots
-  ) => VNodeChild
+  adaptProps?: FieldPropsAdapter
+  /** 接收 Core 已包装上下文的 slots，保持延迟执行。 */
+  adaptSlots?: (slots: Slots, context: FieldAdapterContext) => Slots
+}
+
+export interface ResolvedField extends Omit<FieldAdapter, 'component'> {
+  component: Component
+  type: string
+  /** 区分独立适配组件与原始组件的入参。 */
+  adapted: boolean
+  /** Core 按当前字段上下文生成缺省属性，显式 attrs 优先。 */
+  getAttrs: (attrs: Obj, option: Obj, state?: FieldState) => Obj
+  adaptProps: FieldPropsAdapter
 }
 
 export interface UIAdapter {
@@ -211,7 +228,11 @@ export interface UIAdapter {
   name: string
   /** Core 运行必需、由 Adapter 直接引入的固定 UI 原语；不包含 Schema 字段组件。 */
   components: Record<string, Component>
-  /** Adapter 支持的 Schema 字段及其组件协议；这里只声明能力，不负责引入字段组件。 */
+  /** 受支持输入组件目录，与字段差异配置分离，不持有真实组件。 */
+  supportedFields: readonly string[]
+  /** UI package 提前固化的普通输入协议。 */
+  adaptFieldProps?: FieldPropsAdapter
+  /** 只描述输入组件的适配差异；key 就是原始组件注册名。 */
   fields?: Record<string, FieldAdapter | undefined>
   /** 初始化 Adapter 时一并注册的字段组件；官方产品通常由 /components 入口提供。 */
   fieldComponents?: Record<string, Component | undefined>

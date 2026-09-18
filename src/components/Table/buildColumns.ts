@@ -28,8 +28,8 @@ const InputNode = defineComponent({
       set: (val) => objSet(effectData.record, field, val),
     })
     const model: any = { parent, refData }
-    const { attrs, hidden } = useControl({ option, effectData: { ...effectData, inTable: true } })
-    const inputSlot = buildInnerNode(option, model, effectData, attrs)
+    const { attrs, hidden, nativeAttrs, disabled } = useControl({ option, effectData: { ...effectData, inTable: true } })
+    const inputSlot = buildInnerNode(option, model, effectData, attrs, { attrs: nativeAttrs, disabled })
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : unref(editable)))
     const viewNode = getViewNode(option, effectData)
 
@@ -103,7 +103,7 @@ export function buildColumns({
           key: col.field || col.label,
           dataIndex: model.propChain.length > 1 ? model.propChain : model.propChain[0],
         }
-        if (col.options || col.dictName || col.type === 'Switch' || col.type?.includes('Picker')) {
+        if (col.options || col.type === 'Switch' || col.type?.includes('Picker')) {
           column.align = 'center'
         } else if (col.type === 'InputNumber') {
           column.align = 'right'

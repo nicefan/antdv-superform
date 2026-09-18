@@ -6,6 +6,7 @@
 </template>
 <script lang="ts" setup>
 import { computed } from 'vue'
+import type { SelectFieldOption } from '../exaTypes'
 import { useOptions } from '../utils/useOptions'
 import { renderUIPresentation } from '../adapter'
 
@@ -14,7 +15,7 @@ defineOptions({
 })
 
 const props = defineProps<{
-  option: GetBaseOption
+  option: GetBaseOption & SelectFieldOption
   model: ModelData
   effectData: Obj
   value?: (string | number) | (string | number)[]
@@ -26,7 +27,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['update:value', 'change', 'check'])
-const { optionsRef } = useOptions(props.option, props.options, props.effectData)
+const { optionsRef: configuredOptions } = useOptions(props.option.options, props.effectData)
+const optionsRef = computed(() => props.option.options === undefined ? props.options ?? [] : configuredOptions.value)
 
 const selected = computed(() => {
   const { value } = props

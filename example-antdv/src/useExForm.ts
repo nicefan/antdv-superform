@@ -22,6 +22,8 @@ export default function exampleForm() {
   const selectList = ['游戏', '唱歌', '跑步', '打牌']
   const valname = ref('云')
   const areaList = ['湖南', '广东']
+  const areaSearch = ref('')
+  const nameSearchLoading = ref(false)
   const treeData = [
     {
       title: 'Node1',
@@ -179,7 +181,7 @@ export default function exampleForm() {
             },
           },
           {
-            type: 'Input',
+            type: 'InputSearch',
             field: 'name',
             // value: valname,
             label: '姓名',
@@ -197,26 +199,23 @@ export default function exampleForm() {
             },
             computed: (val, { current, field }) => current[field]?.trim?.(),
             attrs: {
-              // 可改变查询按钮标签
-              addonAfter: '查询',
-              // suffix: 'a',
-              enterButton: {
-                icon: SearchIcon,
-                type: 'primary',
-              },
+              enterButton: true,
+              loading: nameSearchLoading,
             },
             slots: {
-              prefix: (...args) => {
-                return UserIcon()
-              },
+              prefix: () => UserIcon(),
+              searchIcon: () => SearchIcon(),
             },
-            // 可个性化查询按钮
-            // enterButton: () => h(Button, () => 'abc'),
-            // 显示查询图标按钮
-            onSearch(...args) {
+            async onSearch(...args) {
               console.log('change:', args)
               acKey.value = 'tab1'
-              return new Promise((resolve) => setTimeout(resolve, 1000))
+              // 搜索过程由业务维护 loading，InputSearch 只提供原生事件和展示。
+              nameSearchLoading.value = true
+              try {
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+              } finally {
+                nameSearchLoading.value = false
+              }
             },
           },
 
@@ -233,18 +232,11 @@ export default function exampleForm() {
             type: 'Switch',
             label: '是否注册',
             field: 'isReg',
-            valueLabels: ['否', '是'],
-            // options: () =>
-            //   new Promise((resolve) => {
-            //     setTimeout(() => {
-            //       resolve([
-            //         { value: 'a', label: 'A' },
-            //         { value: 'b', label: 'B' },
-            //       ])
-            //     }, 1000)
-            //   }),
-            attrs: {
-              // defaultChecked: true,
+            options: {
+              source: [
+                { value: false, label: '否' },
+                { value: true, label: '是' },
+              ],
             },
           },
           {
@@ -266,18 +258,15 @@ export default function exampleForm() {
                 field: 'forever',
                 labelField: 'foreverName',
                 label: '爱好',
-                valueToNumber: true,
                 attrs: {
                   placeholder: '使用普通数组生成下拉选项',
                 },
-                /** 依赖数据变化切换 */
-                // options: (data) => (data.age > 18 ? selectList.slice(0, 2) : selectList.slice(2)),
-                /** 异步请求更新 */
-                // options: () => Promise.resolve().then(() => selectList.slice(0, 2)),
-                /** 传递响应式数组，本地进行更新 */
-                options: selectList,
-                /** 静态固定数组 */
-                // options: selectList,
+                options: {
+                  source: selectList,
+                  valueToNumber: true,
+                  // 联动选项：source: ({ current }) => current.age > 18 ? selectList.slice(0, 2) : selectList.slice(2),
+                  // 异步选项：source: () => Promise.resolve(selectList.slice(0, 2)),
+                },
                 // disabled: (data) => data.age > 20,
               },
             ],
@@ -286,9 +275,10 @@ export default function exampleForm() {
             type: 'TagSelect',
             field: 'other',
             label: '特长',
-            // options: () => Promise.resolve(list.value),
-            options: selectList,
-            // valueToNumber: true,
+            options: {
+              source: selectList,
+              // 响应式选项可使用 source: list。
+            },
             attrs: {
               // placeholder: 'value转换成字符型',
               multiple: true,
@@ -342,20 +332,19 @@ export default function exampleForm() {
                 attrs: {
                   placeholder: '可输入动态添加选项',
                   showSearch: true,
+                  filterOption: false,
                   defaultActiveFirstOption: true,
+                  onSearch: (value) => { areaSearch.value = value },
                 },
                 required: ({ current }) => current.isReg,
-                /** value将使用label保存 */
-                labelAsValue: true,
-                /** 依赖数据变化切换, showSearch打开时，可以获取第二个参数，可以实现动态查询 */
-                options: (data, searchText) => {
-                  if (searchText) {
-                    return uniq([...areaList, searchText])
-                  }
-                  if (data.value && !areaList.includes(data.value)) {
-                    areaList.push(data.value)
-                  }
-                  return areaList
+                options: {
+                  labelAsValue: true,
+                  // 原生搜索事件更新业务状态，source 只接收字段上下文。
+                  source: ({ value }) => {
+                    if (areaSearch.value) return uniq([...areaList, areaSearch.value])
+                    if (value && !areaList.includes(value)) areaList.push(value)
+                    return areaList
+                  },
                 },
               },
               {
@@ -616,17 +605,19 @@ export default function exampleForm() {
             label: '食物',
             initialValue: [],
             labelField: 'foodName',
-            options: [
-              { label: '中餐', value: '1' },
-              { label: '西餐', value: '2' },
-            ],
+            options: {
+              source: [
+                { label: '中餐', value: '1' },
+                { label: '西餐', value: '2' },
+              ],
+            },
           },
           {
             type: 'TreeSelect',
             field: 'tree',
             label: '树形',
             // labelField: 'treeName',
-            data: treeData,
+            treeData,
             // initialValue: () => ['0-0'],
             attrs: {
               // multiple: true,
@@ -806,7 +797,7 @@ export default function exampleForm() {
                 field: 'selectIds',
                 labelField: 'selectNames',
                 label: '分组2',
-                data: treeData,
+                treeData,
                 attrs: { multiple: true },
                 editable: ({ current }) => {
                   return !current.okable

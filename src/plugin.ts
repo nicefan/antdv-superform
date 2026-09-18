@@ -23,7 +23,7 @@ function applyAdapter(adapter: UIAdapter) {
     initializeUIAdapter(adapter);
     return;
   }
-  registerAdapterFieldTypes(Object.keys(adapter.fields || {}));
+  registerAdapterFieldTypes(adapter.supportedFields);
   initializeUIAdapter(adapter);
   configuredAdapter = adapter;
   if (!adapterApplied) {

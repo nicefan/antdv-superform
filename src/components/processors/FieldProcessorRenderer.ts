@@ -1,5 +1,5 @@
-import { defineComponent, reactive, type PropType } from 'vue'
-import { renderUIField } from '../../adapter'
+import { defineComponent, h, reactive, type PropType } from 'vue'
+import type { FieldState, ResolvedField } from '../../adapter'
 import useVModel from '../../utils/useVModel'
 import { resolveFieldProcessors } from '../../processors'
 import type { ExtFormItemOption } from '../../exaTypes'
@@ -9,42 +9,42 @@ export default defineComponent({
   name: 'FieldProcessorRenderer',
   inheritAttrs: false,
   props: {
-    // 不能命名为 type，否则 Input 的 attrs.type 会覆盖 Schema 字段类型。
-    fieldType: { type: String, required: true },
-    processors: { type: Array as PropType<string[]>, required: true },
+    // 直接接收已经解析的配置，渲染阶段不再按类型查询 Adapter。
+    field: { type: Object as PropType<ResolvedField>, required: true },
+    inputAttrs: { type: Object, required: true },
+    state: { type: Object as PropType<FieldState>, required: true },
     option: { type: Object as PropType<ExtFormItemOption>, required: true },
     model: { type: Object as PropType<ModelData>, required: true },
     effectData: { type: Object, required: true },
   },
   setup(props, ctx) {
-    const processorState = resolveFieldProcessors(props.processors, {
+    const processorState = resolveFieldProcessors(props.field.processors || [], {
       option: props.option,
+      attrs: reactive(props.inputAttrs),
       effectData: props.effectData,
-      attrs: ctx.attrs,
       model: props.model,
     })
-    const valueProps = useVModel(
-      {
+    const valueProps = useVModel({
+      option: props.option,
+      model: props.model,
+      effectData: props.effectData,
+    })
+    processorState.bindModel(valueProps)
+
+    return () => {
+      const field = props.field
+      const context = {
+        type: field.type,
         option: props.option,
         model: props.model,
         effectData: props.effectData,
-      },
-      undefined,
-      processorState.modelBehavior
-    )
-
-    return () => {
-      // 保留 attrs 的最新值，同时让 useVModel 返回的 Ref 在交给 UI 组件前自动解包。
-      const processedProps = processorState.transformProps(reactive({ ...ctx.attrs, ...valueProps }))
-      return renderUIField(
-        props.fieldType,
-        processedProps,
-        {
-          option: props.option,
-          effectData: props.effectData,
-        },
-        ctx.slots
-      )
+        binding: reactive(valueProps),
+        state: { ...props.state, ...processorState.state.value },
+      }
+      const attrs = reactive(field.getAttrs(props.inputAttrs, props.option, context.state))
+      return field.adapted
+        ? h(field.component, { ...context, attrs }, ctx.slots)
+        : h(field.component, field.adaptProps(attrs, context), field.adaptSlots?.(ctx.slots, context) ?? ctx.slots)
     }
   },
 })

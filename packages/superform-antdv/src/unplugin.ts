@@ -1,3 +1,4 @@
+import { antdvFieldNames } from './fieldNames'
 import createSuperFormComponents, {
   type SuperFormComponentResolver,
   type SuperFormComponentsOptions,
@@ -9,42 +10,10 @@ export type AntdvSuperFormComponentsOptions = Omit<SuperFormComponentsOptions, '
   resolvers?: SuperFormComponentResolver[]
 }
 
-const fields = [
-  'Input',
-  'TextArea',
-  'InputNumber',
-  'InputOTP',
-  'InputPassword',
-  'InputSearch',
-  'AutoComplete',
-  'Cascader',
-  'ColorPicker',
-  'Select',
-  'Radio',
-  'RadioGroup',
-  'Checkbox',
-  'CheckboxGroup',
-  'DatePicker',
-  'DateRangePicker',
-  'DateMonthPicker',
-  'DateQuarterPicker',
-  'DateWeekPicker',
-  'DateYearPicker',
-  'TimePicker',
-  'TimeRangePicker',
-  'TreeSelect',
-  'Switch',
-  'Rate',
-  'Mentions',
-  'Segmented',
-  'Slider',
-  'Transfer',
-]
-
 /** AntDV 字段按需导入规则；Core 插件负责扫描和生成虚拟注册模块。 */
 export function createAntdvResolver(): SuperFormComponentResolver {
   const resolver = ((type: string) =>
-    fields.includes(type)
+    (antdvFieldNames as readonly string[]).includes(type)
       ? {
           from: 'antdv-next',
           importName: type,
@@ -52,7 +21,7 @@ export function createAntdvResolver(): SuperFormComponentResolver {
           registrationName: type,
         }
       : undefined) as SuperFormComponentResolver
-  resolver.adapterFields = [...fields]
+  resolver.adapterFields = [...antdvFieldNames]
   return resolver
 }
 
