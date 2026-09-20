@@ -5,7 +5,7 @@ import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
 import Collections from './Collections'
 import { ButtonGroup } from './buttons'
-import { clearUIFormValidation, renderUIForm, showUIMessage, validateUIForm, validateUIFormField } from '../adapter'
+import { getUIRender, getUIService } from '../adapter'
 
 export default {
   name: 'SuperForm',
@@ -54,7 +54,9 @@ export default {
       validateField: async (path: (string | number)[]) => {
         // 挂载前或空路径不能触发校验，避免底层将空路径解释为整表校验。
         if (!formRef.value || ignoreRules || !path.length) return
-        return validateUIFormField(formRef.value, path)
+        const validateField = getUIService('form').validateField
+        if (!validateField) throw new Error('当前 UIAdapter 未实现 form.validateField')
+        return validateField(formRef.value, path)
       },
     })
     provide('inheritOptions', {
@@ -81,27 +83,29 @@ export default {
     const actions = {
       dataSource: modelData,
       submit: () => {
-        return validateUIForm(formRef.value).then((...args) => {
-          return submitValidate(modelData.value).then(
-            () => {
-              const data = cloneDeep(modelData.value)
-              emit('submit', data)
-              return data
-            },
-            (err) => {
-              typeof err === 'object' && err.message && showUIMessage('error', err.message)
-              return Promise.reject(err)
-            }
-          )
-        })
+        return getUIService('form')
+          .validate(formRef.value)
+          .then((...args) => {
+            return submitValidate(modelData.value).then(
+              () => {
+                const data = cloneDeep(modelData.value)
+                emit('submit', data)
+                return data
+              },
+              (err) => {
+                typeof err === 'object' && err.message && getUIService('services').message('error', err.message)
+                return Promise.reject(err)
+              }
+            )
+          })
       },
       setFieldsValue(data) {
-        formRef.value && clearUIFormValidation(formRef.value)
+        formRef.value && getUIService('form').clearValidate(formRef.value)
         return setFieldsValue(modelData.value, data, initialData)
       },
       resetFields(data: Obj = {}) {
         resetFields(modelData.value, data, initialData)
-        formRef.value && clearUIFormValidation(formRef.value)
+        formRef.value && getUIService('form').clearValidate(formRef.value)
         const cloneData = cloneDeep(modelData.value)
         onReset?.(cloneData as Obj)
         emit('reset', cloneData)
@@ -142,7 +146,7 @@ export default {
       () => unref(props.dataSource ?? props.option.dataSource),
       (data) => {
         if (data) {
-          formRef.value && clearUIFormValidation(formRef.value)
+          formRef.value && getUIService('form').clearValidate(formRef.value)
           modelData.value = data
         }
       },
@@ -163,7 +167,7 @@ export default {
     expose(exposeData)
 
     return () =>
-      renderUIForm(
+      getUIRender('form')(
         {
           ref: getForm,
           class: ['sup-form', compact && 'sup-form-compact', ignoreRules && 'sup-form-simple'],

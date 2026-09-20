@@ -5,7 +5,7 @@ import Collections from './Collections'
 import { containers } from '.'
 import { DetailLayout } from './Detail'
 import { getSemanticIconNode, toNode } from '../utils'
-import { renderUILayout } from '../adapter'
+import { getUIRender } from '../adapter'
 import { globalProps } from '../plugin'
 import { nanoid } from 'nanoid'
 
@@ -62,14 +62,16 @@ export default defineComponent({
     const rowButtonsConfig: any = !isView &&
       rowButtons !== false && {
         type: 'Buttons',
-        buttonType: 'link',
-        size: 'small',
         colProps: { flex: '0' },
         labelMode: 'icon',
         ...globalProps.rowButtons,
         methods,
         actions: ['add', 'delete'],
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
+        buttonProps: {
+          ...globalProps.rowButtons?.buttonProps,
+          ...(!Array.isArray(rowButtons) && rowButtons?.buttonProps),
+        },
       }
 
     const rowCache = new WeakMap<object, any>()
@@ -179,8 +181,7 @@ export default defineComponent({
           const { label, labelSlot = label } = columns[0]
           const breakAfter = columns[0].breakAfter ?? columns[0].wrapping
           return () =>
-            renderUILayout(
-              'space',
+            getUIRender('space')(
               { direction: breakAfter ? 'vertical' : 'horizontal' },
               {
                 default: () =>

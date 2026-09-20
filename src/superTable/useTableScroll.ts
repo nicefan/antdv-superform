@@ -1,16 +1,8 @@
 import type { Ref } from 'vue'
-import {
-  ref,
-  computed,
-  unref,
-  nextTick,
-  watch,
-  onMounted,
-  onUnmounted,
-} from 'vue'
+import { ref, computed, unref, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { getViewportOffset } from '../utils/dom'
 import { debounce } from 'lodash-es'
-import { getUITableSelectors } from '../adapter'
+import { getUIService } from '../adapter'
 
 export function useTableScroll(
   option: Obj,
@@ -18,7 +10,7 @@ export function useTableScroll(
   wrapRef: Ref<HTMLElement | null>,
   abortController?: AbortController
 ) {
-  const selectors = getUITableSelectors()
+  const selectors = getUIService('table').selectors
   const query = (root: Element, selector?: string) =>
     selector ? (root.querySelector(selector) as HTMLElement | null) : null
   // const scrollHeightRef: Ref<number | null> = ref(null)
@@ -87,8 +79,7 @@ export function useTableScroll(
   }
 
   async function calcTableHeight() {
-    const { maxHeight, inheritHeight, isFixedHeight, resizeHeightOffset } =
-      option
+    const { maxHeight, inheritHeight, isFixedHeight, resizeHeightOffset } = option
     const wrapEl = unref(wrapRef)
     if (!wrapEl) return
 
@@ -104,22 +95,16 @@ export function useTableScroll(
     const wrapView = getViewportOffset(wrapEl)
     // Table height from bottom height-custom offset
     const paddingHeight = tableView.left - wrapView.left
-    const outerPadding =
-      (parseInt(outerStyle.marginBottom) || 0) +
-      (parseInt(outerStyle.paddingBottom) || 0)
+    const outerPadding = (parseInt(outerStyle.marginBottom) || 0) + (parseInt(outerStyle.paddingBottom) || 0)
     let bottomIncludeBody = 0
     if (wrapEl && inheritHeight) {
-      bottomIncludeBody =
-        wrapView.bottomIncludeBody -
-        wrapView.bottom -
-        (tableView.top - wrapView.top)
+      bottomIncludeBody = wrapView.bottomIncludeBody - wrapView.bottom - (tableView.top - wrapView.top)
     } else {
       // Table height from bottom
       bottomIncludeBody = tableView.bottomIncludeBody - outerPadding // 去掉一个页面底部边距
     }
     const titleEl = query(tableEl, selectors.title)
-    const headerHeight =
-      titleEl?.parentElement === tableEl ? titleEl.offsetHeight ?? 0 : 0
+    const headerHeight = titleEl?.parentElement === tableEl ? titleEl.offsetHeight ?? 0 : 0
     const headEl = query(tableEl, selectors.header)
     if (!headEl) return
 
@@ -141,21 +126,14 @@ export function useTableScroll(
     }
 
     // 表格最大高度
-    let tableHeight =
-      Math.ceil(bottomIncludeBody) -
-      (resizeHeightOffset || 0) -
-      paddingHeight -
-      paginationHeight
+    let tableHeight = Math.ceil(bottomIncludeBody) - (resizeHeightOffset || 0) - paddingHeight - paginationHeight
 
     // 表格行滚动高度
-    const innerHeight =
-      maxHeight ||
-      tableHeight - footerHeight - headerHeight - headerCellHeight - 1
+    const innerHeight = maxHeight || tableHeight - footerHeight - headerHeight - headerCellHeight - 1
 
     // 计算指定固定高度时表格最大高度
     if (maxHeight && isFixedHeight) {
-      tableHeight =
-        maxHeight + footerHeight + headerHeight + headerCellHeight + 1
+      tableHeight = maxHeight + footerHeight + headerHeight + headerCellHeight + 1
     }
 
     if (isFixedHeight) {

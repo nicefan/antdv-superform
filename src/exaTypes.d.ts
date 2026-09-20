@@ -321,10 +321,9 @@ type TableApis = {
 }
 interface ExtButtonGroup<T extends string = string> {
   attrs?: LayoutSpaceProps & UIContainerProps<'Space'>
+  /** 组内按钮公共原生属性；单按钮 attrs 优先。 */
+  buttonProps?: UIActionProps<'Button'> & HTMLAttributes
   limit?: number
-  buttonType?: 'primary' | 'link' | 'text' | 'dashed' | 'default'
-  buttonShape?: 'circle' | 'round' | 'default'
-  size?: 'large' | 'middle' | 'small'
   align?: 'right' | 'left' | 'center'
   /** 按钮组可见场景 */
   visibleIn?: 'form' | 'detail' | 'both'
@@ -499,21 +498,28 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
   pagination?: ExtTablePaginationProps | false
   attrs?: ExtTableProps & TableScanHight
 }
+/** CardList、TabList、CollapseList 共用的数组配置。 */
 interface ExtListOption extends ExtBaseOption, ExtRow {
   field: string
   title?: VSlot
+  /** 从行记录读取标题，支持点分路径。 */
+  titleField?: string
   attrs?: HTMLAttributes & {
     rowKey?: string
-    itemClass?: HTMLAttributes['class']
-    itemStyle?: HTMLAttributes['style']
+    /** CardList 每张卡片的栅格宽度，默认 24。 */
+    span?: number
   }
-  buttons?: ExtButtons<'add' | 'refresh'>
   columns: UniWidgetOption[]
-  /** 列表元素右边按钮 */
-  rowButtons?: ExtButtons<'delete' | 'edit'>
+  buttons?: false | ExtButtons<'add'>
+  rowButtons?: false | ExtButtons<'add' | 'delete' | 'edit'>
+  /** 配置后在弹窗编辑，容器内显示详情。 */
+  editModal?: {
+    form?: Partial<ExtFormOption>
+    modalProps?: ExtModalProps
+  }
   descriptionsProps?: ExtDescriptionsProps
 }
-interface ExtListGroupOption extends Omit<ExtGroupOption, 'subItems'> {
+interface ExtGroupListOption extends Omit<ExtGroupOption, 'subItems'> {
   field: string
   attrs?: {
     /** 标签后加序号 */
@@ -592,12 +598,10 @@ type ValueOfUnion<T, K extends PropertyKey> = T extends unknown ? (K extends key
 type MergeRegistrySources<T> = {
   [K in KeysOfUnion<T>]: ValueOfUnion<T, K>
 }
-type UIFormComponentPropSource = SuperFormTypeRegistry.UIFormComponentPropSources[
-  keyof SuperFormTypeRegistry.UIFormComponentPropSources
-]
-type UIFormComponentOptionExtensionSource = SuperFormTypeRegistry.UIFormComponentOptionExtensionSources[
-  keyof SuperFormTypeRegistry.UIFormComponentOptionExtensionSources
-]
+type UIFormComponentPropSource =
+  SuperFormTypeRegistry.UIFormComponentPropSources[keyof SuperFormTypeRegistry.UIFormComponentPropSources]
+type UIFormComponentOptionExtensionSource =
+  SuperFormTypeRegistry.UIFormComponentOptionExtensionSources[keyof SuperFormTypeRegistry.UIFormComponentOptionExtensionSources]
 
 /** Adapter UI 字段的 attrs 类型映射；同名字段按 Adapter 来源合并为联合类型。 */
 export type UIFormComponentProps = SuperFormTypeRegistry.UIFormComponentProps &
@@ -612,7 +616,10 @@ export type UIFormComponentOptionExtensions = SuperFormTypeRegistry.UIFormCompon
 export interface CustomFormComponentProps {}
 
 type DefaultOptionsType = (string | number | boolean)[] | DefaultOptionType[] | { [k: string | number]: any }
-export type OptionsSource = DefaultOptionsType | Readonly<DefaultOptionsType> | Ref<DefaultOptionsType>
+export type OptionsSource =
+  | DefaultOptionsType
+  | Readonly<DefaultOptionsType>
+  | Ref<DefaultOptionsType>
   | ((effectData: Obj) => DefaultOptionsType | Promise<DefaultOptionsType>)
 
 // 动作下拉仍使用数据源类型，不参与输入字段配置包的迁移。
@@ -720,8 +727,10 @@ type WrapperTypes = {
   Group: ExtGroupOption
   Fragment: Pick<ExtGroupBaseOption, 'type' | 'field' | 'disabled' | 'exclude' | 'hidden' | 'subItems' | 'subSpan'>
   Card: ExtGroupBaseOption
-  List: ExtListOption
-  ListGroup: ExtListGroupOption
+  CardList: ExtListOption
+  TabList: ExtListOption
+  CollapseList: ExtListOption
+  GroupList: ExtGroupListOption
   Tabs: ExtTabsOption
   Table: ExtTableOption
   Collapse: ExtCollapseOption
@@ -824,6 +833,6 @@ export {
   ExtTabsOption,
   ExtCollapseOption,
   ExtListOption,
-  ExtListGroupOption,
+  ExtGroupListOption,
   ExtDescriptionsOption,
 }

@@ -1,11 +1,6 @@
-import TreeSelectField from './TreeSelectField'
+import TreeSelectField from './components/TreeSelectField'
 import { elementPlusFieldAliases } from './fieldNames'
-import {
-  createFieldPropsAdapter,
-  defineFieldAdapters,
-  type UIAdapter,
-  type FieldPropsAdapter,
-} from 'superform/sdk'
+import { createFieldPropsAdapter, defineFieldAdapters, type UIAdapter, type FieldPropsAdapter } from 'superform/sdk'
 
 const model = { prop: 'modelValue', event: 'update:modelValue' }
 export const adaptElementPlusFieldProps = createFieldPropsAdapter(model)
@@ -53,8 +48,8 @@ export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAd
     DatePicker: {
       processors: ['picker'],
       // 原始组件允许用户选择模式；固定别名不经过这个分支。
-      adaptProps: (attrs, context) => typeof attrs.type === 'string' && attrs.type.endsWith('range')
-        ? adaptRangePlaceholder(attrs, context) : attrs,
+      adaptProps: (attrs, context) =>
+        typeof attrs.type === 'string' && attrs.type.endsWith('range') ? adaptRangePlaceholder(attrs, context) : attrs,
     },
     DateRangePicker: {
       component: elementPlusFieldAliases.DateRangePicker,
@@ -64,7 +59,7 @@ export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAd
     },
     TimePicker: {
       processors: ['picker'],
-      adaptProps: (attrs, context) => attrs.isRange ? adaptRangePlaceholder(attrs, context) : attrs,
+      adaptProps: (attrs, context) => (attrs.isRange ? adaptRangePlaceholder(attrs, context) : attrs),
     },
     TimeRangePicker: {
       component: elementPlusFieldAliases.TimeRangePicker,

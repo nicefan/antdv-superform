@@ -1,190 +1,33 @@
-import { computed, defineComponent, h, inject, type PropType, reactive, toRefs, mergeProps, unref, toRaw } from 'vue'
-import { defaults, isFunction } from 'lodash-es'
-import Controls, { containers, getFormComponent, hasFormComponent, mapFormComponentModel } from './index'
+import { defineComponent, h, inject, type PropType, reactive } from 'vue'
+import Controls, { containers, getFormComponent, mapFormComponentModel } from './index'
 import { ButtonGroup } from './buttons'
-import { getEffectData, getViewNode, useControl, useInnerSlots, useVModel } from '../utils'
-import { globalProps } from '../plugin'
-import { DataProvider } from '../dataProvider'
-import { formatRule } from '../utils/buildModel'
-import { createLabelNode } from '../utils/labelNode'
-import {
-  resolveUIField,
-  renderUIFormItem,
-  renderUILayout,
-  resolveUIComponent,
-} from '../adapter'
+import { useInnerSlots, useVModel } from '../utils'
+import { resolveUIField } from '../adapter'
 import FieldProcessorRenderer from './processors/FieldProcessorRenderer'
+import { useCollectionNodes } from './useCollectionNodes'
+import { createCollectionLayout, type CollectionLayoutMode } from './CollectionLayout'
 
 export default defineComponent({
   inheritAttrs: false,
   name: 'Collections',
   props: {
-    option: {
-      type: Object,
-      default: () => ({}),
-    },
+    option: { type: Object, default: () => ({}) },
     model: {
       required: true,
       type: Object as PropType<Partial<ModelData<any>> & { children: ModelsMap }>,
     },
     effectData: Object,
-    compact: { type: Boolean, default: undefined },
+    layout: { type: String as PropType<CollectionLayoutMode>, default: 'grid' },
+    layoutAttrs: Object,
+    fieldWrapper: { type: String as PropType<'formItem' | 'none'>, default: 'formItem' },
   },
   setup(props, { slots }) {
-    const { type: parentType, attrs: parentAttrs, gutter = 16, subSpan } = props.option
-    const rowProps = { gutter, ...props.option.rowProps }
-    const inheritOptions = inject<Obj>('inheritOptions', {})
-    const presetSpan = subSpan ?? inheritOptions.subSpan
-
-    const index = computed(() => props.model.index)
-    const nodes: any[] = []
-    let currentGroup: any[] | undefined
-    const childrenArr = [...props.model.children]
-    for (let idx = 0; idx < childrenArr.length; idx++) {
-      const [option, subData] = childrenArr[idx]
-      const { type, align, span, hideInForm, exclude, editable } = option
-      const block = option.block ?? option.blocked
-      const breakAfter = option.breakAfter ?? option.wrapping
-      const { parent, refData } = toRaw(subData)
-      const effectData = getEffectData({
-        parent: props.effectData,
-        current: parent,
-        field: subData.refName,
-        value: refData,
-        ...(index.value !== undefined && {
-          index,
-          record: !subData.refName ? refData : parent,
-        }),
-      })
-      if (type === 'Hidden' || (exclude ? exclude.includes('form') : hideInForm)) {
-        useVModel({ option, model: subData, effectData })
-        continue
-      }
-      const { hidden, required, attrs, nativeAttrs, disabled } = useControl({
-        option,
-        effectData,
-        inheritDisabled: inheritOptions.disabled,
-      })
-      if (type === 'Fragment') {
-        subData.children &&
-          childrenArr.splice(
-            idx + 1,
-            0,
-            ...[...subData.children].map(([o, d]) => [{ ...o, hidden, disabled: attrs.disabled }, d] as any)
-          )
-        continue
-      }
-      let innerNode = buildInnerNode(option, subData, effectData, attrs, { attrs: nativeAttrs, disabled })
-      if (!innerNode) continue
-      if ((hasFormComponent(type) || resolveUIComponent(type)) && editable !== undefined && editable !== true) {
-        const inputNode = innerNode
-        const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
-        const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
-        innerNode = () => (editableRef.value ? inputNode() : viewNode ? viewNode() : refData.value)
-      }
-      const colProps: Obj = { ...option.colProps, span }
-      defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
-      if (colProps.span === 0 || colProps.flex) {
-        colProps.span = undefined
-      }
-
-      if (parentType === 'InputGroup' && (props.compact ?? parentAttrs?.compact !== false)) {
-        const width = Number(colProps.span) ? (Number(colProps.span) / 24 * 100).toFixed(2) + '%' : undefined
-        const flex = colProps.flex ?? (colProps.span === 'auto' ? '1 1 0' : undefined)
-        nodes.push(() => !hidden.value && h(innerNode, { style: { width, flex, minWidth: 0 } }))
-        continue
-      }
-
-      let node = innerNode
-      /** 容器组件 */
-      const independent = [...containers, 'InputList', 'InputGroup'].includes(type)
-      // const isListFormItem = type === 'InputList' && (labelSlot || label) && !option.attrs?.labelIndex
-      if (!independent && (!block || (option.field && option.label))) {
-        // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
-        const __rules = formatRule(subData.rules, effectData)
-        const rules = computed(() =>
-          unref(attrs.disabled) ? undefined : !option.required || required.value ? __rules : __rules.slice(1)
-        )
-        const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
-        const label = createLabelNode(option, effectData)
-
-        node = () =>
-          renderUIFormItem(
-            reactive({
-              ...formItemAttrs,
-              name: subData.propChain,
-              rules,
-              colon: !!label,
-            }),
-            {
-              default: innerNode,
-              label,
-            }
-          )
-      }
-      if (independent) {
-        // 容器组件转递继承属性
-        const inheritOptions: Obj = {
-          required,
-          disabled: attrs.disabled,
-          subSpan: option.subSpan ?? presetSpan,
-        }
-        node = () => h(DataProvider, { name: 'inheritOptions', data: inheritOptions }, innerNode)
-      }
-
-      // 容器组件独行显示
-      const __isBlock = block ?? (containers.includes(type) && !option.span)
-      const alignStyle = align && `text-align: ${align}`
-      if (__isBlock) {
-        currentGroup = undefined
-        nodes.push(
-          () =>
-            !hidden.value &&
-            h(
-              'div',
-              {
-                class: ['sup-form-section', type === 'Descriptions' && 'sup-detail'],
-                style: alignStyle,
-                key: idx,
-              },
-              node()
-            )
-        )
-      } else {
-        if (type === 'InputList') {
-          // currentGroup = undefined
-          colProps.span = span ?? 24
-          // colProps.flex = 'auto'
-        }
-        if (!currentGroup) {
-          nodes.push((currentGroup = []))
-        }
-        currentGroup.push(
-          () =>
-            !hidden.value &&
-            renderUILayout('col', mergeProps({ style: alignStyle, key: idx }, colProps), { default: node })
-        )
-        if (breakAfter) currentGroup = undefined
-      }
-    }
-
-    let hasWrap = false
-    const content = () =>
-      nodes.map((item) => {
-        if (Array.isArray(item)) {
-          hasWrap = true
-          return renderUILayout('row', rowProps, {
-            default: () => item.map((node) => node()),
-          })
-        } else {
-          return item()
-        }
-      })
-
-    // 根容器下如有表单组件，则使用group包裹
-    return () =>
-      // 由布局容器直接接收字段节点，才能逐项提供紧凑布局的首尾上下文。
-      slots.default ? slots.default({ nodes: content().filter(Boolean) }) : props.option.isContainer && hasWrap
+    const nodes = useCollectionNodes(props, buildInnerNode)
+    const layout = createCollectionLayout(nodes, props)
+    return () => {
+      // 保持现有插槽参数为 VNode 数组，紧凑布局的消费者仍能直接取得字段节点。
+      if (slots.default) return slots.default({ nodes: layout.renderNodes().filter(Boolean) })
+      return props.option.isContainer && layout.hasWrap
         ? h(
             Controls.Group,
             {
@@ -193,13 +36,20 @@ export default defineComponent({
               model: props.model,
               effectData: props.effectData,
             },
-            { innerContent: content }
+            { innerContent: layout.render }
           )
-        : content()
+        : layout.render()
+    }
   },
 })
 
-export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs: Obj, control?: { attrs: Obj; disabled?: Ref<boolean | undefined> }) {
+export function buildInnerNode(
+  option,
+  model: ModelData,
+  effectData: Obj,
+  attrs: Obj,
+  control?: { attrs: Obj; disabled?: Ref<boolean | undefined> }
+) {
   const { type, render } = option
   if (!type) return
 
@@ -234,8 +84,7 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     if (!renderSlot) {
       console.error(`组件 '${type}' 配置错误，请检查名称或'render'是否正确！`)
     } else if (field && processors?.length) {
-      node = () =>
-        h(FieldProcessorRenderer, { inputAttrs: fieldAttrs, state, field, option, model, effectData }, slots)
+      node = () => h(FieldProcessorRenderer, { inputAttrs: fieldAttrs, state, field, option, model, effectData }, slots)
     } else {
       const valueProps = useVModel({ option, model, effectData })
       const allAttrs = { ...attrs, ...valueProps }

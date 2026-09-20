@@ -2,7 +2,7 @@ import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, to
 import { isFunction } from 'lodash-es'
 import { hasFormComponent } from '../index'
 import { useControl, cloneModelsFlat, getEffectData, getViewNode } from '../../utils'
-import { renderUIFormItem } from '../../adapter'
+import { getUIRender } from '../../adapter'
 import { buildInnerNode } from '../Collections'
 import type { ExtColumnsItem } from 'src/exaTypes'
 import { formatRule, updateModelIndex } from '../../utils/buildModel'
@@ -23,7 +23,10 @@ export default function ({ model, orgList, editableRef }) {
           updateModelIndex(previous.model, chain, index)
         } else {
           const { modelsMap, rootModels } = cloneModelsFlat<ExtColumnsItem>(
-            toRaw(childrenMap), record, propChain.value, index
+            toRaw(childrenMap),
+            record,
+            propChain.value,
+            index
           )
           listMap.set(raw, {
             modelsMap,
@@ -80,7 +83,7 @@ export default function ({ model, orgList, editableRef }) {
       const rules = __rules && computed(() => (unref(attrs.disabled) ? undefined : __rules))
       return () =>
         selfEditableRef.value
-          ? renderUIFormItem(
+          ? getUIRender('formItem')(
               reactive({
                 wrapperCol: {},
                 name: model.value.propChain,

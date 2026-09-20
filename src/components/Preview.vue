@@ -1,6 +1,6 @@
 <template><RenderPreview /></template>
 <script setup lang="ts">
-import { renderUIPreview } from '../adapter'
+import { getUIRender } from '../adapter'
 const emit = defineEmits(['update:value'])
 const props = defineProps<{
   images?: string[]
@@ -15,7 +15,7 @@ const setVisible = (boo) => {
 }
 
 const RenderPreview = () =>
-  renderUIPreview({
+  getUIRender('preview')({
     images: props.images,
     visible: props.visible,
     current: props.current,

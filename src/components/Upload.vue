@@ -1,25 +1,7 @@
 <script lang="ts">
-import {
-  defineComponent,
-  type PropType,
-  computed,
-  ref,
-  h,
-  reactive,
-  inject,
-  shallowRef,
-  watch,
-  toRaw,
-} from 'vue'
-import {
-  getUIUploadListIgnore,
-  openUIConfirm,
-  openUIInfo,
-  renderUISemanticIcon,
-  renderUIUpload,
-  renderUIUploadTrigger,
-  showUIMessage,
-} from '../adapter'
+import { getSemanticIconNode } from '../utils/useIcon'
+import { defineComponent, type PropType, computed, ref, h, reactive, inject, shallowRef, watch, toRaw } from 'vue'
+import { getUIRender, getUIService } from '../adapter'
 import { globalProps } from '../plugin'
 import usePreview from './usePreview'
 import { isArray, isFunction } from 'lodash-es'
@@ -41,7 +23,7 @@ function fileIsImage(file) {
 }
 
 function createLoadModal(title, onOk?: Fn) {
-  const modal = openUIInfo({
+  const modal = getUIService('services').info({
     title: () => title,
     okButtonProps: {
       loading: true,
@@ -55,7 +37,7 @@ function createLoadModal(title, onOk?: Fn) {
 
   const setError = (title, err) => {
     modal.update({
-      icon: () => renderUISemanticIcon('error'),
+      icon: () => getSemanticIconNode('error'),
       okButtonProps: {
         loading: false,
       },
@@ -211,8 +193,8 @@ export default defineComponent({
       const errMessage = controller.validate(file, resFileList, innerFileList.value)
 
       if (errMessage) {
-        showUIMessage('error', errMessage)
-        return getUIUploadListIgnore()
+        getUIService('services').message('error', errMessage)
+        return getUIService('upload').listIgnore
       }
       if (mode === 'custom') {
         // 显示上传列表时，返回false，禁用原上传！
@@ -295,7 +277,7 @@ export default defineComponent({
       let result = await props.onRemove?.(file)
       if (result !== false && apis.delete && file.status === 'done') {
         return new Promise((resolve) => {
-          const modal = openUIConfirm({
+          const modal = getUIService('services').confirm({
             title: '确定删除吗？',
             okText: '确定',
             cancelText: '取消',
@@ -390,11 +372,11 @@ export default defineComponent({
 
     const iconRender = ({ file, listType }) => {
       if (file.status === 'waiting') {
-        return renderUISemanticIcon('sync')
+        return getSemanticIconNode('sync')
       } else if (file.status === 'uploading') {
-        return renderUISemanticIcon('loading')
+        return getSemanticIconNode('loading')
       } else {
-        return renderUISemanticIcon('attachment')
+        return getSemanticIconNode('attachment')
       }
     }
     const __title = props.title
@@ -409,16 +391,13 @@ export default defineComponent({
     if (listType === 'picture-card') {
       slots.default = () =>
         ctx.slots.default?.(effectData) ||
-        h('div', [
-          renderUISemanticIcon('add'),
-          titleSlot ? titleSlot() : h('div', { style: 'margin-top:8px' }, title),
-        ])
+        h('div', [getSemanticIconNode('add'), titleSlot ? titleSlot() : h('div', { style: 'margin-top:8px' }, title)])
     } else {
       slots.default = () => [
         ctx.slots.default?.(effectData) ||
-          renderUIUploadTrigger(
+          getUIRender('uploadTrigger')(
             {},
-            { default: () => [renderUISemanticIcon('upload'), titleSlot ? titleSlot() : title] }
+            { default: () => [getSemanticIconNode('upload'), titleSlot ? titleSlot() : title] }
           ),
         tip && h('div', { class: 'sup-upload-tip' }, tip),
       ]
@@ -428,7 +407,7 @@ export default defineComponent({
     return () =>
       isView.value && innerFileList.value.length === 0
         ? h('div', { class: 'sup-upload-tip' }, '暂无附件')
-        : renderUIUpload(
+        : getUIRender('upload')(
             {
               class: { 'upload-disabled': isView.value },
               customRequest,

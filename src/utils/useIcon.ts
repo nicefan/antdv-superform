@@ -1,1 +1,4 @@
-export { renderUISemanticIcon as getSemanticIconNode } from '../adapter'
+import { getUIService } from '../adapter'
+export function getSemanticIconNode(name: string) {
+  return getUIService('icons').semantic?.[name]?.()
+}

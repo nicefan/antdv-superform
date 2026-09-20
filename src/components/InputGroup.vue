@@ -4,7 +4,7 @@ import { computed, defineComponent, h, inject, mergeProps, reactive, toRef, unre
 import { globalProps } from '../plugin'
 import { formatRule } from '../utils/buildModel'
 import { createLabelNode } from '../utils/labelNode'
-import { renderUIFormItem, renderUILayout } from '../adapter'
+import { getUIRender } from '../adapter'
 
 export default defineComponent({
   inheritAttrs: false,
@@ -83,7 +83,7 @@ export default defineComponent({
     )
 
     return () =>
-      renderUIFormItem(
+      getUIRender('formItem')(
         {
           ...formItemAttrs,
           rules: rules.value,
@@ -91,17 +91,17 @@ export default defineComponent({
         },
         {
           label: _label,
-          default: slots?.default || (() => h(
-            Collections,
-            { option, model, compact, effectData: props.effectData },
-            {
-              default: ({ nodes }) => renderUILayout(
-                compact ? 'compactSpace' : 'space',
-                mergeProps(compact ? { block: true } : {}, attrs),
-                { default: () => nodes }
-              ),
-            }
-          )),
+          default:
+            slots?.default ||
+            (() =>
+              h(Collections, {
+                option,
+                model,
+                effectData: props.effectData,
+                layout: compact ? 'compact' : 'space',
+                fieldWrapper: compact ? 'none' : 'formItem',
+                layoutAttrs: attrs,
+              })),
         }
       )
   },

@@ -5,10 +5,11 @@ import type { ExtTabItem } from '../exaTypes'
 import { useControl, getEffectData, toNode } from '../utils'
 import Collections from './Collections'
 import { ButtonGroup } from './buttons'
-import { renderUIContainer } from '../adapter'
+import { getUIRender } from '../adapter'
 
 export default defineComponent({
   name: 'ExTabs',
+  inheritAttrs: false,
   props: {
     option: { type: Object as PropType<GetOption<'Tabs'>>, required: true },
     model: {
@@ -18,7 +19,7 @@ export default defineComponent({
     effectData: { type: Object as PropType<Obj>, required: true },
     isView: Boolean,
   },
-  setup(props) {
+  setup(props, { attrs: rootAttrs, slots }) {
     const activeKey = ref(props.option.activeKey as any)
     const paneKeys: Array<string | undefined> = []
     const updatePaneVisibility = (idx: number, key: string, invalid: boolean) => {
@@ -39,9 +40,11 @@ export default defineComponent({
       const tabLabel = () => [icon?.(), toNode(label, effectData)]
       watchEffect(() => updatePaneVisibility(idx, tabKey, unref(hidden) || unref(attrs.disabled)))
       return {
-        attrs: reactive({ ...attrs, key: tabKey, label: tabLabel }),
+        attrs: reactive(attrs),
+        key: tabKey,
+        title: tabLabel,
         hidden,
-        option: { ...option, type: 'TabPane' },
+        option,
         model,
         effectData,
       }
@@ -52,32 +55,33 @@ export default defineComponent({
     })
 
     return () =>
-      renderUIContainer(
-        'tabs',
-        {
-          value: activeKey.value,
-          'onUpdate:value': (value) => (activeKey.value = value),
+      getUIRender('tabs')({
+        attrs: rootAttrs,
+        slots,
+        content: slots.default,
+        activeKeys: activeKey.value,
+        onActiveChange: (value) => {
+          activeKey.value = value
         },
-        {
-          extra: () =>
-            !props.isView && props.option.buttons ? h(ButtonGroup, { option: props.option.buttons }) : undefined,
-          default: () =>
-            panes.map(
-              ({ attrs, hidden, option, model, effectData }) =>
-                !hidden.value &&
-                renderUIContainer('tab', attrs, {
-                  default: () =>
-                    props.isView
-                      ? h(DetailLayout, {
-                          option,
-                          modelsMap: model.children,
-                          effectData,
-                        })
-                      : h(Collections, { option, model, effectData }),
-                })
-            ),
-        }
-      )
+        extra:
+          slots.extra ||
+          (!props.isView && props.option.buttons
+            ? () => h(ButtonGroup, { option: props.option.buttons, effectData: props.effectData })
+            : undefined),
+        // 显隐和禁用属于 Schema 语义，两个 Adapter 消费相同的有效子项。
+        items: panes
+          .filter(({ hidden }) => !hidden.value)
+          .map(({ attrs, key, title, option, model, effectData }) => ({
+            key,
+            attrs,
+            title,
+            disabled: unref(attrs.disabled),
+            content: () =>
+              props.isView
+                ? h(DetailLayout, { option, modelsMap: model.children, effectData })
+                : h(Collections, { option, model, effectData }),
+          })),
+      })
   },
 })
 </script>

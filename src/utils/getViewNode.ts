@@ -6,7 +6,7 @@ import { isPlainObject, get as objectGet } from 'lodash-es'
 import useControl from './useControl'
 import { useInnerSlots } from './useInnerSlots'
 import { getComputedAttr } from './reactivity'
-import { renderUIPresentation } from '../adapter'
+import { getUIRender } from '../adapter'
 import { findOption, useOptions } from './useOptions'
 
 const getVModelProps = (options, parent: Obj) => {
@@ -37,8 +37,7 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
     item.color ??=
       color || tagOption[value] || (value === true && 'success') || (value === false && 'error') || 'default'
   }
-  return renderUIPresentation(
-    'tag',
+  return getUIRender('tag')(
     { color: item.color },
     {
       default: () => item.label || value,
@@ -48,14 +47,7 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
 }
 
 export function getViewNode(option, effectData: Obj = {}) {
-  const {
-    type: colType = '',
-    viewRender,
-    render,
-    labelField,
-    tagViewer,
-    initialValue,
-  } = option as any
+  const { type: colType = '', viewRender, render, labelField, tagViewer, initialValue } = option as any
   const colOptions = option.options
   const endField = option.endField
 
@@ -82,8 +74,12 @@ export function getViewNode(option, effectData: Obj = {}) {
         }
         const text = param.text ?? param.value ?? toValue(initialValue) ?? ''
         if (text === '') return ''
-        const values = Array.isArray(text) ? text : option.stringifyValue && typeof text === 'string' ? text.split(',') : [text]
-        const labels = values.map(value => {
+        const values = Array.isArray(text)
+          ? text
+          : option.stringifyValue && typeof text === 'string'
+          ? text.split(',')
+          : [text]
+        const labels = values.map((value) => {
           const item = findOption(optionsRef.value, value, option.stringifyValue)
           const label = item?.label ?? value
           return !inner && autoTag ? buildTagRender({ ...item, value, label, tagViewer }) : label

@@ -13,7 +13,7 @@ export const fieldComponentProps = {
 } as const
 
 /** 原生监听器保留原参数；专项入口先执行，避免原生事件覆盖模型写回。 */
-export function combineFieldHandlers(primary: Function, native: unknown) {
+export function combineFieldHandlers(primary: Fn, native: unknown) {
   return (...args: any[]) => {
     const result = primary(...args)
     for (const handler of Array.isArray(native) ? native : [native]) {

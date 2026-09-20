@@ -4,7 +4,7 @@ import { useControl, getEffectData, toNode } from '../utils'
 import { ButtonGroup } from './buttons'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
-import { renderUIContainer } from '../adapter'
+import { getUIRender } from '../adapter'
 
 export default defineComponent({
   name: 'ExCollapse',
@@ -15,7 +15,7 @@ export default defineComponent({
     effectData: { type: Object as PropType<Obj>, required: true },
     isView: Boolean,
   },
-  setup(props, { attrs: rootAttrs }) {
+  setup(props, { attrs: rootAttrs, slots }) {
     const title = props.option.title || props.option.label
     const panels = [...props.model.children].map(([option, model], idx) => {
       const effectData = getEffectData({
@@ -31,54 +31,44 @@ export default defineComponent({
       const { key, field } = option as typeof option & { key?: string }
       return {
         attrs: reactive(attrs),
-        option: { ...option, type: 'CollapsePanel' },
+        option,
         effectData,
         model,
-        header: () => [option.icon?.(), toNode(option.label)],
+        header: () => [option.icon?.(), toNode(option.label, effectData)],
         key: key || field || String(idx),
         hidden,
         disabled,
       }
     })
-    const activeKey = ref(props.option.activeKey || panels[0]?.key)
+    const activeKey = ref<string | number | (string | number)[] | undefined>(props.option.activeKey || panels[0]?.key)
 
-    return () => [
-      title && h('div', { class: ['sup-titlebar', 'sup-title'] }, toNode(title, props.effectData)),
-      renderUIContainer(
-        'collapse',
-        {
-          ...rootAttrs,
-          value: activeKey.value,
-          'onUpdate:value': (value) => (activeKey.value = value),
+    return () =>
+      getUIRender('collapse')({
+        attrs: rootAttrs,
+        slots,
+        content: slots.default,
+        title: slots.title || (title ? () => toNode(title, props.effectData) : undefined),
+        activeKeys: activeKey.value,
+        onActiveChange: (value) => {
+          activeKey.value = value
         },
-        {
-          default: () =>
-            panels.map(
-              ({ attrs, hidden, option, disabled, model, header, effectData, key }) =>
-                !hidden.value &&
-                renderUIContainer(
-                  'collapsePanel',
-                  { ...attrs, key, disabled: unref(disabled) },
-                  {
-                    header,
-                    extra: () =>
-                      !props.isView && option.buttons
-                        ? h(ButtonGroup, { option: option.buttons, effectData })
-                        : undefined,
-                    default: () =>
-                      props.isView
-                        ? h(DetailLayout, {
-                            option,
-                            modelsMap: model.children,
-                            effectData,
-                          })
-                        : h(Collections, { option, model, effectData }),
-                  }
-                )
-            ),
-        }
-      ),
-    ]
+        items: panels
+          .filter(({ hidden }) => !hidden.value)
+          .map(({ attrs, option, disabled, model, header, effectData, key }) => ({
+            key,
+            attrs,
+            title: header,
+            disabled: unref(disabled),
+            extra:
+              !props.isView && option.buttons
+                ? () => h(ButtonGroup, { option: option.buttons, effectData })
+                : undefined,
+            content: () =>
+              props.isView
+                ? h(DetailLayout, { option, modelsMap: model.children, effectData })
+                : h(Collections, { option, model, effectData }),
+          })),
+      })
   },
 })
 </script>

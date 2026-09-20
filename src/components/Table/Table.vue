@@ -1,20 +1,9 @@
 <script lang="ts">
-import {
-  h,
-  isRef,
-  ref,
-  reactive,
-  type PropType,
-  defineComponent,
-  toRaw,
-  toRef,
-  unref,
-  watch,
-} from 'vue'
+import { h, isRef, ref, reactive, type PropType, defineComponent, toRaw, toRef, unref, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { createButtons } from '../buttons'
 import { buildData } from './buildData'
-import { renderUILayout, renderUITable } from '../../adapter'
+import { getUIRender } from '../../adapter'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
@@ -27,9 +16,7 @@ export default defineComponent({
   props: {
     option: {
       required: true,
-      type: Object as PropType<
-        GetOption<'Table'> & Pick<RootTableOption, 'apis'>
-      >,
+      type: Object as PropType<GetOption<'Table'> & Pick<RootTableOption, 'apis'>>,
     },
     model: {
       required: true,
@@ -159,12 +146,8 @@ export default defineComponent({
           return error
         }
         if (rowSelection) {
-          selectedRowKeys.value = selectedRowKeys.value.filter(
-            (key) => !keys.includes(key)
-          )
-          selectedRows.value = selectedRows.value.filter(
-            (item) => !keys.includes(rowKey(item))
-          )
+          selectedRowKeys.value = selectedRowKeys.value.filter((key) => !keys.includes(key))
+          selectedRows.value = selectedRows.value.filter((item) => !keys.includes(rowKey(item)))
         }
         items.forEach((item) => {
           const key = rowKey(item)
@@ -212,8 +195,7 @@ export default defineComponent({
       add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
       edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
       delete: () => methods.delete?.(editParam),
-      detail: (param?: ActionOuter) =>
-        methods.detail?.({ ...editParam, ...param }),
+      detail: (param?: ActionOuter) => methods.detail?.({ ...editParam, ...param }),
     }
     const exposed = reactive({ ...actions })
 
@@ -237,8 +219,7 @@ export default defineComponent({
     const slots: Obj = { ...ctx.slots }
 
     const buttonsConfig = option.buttons as any
-    const slotName =
-      buttonsConfig?.targetSlot ?? buttonsConfig?.forSlot ?? 'extra'
+    const slotName = buttonsConfig?.targetSlot ?? buttonsConfig?.forSlot ?? 'extra'
     if (buttonsConfig) {
       const orgSlot = slots[slotName]
       const buttonsSlot = createButtons({
@@ -253,33 +234,23 @@ export default defineComponent({
     }
 
     const titleString = option.title || option.label
-    const {
-      title: titleSlot = titleString,
-      extra: extraSlot,
-      ...__slots
-    } = slots
+    const { title: titleSlot = titleString, extra: extraSlot, ...__slots } = slots
     const titleBar =
       (titleSlot || extraSlot) &&
       (() =>
-        renderUILayout(
-          'row',
+        getUIRender('row')(
           { align: 'middle', class: 'sup-titlebar' },
           {
             default: () => [
               titleSlot &&
-                renderUILayout(
-                  'col',
+                getUIRender('col')(
                   { class: 'sup-title' },
                   {
-                    default: createLabelNode(
-                      { labelSlot: titleSlot, tooltip: option.tooltip },
-                      effectData
-                    ),
+                    default: createLabelNode({ labelSlot: titleSlot, tooltip: option.tooltip }, effectData),
                   }
                 ),
               extraSlot &&
-                renderUILayout(
-                  'col',
+                getUIRender('col')(
                   {
                     class: 'sup-title-buttons',
                     flex: 1,
@@ -294,14 +265,10 @@ export default defineComponent({
       return slots.headerCell?.(col) || toNode(col.title, effectData)
     }
     const render = () => {
-      const {
-        rowSelection: _rowSelection,
-        expandedRowKeys: _expandedRowKeys,
-        ...tableAttrs
-      } = attrs
+      const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, ...tableAttrs } = attrs
       return [
         ...modalSlot.map((slot) => slot()),
-        renderUITable(
+        getUIRender('table')(
           {
             ...globalProps.Table,
             ref: tableRef,
@@ -317,10 +284,7 @@ export default defineComponent({
             rowKey,
             expandedKeys: expandedRowKeys.value,
             onExpandedChange: updateExpand,
-            class: [
-              'sup-table-wrapper',
-              option.editable && 'sup-table-editable',
-            ],
+            class: ['sup-table-wrapper', option.editable && 'sup-table-editable'],
           },
           __slots
         ),

@@ -1,10 +1,10 @@
 <script lang="ts">
-import { h, defineComponent, toRaw, mergeProps } from 'vue'
+import { h, defineComponent, toRaw } from 'vue'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
 import { createButtons } from './buttons'
 import { createLabelNode } from '../utils/labelNode'
-import { renderUILayout } from '../adapter'
+import { getUIRender } from '../adapter'
 export default defineComponent({
   inheritAttrs: false,
   props: {
@@ -29,78 +29,33 @@ export default defineComponent({
       })
     }
 
-    const { style, class: _class, ...attrs } = ctx.attrs
-    const slots = {
-      ...ctx.slots,
-      title: title ? createLabelNode(option, effectData) : undefined,
-      actions: buttonsSlot,
-      default: () =>
-        h(
-          'div',
-          contentAttrs,
-          ctx.slots.innerContent
-            ? ctx.slots.innerContent(attrs)
-            : _isView
+    // 分组还被详情和数组复用：内容上下文留在 Core，Adapter 只消费准备好的插槽。
+    return () => {
+      const { style, class: className, ...attrs } = ctx.attrs
+      const titleSlot = ctx.slots.title || (title ? createLabelNode(option, effectData) : undefined)
+      const extra = ctx.slots.extra || ctx.slots.actions || buttonsSlot
+      const extraPlacement = buttons?.placement === 'bottom' ? 'bottom' : 'title'
+      return getUIRender('group')({
+        attrs: { class: className, style },
+        contentAttrs,
+        component: option.component && toRaw(option.component),
+        slots: ctx.slots,
+        title: titleSlot,
+        extra,
+        extraPlacement,
+        extraAlign: buttons?.align || (extraPlacement === 'bottom' ? 'center' : titleSlot ? 'right' : undefined),
+        content: () => {
+          if (ctx.slots.innerContent) return ctx.slots.innerContent(attrs)
+          if (ctx.slots.default) return ctx.slots.default()
+          return _isView
             ? h(DetailLayout, {
                 option: { descriptionsProps: attrs, ...option },
                 modelsMap: model.children,
                 effectData,
               })
             : h(Collections, { option, model, effectData })
-        ),
-    }
-
-    const CustomComponent = option.component && toRaw(option.component)
-
-    let titleButton, bottomButton
-    const buttonAlign = buttons?.align
-    if (buttonsSlot) {
-      if (buttons.placement === 'bottom') {
-        bottomButton = () =>
-          h(
-            'div',
-            {
-              class: 'sup-bottom-buttons',
-              style: { textAlign: buttonAlign || 'center' },
-            },
-            buttonsSlot()
-          )
-      } else {
-        titleButton = () =>
-          renderUILayout(
-            'col',
-            {
-              class: 'sup-title-buttons',
-              flex: 1,
-              style: {
-                textAlign: buttonAlign || (title ? 'right' : undefined),
-              },
-            },
-            { default: buttonsSlot }
-          )
-      }
-    }
-    if (CustomComponent) {
-      return () => h(CustomComponent, {}, slots)
-    } else {
-      return () =>
-        h('div', mergeProps({ class: _class, style }, { class: 'sup-group' }), [
-          (title || titleButton) &&
-            renderUILayout(
-              'row',
-              { align: 'middle', class: 'sup-titlebar' },
-              {
-                default: () => [
-                  title && renderUILayout('col', { class: 'sup-title' }, { default: slots.title }),
-                  titleButton?.(),
-                ],
-              }
-            ),
-          slots.default(),
-          bottomButton && bottomButton(),
-        ])
-      // } else if (ctx.slots.innerContent) {
-      //   return () => h('div', slots.default())
+        },
+      })
     }
   },
 })

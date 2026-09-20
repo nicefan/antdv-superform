@@ -1,9 +1,4 @@
-import {
-  combineFieldHandlers,
-  createFieldPropsAdapter,
-  defineFieldAdapters,
-  type UIAdapter,
-} from 'superform/sdk'
+import { combineFieldHandlers, createFieldPropsAdapter, defineFieldAdapters, type UIAdapter } from 'superform/sdk'
 
 export const adaptAntdvFieldProps = createFieldPropsAdapter()
 
@@ -45,7 +40,9 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
         ...(binding['onUpdate:labelValue'] && {
           onChange: combineFieldHandlers(
             (value, labels) =>
-              binding['onUpdate:labelValue'](Array.isArray(value) ? labels : Array.isArray(labels) ? labels[0] : labels),
+              binding['onUpdate:labelValue'](
+                Array.isArray(value) ? labels : Array.isArray(labels) ? labels[0] : labels
+              ),
             attrs.onChange
           ),
         }),

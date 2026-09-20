@@ -334,7 +334,9 @@ export default function exampleForm() {
                   showSearch: true,
                   filterOption: false,
                   defaultActiveFirstOption: true,
-                  onSearch: (value) => { areaSearch.value = value },
+                  onSearch: (value) => {
+                    areaSearch.value = value
+                  },
                 },
                 required: ({ current }) => current.isReg,
                 options: {
@@ -535,8 +537,7 @@ export default function exampleForm() {
         },
         buttons: {
           limit: 3,
-          size: 'small',
-          buttonType: 'primary',
+          buttonProps: { size: 'small', type: 'primary' },
           labelMode: 'icon',
           actions: [
             {
@@ -656,7 +657,7 @@ export default function exampleForm() {
               },
             ],
           },
-          {type: 'Input', field: 'nameRate', label: '客户率'},
+          { type: 'Input', field: 'nameRate', label: '客户率' },
           {
             type: 'InputList',
             field: 'datelist',
@@ -695,25 +696,25 @@ export default function exampleForm() {
               //     return '付款日期' + id
               //   },
               //   subItems: [
-                  {
-                    type: 'DatePicker',
-                    label: '日期b',
-                    field: 'index2',
-                    onChange: (...args) => {
-                      console.log(args)
-                      // 要获取到当前行时，需要取parent.index
-                    },
-                    // span: 8,
-                  },
+              {
+                type: 'DatePicker',
+                label: '日期b',
+                field: 'index2',
+                onChange: (...args) => {
+                  console.log(args)
+                  // 要获取到当前行时，需要取parent.index
+                },
+                // span: 8,
+              },
 
-                  {
-                    type: 'Input',
-                    label: '日期c',
-                    field: 'index3',
-                    // required: true,
-                    rules: {required: true}
-                    // span: 12,
-                  },
+              {
+                type: 'Input',
+                label: '日期c',
+                field: 'index3',
+                // required: true,
+                rules: { required: true },
+                // span: 12,
+              },
               //   ],
               // },
 
@@ -763,7 +764,7 @@ export default function exampleForm() {
         },
         rowButtons: {
           columnProps: { width: 120 },
-          buttonType: 'link',
+          buttonProps: { type: 'link' },
           labelMode: 'icon',
           actions: [
             {
@@ -844,7 +845,7 @@ export default function exampleForm() {
                   ],
                 },
                 rowButtons: {
-                  buttonType: 'link',
+                  buttonProps: { type: 'link' },
                   disabled: (data) => {
                     console.log(data)
                     return false
@@ -945,8 +946,7 @@ export default function exampleForm() {
             // disabled: true,
             buttons: {
               limit: 1,
-              size: 'small',
-              buttonType: 'primary',
+              buttonProps: { size: 'small', type: 'primary' },
               labelMode: 'icon',
               actions: [
                 {

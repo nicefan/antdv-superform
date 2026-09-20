@@ -2,7 +2,7 @@ import { isPlainObject } from 'lodash-es'
 import { h } from 'vue'
 import { toNode } from './toNode'
 import { getSemanticIconNode } from './useIcon'
-import { renderUIAction } from '../adapter'
+import { getUIRender } from '../adapter'
 
 export const createLabelNode = (option, effectData) => {
   const { title, label, labelSlot, tooltip } = option
@@ -13,7 +13,7 @@ export const createLabelNode = (option, effectData) => {
     : () => [
         toNode(_label, effectData),
         tooltip &&
-          renderUIAction('tooltip', tipProps, {
+          getUIRender('tooltip')(tipProps, {
             title: () => toNode(tooltip.title, effectData),
             default: () =>
               h(

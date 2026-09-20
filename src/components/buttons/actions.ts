@@ -1,9 +1,9 @@
 import type { ButtonItem } from '../../exaTypes'
 import { globalProps, globalConfig } from '../../plugin'
 import { defaults, merge } from 'lodash-es'
-import { isRef, ref } from 'vue'
+import { isRef, ref, type Ref } from 'vue'
 import { toNode } from '../../utils'
-import { openUIConfirm } from '../../adapter'
+import { getUIService } from '../../adapter'
 import { builtInIcons } from '../../icons'
 
 const getDefault = () => {
@@ -12,16 +12,10 @@ const getDefault = () => {
       add: {
         icon: builtInIcons.add,
         label: '新增',
-        attrs: {
-          type: 'primary',
-        },
       },
       delete: {
         icon: builtInIcons.delete,
         label: '删除',
-        attrs: {
-          danger: true,
-        },
         confirmText: '确定要删除吗？',
         disabled: (param) => !param.record && !(param.selectedRows?.length > 0),
       },
@@ -38,22 +32,17 @@ const getDefault = () => {
       submit: {
         icon: builtInIcons.submit,
         label: '提交',
-        attrs: {
-          type: 'primary',
-        },
       },
       search: {
         icon: builtInIcons.search,
         label: '查询',
-        attrs: {
-          type: 'primary',
-        },
       },
       reset: {
         icon: builtInIcons.reset,
         label: '重置',
       },
     },
+    globalProps.ButtonActions,
     globalConfig.defaultButtons
   )
   // merge 会忽略 undefined，这里允许显式清空全局默认图标。
@@ -84,7 +73,7 @@ function buildDefaultActions(methods) {
 export function mergeActions(actions, methods = {}, commonAttrs = {}) {
   const defaultActions = buildDefaultActions(methods)
 
-  const actionBtns: ButtonItem[] = []
+  const actionBtns: (ButtonItem & { pending: Ref<boolean> })[] = []
 
   if (Array.isArray(actions)) {
     actions.forEach((item) => {
@@ -94,6 +83,8 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
       if (typeof item === 'object') {
         Object.assign(config, item, { attrs: { ...config.attrs, ...item.attrs } })
       }
+      config.name = name
+      const pending = ref(false)
       const loading = ref<boolean | Obj>(false)
       const __loading = config.attrs.loading
       const isCustomLoading = isRef(__loading)
@@ -105,40 +96,82 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
           loading.value = flag ? __loading : false
         }
       }
-      const meta = { label: config.label, ...item.meta }
-      const _onClick = item.onClick
+      const meta = { label: config.label, ...(typeof item === 'object' ? item.meta : {}) }
+      const _onClick = typeof item === 'object' ? item.onClick : undefined
 
       const _action = (text, method, param) => {
-        if (text) {
-          openUIConfirm({
-            title: () => toNode(text, param),
-            okText: '确定',
-            cancelText: '取消',
-            ...globalProps.Modal,
-            onOk: method,
-          })
-        } else {
+        if (pending.value) return Promise.resolve()
+        pending.value = true
+        const run = async () => {
           setLoading(true)
-          Promise.resolve(method()).finally(() => {
+          try {
+            return await method()
+          } finally {
             setLoading(false)
-          })
+          }
         }
+        if (!text)
+          return run().finally(() => {
+            pending.value = false
+          })
+        // 原生容器操作与按钮共用确认流程；只有业务执行成功才提交数组变更。
+        return new Promise((resolve, reject) => {
+          let finished = false
+          const finish = (result) => {
+            // 关闭动画结束可能晚于下一次点击，旧弹窗不能清掉新动作的 pending。
+            if (finished) return
+            finished = true
+            pending.value = false
+            resolve(result)
+          }
+          try {
+            getUIService('services').confirm({
+              title: () => toNode(text, param),
+              okText: '确定',
+              cancelText: '取消',
+              ...globalProps.Modal,
+              onCancel: async (...args) => {
+                const result = await globalProps.Modal?.onCancel?.(...args)
+                finish(false)
+                return result
+              },
+              afterClose: (...args) => {
+                finish(false)
+                return globalProps.Modal?.afterClose?.(...args)
+              },
+              onOk: async () => {
+                try {
+                  const result = await run()
+                  finish(result)
+                  return result
+                } catch (error) {
+                  // 原生确认框可保留以重试；关闭前阻止从列表重复打开确认框。
+                  reject(error)
+                  throw error
+                }
+              },
+            })
+          } catch (error) {
+            pending.value = false
+            reject(error)
+          }
+        })
       }
       config.onClick = (param) => {
         const metaParam = { ...param, meta }
         if (_onClick && innerMethod) {
           // 内置操作动作，自定义按钮时，需要在onClick中手动执行。
-          _action(
+          return _action(
             config.confirmText,
             () => _onClick(metaParam, async (__param) => innerMethod({ ...metaParam, ...__param })),
             param
           )
         } else {
-          _action(config.confirmText, () => (innerMethod || _onClick)?.(metaParam), param)
+          return _action(config.confirmText, () => (innerMethod || _onClick)?.(metaParam), param)
         }
       }
 
-      actionBtns.push(config)
+      actionBtns.push({ ...config, pending })
     })
   }
   return actionBtns

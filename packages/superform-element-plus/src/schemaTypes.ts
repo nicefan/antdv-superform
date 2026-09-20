@@ -54,22 +54,47 @@ declare global {
       }
     }
 
+    interface UIContainerComponentPropSources {
+      elementPlus: {
+        Col: FormComponentProps<typeof import('element-plus')['ElCol']>
+        Form: FormComponentProps<typeof import('element-plus')['ElForm']>
+        FormItem: FormComponentProps<typeof import('element-plus')['ElFormItem']>
+        Row: FormComponentProps<typeof import('element-plus')['ElRow']>
+        Space: FormComponentProps<typeof import('element-plus')['ElSpace']>
+        Tabs: FormComponentProps<typeof import('element-plus')['ElTabs']>
+      }
+    }
+
+    interface UIActionComponentPropSources {
+      elementPlus: {
+        Button: FormComponentProps<typeof import('element-plus')['ElButton']>
+        Dropdown: FormComponentProps<typeof import('element-plus')['ElDropdown']>
+        Tooltip: FormComponentProps<typeof import('element-plus')['ElTooltip']>
+      }
+    }
+
+    interface UIModalComponentPropSources {
+      elementPlus: {
+        Modal: FormComponentProps<typeof import('element-plus')['ElDialog']>
+      }
+    }
+
+    interface UIUploadComponentPropSources {
+      elementPlus: {
+        Upload: FormComponentProps<typeof import('element-plus')['ElUpload']>
+      }
+    }
+
     interface UITableComponentPropSources {
       elementPlus: {
         Table: FormComponentProps<typeof import('element-plus')['ElTable']> & {
-          pagination?:
-            | false
-            | FormComponentProps<typeof import('element-plus')['ElPagination']>
+          pagination?: false | FormComponentProps<typeof import('element-plus')['ElPagination']>
           rowSelection?: false | Obj
           height?: string | number
           ref?: any
         }
-        Column: FormComponentProps<
-          typeof import('element-plus')['ElTableColumn']
-        >
-        Pagination: FormComponentProps<
-          typeof import('element-plus')['ElPagination']
-        >
+        Column: FormComponentProps<typeof import('element-plus')['ElTableColumn']>
+        Pagination: FormComponentProps<typeof import('element-plus')['ElPagination']>
       }
     }
   }

@@ -2,7 +2,7 @@ import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, on
 import type { VNode, VNodeTypes } from 'vue'
 import { ButtonGroup } from '../components'
 import { globalProps } from '../plugin'
-import { renderUIModal, useUIModalContext, wrapUIModalContext } from '../adapter'
+import { getUIAdapter, getUIRender } from '../adapter'
 
 import type { ExtFormOption, ExtModalProps, ModalOpenOptions } from '../exaTypes'
 import { useForm } from '../superForm'
@@ -29,7 +29,7 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
 
   const updateVisible = (val) => (visible.value = val)
   const modalSlot = (props, ctx) =>
-    renderUIModal(
+    getUIRender('modal')(
       {
         ref: modalRef,
         visible: visible.value,
@@ -71,12 +71,15 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
   const ins: any = getCurrentInstance() // || currentInstance
   const wrap: any = document.createDocumentFragment()
   let vm
-  const configContext = useUIModalContext()
+  const contextAdapter = getUIAdapter().modal
+  const configContext = contextAdapter?.useContext?.()
   const Wrapper = (props) => {
-    return wrapUIModalContext(
-      (contextProps = {}) => modalSlot({ ...props, ...contextProps }, {}),
-      configContext,
-      props
+    return (
+      contextAdapter?.wrapContext?.(
+        (contextProps = {}) => modalSlot({ ...props, ...contextProps }, {}),
+        configContext,
+        props
+      ) ?? modalSlot(props, {})
     )
   }
 

@@ -28,7 +28,10 @@ const InputNode = defineComponent({
       set: (val) => objSet(effectData.record, field, val),
     })
     const model: any = { parent, refData }
-    const { attrs, hidden, nativeAttrs, disabled } = useControl({ option, effectData: { ...effectData, inTable: true } })
+    const { attrs, hidden, nativeAttrs, disabled } = useControl({
+      option,
+      effectData: { ...effectData, inTable: true },
+    })
     const inputSlot = buildInnerNode(option, model, effectData, attrs, { attrs: nativeAttrs, disabled })
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : unref(editable)))
     const viewNode = getViewNode(option, effectData)
@@ -153,10 +156,12 @@ function parseRender(viewRender, editRender, effectData) {
 
 export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, effectData }) {
   const buttonsConfig: Obj = {
-    buttonType: 'link',
-    size: 'small',
     ...globalProps.rowButtons,
     ...(Array.isArray(buttons) ? { actions: buttons } : buttons),
+    buttonProps: {
+      ...globalProps.rowButtons?.buttonProps,
+      ...(!Array.isArray(buttons) && buttons?.buttonProps),
+    },
   }
   const { columnProps, ...config } = buttonsConfig
   const buttonsSlot = createButtons({ config, methods, isView })

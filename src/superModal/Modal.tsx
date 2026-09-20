@@ -1,6 +1,6 @@
 import { defineComponent, ref, render, getCurrentInstance, createVNode, provide, onMounted } from 'vue'
 import type { ExtModalProps } from '../exaTypes'
-import { renderUIModal } from '../adapter'
+import { getUIRender } from '../adapter'
 
 const comp = defineComponent({
   props: {
@@ -24,7 +24,7 @@ const comp = defineComponent({
       },
     })
     return () =>
-      renderUIModal(
+      getUIRender('modal')(
         {
           ...config.value,
           visible: visible.value,

@@ -11,7 +11,7 @@ export default defineComponent({
   props: {
     option: {
       required: true,
-      type: Object as PropType<GetOption<'ListGroup'>>,
+      type: Object as PropType<GetOption<'GroupList'>>,
     },
     model: {
       required: true,
@@ -54,13 +54,15 @@ export default defineComponent({
     const rowButtonsConfig: any = !isView &&
       rowButtons !== false && {
         type: 'Buttons',
-        buttonType: 'link',
-        size: 'small',
         labelMode: 'icon',
         ...globalProps.rowButtons,
         methods,
         actions: ['add', 'delete'],
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
+        buttonProps: {
+          ...globalProps.rowButtons?.buttonProps,
+          ...(!Array.isArray(rowButtons) && rowButtons?.buttonProps),
+        },
       }
 
     const keyMap = new WeakMap()

@@ -14,14 +14,16 @@ export default defineComponent({
     const instance = shallowRef<TreeSelectInstance>()
     if (props.option.labelField) {
       // 更新后读取公开的 Select 标签状态，初始值、异步数据和懒加载缓存均由组件库处理。
-      watch(() => unref(instance.value?.selectRef?.selectedLabel), (label) => {
-        if (label !== undefined) props.binding['onUpdate:labelValue']?.(label)
-      }, { flush: 'post' })
+      watch(
+        () => unref(instance.value?.selectRef?.selectedLabel),
+        (label) => {
+          if (label !== undefined) props.binding['onUpdate:labelValue']?.(label)
+        },
+        { flush: 'post' }
+      )
     }
     return () => {
-      const attrs = props.state.treeData === undefined
-        ? props.attrs
-        : { ...props.attrs, data: props.state.treeData }
+      const attrs = props.state.treeData === undefined ? props.attrs : { ...props.attrs, data: props.state.treeData }
       const node = h(component, adaptProps(attrs, props), slots)
       // 合并内部引用，保留调用方对原始组件的 ref。
       return cloneVNode(node, { ref: instance }, true)

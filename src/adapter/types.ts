@@ -1,18 +1,8 @@
 import type { Component, Slots, VNodeChild } from 'vue'
 
-export type AdapterComponent = string | Component
-
 export interface FormAdapter {
   /** 只校验指定字段路径，供复合字段更新时使用。 */
   validateField?: (instance: any, path: (string | number)[]) => Promise<unknown>
-  /** 表单容器组件 */
-  component: AdapterComponent
-  /** 表单项组件 */
-  item: AdapterComponent
-  /** 将 Core 表单状态转换为 UI 组件属性 */
-  transformProps?: (props: Obj) => Obj
-  /** 将 Core 表单项状态转换为 UI 组件属性 */
-  transformItemProps?: (props: Obj) => Obj
   /** 执行当前 UI 表单实例的校验。 */
   validate: (instance: any) => Promise<unknown>
   /** 清理当前 UI 表单实例的校验状态。 */
@@ -21,43 +11,61 @@ export interface FormAdapter {
 
 export type LayoutComponentName = 'row' | 'col' | 'space' | 'compactSpace'
 
-export interface LayoutAdapter {
-  row: AdapterComponent
-  col: AdapterComponent
-  space: AdapterComponent
-  /** 可选的紧凑空间容器；未提供时回退到普通 space。 */
-  compactSpace?: AdapterComponent
-  /** 栅格和空间属性的 UI 协议转换。 */
-  transformProps?: Partial<Record<LayoutComponentName, (props: Obj) => Obj>>
+/** 普通分组的内容与布局意图；具体 DOM 由 Adapter 决定。 */
+export interface UIGroupState {
+  attrs?: Obj
+  contentAttrs?: Obj
+  component?: Component
+  slots?: Obj
+  title?: () => VNodeChild
+  extra?: () => VNodeChild
+  extraPlacement?: 'title' | 'bottom'
+  extraAlign?: string
+  content: () => VNodeChild
 }
 
-export interface ContainerAdapter {
-  component: AdapterComponent
-  /** 容器存在受控状态时的 UI model 协议。 */
-  model?: ComponentModelConfig
-  /** 将 Core 容器状态转换为 UI 组件属性。 */
-  transformProps?: (props: Obj) => Obj
-  /** 容器的 slot 协议不同时自定义最终渲染。 */
-  render?: (component: Component, props: Obj, slots: Obj) => VNodeChild
+export interface UICardState {
+  attrs?: Obj
+  slots?: Obj
+  title?: () => VNodeChild
+  extra?: () => VNodeChild
+  content: () => VNodeChild
+}
+
+/** 面板只提供内容和状态，不指定 TabPane、CollapsePanel 等 UI 结构。 */
+export interface UIContainerItem {
+  key: string | number
+  attrs?: Obj
+  /** Core 已合成图标和标题，Adapter 只决定放置位置。 */
+  title?: () => VNodeChild
+  disabled?: boolean
+  extra?: () => VNodeChild
+  content: () => VNodeChild
+}
+
+export interface UITabsState {
+  attrs?: Obj
+  slots?: Obj
+  activeKeys?: string | number
+  onActiveChange?: (keys: string | number) => void
+  extra?: () => VNodeChild
+  content?: () => VNodeChild
+  items: UIContainerItem[]
+}
+
+export interface UICollapseState {
+  attrs?: Obj
+  slots?: Obj
+  title?: () => VNodeChild
+  activeKeys?: string | number | (string | number)[]
+  onActiveChange?: (keys: string | number | (string | number)[]) => void
+  content?: () => VNodeChild
+  items: UIContainerItem[]
 }
 
 export interface IconAdapter {
   /** Core 内置交互使用的语义图标渲染函数。 */
   semantic?: Record<string, (() => VNodeChild) | undefined>
-}
-
-export type ActionRenderType = 'group' | 'tooltip'
-
-export interface ActionAdapter {
-  /** 渲染按钮组或提示；具体按钮、菜单和下拉结构由 Adapter 内部处理。 */
-  render: (type: ActionRenderType, props: Obj, slots: Obj) => VNodeChild
-}
-
-export type PresentationRenderType = 'tag' | 'checkableTag'
-
-export interface PresentationAdapter {
-  /** 渲染轻量展示原语。 */
-  render: (type: PresentationRenderType, props: Obj, slots: Obj) => VNodeChild
 }
 
 export interface UIServiceHandle {
@@ -79,30 +87,15 @@ export interface ServiceAdapter {
 }
 
 export interface ModalAdapter {
-  /** 渲染受控弹窗；Core 统一使用 visible/onUpdate:visible 协议。 */
-  render: (props: Obj, slots: Obj) => VNodeChild
   /** 在组件 setup 中捕获 UI 框架上下文。 */
   useContext?: () => unknown
   /** 为脱离原组件树挂载的弹窗恢复 UI 框架上下文。 */
-  wrapContext?: (
-    content: (props?: Obj) => VNodeChild,
-    context: unknown,
-    props: Obj
-  ) => VNodeChild
+  wrapContext?: (content: (props?: Obj) => VNodeChild, context: unknown, props: Obj) => VNodeChild
 }
 
 export interface UploadAdapter {
   /** UI 框架拒绝文件但不加入列表时使用的特殊返回值。 */
   listIgnore: unknown
-  /** 渲染上传组件，并在内部完成 fileList、事件和 slot 协议转换。 */
-  render: (props: Obj, slots: Obj) => VNodeChild
-  /** 渲染默认上传触发按钮。 */
-  renderTrigger: (props: Obj, slots: Obj) => VNodeChild
-}
-
-export interface PreviewAdapter {
-  /** 渲染受控图片预览；Core 统一使用 visible/onUpdate:visible 协议。 */
-  render: (props: Obj) => VNodeChild
 }
 
 export interface UITableSelection {
@@ -165,10 +158,6 @@ export interface UITableSelectors {
 }
 
 export interface TableAdapter {
-  /** 将 Core 表格状态转换为当前 UI 框架的表格、列和分页结构。 */
-  render: (props: UITableRenderProps, slots: Obj) => VNodeChild
-  /** 渲染表格顶部的选项卡筛选。 */
-  renderFilter: (props: UITableFilterProps, slots: Obj) => VNodeChild
   /** 自动高度计算需要访问的 UI 私有 DOM 节点，由 Adapter 明确声明。 */
   selectors: UITableSelectors
 }
@@ -223,41 +212,92 @@ export interface ResolvedField extends Omit<FieldAdapter, 'component'> {
   adaptProps: FieldPropsAdapter
 }
 
+/** 固定 UI 的唯一渲染目录；复杂组件与轻量函数共用同一调用协议。 */
+export interface UIRenderers {
+  form: (props: Obj, slots?: Obj) => VNodeChild
+  formItem: (props: UIFormItemProps, slots?: Obj) => VNodeChild
+  row: (props?: Obj, slots?: Obj) => VNodeChild
+  col: (props?: Obj, slots?: Obj) => VNodeChild
+  space: (props?: Obj, slots?: Obj) => VNodeChild
+  compactSpace: (props?: Obj, slots?: Obj) => VNodeChild
+  group: (state: UIGroupState) => VNodeChild
+  card: (state: UICardState) => VNodeChild
+  tabs: (state: UITabsState) => VNodeChild
+  collapse: (state: UICollapseState) => VNodeChild
+  descriptions: (props: UIDescriptionsProps) => VNodeChild
+  actionGroup: (props: UIActionGroupProps) => VNodeChild
+  tooltip: (props: Obj, slots?: Obj) => VNodeChild
+  tag: (props: Obj, slots?: Obj) => VNodeChild
+  checkableTag: (props: Obj, slots?: Obj) => VNodeChild
+  empty: () => VNodeChild
+  modal: (props: Obj, slots?: Obj) => VNodeChild
+  upload: (props: Obj, slots?: Obj) => VNodeChild
+  uploadTrigger: (props: Obj, slots?: Obj) => VNodeChild
+  preview: (props: Obj) => VNodeChild
+  table: (props: UITableRenderProps, slots?: Obj) => VNodeChild
+  tableFilter: (props: UITableFilterProps, slots?: Obj) => VNodeChild
+}
+
+export interface UIFormItemProps extends Obj {
+  name?: (string | number)[]
+  rules?: unknown
+}
+
+export interface UIDescriptionItem {
+  attrs: Obj
+  colProps: Obj
+  labelCol: Obj
+  wrapperCol: Obj
+  label?: () => VNodeChild
+  content: () => VNodeChild
+  /** 原生详情项使用的逻辑列跨度。 */
+  colspan: number
+}
+
+export interface UIDescriptionsProps {
+  attrs: Obj
+  mode: 'table' | 'form' | 'default'
+  layout?: string
+  rowProps?: Obj
+  colon?: boolean
+  size?: string
+  tableLayout?: string
+  column: number
+  rows: UIDescriptionItem[][]
+}
+
+export interface UIActionGroupProps {
+  groupProps?: Obj
+  buttons: Obj[]
+  moreButtons: Obj[]
+  defaultButtonProps?: Obj
+  divider?: boolean
+  labelOnly?: boolean
+  iconOnly?: boolean
+  moreLabel?: unknown
+  effectData: Obj
+}
+
 export interface UIAdapter {
-  /** 用于诊断和调试的适配器名称 */
   name: string
-  /** Core 运行必需、由 Adapter 直接引入的固定 UI 原语；不包含 Schema 字段组件。 */
-  components: Record<string, Component>
-  /** 受支持输入组件目录，与字段差异配置分离，不持有真实组件。 */
+  /** 固定 UI 声明集中于此，不参与输入字段自动导入。 */
+  render: Partial<UIRenderers>
   supportedFields: readonly string[]
-  /** UI package 提前固化的普通输入协议。 */
   adaptFieldProps?: FieldPropsAdapter
-  /** 只描述输入组件的适配差异；key 就是原始组件注册名。 */
   fields?: Record<string, FieldAdapter | undefined>
-  /** 初始化 Adapter 时一并注册的字段组件；官方产品通常由 /components 入口提供。 */
   fieldComponents?: Record<string, Component | undefined>
-  /** 表单容器、表单项及实例协议。 */
   form?: FormAdapter
-  /** 栅格和空间容器协议。 */
-  layout?: LayoutAdapter
-  /** Card、Tabs、Collapse、List 等容器渲染协议。 */
-  containers?: Record<string, ContainerAdapter | undefined>
-  /** 内部语义图标的渲染函数映射；业务图标直接消费配置函数。 */
   icons?: IconAdapter
-  /** 按钮组使用的按钮、菜单、下拉和提示原语。 */
-  actions?: ActionAdapter
-  /** 详情展示和 Core 复合字段使用的轻量展示原语。 */
-  presentation?: PresentationAdapter
-  /** 消息、确认和可更新信息框等命令式 UI 服务。 */
   services?: ServiceAdapter
-  /** 声明式与命令式弹窗共用的渲染协议。 */
   modal?: ModalAdapter
-  /** Upload 组件的 UI 协议和忽略标记。 */
   upload?: UploadAdapter
-  /** 图片预览协议。 */
-  preview?: PreviewAdapter
-  /** 表格、列、分页、选择、展开和筛选协议。 */
   table?: TableAdapter
-  /** 当前 UI 框架的全局组件默认属性 */
   defaults?: Obj<Obj>
+}
+
+/** 渲染按单项覆盖，其它协议整项替换，避免深合并出不完整的服务实现。 */
+export type UIAdapterOverrides = Partial<
+  Pick<UIAdapter, 'form' | 'icons' | 'services' | 'modal' | 'upload' | 'table'>
+> & {
+  render?: Partial<UIRenderers>
 }

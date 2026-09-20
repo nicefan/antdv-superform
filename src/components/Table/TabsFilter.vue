@@ -2,7 +2,7 @@
 import { useOptions } from '../../utils/useOptions'
 import { computed, defineComponent, ref } from 'vue'
 import { toNode, useInnerSlots } from '../../utils'
-import { renderUITableFilter } from '../../adapter'
+import { getUIRender } from '../../adapter'
 
 export default defineComponent({
   props: {
@@ -17,9 +17,7 @@ export default defineComponent({
   emits: ['update:activeKey'],
   setup(props, { attrs, slots, emit }) {
     const { optionsRef } = useOptions(props.options, props.effectData)
-    const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<
-      string | number | undefined
-    >
+    const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<string | number | undefined>
     const updateActiveKey = (key) => {
       activeKey.value = key
       emit('update:activeKey', key)
@@ -54,7 +52,7 @@ export default defineComponent({
       })
     return () => [
       !props.bordered && title ? titleBar?.() : null,
-      renderUITableFilter(
+      getUIRender('tableFilter')(
         {
           bordered: props.bordered,
           items: tabList.value.map((item) => ({

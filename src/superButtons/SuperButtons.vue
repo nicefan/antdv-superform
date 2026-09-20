@@ -2,14 +2,12 @@
 import { h, type PropType, defineComponent } from 'vue'
 import { mapKeys, camelCase } from 'lodash-es'
 import { ButtonGroup } from '../components/buttons'
-import type { ButtonItem } from '../exaTypes'
+import type { ButtonItem, ExtButtonGroup } from '../exaTypes'
 
 export default defineComponent({
   props: {
     limit: Number,
-    buttonType: String as PropType<'primary' | 'link' | 'text' | 'dashed' | 'default'>,
-    buttonShape: String as PropType<'circle' | 'round' | 'default'>,
-    size: String as PropType<'large' | 'middle' | 'small'>,
+    buttonProps: Object as PropType<ExtButtonGroup['buttonProps']>,
     /** 按钮显示方式icon/label */
     labelMode: String as PropType<'icon' | 'label' | 'both'>,
     hidden: [Boolean, Function] as PropType<boolean | Fn<boolean>>,

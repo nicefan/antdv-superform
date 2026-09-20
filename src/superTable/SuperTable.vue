@@ -30,7 +30,7 @@ import { DataProvider } from '../dataProvider'
 import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
-import { renderUIForm } from '../adapter'
+import { getUIRender } from '../adapter'
 import { set as setObject } from 'lodash-es'
 
 export default defineComponent({
@@ -232,7 +232,7 @@ export default defineComponent({
         }
         const table = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
         if (option.editable) {
-          tableSlot.value = () => renderUIForm({ model: dataRef.value, ref: tableFormRef }, { default: table })
+          tableSlot.value = () => getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: table })
         } else {
           tableSlot.value = table
         }
@@ -247,9 +247,10 @@ export default defineComponent({
         refData: dataRef,
         listData: buildModelsMap(cols),
       })
-      const table = () => h(Controls.Table, { option, effectData, model, key: Symbol(), ...tableAttrs } as any, slots.value)
+      const table = () =>
+        h(Controls.Table, { option, effectData, model, key: Symbol(), ...tableAttrs } as any, slots.value)
       if (option.editable) {
-        tableSlot.value = () => renderUIForm({ model: dataRef.value, ref: tableFormRef }, { default: table })
+        tableSlot.value = () => getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: table })
       } else {
         tableSlot.value = table
       }

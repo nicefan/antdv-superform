@@ -5,7 +5,7 @@ import { globalProps } from '../../plugin'
 import { DataProvider } from '../../dataProvider'
 import { defaults } from 'lodash-es'
 import { createLabelNode } from '../../utils/labelNode'
-import { renderUIContainer, renderUILayout } from '../../adapter'
+import { getUIRender, type UIDescriptionItem, type UIDescriptionsProps } from '../../adapter'
 
 const DetailLayouts = defineComponent({
   inheritAttrs: false,
@@ -55,12 +55,7 @@ const DetailLayouts = defineComponent({
     let section: any[] | undefined
 
     nodes.forEach((item, idx) => {
-      item.node ??= () =>
-        renderUIContainer('descriptions', {
-          config: attrs,
-          items: item.group!,
-          class: attrs.class,
-        })
+      item.node ??= () => getUIRender('descriptions')(buildDescriptionsState(item.group!, provideData))
       // if (nodes.length === 1) {
       //   nodeGroup.push(['block', item])
       //   return
@@ -90,7 +85,7 @@ const DetailLayouts = defineComponent({
           let slot = items.node
           if (type === 'row') {
             slot = () =>
-              renderUILayout('row', rowProps, {
+              getUIRender('row')(rowProps, {
                 default: () =>
                   items.map((item, idx) => {
                     const colProps = item.option.colProps || {
@@ -98,7 +93,7 @@ const DetailLayouts = defineComponent({
                     }
                     return (
                       !unref(item.hidden) &&
-                      renderUILayout('col', { ...globalProps.Col, ...colProps, key: idx }, { default: item.node })
+                      getUIRender('col')({ ...globalProps.Col, ...colProps, key: idx }, { default: item.node })
                     )
                   }),
               })
@@ -143,6 +138,75 @@ type BlockNode = {
   group?: NodeItem[]
 }
 
+/** Core 统一详情字段过滤、配置继承、分组与逻辑跨度，Adapter 只转换原生结构。 */
+function buildDescriptionsState(items: NodeItem[], inherited: Obj): UIDescriptionsProps {
+  const {
+    subSpan,
+    column: configuredColumn,
+    layout,
+    bordered,
+    mode = bordered ? 'table' : 'default',
+    rowProps,
+    colon,
+    size = 'middle',
+    tableLayout,
+    labelCol: inheritedLabelCol,
+    wrapperCol: inheritedWrapperCol,
+    ...attrs
+  } = inherited
+  const column = configuredColumn || (Number(subSpan) ? Math.floor(24 / Number(subSpan)) : 2)
+  const rows: UIDescriptionItem[][] = []
+  let current: UIDescriptionItem[] = []
+  let occupied = 0
+  const flushRow = () => {
+    if (!current.length) return
+    // 补齐当前逻辑行，保证原生自动布局不会把下一组内容回填到上一行。
+    if (occupied < column) current[current.length - 1].colspan += column - occupied
+    rows.push(current)
+    current = []
+    occupied = 0
+  }
+
+  items.forEach(({ option, label, content, hidden }) => {
+    if (unref(hidden)) return
+    const itemAttrs = { ...attrs, ...option.formItemProps, ...option.descriptionsProps }
+    const span = Number(itemAttrs.span ?? option.span)
+    let colspan = span ? Math.ceil(span / (24 / column)) : 1
+    colspan = Math.min(column, colspan)
+    const labelStyle = {
+      ...(itemAttrs.labelAlign && { textAlign: itemAttrs.labelAlign }),
+      ...itemAttrs.labelStyle,
+    }
+    const item: UIDescriptionItem = {
+      attrs: itemAttrs,
+      colProps: { span: itemAttrs.span ?? option.span, ...(itemAttrs.colProps || option.colProps) },
+      labelCol: mergeProps(inheritedLabelCol, itemAttrs.labelCol, {
+        style: labelStyle,
+        class: { 'sup-label-no-colon': itemAttrs.noColon },
+      }),
+      wrapperCol: mergeProps(
+        inheritedWrapperCol,
+        { style: layout === 'vertical' && { textAlign: itemAttrs.labelAlign } },
+        { style: itemAttrs.contentStyle },
+        itemAttrs.wrapperCol
+      ),
+      label,
+      content,
+      colspan,
+    }
+    if (occupied + colspan > column) flushRow()
+    current.push(item)
+    occupied += colspan
+    if (option.breakAfter ?? option.wrapping) {
+      flushRow()
+    }
+  })
+  // 最后一项隐藏时也必须提交此前已积累的行。
+  flushRow()
+
+  return { attrs, mode, layout, rowProps, colon, size, tableLayout, column, rows }
+}
+
 function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
   const nodes: BlockNode[] = []
   let currentGroup: NodeItem[] | undefined
@@ -185,8 +249,7 @@ function buildNodes(modelsMap: ModelsMap, preOption, parentEffect) {
           return () => h('span', [showLabel && toNode(labelSlot, effectData), showLabel && ': ', content?.()])
         })
         render = () =>
-          renderUILayout(
-            'space',
+          getUIRender('space')(
             { direction: isBreak ? 'vertical' : 'horizontal' },
             {
               default: () => contents?.map((node) => node()),

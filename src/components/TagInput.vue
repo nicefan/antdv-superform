@@ -6,7 +6,7 @@
 <script lang="ts" setup>
 import { computed, h, nextTick, ref } from 'vue'
 import { getSemanticIconNode, toNode } from '../utils'
-import { resolveUIField, renderUIAction, renderUIPresentation } from '../adapter'
+import { resolveUIField, getUIRender } from '../adapter'
 
 defineOptions({
   inheritAttrs: false,
@@ -39,14 +39,22 @@ const inputField = computed(() => resolveUIField('Input')!)
 const renderInput = () => {
   const field = inputField.value
   const context = {
-    type: 'Input', option: props.option, model: props.model, effectData: props.effectData, state: {},
+    type: 'Input',
+    option: props.option,
+    model: props.model,
+    effectData: props.effectData,
+    state: {},
     binding: { value: inputValue.value, 'onUpdate:value': (value) => (inputValue.value = value) },
   }
-  const attrs = field.getAttrs({
-    ref: (instance) => (inputRef.value = instance),
-    class: 'sup-tag-input',
-    onBlur: handleInputConfirm,
-  }, props.option, context.state)
+  const attrs = field.getAttrs(
+    {
+      ref: (instance) => (inputRef.value = instance),
+      class: 'sup-tag-input',
+      onBlur: handleInputConfirm,
+    },
+    props.option,
+    context.state
+  )
   return field.adapted
     ? h(field.component, { ...context, attrs })
     : h(field.component, field.adaptProps(attrs, context))
@@ -86,20 +94,18 @@ const handleClose = (removedTag) => {
 }
 
 const renderTag = (tag: string, index: number) => {
-  const node = renderUIPresentation(
-    'tag',
+  const node = getUIRender('tag')(
     {
       removable: getClosable(tag, index),
       onRemove: () => handleClose(tag),
     },
     { default: () => (tag.length > 20 ? `${tag.slice(0, 20)}...` : tag) }
   )
-  return tag.length > 20 ? renderUIAction('tooltip', { title: tag }, { default: () => node }) : node
+  return tag.length > 20 ? getUIRender('tooltip')({ title: tag }, { default: () => node }) : node
 }
 
 const renderAddTag = () =>
-  renderUIPresentation(
-    'tag',
+  getUIRender('tag')(
     { class: 'sup-tag-add', onClick: showInput },
     { default: () => [getSemanticIconNode('add'), toNode(props.newLabel, props.effectData)] }
   )

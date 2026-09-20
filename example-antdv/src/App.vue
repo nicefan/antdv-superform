@@ -23,6 +23,7 @@ import FristTable from './fristTable/index.vue'
 import Detail from './Detail.vue'
 import RowKeyTest from './RowKeyTest.vue'
 import InputListTest from './InputListTest.vue'
+import ListContainersTest from './ListContainersTest.vue'
 
 dayjs.locale('zh-cn')
 
@@ -33,6 +34,7 @@ const tabs = [
   { comp: Detail, label: '详情描述' },
   { comp: RowKeyTest, label: '无 rowKey 测试' },
   { comp: InputListTest, label: 'InputList 校验测试' },
+  { comp: ListContainersTest, label: '列表容器测试' },
 ]
 
 const tab = ref((location.hash || '#1').substring(1))

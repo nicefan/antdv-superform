@@ -8,7 +8,7 @@
 import { computed } from 'vue'
 import type { SelectFieldOption } from '../exaTypes'
 import { useOptions } from '../utils/useOptions'
-import { renderUIPresentation } from '../adapter'
+import { getUIRender } from '../adapter'
 
 defineOptions({
   inheritAttrs: false,
@@ -28,7 +28,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:value', 'change', 'check'])
 const { optionsRef: configuredOptions } = useOptions(props.option.options, props.effectData)
-const optionsRef = computed(() => props.option.options === undefined ? props.options ?? [] : configuredOptions.value)
+const optionsRef = computed(() => (props.option.options === undefined ? props.options ?? [] : configuredOptions.value))
 
 const selected = computed(() => {
   const { value } = props
@@ -57,8 +57,7 @@ const handleChange = (tag, checked) => {
 }
 
 const renderOption = (label, value) =>
-  renderUIPresentation(
-    'checkableTag',
+  getUIRender('checkableTag')(
     {
       class: 'tag-select',
       selected: selected.value.includes(value),
