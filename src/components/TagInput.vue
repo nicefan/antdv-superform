@@ -55,9 +55,7 @@ const renderInput = () => {
     props.option,
     context.state
   )
-  return field.adapted
-    ? h(field.component, { ...context, attrs })
-    : h(field.component, field.adaptProps(attrs, context))
+  return field.render({ ...context, attrs, slots: {} })
 }
 
 // watch(

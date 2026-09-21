@@ -1,4 +1,4 @@
-import { defineComponent, h, reactive, type PropType } from 'vue'
+import { defineComponent, reactive, type PropType } from 'vue'
 import type { FieldState, ResolvedField } from '../../adapter'
 import useVModel from '../../utils/useVModel'
 import { resolveFieldProcessors } from '../../processors'
@@ -42,9 +42,7 @@ export default defineComponent({
         state: { ...props.state, ...processorState.state.value },
       }
       const attrs = reactive(field.getAttrs(props.inputAttrs, props.option, context.state))
-      return field.adapted
-        ? h(field.component, { ...context, attrs }, ctx.slots)
-        : h(field.component, field.adaptProps(attrs, context), field.adaptSlots?.(ctx.slots, context) ?? ctx.slots)
+      return field.render({ ...context, attrs, slots: ctx.slots })
     }
   },
 })

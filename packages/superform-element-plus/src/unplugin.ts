@@ -1,4 +1,4 @@
-import { elementPlusFieldAliases, elementPlusFieldImports } from './fieldNames'
+import { elementPlusFieldSources, elementPlusFieldImports } from './fieldNames'
 import createSuperFormComponents, {
   type SuperFormComponentResolver,
   type SuperFormComponentsOptions,
@@ -19,7 +19,7 @@ export function createElementPlusResolver(): SuperFormComponentResolver {
           from: 'element-plus',
           importName,
           adapterField: true,
-          registrationName: elementPlusFieldAliases[type as keyof typeof elementPlusFieldAliases] ?? type,
+          registrationName: elementPlusFieldSources[type as keyof typeof elementPlusFieldSources] ?? type,
         }
       : undefined
   }) as SuperFormComponentResolver

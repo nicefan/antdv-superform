@@ -30,7 +30,7 @@ import { DataProvider } from '../dataProvider'
 import Controls from '../components'
 import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
-import { getUIRender } from '../adapter'
+import { getUIRender, getUIService } from '../adapter'
 import { set as setObject } from 'lodash-es'
 
 export default defineComponent({
@@ -110,7 +110,9 @@ export default defineComponent({
       getData: () => dataRef.value,
       dataRef,
       searchForm: computed(() => searchForm.value?.formRef),
-      validate: async () => tableFormRef.value?.validate(),
+      validate: async () => {
+        if (tableFormRef.value) await getUIService('form').validate(tableFormRef.value)
+      },
       setColumns: (cols) => {
         if (!initQuery && !option.columns?.length) {
           Object.assign(option, { columns: cols })
@@ -247,8 +249,10 @@ export default defineComponent({
         refData: dataRef,
         listData: buildModelsMap(cols),
       })
+      // 每次列配置变更重建一次；同一配置的普通渲染保持实例与行缓存。
+      const tableKey = Symbol()
       const table = () =>
-        h(Controls.Table, { option, effectData, model, key: Symbol(), ...tableAttrs } as any, slots.value)
+        h(Controls.Table, { option, effectData, model, key: tableKey, ...tableAttrs } as any, slots.value)
       if (option.editable) {
         tableSlot.value = () => getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: table })
       } else {

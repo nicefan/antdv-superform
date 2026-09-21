@@ -6,6 +6,7 @@ import { getUIRender, getUIService } from '../../adapter'
 import { buildInnerNode } from '../Collections'
 import { formatRule } from '../../utils/buildModel'
 import { merge } from '../../utils/merge'
+import { FormValidationError } from '../../adapter/formValidation'
 
 function createEditCache(childrenMap) {
   const editMap = new WeakMap()
@@ -14,7 +15,7 @@ function createEditCache(childrenMap) {
     const raw = toRaw(record)
     let editInfo = editMap.get(raw)
     if (!editInfo) {
-      editInfo = shallowReactive<Obj>({ isEdit: false })
+      editInfo = shallowReactive<Obj>({ isEdit: false, saving: false })
       editMap.set(raw, editInfo)
     }
     return editInfo
@@ -97,38 +98,43 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       onClick: async (args) => {
         const { record } = args
         const editInfo = getEditInfo(record)
-        return Promise.all(Object.values(editInfo.forms).map((form: any) => form.validate()))
-          .then(async () => {
-            const raw = toRaw(editInfo.editData)
-            const custom = await rowEditor?.onSave?.({ ...args, isNew: editInfo.isNew })
-            if (custom === false) return false
-            if (editInfo.isNew) {
-              Object.assign(record, raw)
-              listener.onSave(record, editInfo.index).then(() => {
-                editInfo.isNew = false
-                editInfo.isEdit = false
-              })
-            } else {
-              listener.onUpdate(raw, record).then(() => {
-                editInfo.isEdit = false
-              })
-            }
-            hasEditor.value = false
-          })
-          .catch((err) => {
-            console.log('error', err)
-            err?.errorFields && getUIService('services').message('error', err.errorFields[0].errors[0])
-          })
+        if (editInfo.saving) return
+        editInfo.saving = true
+        try {
+          const formService = getUIService('form')
+          await Promise.all(Object.values(editInfo.forms).map((form) => formService.validate(form)))
+          const custom = await rowEditor?.onSave?.({ ...args, isNew: editInfo.isNew })
+          if (custom === false) return false
+          // 保存完成前保留编辑状态；请求失败时草稿仍可重试，不能提前解除编辑锁。
+          const data = cloneDeep(toRaw(editInfo.editData))
+          if (editInfo.isNew) {
+            await listener.onSave(data, editInfo.index)
+            editInfo.isNew = false
+          } else {
+            await listener.onUpdate(data, record)
+          }
+          editInfo.isEdit = false
+          hasEditor.value = false
+        } catch (error) {
+          if (error instanceof FormValidationError) getUIService('services').message('error', error.message)
+          throw error
+        } finally {
+          editInfo.saving = false
+        }
       },
     },
     {
       label: '取消',
+      disabled: ({ record }) => getEditInfo(record).saving,
       onClick: async (args) => {
         const editInfo = getEditInfo(args.record)
+        if (editInfo.saving) return
         const custom = await rowEditor?.onCancel?.({ ...args, isNew: editInfo.isNew })
         if (custom === false) return
         if (editInfo.isNew) {
-          list.value.splice(editInfo.index + 1, 1)
+          // 未指定插入位置时没有 index，且列表可能重排，必须按当前记录定位草稿。
+          const index = list.value.findIndex((item) => toRaw(item) === toRaw(args.record))
+          if (index >= 0) list.value.splice(index, 1)
         }
         editInfo.isEdit = false
         hasEditor.value = false
@@ -170,6 +176,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
               {
                 ref: (instance) => {
                   if (instance) forms[ruleName] = instance
+                  else delete forms[ruleName]
                 },
                 model: editInfo.editData,
               },

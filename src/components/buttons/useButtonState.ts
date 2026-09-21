@@ -29,9 +29,11 @@ export function useButtonState(
     const roleMode = unauthorized(item) ?? unauthorized(config) ?? 'hide'
     if (denied && roleMode === 'hide') return []
     const itemHidden = status(item.hidden)
-    const itemDisabled =
-      item.disabled === undefined ? status(item.attrs?.disabled ?? groupDisabled) : status(item.disabled)
-    const isDisabled = computed(() => !!denied || itemDisabled.value)
+    const itemDisabled = item.disabled === undefined ? groupDisabled : status(item.disabled)
+    const nativeAttrs: Obj = item.attrs || {}
+    const nativeDisabled = status(nativeAttrs.disabled)
+    // 原生禁用属性与动作禁用共同约束执行，不能被内置动作的默认判断清掉。
+    const isDisabled = computed(() => !!denied || itemDisabled.value || nativeDisabled.value)
     const render = typeof item.customRender === 'string' ? rootSlots[item.customRender] : item.customRender
     const menu =
       item.dropdown &&
@@ -49,7 +51,7 @@ export function useButtonState(
         return isDisabled.value
       },
       get loading() {
-        return item.pending.value || !!toValue(item.attrs?.loading)
+        return item.pending.value || !!toValue(nativeAttrs.loading)
       },
       async execute(event) {
         if (!action.visible || action.disabled || action.loading) return
@@ -76,10 +78,8 @@ export function useButtonState(
     ]
   })
   return {
-    render(exclude: string[] = []) {
-      const buttons = allButtons.filter(
-        (item) => item.action.visible && !(exclude.includes(item.name || '') && !item.render && !item.menu)
-      )
+    render() {
+      const buttons = allButtons.filter((item) => item.action.visible)
       if (!buttons.length) return null
       const count = limit == null ? buttons.length : iconOnly && buttons.length === limit + 1 ? limit + 1 : limit
       return getUIRender('actionGroup')({

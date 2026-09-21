@@ -76,7 +76,7 @@ export function createCollectionLayout(
             class: ['sup-form-section', group.layout.detail && 'sup-detail'],
             style: group.layout.align && { textAlign: group.layout.align },
           },
-          group.content()
+          [group.content()]
         )
       )
     })

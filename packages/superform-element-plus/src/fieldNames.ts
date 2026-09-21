@@ -30,8 +30,13 @@ export const elementPlusFieldImports = {
 export type ElementPlusFieldName = keyof typeof elementPlusFieldImports
 export const elementPlusFieldNames = Object.keys(elementPlusFieldImports) as ElementPlusFieldName[]
 
-/** 别名注册到原始名称，同一原始组件只需动态导入一次。 */
-export const elementPlusFieldAliases = {
-  DateRangePicker: 'DatePicker',
-  TimeRangePicker: 'TimePicker',
-} as const satisfies Partial<Record<ElementPlusFieldName, ElementPlusFieldName>>
+/** 同一导出名只选择一个注册入口；该关系由目录推导，不再手写别名。 */
+const registrations = new Map<string, ElementPlusFieldName>()
+export const elementPlusFieldSources = Object.fromEntries(
+  elementPlusFieldNames.map((name) => {
+    const exported = elementPlusFieldImports[name]
+    const source = registrations.get(exported) ?? name
+    registrations.set(exported, source)
+    return [name, source]
+  })
+) as Record<ElementPlusFieldName, ElementPlusFieldName>

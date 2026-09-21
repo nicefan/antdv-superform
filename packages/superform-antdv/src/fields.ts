@@ -23,14 +23,14 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
     RadioGroup: { processors: ['options'] },
     CheckboxGroup: { processors: ['options'] },
     // 清除 Core 通用提示兜底，使用组件库默认文案；用户 attrs.placeholder 仍优先。
-    DatePicker: { defaults: { placeholder: undefined } },
-    DateRangePicker: { defaults: { placeholder: undefined } },
+    DatePicker: { defaults: { placeholder: undefined, valueFormat: 'YYYY-MM-DD' } },
+    DateRangePicker: { defaults: { placeholder: undefined, valueFormat: 'YYYY-MM-DD' } },
     DateMonthPicker: { defaults: { placeholder: undefined } },
     DateQuarterPicker: { defaults: { placeholder: undefined } },
     DateWeekPicker: { defaults: { placeholder: undefined } },
     DateYearPicker: { defaults: { placeholder: undefined } },
-    TimePicker: { defaults: { placeholder: undefined } },
-    TimeRangePicker: { defaults: { placeholder: undefined } },
+    TimePicker: { defaults: { placeholder: undefined, valueFormat: 'HH:mm:ss' } },
+    TimeRangePicker: { defaults: { placeholder: undefined, valueFormat: 'HH:mm:ss' } },
     TreeSelect: {
       processors: ['tree'],
       defaults: { allowClear: true },
@@ -69,12 +69,3 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
 }
 
 export const antdvFields = createAntdvFields()
-
-export const antdvDefaults: NonNullable<UIAdapter['defaults']> = {
-  FormItem: { validateFirst: true },
-  Table: { size: 'small' },
-  TimePicker: { valueFormat: 'HH:mm:ss' },
-  TimeRangePicker: { valueFormat: 'HH:mm:ss' },
-  DatePicker: { valueFormat: 'YYYY-MM-DD' },
-  DateRangePicker: { valueFormat: 'YYYY-MM-DD' },
-}

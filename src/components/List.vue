@@ -19,6 +19,7 @@ import { toNode } from '../utils'
 import { globalProps } from '../plugin'
 import { createModal } from '../superModal'
 import { useButtonState } from './buttons/useButtonState'
+import { mergeButtonConfig } from './buttons/mergeButtonConfig'
 import Form from './Form.vue'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -126,15 +127,7 @@ export default defineComponent({
     const buttons = (config: any, effectData: Obj, actions: string[]) => {
       if (config === false) return undefined
       return useButtonState(
-        {
-          ...globalProps.rowButtons,
-          actions,
-          ...(Array.isArray(config) ? { actions: config } : config),
-          buttonProps: {
-            ...globalProps.rowButtons?.buttonProps,
-            ...(!Array.isArray(config) && config?.buttonProps),
-          },
-        },
+        mergeButtonConfig({ ...globalProps.rowButtons, actions }, config),
         effectData,
         methods,
         rootSlots,

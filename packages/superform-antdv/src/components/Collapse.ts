@@ -7,13 +7,14 @@ const renderCollapse: UIRenderers['collapse'] = (state) => {
     : state.items.map((item) => ({
         ...item.attrs,
         key: item.key,
-        label: item.title,
-        extra: item.extra,
-        content: item.content,
+        // Collapse 的 items 接收节点而非插槽函数；用函数组件延迟求值，保留依赖追踪与面板懒挂载。
+        label: item.title && h(item.title),
+        extra: item.extra && h(item.extra),
+        content: h(item.content),
         collapsible: item.disabled ? 'disabled' : item.attrs?.collapsible,
       }))
   return [
-    state.title && h('div', { class: ['sup-titlebar', 'sup-title'] }, state.title()),
+    state.title && h('div', { class: ['sup-titlebar', 'sup-title'] }, [state.title()]),
     h(
       Collapse,
       mergeProps(state.attrs || {}, {

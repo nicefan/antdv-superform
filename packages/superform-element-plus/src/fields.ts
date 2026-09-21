@@ -1,5 +1,5 @@
 import TreeSelectField from './components/TreeSelectField'
-import { elementPlusFieldAliases } from './fieldNames'
+import { h } from 'vue'
 import { createFieldPropsAdapter, defineFieldAdapters, type UIAdapter, type FieldPropsAdapter } from 'superform/sdk'
 
 const model = { prop: 'modelValue', event: 'update:modelValue' }
@@ -43,7 +43,7 @@ export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAd
     CheckboxGroup: { processors: ['options'] },
     TreeSelect: {
       processors: ['tree'],
-      component: TreeSelectField,
+      render: ({ slots, ...context }) => h(TreeSelectField, context, slots),
     },
     DatePicker: {
       processors: ['picker'],
@@ -52,7 +52,6 @@ export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAd
         typeof attrs.type === 'string' && attrs.type.endsWith('range') ? adaptRangePlaceholder(attrs, context) : attrs,
     },
     DateRangePicker: {
-      component: elementPlusFieldAliases.DateRangePicker,
       fixedProps: { type: 'daterange' },
       processors: ['range'],
       adaptProps: adaptRangePlaceholder,
@@ -62,7 +61,6 @@ export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAd
       adaptProps: (attrs, context) => (attrs.isRange ? adaptRangePlaceholder(attrs, context) : attrs),
     },
     TimeRangePicker: {
-      component: elementPlusFieldAliases.TimeRangePicker,
       fixedProps: { isRange: true },
       processors: ['range'],
       adaptProps: adaptRangePlaceholder,
@@ -70,7 +68,3 @@ export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAd
   },
   model
 )
-
-export const elementPlusDefaults: NonNullable<UIAdapter['defaults']> = {
-  FormItem: { validateEvent: true },
-}

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type PropType, h, provide, reactive, readonly, ref, unref, watch } from 'vue'
+import { type PropType, h, provide, reactive, readonly, ref, shallowRef, onBeforeUnmount, unref, watch } from 'vue'
 import { cloneDeep } from 'lodash-es'
 import { resetFields, setFieldsValue } from '../utils/fields'
 import { buildModelsMap, useControl } from '../utils'
@@ -28,7 +28,7 @@ export default {
   },
   emits: ['register', 'submit', 'reset'],
   setup(props, { expose, emit, slots: ctxSlots }) {
-    const formRef = ref()
+    const formRef = shallowRef()
     const modelData = ref<Obj>({})
     const {
       option: { onSubmit, onReset, buttons, ...option },
@@ -43,21 +43,27 @@ export default {
 
     // 子组件表单提交时校验拦截
     const submitRegister = (fn?: Fn<undefined | false | ({ errMessage: string } & Obj) | Awaited<any>>) => {
-      fn && submitHandlers.add(fn)
+      if (!fn) return
+      submitHandlers.add(fn)
+      return () => submitHandlers.delete(fn)
     }
-    // submitRegister(onSubmit)
+
+    const validateField = async (path: (string | number)[]) => {
+      // 挂载前或空路径不能触发校验，避免底层将空路径解释为整表校验。
+      if (!formRef.value || ignoreRules || !path.length) return
+      const service = getUIService('form')
+      if (!service.validateField) throw new Error('当前 UIAdapter 未实现 form.validateField')
+      await service.validateField(formRef.value, path)
+    }
+    const clearValidate = () => {
+      if (formRef.value) getUIService('form').clearValidate(formRef.value)
+    }
 
     provide('exaProvider', {
       data: readonly(modelData),
       attrs,
       onSubmit: submitRegister,
-      validateField: async (path: (string | number)[]) => {
-        // 挂载前或空路径不能触发校验，避免底层将空路径解释为整表校验。
-        if (!formRef.value || ignoreRules || !path.length) return
-        const validateField = getUIService('form').validateField
-        if (!validateField) throw new Error('当前 UIAdapter 未实现 form.validateField')
-        return validateField(formRef.value, path)
-      },
+      validateField,
     })
     provide('inheritOptions', {
       disabled: attrs.disabled,
@@ -82,30 +88,35 @@ export default {
 
     const actions = {
       dataSource: modelData,
-      submit: () => {
-        return getUIService('form')
-          .validate(formRef.value)
-          .then((...args) => {
-            return submitValidate(modelData.value).then(
-              () => {
-                const data = cloneDeep(modelData.value)
-                emit('submit', data)
-                return data
-              },
-              (err) => {
-                typeof err === 'object' && err.message && getUIService('services').message('error', err.message)
-                return Promise.reject(err)
-              }
-            )
-          })
+      getNativeInstance: () => formRef.value,
+      async validate() {
+        if (!formRef.value) throw new Error('表单尚未挂载或已卸载')
+        await getUIService('form').validate(formRef.value)
+      },
+      validateField,
+      clearValidate,
+      async submit() {
+        await actions.validate()
+        try {
+          await submitValidate(modelData.value)
+        } catch (err) {
+          // 只提示业务拦截错误；字段校验仍由 UI 表单就地展示。
+          if (err && typeof err === 'object' && 'message' in err && err.message) {
+            getUIService('services').message('error', err.message)
+          }
+          throw err
+        }
+        const data = cloneDeep(modelData.value)
+        emit('submit', data)
+        return data
       },
       setFieldsValue(data) {
-        formRef.value && getUIService('form').clearValidate(formRef.value)
+        clearValidate()
         return setFieldsValue(modelData.value, data, initialData)
       },
       resetFields(data: Obj = {}) {
         resetFields(modelData.value, data, initialData)
-        formRef.value && getUIService('form').clearValidate(formRef.value)
+        clearValidate()
         const cloneData = cloneDeep(modelData.value)
         onReset?.(cloneData as Obj)
         emit('reset', cloneData)
@@ -146,7 +157,7 @@ export default {
       () => unref(props.dataSource ?? props.option.dataSource),
       (data) => {
         if (data) {
-          formRef.value && getUIService('form').clearValidate(formRef.value)
+          clearValidate()
           modelData.value = data
         }
       },
@@ -155,15 +166,18 @@ export default {
 
     const exposeData = reactive({ ...actions })
     const getForm = (form) => {
+      formRef.value = form
       if (!form) {
         // 销毁时返回null
         emit('register', null)
         return
       }
-      Object.assign(exposeData, form, actions)
-      formRef.value = form
       emit('register', exposeData)
     }
+    onBeforeUnmount(() => {
+      submitHandlers.clear()
+      formRef.value = undefined
+    })
     expose(exposeData)
 
     return () =>

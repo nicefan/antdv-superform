@@ -41,6 +41,10 @@ export function useForm(option: UseFormOption) {
         return toValue(formRef.value?.dataSource)
       },
       submit: () => asyncCall('submit'),
+      validate: () => asyncCall('validate'),
+      validateField: (path: (string | number)[]) => asyncCall('validateField', path),
+      clearValidate: () => asyncCall('clearValidate'),
+      getNativeInstance: () => asyncCall('getNativeInstance'),
       resetFields: (rest?: Obj) => asyncCall('resetFields', rest),
       setFieldsValue: (data: Obj) => asyncCall('setFieldsValue', data),
       /**

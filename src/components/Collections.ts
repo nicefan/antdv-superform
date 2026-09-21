@@ -65,7 +65,7 @@ export function buildInnerNode(
     ? typeof render === 'function'
       ? render
       : rootSlots[render]
-    : definition?.component || Controls[type] || field?.component
+    : definition?.component || Controls[type] || field?.component || field?.render
 
   let node
   if (type === 'InfoSlot') {
@@ -94,9 +94,7 @@ export function buildInnerNode(
         node = () => {
           const context = { type, option, model, effectData, binding: reactive(valueProps), state }
           const native = reactive(field.getAttrs(fieldAttrs, option, context.state))
-          return field.adapted
-            ? h(field.component, { ...context, attrs: native }, slots)
-            : h(field.component, field.adaptProps(native, context), field.adaptSlots?.(slots, context) ?? slots)
+          return field.render({ ...context, attrs: native, slots })
         }
       } else if (definition?.source === 'custom' || definition?.source === 'auto') {
         node = () => h(renderSlot, reactive(mapFormComponentModel(definition, allAttrs)), slots)

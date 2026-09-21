@@ -21,12 +21,19 @@ export function registerUIComponents(
 export function resolveUIComponent(type: string): Component | undefined {
   const adapter = getUIAdapter()
   if (!adapter.supportedFields.includes(type)) return
-  const target = adapter.fields?.[type]?.component
-  const originalType = typeof target === 'string' ? target : type
-  // 别名共用原始组件；保留按别名手动提供组件的入口，手动来源始终优先自动导入。
-  return rawUIComponents.get(originalType) ?? rawUIComponents.get(type)
-    ?? manualUIComponents.get(type) ?? manualUIComponents.get(originalType)
-    ?? autoImportedUIComponents.get(originalType) ?? autoImportedUIComponents.get(type)
+  const originalType = adapter.fieldSources?.[type] ?? type
+  // 原始名优先，同源字段任一手动注册均可共享；顺序不依赖哪个字段先渲染。
+  const names = [
+    originalType,
+    ...Object.keys(adapter.fieldSources || {}).filter(
+      (name) => name !== originalType && adapter.fieldSources?.[name] === originalType
+    ),
+  ]
+  return (
+    rawUIComponents.get(originalType) ??
+    names.map((name) => manualUIComponents.get(name)).find(Boolean) ??
+    names.map((name) => autoImportedUIComponents.get(name)).find(Boolean)
+  )
 }
 
 /** 在合成字段前保存原始组件，扩展适配组件通过同一接口读取，避免递归取得自身。 */
@@ -35,10 +42,14 @@ export function requireUIComponent(type: string): Component {
   if (cached) return cached
   const component = resolveUIComponent(type)
   if (!component) {
-    throw new Error(`UIAdapter '${getUIAdapter().name}' 支持字段 '${type}'，但组件 '${type}' 尚未注册；请启用自动导入插件，或在 superForm.initialize({ components }) 中提供`)
+    throw new Error(
+      `UIAdapter '${
+        getUIAdapter().name
+      }' 支持字段 '${type}'，但组件 '${type}' 尚未注册；请启用自动导入插件，或在 superForm.initialize({ components }) 中提供`
+    )
   }
-  const target = getUIAdapter().fields?.[type]?.component
-  if (typeof target === 'string') rawUIComponents.set(target, component)
+  const target = getUIAdapter().fieldSources?.[type] ?? type
+  rawUIComponents.set(target, component)
   rawUIComponents.set(type, component)
   return component
 }

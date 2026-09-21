@@ -40,9 +40,10 @@ export function createFieldPropsAdapter(
     for (const [name, value] of Object.entries(binding)) {
       if (option.labelField && (name === 'labelValue' || name === 'onUpdate:labelValue')) continue
       const target = name === 'value' ? prop : name === 'onUpdate:value' ? listener : name
-      mapped[target] = name.startsWith('onUpdate:') && typeof value === 'function'
-        ? combineFieldHandlers(value, mapped[target])
-        : value
+      mapped[target] =
+        name.startsWith('onUpdate:') && typeof value === 'function'
+          ? combineFieldHandlers(value, mapped[target])
+          : value
     }
     return mapped
   }
@@ -53,11 +54,14 @@ export function defineFieldAdapters(
   fields: Record<string, FieldAdapter & { model?: ComponentModelConfig }>,
   defaultModel?: ComponentModelConfig
 ): Record<string, FieldAdapter> {
-  return Object.fromEntries(Object.entries(fields).map(([name, { model, ...field }]) => [name, {
-    ...field,
-    // 独立适配组件自行处理标准绑定，不套用原始组件的协议。
-    adaptProps: field.component && typeof field.component !== 'string'
-      ? field.adaptProps
-      : createFieldPropsAdapter(model ?? defaultModel, field.adaptProps),
-  }]))
+  return Object.fromEntries(
+    Object.entries(fields).map(([name, { model, ...field }]) => [
+      name,
+      {
+        ...field,
+        // 两条渲染路径共用绑定和属性转换，扩展渲染不能再次合成原生事件。
+        adaptProps: createFieldPropsAdapter(model ?? defaultModel, field.adaptProps),
+      },
+    ])
+  )
 }

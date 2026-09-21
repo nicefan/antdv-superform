@@ -154,7 +154,7 @@ function buildDescriptionsState(items: NodeItem[], inherited: Obj): UIDescriptio
     wrapperCol: inheritedWrapperCol,
     ...attrs
   } = inherited
-  const column = configuredColumn || (Number(subSpan) ? Math.floor(24 / Number(subSpan)) : 2)
+  const column = Math.max(1, Math.floor(Number(configuredColumn) || (Number(subSpan) ? 24 / Number(subSpan) : 2)))
   const rows: UIDescriptionItem[][] = []
   let current: UIDescriptionItem[] = []
   let occupied = 0
@@ -167,19 +167,23 @@ function buildDescriptionsState(items: NodeItem[], inherited: Obj): UIDescriptio
     occupied = 0
   }
 
-  items.forEach(({ option, label, content, hidden }) => {
+  items.forEach(({ option, label, content, hidden }, key) => {
     if (unref(hidden)) return
     const itemAttrs = { ...attrs, ...option.formItemProps, ...option.descriptionsProps }
     const span = Number(itemAttrs.span ?? option.span)
     let colspan = span ? Math.ceil(span / (24 / column)) : 1
-    colspan = Math.min(column, colspan)
+    colspan = Math.max(1, Math.min(column, colspan))
     const labelStyle = {
       ...(itemAttrs.labelAlign && { textAlign: itemAttrs.labelAlign }),
       ...itemAttrs.labelStyle,
     }
+    const colProps = { span: itemAttrs.span ?? option.span, ...(itemAttrs.colProps || option.colProps) }
+    if (colProps.span === 0 || colProps.flex) colProps.span = undefined
+    else if (!Number(colProps.span)) colProps.span = 24 / column
     const item: UIDescriptionItem = {
+      key,
       attrs: itemAttrs,
-      colProps: { span: itemAttrs.span ?? option.span, ...(itemAttrs.colProps || option.colProps) },
+      colProps,
       labelCol: mergeProps(inheritedLabelCol, itemAttrs.labelCol, {
         style: labelStyle,
         class: { 'sup-label-no-colon': itemAttrs.noColon },

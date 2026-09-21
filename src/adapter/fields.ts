@@ -1,6 +1,6 @@
-import { mergeProps } from 'vue'
+import { h, mergeProps } from 'vue'
 import { getUIAdapter } from './runtime'
-import { requireUIComponent } from './fieldRegistry'
+import { requireUIComponent, resolveUIComponent } from './fieldRegistry'
 import type { ResolvedField } from './types'
 import { createFieldPropsAdapter } from './fieldProtocol'
 
@@ -15,24 +15,36 @@ export function resolveUIField(type: string): ResolvedField | undefined {
   const adapter = getUIAdapter()
   if (!adapter.supportedFields.includes(type)) return
   const config = adapter.fields?.[type]
-  const original = requireUIComponent(type)
-  const adapted = !!config?.component && typeof config.component !== 'string'
-  const placeholder = config?.processors?.some(name => ['options', 'picker', 'range'].includes(name)) ? '请选择' : '请输入'
+  // 自定义 render 可以完全自绘；需要原生组件的扩展仍通过缓存获取已注册组件。
+  const original =
+    config?.component ?? (config?.render && !resolveUIComponent(type) ? undefined : requireUIComponent(type))
+  const adaptProps = config?.adaptProps ?? adapter.adaptFieldProps ?? standardProps
+  const placeholder = config?.processors?.some((name) => ['options', 'picker', 'range'].includes(name))
+    ? '请选择'
+    : '请输入'
   const field: ResolvedField = {
     ...config,
     type,
-    component: typeof config?.component === 'string' ? original : config?.component ?? original,
-    adapted,
+    component: original,
+    render(context) {
+      const attrs = Object.assign(adaptProps(context.attrs, context), config?.fixedProps)
+      const slots = config?.adaptSlots?.(context.slots, context) ?? context.slots
+      return config?.render ? config.render({ ...context, attrs, slots }) : h(original!, attrs, slots)
+    },
     // 只缓存提示前缀，label 按当前字段读取，避免同类型字段串用提示文案。
     // defaults/attrs 的 class/style 按 Vue 规则合并；fixedProps 最后直接覆盖，不能被用户配置改写。
-    getAttrs: (attrs, option, state = {}) => Object.assign(mergeProps(
-      { placeholder: state.placeholder ?? `${placeholder}${option.label ?? ''}` },
-      config?.defaults ?? {},
-      attrs,
-      // 两套 UI 均接收标准 options；只在专项结果存在时覆盖，空数组也有效。
-      state.options === undefined ? {} : { options: state.options }
-    ), config?.fixedProps),
-    adaptProps: config?.adaptProps ?? adapter.adaptFieldProps ?? standardProps,
+    getAttrs: (attrs, option, state = {}) =>
+      Object.assign(
+        mergeProps(
+          { placeholder: state.placeholder ?? `${placeholder}${option.label ?? ''}` },
+          config?.defaults ?? {},
+          attrs,
+          // 两套 UI 均接收标准 options；只在专项结果存在时覆盖，空数组也有效。
+          state.options === undefined ? {} : { options: state.options }
+        ),
+        config?.fixedProps
+      ),
+    adaptProps,
   }
   fieldCache.set(type, field)
   return field

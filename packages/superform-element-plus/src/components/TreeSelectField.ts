@@ -1,8 +1,6 @@
 import { cloneVNode, defineComponent, h, shallowRef, unref, watch } from 'vue'
 import type { TreeSelectInstance } from 'element-plus'
-import { createFieldPropsAdapter, fieldComponentProps, useUIComponent } from 'superform/sdk'
-
-const adaptProps = createFieldPropsAdapter({ prop: 'modelValue', event: 'update:modelValue' })
+import { fieldComponentProps, useUIComponent } from 'superform/sdk'
 
 /** 标签复用组件库已计算的结果，不额外遍历树或维护节点索引。 */
 export default defineComponent({
@@ -24,7 +22,7 @@ export default defineComponent({
     }
     return () => {
       const attrs = props.state.treeData === undefined ? props.attrs : { ...props.attrs, data: props.state.treeData }
-      const node = h(component, adaptProps(attrs, props), slots)
+      const node = h(component, attrs, slots)
       // 合并内部引用，保留调用方对原始组件的 ref。
       return cloneVNode(node, { ref: instance }, true)
     }

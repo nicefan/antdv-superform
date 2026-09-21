@@ -16,15 +16,15 @@ export default defineComponent({
             h(
               'td',
               mergeProps({ class: 'ant-descriptions-item-content', colspan: item.colspan * 2 }, item.wrapperCol),
-              item.content()
+              [item.content()]
             ),
           ]
         : [
-            h('th', mergeProps({ class: 'ant-descriptions-item-label' }, item.labelCol), item.label()),
+            h('th', mergeProps({ class: 'ant-descriptions-item-label' }, item.labelCol), [item.label()]),
             h(
               'td',
               mergeProps({ class: 'ant-descriptions-item-content', colspan: item.colspan * 2 - 1 }, item.wrapperCol),
-              item.content()
+              [item.content()]
             ),
           ]
 
@@ -42,7 +42,7 @@ export default defineComponent({
                       h(
                         'th',
                         mergeProps({ class: 'ant-descriptions-item-label', colspan: item.colspan }, item.labelCol),
-                        item.label?.()
+                        [item.label?.()]
                       )
                     )
                   ),
@@ -53,7 +53,7 @@ export default defineComponent({
                     h(
                       'td',
                       mergeProps({ class: 'ant-descriptions-item-content', colspan: item.colspan }, item.wrapperCol),
-                      item.content()
+                      [item.content()]
                     )
                   )
                 ),
@@ -81,30 +81,35 @@ export default defineComponent({
           {
             default: () =>
               group.map((item) => {
-                const colProps = { ...item.colProps }
-                if (colProps.span === 0 || colProps.flex) colProps.span = undefined
-                else if (!Number(colProps.span)) colProps.span = 24 / state.column
-                return renderLayout('col', colProps, {
-                  default: () =>
-                    renderLayout(
-                      'row',
-                      { class: 'ant-descriptions-item-container' },
-                      {
-                        default: () => [
-                          item.label &&
-                            renderLayout('col', mergeProps({ class: 'ant-descriptions-item-label' }, item.labelCol), {
-                              default: () => h('label', item.label?.()),
-                            }),
-                          renderLayout('col', mergeProps({ class: 'ant-descriptions-item-content' }, item.wrapperCol), {
-                            default: () =>
-                              !item.attrs.noInput && state.mode === 'form' && item.label
-                                ? h('div', { class: 'sup-descriptions-item-input' }, item.content())
-                                : item.content(),
-                          }),
-                        ],
-                      }
-                    ),
-                })
+                return renderLayout(
+                  'col',
+                  { ...item.colProps, key: item.key },
+                  {
+                    default: () =>
+                      renderLayout(
+                        'row',
+                        { class: 'ant-descriptions-item-container' },
+                        {
+                          default: () => [
+                            item.label &&
+                              renderLayout('col', mergeProps({ class: 'ant-descriptions-item-label' }, item.labelCol), {
+                                default: () => h('label', {}, [item.label?.()]),
+                              }),
+                            renderLayout(
+                              'col',
+                              mergeProps({ class: 'ant-descriptions-item-content' }, item.wrapperCol),
+                              {
+                                default: () =>
+                                  !item.attrs.noInput && state.mode === 'form' && item.label
+                                    ? h('div', { class: 'sup-descriptions-item-input' }, [item.content()])
+                                    : item.content(),
+                              }
+                            ),
+                          ],
+                        }
+                      ),
+                  }
+                )
               }),
           }
         )

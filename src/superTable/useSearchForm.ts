@@ -69,7 +69,7 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
             expanded.value ? '收起 ' : '展开 ',
             getSemanticIconNode(expanded.value ? 'collapse' : 'expand'),
           ],
-          attrs: { type: 'link' },
+          name: 'expand',
           onClick: () => (expanded.value = !expanded.value),
         } as any,
         ...buttonsConfig.actions,

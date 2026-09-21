@@ -1,20 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import { nextTick, reactive } from 'vue'
-import ListGroup from '../src/components/ListGroup.vue'
+import GroupList from '../src/components/GroupList.vue'
 import { buildModelsMap } from '../src/utils/buildModel'
 
-describe('ListGroup', () => {
+describe('GroupList', () => {
   it('对象重排时组件 key 跟随对象身份', async () => {
     const first = { name: '甲' }
     const second = { name: '乙' }
     const data = reactive({ items: [first, second] })
     const option = {
-      type: 'ListGroup',
+      type: 'GroupList',
       field: 'items',
       columns: [{ type: 'Input', field: 'name' }],
     }
     const { modelsMap } = buildModelsMap([option], data)
-    const render = (ListGroup as any).setup(
+    const render = (GroupList as any).setup(
       {
         option,
         model: modelsMap.get(option),

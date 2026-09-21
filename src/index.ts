@@ -10,6 +10,8 @@ export * from './superModal'
 export { diagnoseSchema } from './utils/diagnoseSchema'
 export type { SchemaDiagnostic, SchemaDiagnosticLevel, SchemaKind } from './utils/diagnoseSchema'
 export { defineUIAdapter } from './adapter'
+export { FormValidationError } from './adapter/formValidation'
+export type { FormValidationField } from './adapter/formValidation'
 export type {
   UIGroupState,
   UICardState,
@@ -17,6 +19,11 @@ export type {
   UICollapseState,
   UIContainerItem,
   FieldAdapter,
+  RenderContext,
+  FieldRenderContext,
+  UIRenderContext,
+  UIComponentRender,
+  UIComponentRenders,
   FieldAdapterContext,
   FieldPropsAdapter,
   FieldState,
@@ -37,6 +44,9 @@ export type {
   UITableSelection,
   UITableSelectors,
   UIAdapter,
+  UIAdapterDefinition,
+  UIComponentDefinition,
+  UIComponentDefinitions,
   UIAdapterOverrides,
   UIRenderers,
   UIFormItemProps,

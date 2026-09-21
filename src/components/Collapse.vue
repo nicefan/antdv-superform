@@ -1,5 +1,5 @@
 <script lang="tsx">
-import { defineComponent, h, reactive, ref, toRef, unref, type PropType } from 'vue'
+import { defineComponent, h, reactive, ref, toRef, unref, type PropType, type Ref } from 'vue'
 import { useControl, getEffectData, toNode } from '../utils'
 import { ButtonGroup } from './buttons'
 import Collections from './Collections'
@@ -40,7 +40,9 @@ export default defineComponent({
         disabled,
       }
     })
-    const activeKey = ref<string | number | (string | number)[] | undefined>(props.option.activeKey || panels[0]?.key)
+    const activeKey: Ref<string | number | (string | number)[] | undefined> = ref(
+      props.option.activeKey || panels[0]?.key
+    )
 
     return () =>
       getUIRender('collapse')({
@@ -61,7 +63,7 @@ export default defineComponent({
             disabled: unref(disabled),
             extra:
               !props.isView && option.buttons
-                ? () => h(ButtonGroup, { option: option.buttons, effectData })
+                ? () => h(ButtonGroup, { option: option.buttons!, effectData })
                 : undefined,
             content: () =>
               props.isView

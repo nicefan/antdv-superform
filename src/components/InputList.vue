@@ -7,6 +7,7 @@ import { DetailLayout } from './Detail'
 import { getSemanticIconNode, toNode } from '../utils'
 import { getUIRender } from '../adapter'
 import { globalProps } from '../plugin'
+import { mergeButtonConfig } from './buttons/mergeButtonConfig'
 import { nanoid } from 'nanoid'
 
 export default defineComponent({
@@ -59,32 +60,45 @@ export default defineComponent({
       },
     }
 
-    const rowButtonsConfig: any = !isView &&
-      rowButtons !== false && {
-        type: 'Buttons',
-        colProps: { flex: '0' },
-        labelMode: 'icon',
-        ...globalProps.rowButtons,
-        methods,
-        actions: ['add', 'delete'],
-        ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
-        buttonProps: {
-          ...globalProps.rowButtons?.buttonProps,
-          ...(!Array.isArray(rowButtons) && rowButtons?.buttonProps),
+    const rowButtonsConfig =
+      !isView &&
+      rowButtons !== false &&
+      mergeButtonConfig(
+        {
+          type: 'Buttons',
+          colProps: { flex: '0' },
+          labelMode: 'icon',
+          ...globalProps.rowButtons,
+          methods,
+          actions: ['add', 'delete'],
         },
-      }
+        rowButtons
+      )
 
     const rowCache = new WeakMap<object, any>()
     const listItems = shallowRef<any[]>([])
+    // Map 默认合并正负零，单独编码以保留原有 Object.is 匹配语义。
+    const negativeZero = Symbol('negativeZero')
     watch(
-      [() => (isSingle ? orgList.value : [...orgList.value]), () => orgList.value.length, () => [...model.propChain]],
-      ([currentList, length]) => {
-        if (length === 0) {
+      [() => [...orgList.value], () => [...model.propChain]],
+      () => {
+        if (orgList.value.length === 0) {
+          // 补齐后立即生成行模型，首次渲染不能等待下一轮 watcher。
           orgList.value.push(isSingle ? undefined : {})
-          return
         }
-        // 对象可能重排，匹配后需要从临时池移除，避免重复对象错误复用同一个行模型。
-        const isSync = backList.length === length
+        const isSync = backList.length === orgList.value.length
+        const previousRows = isSingle && !isSync ? new Map<unknown, any[]>() : undefined
+        if (previousRows) {
+          // computed 已指向变化后的数组；用上轮值快照匹配，重复值按原顺序消费，避免逐行搜索。
+          for (let index = backList.length - 1; index >= 0; index--) {
+            const item = backList[index]
+            if (!item) continue
+            const key = Object.is(item.snapshotValue, -0) ? negativeZero : item.snapshotValue
+            const matches = previousRows.get(key)
+            if (matches) matches.push(item)
+            else previousRows.set(key, [item])
+          }
+        }
         listItems.value = orgList.value.map((record, idx) => {
           const propChain = [...model.propChain, idx]
           const raw = toRaw(record)
@@ -94,14 +108,13 @@ export default defineComponent({
               // 普通数组没有稳定行身份，按槽位复用；内部增删已提前同步 backList 的对应位置。
               oldItem = backList[idx]
             } else {
-              // 对象行按身份复用，使模型在插入、删除和重排后继续跟随原对象。
-              const oldIndex = backList.findIndex((item) => item && Object.is(toRaw(item.refData.value), raw))
-              if (oldIndex !== -1) oldItem = backList.splice(oldIndex, 1)[0]
+              oldItem = previousRows?.get(Object.is(raw, -0) ? negativeZero : raw)?.pop()
             }
           } else {
             oldItem = rowCache.get(raw)
           }
           if (oldItem) {
+            if (isSingle) oldItem.snapshotValue = raw
             if (!isSingle) oldItem.refData.value = record
             updateModelIndex(oldItem.model, propChain, idx)
             oldItem.effectData.index = idx
@@ -154,6 +167,7 @@ export default defineComponent({
           // 布局模型与字段模型分开，避免 children 指回自身形成循环。
           const itemModel = reactive({ parent: orgList, children: ghostModel, index: idx, propChain })
           const item = {
+            snapshotValue: raw,
             children: itemModel.children,
             model: itemModel,
             refData,

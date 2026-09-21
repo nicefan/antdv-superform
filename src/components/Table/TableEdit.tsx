@@ -84,11 +84,11 @@ export default function ({ model, orgList, editableRef }) {
       return () =>
         selfEditableRef.value
           ? getUIRender('formItem')(
-              reactive({
+              {
                 wrapperCol: {},
                 name: model.value.propChain,
-                rules,
-              }),
+                rules: rules?.value,
+              },
               { default: inputSlot }
             )
           : viewNode

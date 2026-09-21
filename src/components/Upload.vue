@@ -1,6 +1,18 @@
 <script lang="ts">
 import { getSemanticIconNode } from '../utils/useIcon'
-import { defineComponent, type PropType, computed, ref, h, reactive, inject, shallowRef, watch, toRaw } from 'vue'
+import {
+  defineComponent,
+  type PropType,
+  computed,
+  ref,
+  h,
+  reactive,
+  inject,
+  shallowRef,
+  watch,
+  toRaw,
+  onScopeDispose,
+} from 'vue'
 import { getUIRender, getUIService } from '../adapter'
 import { globalProps } from '../plugin'
 import usePreview from './usePreview'
@@ -165,7 +177,7 @@ export default defineComponent({
     )
 
     const isLoading = ref(false)
-    onSubmit?.(() => {
+    const unregisterSubmit = onSubmit?.(() => {
       isLoading.value = controller.hasPendingWork(innerFileList.value)
       if (isLoading.value) {
         const modal = createLoadModal(' 文件同步中，请稍候...')
@@ -184,6 +196,8 @@ export default defineComponent({
       }
       return controller.submit(innerFileList.value)
     })
+    // 动态字段移除后，不再让已卸载的上传组件阻塞表单提交。
+    if (unregisterSubmit) onScopeDispose(unregisterSubmit)
 
     const beforeUpload = (file, resFileList) => {
       if (props.beforeUpload) {

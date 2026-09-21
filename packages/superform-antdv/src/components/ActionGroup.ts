@@ -60,7 +60,8 @@ export function renderActionGroup(props: UIActionGroupProps) {
   const { groupProps, buttons, moreButtons, defaultButtonProps, labelOnly, iconOnly, moreLabel, effectData } = props
   const divider =
     props.divider ??
-    (groupProps?.direction !== 'vertical' && ['link', 'text'].includes(String(defaultButtonProps?.type || '')))
+    (groupProps?.direction !== 'vertical' &&
+      ['link', 'text'].includes(String(defaultButtonProps?.variant ?? defaultButtonProps?.type ?? '')))
   const content = buttons.flatMap((button: Obj, index: number) => [
     renderActionButton(button, effectData, !!labelOnly, !!iconOnly),
     divider && index < buttons.length - 1 ? h(Divider, { type: 'vertical', class: 'sup-buttons-divider' }) : undefined,

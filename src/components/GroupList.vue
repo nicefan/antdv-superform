@@ -4,6 +4,7 @@ import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import Controls from '.'
 import { nanoid } from 'nanoid'
 import { globalProps } from '../plugin'
+import { mergeButtonConfig } from './buttons/mergeButtonConfig'
 import { getSemanticIconNode } from '../utils'
 
 export default defineComponent({
@@ -51,19 +52,19 @@ export default defineComponent({
       },
     }
 
-    const rowButtonsConfig: any = !isView &&
-      rowButtons !== false && {
-        type: 'Buttons',
-        labelMode: 'icon',
-        ...globalProps.rowButtons,
-        methods,
-        actions: ['add', 'delete'],
-        ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
-        buttonProps: {
-          ...globalProps.rowButtons?.buttonProps,
-          ...(!Array.isArray(rowButtons) && rowButtons?.buttonProps),
+    const rowButtonsConfig =
+      !isView &&
+      rowButtons !== false &&
+      mergeButtonConfig(
+        {
+          type: 'Buttons',
+          labelMode: 'icon',
+          ...globalProps.rowButtons,
+          methods,
+          actions: ['add', 'delete'],
         },
-      }
+        rowButtons
+      )
 
     const keyMap = new WeakMap()
     const listItems = ref<any[]>([])

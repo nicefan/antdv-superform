@@ -22,7 +22,7 @@ function renderNativeTabs(state: UITabsState) {
               {
                 label: () => [
                   item.title?.(),
-                  item.extra && h('span', { onClick: (event: Event) => event.stopPropagation() }, item.extra()),
+                  item.extra && h('span', { onClick: (event: Event) => event.stopPropagation() }, [item.extra()]),
                 ],
                 default: item.content,
               }
@@ -40,12 +40,17 @@ const TabsWithExtra = defineComponent({
     const extraHeight = ref(0)
     let observer: ResizeObserver | undefined
     onMounted(() => {
-      if (typeof ResizeObserver === 'undefined' || !extraRef.value) return
-      observer = new ResizeObserver(([entry]) => {
-        extraWidth.value = entry.contentRect.width
-        extraHeight.value = entry.contentRect.height
-      })
-      observer.observe(extraRef.value)
+      const extra = extraRef.value
+      if (!extra) return
+      const measure = () => {
+        extraWidth.value = extra.offsetWidth
+        extraHeight.value = extra.offsetHeight
+      }
+      // 首次挂载立即预留空间；后续仅在操作区实际尺寸改变时更新。
+      measure()
+      if (typeof ResizeObserver === 'undefined') return
+      observer = new ResizeObserver(measure)
+      observer.observe(extra)
     })
     onBeforeUnmount(() => observer?.disconnect())
 
@@ -60,7 +65,10 @@ const TabsWithExtra = defineComponent({
             '--sup-tabs-extra-height': `${extraHeight.value}px`,
           },
         },
-        [renderNativeTabs(props.state), h('div', { ref: extraRef, class: 'sup-tabs-bar-extra' }, props.state.extra?.())]
+        [
+          renderNativeTabs(props.state),
+          h('div', { ref: extraRef, class: 'sup-tabs-bar-extra' }, [props.state.extra?.()]),
+        ]
       )
     }
   },

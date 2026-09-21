@@ -15,17 +15,17 @@ export default defineComponent({
           column: state.column,
           border: state.mode === 'table' ? true : state.attrs.border,
           direction: state.layout || state.attrs.direction,
-          size: state.size === 'middle' ? undefined : state.size,
+          size: state.size === 'small' || state.size === 'large' || state.size === 'default' ? state.size : undefined,
         },
         {
           default: () =>
-            state.rows.flatMap((row, rowIndex) =>
-              row.map((item, itemIndex) =>
+            state.rows.flatMap((row) =>
+              row.map((item) =>
                 h(
                   ElDescriptionsItem,
                   {
                     ...item.attrs,
-                    key: `${rowIndex}:${itemIndex}`,
+                    key: item.key,
                     span: item.colspan,
                   },
                   { label: item.label, default: item.content }

@@ -3,7 +3,7 @@ import type { Component, Slots, VNodeChild } from 'vue'
 export interface FormAdapter {
   /** 只校验指定字段路径，供复合字段更新时使用。 */
   validateField?: (instance: any, path: (string | number)[]) => Promise<unknown>
-  /** 执行当前 UI 表单实例的校验。 */
+  /** 成功时忽略原生返回值；字段失败拒绝为 FormValidationError，其它异常原样抛出。 */
   validate: (instance: any) => Promise<unknown>
   /** 清理当前 UI 表单实例的校验状态。 */
   clearValidate: (instance: any) => void
@@ -190,9 +190,16 @@ export interface FieldState {
 
 export type FieldPropsAdapter = (attrs: Obj, context: FieldAdapterContext) => Obj
 
-export interface FieldAdapter {
-  /** 字符串指定原始组件别名目标；独立适配组件接收 Core 上下文。 */
-  component?: Component | string
+export interface RenderContext<S = Obj, A = Obj> {
+  type: string
+  attrs: A
+  state: S
+  slots: Slots
+}
+
+export interface FieldRenderContext extends FieldAdapterContext, RenderContext<FieldState> {}
+
+export type FieldAdapter = {
   defaults?: Obj
   /** 固定原生属性，在用户 attrs 和专项 props 合成后覆盖，适用于各类别名。 */
   fixedProps?: Obj
@@ -200,13 +207,15 @@ export interface FieldAdapter {
   adaptProps?: FieldPropsAdapter
   /** 接收 Core 已包装上下文的 slots，保持延迟执行。 */
   adaptSlots?: (slots: Slots, context: FieldAdapterContext) => Slots
-}
+} & (
+  | { component?: Component; render?: never }
+  | { component?: never; render: (context: FieldRenderContext) => VNodeChild }
+)
 
-export interface ResolvedField extends Omit<FieldAdapter, 'component'> {
-  component: Component
+export interface ResolvedField extends Omit<FieldAdapter, 'component' | 'render'> {
+  component?: Component
   type: string
-  /** 区分独立适配组件与原始组件的入参。 */
-  adapted: boolean
+  render: (context: FieldRenderContext) => VNodeChild
   /** Core 按当前字段上下文生成缺省属性，显式 attrs 优先。 */
   getAttrs: (attrs: Obj, option: Obj, state?: FieldState) => Obj
   adaptProps: FieldPropsAdapter
@@ -243,7 +252,54 @@ export interface UIFormItemProps extends Obj {
   rules?: unknown
 }
 
+/** component 接收 props/slots；State 协议通过 render 显式组织结构。 */
+export type UIStateComponentName = 'group' | 'card' | 'tabs' | 'collapse' | 'descriptions'
+export type UIRenderContext<K extends keyof UIRenderers> = RenderContext<
+  NonNullable<Parameters<UIRenderers[K]>[0]>,
+  K extends UIStateComponentName | 'empty' ? Obj : NonNullable<Parameters<UIRenderers[K]>[0]>
+> & { type: K }
+export type UIComponentRender<K extends keyof UIRenderers> = (context: UIRenderContext<K>) => VNodeChild
+export type UIComponentRenders = { [K in keyof UIRenderers]?: UIComponentRender<K> }
+
+export type UIComponentDefinition<K extends keyof UIRenderers> = (
+  | { render: UIComponentRender<K>; component?: never }
+  | {
+      component: Component
+      render?: never
+    }
+) & {
+  defaults?: Obj
+  adaptProps?: (attrs: Obj, context: UIRenderContext<K>) => Obj
+  /** 原生实例能力随所属组件声明，归一化后由 getUIService 读取。 */
+  service?: K extends 'form'
+    ? FormAdapter
+    : K extends 'modal'
+    ? ModalAdapter
+    : K extends 'upload'
+    ? UploadAdapter
+    : K extends 'table'
+    ? TableAdapter
+    : never
+  /** 按钮预设是 Schema 配置，不能作为原生组件 props 传递。 */
+  schemaDefaults?: K extends 'actionGroup' ? Partial<Pick<Obj<Obj>, 'rowButtons' | 'ButtonActions' | 'Buttons'>> : never
+}
+
+export type UIComponentDefinitions = { [K in keyof UIRenderers]?: UIComponentDefinition<K> }
+
+/** 声明配置在创建 Adapter 时转换，运行时仍只消费 render 函数表。 */
+export type UIAdapterDefinition = Omit<UIAdapter, 'render' | 'form' | 'modal' | 'upload' | 'table' | 'defaults'> & {
+  uiComponents: UIComponentDefinitions
+  render?: UIComponentRenders
+  form?: never
+  modal?: never
+  upload?: never
+  table?: never
+  defaults?: never
+}
+
 export interface UIDescriptionItem {
+  /** 使用原始字段顺序标识，显隐变化不改变后续字段的身份。 */
+  key: number
   attrs: Obj
   colProps: Obj
   labelCol: Obj
@@ -286,6 +342,8 @@ export interface UIAdapter {
   adaptFieldProps?: FieldPropsAdapter
   fields?: Record<string, FieldAdapter | undefined>
   fieldComponents?: Record<string, Component | undefined>
+  /** 从导出目录推导的原生组件注册名；同源字段共享组件，行为配置仍独立。 */
+  fieldSources?: Record<string, string>
   form?: FormAdapter
   icons?: IconAdapter
   services?: ServiceAdapter
@@ -299,5 +357,6 @@ export interface UIAdapter {
 export type UIAdapterOverrides = Partial<
   Pick<UIAdapter, 'form' | 'icons' | 'services' | 'modal' | 'upload' | 'table'>
 > & {
-  render?: Partial<UIRenderers>
+  render?: UIComponentRenders
+  uiComponents?: UIComponentDefinitions
 }

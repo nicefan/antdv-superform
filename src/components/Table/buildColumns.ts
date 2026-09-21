@@ -1,5 +1,6 @@
 import { computed, defineComponent, h, reactive, unref, watch } from 'vue'
 import { createButtons } from '../buttons'
+import { mergeButtonConfig } from '../buttons/mergeButtonConfig'
 import { getViewNode, useControl, getEffectData } from '../../utils'
 import { hasFormComponent } from '../index'
 import { buildInnerNode } from '../Collections'
@@ -155,14 +156,7 @@ function parseRender(viewRender, editRender, effectData) {
 }
 
 export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, effectData }) {
-  const buttonsConfig: Obj = {
-    ...globalProps.rowButtons,
-    ...(Array.isArray(buttons) ? { actions: buttons } : buttons),
-    buttonProps: {
-      ...globalProps.rowButtons?.buttonProps,
-      ...(!Array.isArray(buttons) && buttons?.buttonProps),
-    },
-  }
+  const buttonsConfig = mergeButtonConfig(globalProps.rowButtons || {}, buttons)
   const { columnProps, ...config } = buttonsConfig
   const buttonsSlot = createButtons({ config, methods, isView })
   if (!buttonsSlot) return

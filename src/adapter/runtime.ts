@@ -1,12 +1,20 @@
 import { renderDefaultGroup } from './defaultGroup'
-import type { UIAdapter, UIAdapterOverrides, UIGroupState, UIRenderers } from './types'
+import type { UIAdapter, UIAdapterDefinition, UIAdapterOverrides, UIGroupState, UIRenderers } from './types'
+import { normalizeUIComponents, normalizeUIRenderers } from './uiComponents'
 import { registerUIComponents } from './fieldRegistry'
 
 let activeAdapter: UIAdapter | undefined
 
 /** 保留 Adapter 的具体类型并提供统一定义入口。 */
-export function defineUIAdapter<T extends UIAdapter>(adapter: T): T {
-  return adapter
+export function defineUIAdapter<T extends UIAdapterDefinition>(
+  adapter: T
+): Omit<T, 'uiComponents' | 'render'> & UIAdapter
+export function defineUIAdapter<T extends UIAdapter>(adapter: T): T
+export function defineUIAdapter(adapter: UIAdapter | UIAdapterDefinition): UIAdapter {
+  if (!('uiComponents' in adapter)) return adapter
+  const { uiComponents, ...rest } = adapter
+  const normalized = normalizeUIComponents(uiComponents)
+  return { ...rest, ...normalized, render: { ...normalized.render, ...normalizeUIRenderers(adapter.render) } }
 }
 
 export function getUIAdapter() {
@@ -32,7 +40,15 @@ export function initializeUIAdapter(adapter: UIAdapter) {
 
 /** 初始化期间应用覆盖，不在渲染阶段重复合并。 */
 export function extendUIAdapter(adapter: UIAdapter, overrides: UIAdapterOverrides = {}): UIAdapter {
-  return { ...adapter, ...overrides, render: { ...adapter.render, ...overrides.render } }
+  const { uiComponents, ...rest } = overrides
+  const normalized = normalizeUIComponents(uiComponents)
+  return {
+    ...adapter,
+    ...normalized,
+    ...rest,
+    defaults: { ...adapter.defaults, ...normalized.defaults },
+    render: { ...adapter.render, ...normalized.render, ...normalizeUIRenderers(overrides.render) },
+  }
 }
 
 const renderCache: Partial<UIRenderers> = {}

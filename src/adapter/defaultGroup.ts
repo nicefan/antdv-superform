@@ -2,7 +2,7 @@ import { h, mergeProps } from 'vue'
 import type { UIGroupState } from './types'
 
 export function renderDefaultGroup(state: UIGroupState) {
-  const content = () => h('div', state.contentAttrs, state.content())
+  const content = () => h('div', state.contentAttrs, [state.content()])
   if (state.component)
     return h(
       state.component,
@@ -24,7 +24,7 @@ export function renderDefaultGroup(state: UIGroupState) {
           style: { display: 'flex', alignItems: 'center' },
         },
         [
-          state.title && h('div', { class: 'sup-title' }, state.title()),
+          state.title && h('div', { class: 'sup-title' }, [state.title()]),
           !bottom &&
             state.extra &&
             h(
@@ -33,7 +33,7 @@ export function renderDefaultGroup(state: UIGroupState) {
                 class: 'sup-title-buttons',
                 style: { flex: 1, textAlign: state.extraAlign },
               },
-              state.extra()
+              [state.extra()]
             ),
         ]
       ),
@@ -46,7 +46,7 @@ export function renderDefaultGroup(state: UIGroupState) {
           class: 'sup-bottom-buttons',
           style: { textAlign: state.extraAlign },
         },
-        state.extra()
+        [state.extra()]
       ),
   ])
 }

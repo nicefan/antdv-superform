@@ -14,7 +14,7 @@
   align-items: center;
   right: 0;
   top: 0;
-  min-height: var(--el-tabs-header-height);
+  min-height: var(--el-tabs-header-height, 40px);
 }
 
 .sup-tabs-with-extra-bottom > .sup-tabs-bar-extra {
@@ -35,5 +35,11 @@
 
 .sup-tabs-with-extra-left > .el-tabs > .el-tabs__header,
 .sup-tabs-with-extra-right > .el-tabs > .el-tabs__header {
+  min-width: var(--sup-tabs-extra-width);
   padding-bottom: var(--sup-tabs-extra-height);
+}
+
+.sup-tabs-with-extra-top > .el-tabs > .el-tabs__header,
+.sup-tabs-with-extra-bottom > .el-tabs > .el-tabs__header {
+  min-height: var(--sup-tabs-extra-height);
 }

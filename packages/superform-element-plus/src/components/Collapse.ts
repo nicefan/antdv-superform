@@ -3,7 +3,7 @@ import { h, mergeProps } from 'vue'
 import type { UIRenderers } from 'superform/sdk'
 const renderCollapse: UIRenderers['collapse'] = (state) => {
   return [
-    state.title && h('div', { class: ['sup-titlebar', 'sup-title'] }, state.title()),
+    state.title && h('div', { class: ['sup-titlebar', 'sup-title'] }, [state.title()]),
     h(
       ElCollapse,
       mergeProps(state.attrs || {}, {
@@ -34,7 +34,7 @@ const renderCollapse: UIRenderers['collapse'] = (state) => {
                           style: { marginLeft: 'auto' },
                           onClick: (event: Event) => event.stopPropagation(),
                         },
-                        item.extra()
+                        [item.extra()]
                       ),
                   ],
                   default: item.content,
