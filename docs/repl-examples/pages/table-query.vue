@@ -13,7 +13,7 @@ const [register] = useTable({
   searchForm: { subItems: ['name', 'status'] },
   columns: [
     { type: 'Input', field: 'name', label: '姓名' },
-    { type: 'Select', field: 'status', label: '状态', options: statusOptions },
+    { type: 'Select', field: 'status', label: '状态', options: { source: statusOptions } },
   ],
 })
 </script>

@@ -17,7 +17,7 @@ const [register, form] = useForm({
       attrs: { maxlength: 12, showCount: true, prefix: 'NO.' },
     },
     {
-      type: 'Input',
+      type: 'InputSearch',
       field: 'keyword',
       label: '搜索输入',
       attrs: { enterButton: '搜索' },
@@ -30,7 +30,7 @@ const [register, form] = useForm({
       label: '金额输入',
       attrs: { min: 0, precision: 2, addonAfter: '元' },
     },
-    { type: 'AutoComplete', field: 'city', label: '城市', options: ['北京', '上海', '深圳'] },
+    { type: 'AutoComplete', field: 'city', label: '城市', options: { source: ['北京', '上海', '深圳'] } },
     { type: 'TextArea', field: 'fixedRemark', label: '固定行文本域', attrs: { rows: 3 } },
     {
       type: 'TextArea',
@@ -57,7 +57,7 @@ const [register, form] = useForm({
           field: 'countryCode',
           span: 6,
           initialValue: '+86',
-          options: ['+86', '+852'],
+          options: { source: ['+86', '+852'] },
         },
         { type: 'Input', field: 'number', span: 18, attrs: { placeholder: '手机号' } },
       ],

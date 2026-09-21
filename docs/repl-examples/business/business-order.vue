@@ -26,14 +26,14 @@ const [register, form] = useForm({
       labelField: 'customerName',
       label: '客户',
       required: true,
-      options: customerOptions,
+      options: { source: customerOptions },
     },
     {
       type: 'Select',
       field: 'currency',
       label: '币种',
       initialValue: 'CNY',
-      options: ['CNY', 'USD', 'EUR'],
+      options: { source: ['CNY', 'USD', 'EUR'] },
     },
     {
       type: 'Table',

@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
-import SuperFormComponents from 'superform-antdv/unplugin'
+import SuperFormComponents from '../packages/superform-antdv/src/unplugin'
 
 const libraryRoot = resolve(__dirname, '..')
 
@@ -12,6 +12,7 @@ export default defineConfig(({ command }) => ({
     alias:
       command === 'serve'
         ? [
+            { find: '@demo/product', replacement: resolve(libraryRoot, 'packages/superform-antdv/src/index.ts') },
             {
               find: /^superform-antdv\/unplugin$/,
               replacement: resolve(libraryRoot, 'packages/superform-antdv/src/unplugin.ts'),
@@ -29,7 +30,7 @@ export default defineConfig(({ command }) => ({
               replacement: resolve(libraryRoot, 'src/index.ts'),
             },
           ]
-        : [],
+        : [{ find: '@demo/product', replacement: 'superform-antdv' }],
     dedupe: ['vue', 'antdv-next'],
   },
   server: {
@@ -42,8 +43,9 @@ export default defineConfig(({ command }) => ({
   },
   plugins: [
     SuperFormComponents({
-      dirs: ['.'],
-      entry: ['src/main.ts', 'upgrade-dev/main.ts'],
+      dirs: ['../examples/shared'],
+      entry: 'src/main.ts',
+      types: ['Input', 'InputSearch', 'TextArea'],
       dts: 'superform-components.d.ts',
     }),
     vue(),

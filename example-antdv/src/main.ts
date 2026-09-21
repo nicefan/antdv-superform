@@ -1,54 +1,23 @@
 import { createApp } from 'vue'
-import App from './App.vue'
-import superForm from 'superform-antdv'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn'
 import 'antdv-next/dist/antd.css'
-import { Button } from 'antdv-next'
+import superform, { createAntdvAdapter } from 'superform-antdv'
+import App from './App.vue'
 
-const app = createApp(App)
-superForm.initialize()
-// const InNumber = defineComponent({
-//   setup(_, {attrs}) {
-//     return () => h(
-//       InputNumber,
-//       {...props}, { style: 'width:100%', type: 'number', placeholder: '请输入' + option.label })
-//     )
-//   }
-// })
-const defaultProps = {
-  rowButtons: {
-    labelMode: 'icon',
-  },
-  Table: {
-    indexColumn: true,
-  },
-  Form: {
-    // layout: 'vertical',
-  },
-  Upload: {
-    uploadMode: 'submit',
-    showUploadList: {
-      showDownloadIcon: true,
-    },
-  },
-}
-const tagColorList = ['pink', 'cyan', 'red', 'green', 'blue', 'orange', 'purple']
-
-superForm.configure({
-  tagViewer: (val) => {
-    // 如果是布尔值，使用预定义的颜色
-    if (typeof val === 'boolean' || typeof val === 'number') {
-      return val ? 'success' : 'error'
-    }
-    // 如果在预定义颜色列表中找到，则返回对应颜色，否则返回默认颜色
-    return tagColorList[val] || 'default'
-  },
-
-  // 配置组件默认参数
-  defaultProps,
-  // 配置默认按钮属性
-  // buttonRoles() {
-  //   return ['add']
-  // },
-})
-
-app.use(Button as any).mount('#app')
+dayjs.locale('zh-cn')
+// 默认按产品配置演示；仅开发开关启用冲突默认值，用于验证显式 attrs 优先级。
+const base = new URLSearchParams(location.search).get('defaults') === 'on' ? createAntdvAdapter() : undefined
+superform.initialize(
+  base
+    ? {
+        overrides: {
+          uiComponents: {
+            tabs: { defaults: { tabPosition: 'left' }, render: ({ state }) => base.render.tabs!(state) },
+            collapse: { defaults: { accordion: true }, render: ({ state }) => base.render.collapse!(state) },
+          },
+        },
+      }
+    : undefined
+)
+createApp(App).mount('#app')

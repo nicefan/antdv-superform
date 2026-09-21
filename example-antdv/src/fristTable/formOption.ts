@@ -76,7 +76,7 @@ export const getTableOption = () => {
       ],
     },
     tabs: {
-      options: typeDict,
+      options: { source: typeDict },
       bordered: true,
       field: 'dataType1',
       activeKey: activeKey,
@@ -111,11 +111,13 @@ export const getTableOption = () => {
         field: 'dataType',
         editable: ({current}) => !current.isRequire,
         rules: { required: true },
-        options: () =>
-          Promise.resolve([
-            { label: '文本', value: 'text', color: 'green' },
-            { label: '数字', value: 'number', color: 'blue' },
-          ]),
+        options: {
+          source: () =>
+            Promise.resolve([
+              { label: '文本', value: 'text', color: 'green' },
+              { label: '数字', value: 'number', color: 'blue' },
+            ]),
+        },
         initialValue: () => type.value,
         /** 带有options或字典的自动标签化显示，tagViewer配置为数组或对象，指定value，color, 如果值为字典序值，,即可读取全局颜色配置 */
         // viewRender:({text}) => text.replaceAll(',', ' /')
@@ -127,8 +129,10 @@ export const getTableOption = () => {
         field: 'area',
         label: '区域',
         tooltip: '支持多选',
-        options: ['湖南', '广东', '江西'],
-        // valueToNumber: true,
+        options: {
+          source: ['湖南', '广东', '江西'],
+          // valueToNumber: true,
+        },
         stringifyValue: true,
         editable: true,
         attrs: {
@@ -140,18 +144,14 @@ export const getTableOption = () => {
         type: 'Switch',
         label: '是否必填',
         field: 'isRequire',
-        options: [
-          { value: 0, label: '否' },
-          { value: 1, label: '是' },
-        ],
-        // options: ['否', '是'],
-        valueToNumber: true,
+        options: {
+          source: [
+            { value: 0, label: '否' },
+            { value: 1, label: '是' },
+          ],
+        },
         editable: true,
         initialValue: 1,
-        attrs: {
-          // firstIsChecked: true,
-          // defaultChecked: true,
-        },
         onChange: ({ current, inTable, value }, e) => {
           if (inTable) {
             console.log('表格内编辑', e)

@@ -24,7 +24,7 @@ const [register, form] = useForm({
       field: 'departmentId',
       labelField: 'departmentName',
       label: '所属部门',
-      options: departmentOptions,
+      options: { source: departmentOptions },
       required: true,
     },
     { type: 'Input', field: 'position', label: '岗位' },

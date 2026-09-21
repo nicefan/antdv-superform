@@ -3,8 +3,8 @@
     <header class="upgrade-header">
       <div>
         <p class="eyebrow">ANTDV SUPERFORM</p>
-        <h1>UI 适配器改造验证</h1>
-        <p>阶段任务完成后，在这里添加对应的人工验证页面。</p>
+        <h1>统一渲染协议 · 人工验证</h1>
+        <p>按左侧顺序操作，比较预期与实际现象；测试页不自动判定通过。</p>
       </div>
       <div class="upgrade-links">
         <a href="http://127.0.0.1:5174/">Element Plus 验证</a>
@@ -38,7 +38,7 @@
 import { computed, ref } from 'vue'
 import { upgradeTestPages } from './pages'
 
-const fallbackPage = upgradeTestPages[upgradeTestPages.length - 1]
+const fallbackPage = upgradeTestPages[0]
 const initialId = location.hash.slice(1)
 const activeId = ref(upgradeTestPages.some(({ id }) => id === initialId) ? initialId : fallbackPage.id)
 const activePage = computed(() => upgradeTestPages.find(({ id }) => id === activeId.value) || fallbackPage)

@@ -16,6 +16,7 @@
     "allowJs": false,
     "baseUrl": ".",
     "paths": {
+      "@demo/product": ["../packages/superform-antdv/src/index.ts"],
       "superform": ["../src/index.ts"],
       "superform/sdk": ["../src/sdk.ts"],
       "superform-antdv": ["../packages/superform-antdv/src/index.ts"],
@@ -25,6 +26,13 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["vite/client", "node"]
   },
-  "include": ["**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.vue"],
+  "include": [
+    "src/main.ts",
+    "src/App.vue",
+    "*.d.ts",
+    "vite.config.ts",
+    "../examples/shared/**/*.ts",
+    "../examples/shared/**/*.vue"
+  ],
   "exclude": ["node_modules"]
 }

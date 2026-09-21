@@ -16,7 +16,7 @@ const schema = {
   subSpan: 12,
   subItems: [
     { field: 'name', label: '名称' },
-    { field: 'status', label: '状态', options: { 0: '停用', 1: '启用' } },
+    { field: 'status', label: '状态', options: { source: { 0: '停用', 1: '启用' } } },
     { type: 'DateRangePicker', field: 'startDate', endField: 'endDate', label: '有效期' },
     { type: 'TextArea', field: 'description', label: '说明', span: 24 },
   ],

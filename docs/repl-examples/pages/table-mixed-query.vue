@@ -25,13 +25,13 @@ const [register] = useTable({
         field: 'status',
         label: '状态',
         value: status,
-        options: statusOptions,
+        options: { source: statusOptions },
       },
     ],
   },
   columns: [
     { field: 'name', label: '客户名称' },
-    { field: 'status', label: '状态', options: statusOptions },
+    { field: 'status', label: '状态', options: { source: statusOptions } },
   ],
 })
 </script>

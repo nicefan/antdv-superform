@@ -33,7 +33,7 @@ const [register, form] = useForm({
           field: 'contractType',
           label: '合同类型',
           required: true,
-          options: { sales: '销售合同', purchase: '采购合同', service: '服务合同' },
+          options: { source: { sales: '销售合同', purchase: '采购合同', service: '服务合同' } },
         },
         {
           type: 'DateRangePicker',
@@ -54,7 +54,7 @@ const [register, form] = useForm({
           field: 'currency',
           label: '币种',
           initialValue: 'CNY',
-          options: ['CNY', 'USD', 'EUR'],
+          options: { source: ['CNY', 'USD', 'EUR'] },
         },
       ],
     },
@@ -69,7 +69,7 @@ const [register, form] = useForm({
           labelField: 'customerName',
           label: '甲方客户',
           required: true,
-          options: customerOptions,
+          options: { source: customerOptions },
         },
         { type: 'Input', field: 'customerContact', label: '甲方联系人' },
         {

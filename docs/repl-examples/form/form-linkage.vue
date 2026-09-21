@@ -11,10 +11,12 @@ const [register] = useForm({
       field: 'result',
       label: '审核结果',
       initialValue: 'pass',
-      options: [
-        { label: '通过', value: 'pass' },
-        { label: '驳回', value: 'reject' },
-      ],
+      options: {
+        source: [
+          { label: '通过', value: 'pass' },
+          { label: '驳回', value: 'reject' },
+        ],
+      },
     },
     {
       type: 'TextArea',

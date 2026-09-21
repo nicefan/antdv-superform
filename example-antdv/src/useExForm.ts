@@ -455,7 +455,7 @@ export default function exampleForm() {
         ],
       },
       {
-        type: 'ListGroup',
+        type: 'GroupList',
         field: 'listGroup',
         // title: '列表表单',
         // descriptionsProps: {
@@ -832,7 +832,7 @@ export default function exampleForm() {
             },
             subItems: [
               {
-                type: 'List',
+                type: 'CardList',
                 field: 'list',
                 label: '列表',
                 initialValue: () => [{ field1: '' }],

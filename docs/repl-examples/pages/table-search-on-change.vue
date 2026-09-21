@@ -21,20 +21,20 @@ const [register] = useTable({
         type: 'Select',
         field: 'status',
         label: '状态',
-        options: statusOptions,
+        options: { source: statusOptions },
       },
       {
         type: 'Select',
         field: 'department',
         label: '部门',
-        options: departmentNameOptions,
+        options: { source: departmentNameOptions },
       },
     ],
   },
   columns: [
     { field: 'name', label: '姓名' },
     { field: 'department', label: '部门' },
-    { field: 'status', label: '状态', options: statusOptions },
+    { field: 'status', label: '状态', options: { source: statusOptions } },
   ],
 })
 </script>

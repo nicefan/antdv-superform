@@ -19,10 +19,12 @@ const [register] = useForm({
       field: 'status',
       label: '状态',
       initialValue: 1,
-      options: [
-        { label: '启用', value: 1 },
-        { label: '停用', value: 0 },
-      ],
+      options: {
+        source: [
+          { label: '启用', value: 1 },
+          { label: '停用', value: 0 },
+        ],
+      },
     },
     { type: 'TextArea', field: 'remark', label: '备注', span: 24 },
   ],

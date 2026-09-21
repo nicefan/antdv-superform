@@ -13,7 +13,7 @@ const [register] = useForm({
       columns: [{ type: 'Input', field: '$index', rules: { type: 'email' } }],
     },
     {
-      type: 'ListGroup',
+      type: 'GroupList',
       field: 'experiences',
       title: '工作经历',
       initialValue: () => [{}],

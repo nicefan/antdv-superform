@@ -78,7 +78,7 @@ const [register, form] = useForm({
       ],
     },
     {
-      type: 'ListGroup',
+      type: 'GroupList',
       field: 'listGroup',
       label: '至少填写一项',
       // rowButtons: {

@@ -47,7 +47,7 @@ const [register, form] = useForm({
           label: '审批结果',
           initialValue: 'approve',
           required: true,
-          options: { approve: '同意', return: '退回修改', reject: '拒绝' },
+          options: { source: { approve: '同意', return: '退回修改', reject: '拒绝' } },
           attrs: { optionType: 'button', buttonStyle: 'solid' },
         },
         {
@@ -55,7 +55,7 @@ const [register, form] = useForm({
           field: 'riskLevel',
           label: '风险等级',
           initialValue: 'low',
-          options: { low: '低风险', medium: '中风险', high: '高风险' },
+          options: { source: { low: '低风险', medium: '中风险', high: '高风险' } },
         },
         {
           type: 'TextArea',

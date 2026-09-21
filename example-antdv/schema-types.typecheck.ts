@@ -35,7 +35,7 @@ export const antdvFormOption: OptionType['Form'] = {
 export const selectOption: OptionType['Select'] = {
   type: 'Select',
   field: 'status',
-  options: ['enabled', 'disabled'],
+  options: { source: ['enabled', 'disabled'] },
   attrs: { mode: 'multiple', showSearch: true },
 }
 
