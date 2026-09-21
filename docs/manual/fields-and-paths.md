@@ -191,7 +191,7 @@ const [register, form] = useForm({
   field: 'departmentId',
   labelField: 'departmentName',
   label: '部门',
-  options: departmentOptions,
+  options: { source: departmentOptions },
 }
 ```
 

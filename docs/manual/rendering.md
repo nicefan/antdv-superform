@@ -25,7 +25,7 @@ Schema → 内置/扩展输入控件 → v-model → 数据模型
 1. 配置 `labelField` 时，显示关联的文本字段。
 2. 配置 `endField` 时，显示“开始值 - 结束值”。
 3. Select、Radio、Checkbox 等根据 `options` 或字典把值转换为标签。
-4. Switch 配置 `options` 时按选项显示标签；没有选项时才使用 `valueLabels` 补充只读文案。
+4. Switch 配置 `options` 时按第 0 项 unchecked、第 1 项 checked 显示标签；未配置时使用布尔值的默认展示。
 5. Text、HTML、TextArea、Upload 等使用各自展示方式。
 6. 配置 `viewRender` 时，以自定义结果为准。
 
@@ -35,7 +35,7 @@ Schema → 内置/扩展输入控件 → v-model → 数据模型
   field: 'departmentId',
   labelField: 'departmentName',
   label: '部门',
-  options: departments,
+  options: { source: departments },
 }
 ```
 
@@ -76,7 +76,7 @@ tagViewer: (value) => ({
 })
 ```
 
-配置 `options` 或 `dictName` 后默认开启 Tag，字段级配置优先于全局。函数只接收当前值：返回颜色字符串时保留选项标签，返回对象时可覆盖 `label`、`color` 和 `icon`。全局策略通过 `configure({ tagViewer })` 设置，例如：
+配置 `options.source` 或 `options.dictName` 后默认开启 Tag，字段级配置优先于全局。函数只接收当前值：返回颜色字符串时保留选项标签，返回对象时可覆盖 `label`、`color` 和 `icon`。全局策略通过 `configure({ tagViewer })` 设置，例如：
 
 ```ts
 superform.configure({
@@ -102,7 +102,7 @@ import { h } from 'vue'
   type: 'Select',
   field: 'status',
   label: '状态',
-  options: statusOptions,
+  options: { source: statusOptions },
   viewRender: ({ text, record }) => {
     return h('span', { class: `status status-${record.status}` }, text)
   },
@@ -143,7 +143,7 @@ import { h } from 'vue'
   type: 'Select',
   field: 'userId',
   label: '用户',
-  options: users,
+  options: { source: users },
   slots: {
     option: ({ option, current }) => `${option.label} · ${current.departmentName}`,
     notFoundContent: 'emptyUsers',

@@ -11,7 +11,7 @@ const statusField = {
   type: "Select",
   field: "status",
   label: "状态",
-  dictName: "enabled_status",
+  options: { dictName: "enabled_status" },
   required: true,
 };
 ```
@@ -37,7 +37,7 @@ Schema 不是为了取代 Vue，而是把重复、结构化的部分标准化。
         ↓
 结构容器
 ├─ Group / Card / Tabs / Collapse / Descriptions
-└─ InputList / List / ListGroup / Table
+└─ InputList / GroupList / CardList / TabList / CollapseList / Table
         ↓
 字段组件
 └─ Input / Select / DateRangePicker / Upload / 项目业务字段 ...
@@ -52,7 +52,7 @@ Schema 不是为了取代 Vue，而是把重复、结构化的部分标准化。
 | 配置型新增/编辑表单              | 优先 SuperForm                        |
 | 查询、分页、CRUD 列表            | 优先 SuperTable                       |
 | 详情页或嵌入式只读分组           | SuperDetail / Descriptions            |
-| 对象数组编辑                     | InputList、ListGroup、List 或 Table   |
+| 对象数组编辑                     | InputList、GroupList、CardList、TabList、CollapseList 或 Table   |
 | 高度定制的少量输入               | InputSlot 或注册项目业务字段           |
 | 自由画布、图表编排、非结构化页面 | 使用普通 Vue 页面，局部接入字段或按钮 |
 

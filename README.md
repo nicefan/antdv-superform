@@ -32,7 +32,7 @@
   field: 'status',
   label: '状态',
   required: true,
-  options: statusOptions,
+  options: { source: statusOptions },
 }
 ```
 
@@ -156,10 +156,12 @@ const [register, form] = useForm({
       type: 'Select',
       field: 'status',
       label: '状态',
-      options: [
-        { label: '启用', value: 1 },
-        { label: '停用', value: 0 },
-      ],
+      options: {
+        source: [
+          { label: '启用', value: 1 },
+          { label: '停用', value: 0 },
+        ],
+      },
     },
   ],
   async onSubmit(data) {
@@ -226,10 +228,12 @@ const [register, table] = useTable({
       type: 'Select',
       field: 'status',
       label: '状态',
-      options: [
-        { label: '启用', value: 1 },
-        { label: '停用', value: 0 },
-      ],
+      options: {
+        source: [
+          { label: '启用', value: 1 },
+          { label: '停用', value: 0 },
+        ],
+      },
     },
   ],
   rowEditor: {
@@ -312,43 +316,46 @@ Element Plus 字段使用去掉 `El` 的组件名，例如 `InputNumber`、`Sele
 当前常用容器类型：
 
 ```text
-Form, Group, Fragment, Card, List, ListGroup, Tabs, Collapse,
-Descriptions, Table, InputGroup, InputList
+Form, Group, Fragment, Card, Tabs, Collapse, Descriptions,
+CardList, TabList, CollapseList, GroupList, Table, InputGroup, InputList
 ```
 
 完整配置规则参见 [`AI_GUIDE.md`](AI_GUIDE.md)。
 
 ## 选项和值
 
-Select、RadioGroup、CheckboxGroup、Switch 等选项型字段支持对象数组、原始值数组、对象字典、Ref、函数和 `dictName`。
-
-推荐使用对象数组：
+Select、RadioGroup、CheckboxGroup、Switch、TagSelect 等选项型字段统一使用 `options` 配置包。数据源放在 `source`，共享字典放在 `dictName`：
 
 ```ts
-options: [
-  { label: '管理员', value: 'admin' },
-  { label: '普通用户', value: 'user' },
-]
+options: {
+  source: [
+    { label: '管理员', value: 'admin' },
+    { label: '普通用户', value: 'user' },
+  ],
+}
+
+options: { dictName: 'user_role' }
 ```
 
-常用配置：
+`options.source` 支持对象数组、原始值数组、对象字典、Ref 和只接收当前 effectData 的函数/Promise。常用转换配置 `fieldNames`、`labelAsValue`、`valueToNumber` 也放在 `options` 内；`labelField` 与 `stringifyValue` 仍是字段顶层配置。
 
-- `labelField`：把选中项 label 同步保存到另一个模型字段。
-- `labelAsValue`：使用 label 作为模型值。
-- `valueToNumber`：将选项 value 转为数字。
-- `stringifyValue`：把多值结果转换为逗号分隔字符串。
-- `tagViewer`：控制只读模式的 Tag 展示。
+Select 的关键词搜索、过滤和 loading 使用当前 UI 组件的原生 attrs；SuperForm 不再自动把 keyword 传给 `options.source`。
 
 `DateRangePicker` 和 `TimeRangePicker` 可以通过 `endField` 把开始值和结束值分别保存到两个字段。
 
 ## 数组对象编辑
 
-表单字段需要编辑对象数组时，可以按复杂程度选择：
+表单字段需要编辑对象数组时，可以按交互选择：
 
 - `InputList`：字段较少，一项可以在一行内完成。
-- `List`、`ListGroup`：一项需要多行展示。
-- `Table`：字段较多、列结构明确，或需要复杂的行级操作。
+- `GroupList`：每项按 Group 多行编辑，并保持至少一项。
+- `CardList`：允许空数组，以卡片展示；可配置 `editModal`。
+- `TabList`：允许空数组，以页签展示；当前行操作位于 tab bar 操作区。
+- `CollapseList`：允许空数组，以折叠面板展示；可配置 `editModal`。
+- `Table`：字段较多、列结构明确，或需要复杂行级操作。
 
+
+## 扩展组件
 ## 扩展组件
 
 通过 Core API 注册项目字段，注册名就是 schema 类型名：
@@ -369,6 +376,24 @@ superform.registerComponents({ UserPicker })
 ```
 
 项目组件只接收合并后的字段属性和受控值；需要非默认 model 时，可注册 `{ component, model }`。底层 UI 组件由 Adapter 负责，`components` 不再用于替换 Adapter 内部组件。普通 UI 组件也可通过 Vite 自动导入插件按 schema 实际使用情况注册。
+
+固定 UI 的统一项目级外观可以在首次初始化时覆盖单个 render：
+
+```ts
+superform.initialize({
+  overrides: {
+    render: {
+      group: state => h(BusinessGroup, state.attrs, {
+        title: state.title,
+        actions: state.extra,
+        default: state.content,
+      }),
+    },
+  },
+})
+```
+
+字段级自定义 Group 仍使用 Schema 的 `component`；项目统一替换固定结构使用 `overrides.render`。
 
 ## TypeScript 辅助函数
 

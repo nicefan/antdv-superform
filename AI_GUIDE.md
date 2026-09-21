@@ -79,8 +79,8 @@ Vite 使用对应产品的 `/unplugin` 默认导出，配置 `{ dirs: ['src'], e
 字段名称：
 - AntDV 常用：`Input, TextArea, InputNumber, InputOTP, InputPassword, InputSearch, Select, TreeSelect, DatePicker, DateRangePicker, TimePicker, TimeRangePicker, RadioGroup, CheckboxGroup, Switch, Upload`。
 - Element Plus 使用去掉 El 的实际名称，如 `InputOtp, SelectV2, DatePicker`；不要照搬 AntDV 专属字段或 attrs。
-- Core：`TagInput, TagSelect, Text, HTML, Hidden, InputSlot, InfoSlot`；容器：`Group, Fragment, Card, Tabs, Collapse, Descriptions, List, ListGroup, InputList, InputGroup, Table`。
-- 对象数组单行编辑用 InputList，多行布局用 List/ListGroup，按列编辑用 Table。表格列省略 type 表示只读文本；编辑字段需有效 type。
+- Core：`TagInput, TagSelect, Text, HTML, Hidden, InputSlot, InfoSlot`；容器：`Group, Fragment, Card, Tabs, Collapse, Descriptions, CardList, TabList, CollapseList, GroupList, InputList, InputGroup, Table`。
+- 对象数组紧凑编辑用 InputList；持续保留至少一行的分组编辑用 GroupList；允许空数组并需要卡片/页签/折叠展示时分别用 CardList/TabList/CollapseList；按列编辑用 Table。表格列省略 type 表示只读文本；编辑字段需有效 type。
 
 校验：
 - 简单必填用顶层 `required`；其他约束用 `rules` 对象，不同提示拆成规则数组。
@@ -132,21 +132,33 @@ async function save() {
 
 ### options、字典与值映射
 
-优先使用 `{ label, value }[]`。也支持原始值数组、`{ value: label }`、Ref、返回数组/Promise 的函数；`dictName` 依赖全局 dictApi。当前不支持 Select 分组选项。
+顶层 `options` 是配置包，不直接写数组、Ref、函数或 `dictName`。数据放在 `options.source`，全局字典写 `options.dictName`；两者同时配置时以 source 为准并输出警告。
+
+```ts
+options: {
+  source: [
+    { label: '启用', value: 1 },
+    { label: '停用', value: 0 },
+  ],
+}
+
+options: { dictName: 'status' }
+```
 
 | 配置 | 语义 |
 | --- | --- |
-| 原始值数组 | 元素本身作为 label/value；valueToNumber 时改用下标作 value |
-| `fieldNames.label/value` | 指定对象选项的取值字段 |
+| `options.source` | 原始值数组、对象数组、对象字典、Ref，或只接收 effectData 的函数/Promise |
+| `options.dictName` | 使用全局 `dictApi(name)` |
+| `options.fieldNames.label/value/children` | 指定对象选项字段并支持递归 children |
+| `options.valueToNumber` | 归一化 value 为 number；原始数组使用数字下标 |
+| `options.labelAsValue` | label 作为字段值 |
 | `labelField` | 将选中 label 同步到另一字段 |
-| `valueToNumber` | 选项 value 转数字 |
-| `labelAsValue` | label 作为字段值 |
 | `stringifyValue` | 多值以逗号连接，不支持值中包含逗号 |
 | `tagViewer: false` | 关闭只读 Tag |
 
-Select 远程搜索：`attrs: { showSearch: true, filterOption: false }` 配合 `options: (effectData, keyword) => api.search(keyword)`；显式 onSearch 接管搜索事件。
+Select / SelectV2 不提供自动远程搜索处理。关键词事件、过滤和 loading 使用当前 UI 的原生 `attrs.onSearch` / `remoteMethod` 等配置；`options.source` 只接收 effectData，可读取业务自己维护的响应式关键词。
 
-AntDV 日期/时间范围用 `field` 与 `endField` 保存起止值；有 endField 时优先拆分，否则可用 stringifyValue 保存逗号字符串。日期默认 YYYY-MM-DD，时间默认 HH:mm:ss；其他 Adapter 以自身字段协议为准。
+AntDV 日期/时间范围用AntDV 日期/时间范围用 `field` 与 `endField` 保存起止值；有 endField 时优先拆分，否则可用 stringifyValue 保存逗号字符串。日期默认 YYYY-MM-DD，时间默认 HH:mm:ss；其他 Adapter 以自身字段协议为准。
 
 <a id="table"></a>
 

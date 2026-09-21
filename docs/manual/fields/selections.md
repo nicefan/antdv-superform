@@ -14,86 +14,95 @@
 
 以下行为只适用于启用相应处理的字段；单个 Radio、Checkbox、Cascader 等不能因名称相近而套用同一套配置。字段底层 `attrs` 使用所选 UI 库的属性。
 
-## 通用 options 格式
+## 通用 options 配置
 
-### 推荐：标准对象数组
-
-```ts
-options: [
-  { label: "管理员", value: "admin", disabled: false },
-  { label: "普通用户", value: "user" },
-];
-```
-
-`DefaultOptionType` 明确声明 `label`、`value`、`children`、`disabled`，并允许携带业务附加字段。`children` 主要服务树形数据或底层组件场景。
-
-### 其他来源对比
+顶层 `options` 是 SuperForm 的选项配置包，不直接写数组、Ref、函数或字典名。页面数据放在 `source`，全局字典放在 `dictName`：
 
 ```ts
-// 原始值数组：label 与 value 都是元素本身
-options: ['draft', 'published']
+{
+  type: 'Select',
+  field: 'role',
+  options: {
+    source: [
+      { label: '管理员', value: 'admin', disabled: false },
+      { label: '普通用户', value: 'user' },
+    ],
+  },
+}
 
-// 对象字典：键是 value，值是 label
-options: { draft: '草稿', published: '已发布' }
-
-// Ref：外部更新后选项响应
-options: statusOptions
-
-// 函数或 Promise：收到 effectData
-options: ({ current }) => api.getOptions(current.category)
-
-// 全局字典
-dictName: 'article_status'
+{
+  type: 'Select',
+  field: 'status',
+  options: { dictName: 'article_status' },
+}
 ```
 
-标准对象数组语义最明确。原始值数组配置 `valueToNumber: true` 时会改用数字下标作为 value；不要把它理解为对元素做 `Number()` 转换。
+`options.source` 支持：
+
+```ts
+// 原始值数组
+options: { source: ['draft', 'published'] }
+
+// 对象字典
+options: { source: { draft: '草稿', published: '已发布' } }
+
+// Ref
+options: { source: statusOptions }
+
+// 函数或 Promise；只接收 effectData
+options: { source: ({ current }) => api.getOptions(current.category) }
+```
+
+`source` 与 `dictName` 可以同时配置，但 source 始终优先；即使 source 是空数组、暂时为空的 Ref 或返回空值，也不会回退到字典，并会输出配置警告。
 
 ## 通用值转换属性
 
-| 属性             | 类型                          | 默认值  | 结果                                         | 适合场景                   |
-| ---------------- | ----------------------------- | ------- | -------------------------------------------- | -------------------------- |
-| `valueToNumber`  | boolean                       | `false` | 选项 value 归一化为 number；原始数组使用下标 | 后端要求数字枚举           |
-| `labelAsValue`   | boolean                       | `false` | 字段直接保存选项 label                       | 值与文案完全一致的简单接口 |
-| `labelField`     | string                        | —       | value 存 `field`，label 另存一个字段         | 同时提交 ID 和名称         |
-| `stringifyValue` | boolean                       | `false` | 多选数组转逗号字符串                         | 接口使用逗号分隔值         |
-
-### 三种存储方式对比
+| 属性 | 位置 | 默认值 | 结果 |
+| --- | --- | --- | --- |
+| `fieldNames` | `options.fieldNames` | — | 映射 `label/value/children`，递归归一化子选项 |
+| `valueToNumber` | `options.valueToNumber` | `false` | value 归一化为 number；原始数组使用数字下标 |
+| `labelAsValue` | `options.labelAsValue` | `false` | 字段直接保存选项 label |
+| `labelField` | 字段顶层 | — | value 存 `field`，label 另存同级字段 |
+| `stringifyValue` | 字段顶层 | `false` | 多选数组转逗号字符串 |
 
 ```ts
-// 1. 只存 value：{ departmentId: 12 }
-{ type: 'Select', field: 'departmentId', options }
+// 直接存 label
+{
+  type: 'Select',
+  field: 'department',
+  options: {
+    source: departments,
+    labelAsValue: true,
+  },
+}
 
-// 2. 直接存 label：{ department: '研发中心' }
-{ type: 'Select', field: 'department', labelAsValue: true, options }
-
-// 3. value + label：{ departmentId: 12, departmentName: '研发中心' }
+// value + label
 {
   type: 'Select',
   field: 'departmentId',
   labelField: 'departmentName',
-  options,
+  options: { source: departments },
 }
 ```
 
-第三种最适合详情回显和提交快照。`labelField` 是同级数据路径，见[Schema 与数据模型](/manual/fields-and-paths#labelfield-同时保存值与显示文本)。
+### fieldNames
 
-## fieldNames
-
-后端已有扁平选项字段时可通过 Select 的 `attrs.fieldNames` 映射：
+后端选项字段不是 `label/value` 时，在配置包中映射，不放入 UI 的 `attrs.fieldNames`：
 
 ```ts
 {
   type: 'Select',
   field: 'userId',
-  options: [{ userName: '张三', userId: 8 }],
-  attrs: {
+  options: {
+    source: [{ userName: '张三', userId: 8 }],
     fieldNames: { label: 'userName', value: 'userId' },
   },
 }
 ```
 
-组件会先归一化为标准 `label/value` 再交给底层控件，表单和只读显示保持一致。全局 `dictApi` 仍应直接返回标准格式。
+Core 会先归一化为标准 `label/value` 再交给字段组件和只读展示。只有在**没有配置顶层 options、但配置了 labelField** 时，才会读取原生 `attrs.options/fieldNames` 查找标签；这条兼容路径不会把原生 options 提升为标准专项配置。
 
+## Select
 ## Select
 
 AntDV Select 与 Element Plus Select、SelectV2 都接入选择处理；普通 UI Props 分别遵循对应组件。下面以 AntDV 写法举例。
@@ -103,7 +112,7 @@ AntDV Select 与 Element Plus Select、SelectV2 都接入选择处理；普通 U
   type: 'Select',
   field: 'roles',
   label: '角色',
-  options: roleOptions,
+  options: { source: roleOptions },
   attrs: {
     mode: 'multiple',
     allowClear: true,
@@ -117,31 +126,30 @@ AntDV Select 与 Element Plus Select、SelectV2 都接入选择处理；普通 U
 
 ### 远程搜索
 
+Select / SelectV2 不提供 SuperForm 专项搜索、节流或 loading。搜索关键词、过滤策略和 loading 使用当前 UI 框架的原生属性与事件；`options.source` 只接收 effectData，不接收 keyword。
+
+AntDV 可以由原生 `onSearch` 维护业务关键词：
+
 ```ts
+const keyword = ref('')
+
 {
   type: 'Select',
   field: 'userId',
-  label: '用户',
   attrs: {
     showSearch: true,
     filterOption: false,
+    onSearch: value => { keyword.value = value },
   },
-  options: (_effectData, keyword) => api.searchUsers(keyword),
+  options: {
+    source: () => api.searchUsers(keyword.value),
+  },
 }
 ```
 
-当 `showSearch` 开启、`options` 是函数且没有显式 `onSearch` 时，组件约以 600ms 尾部节流调用 `options(effectData, keyword)`。
+Element Plus 同理使用自身的 `remoteMethod`、`filterable`、`loading` 等原生协议。SuperForm 不额外包装这些事件，也不会自动切换远程模式。
 
-```ts
-// 完全接管关键词与加载状态
-onSearch: ({ current }, keyword) => {
-  current.lastKeyword = keyword;
-  loadOptions(keyword);
-};
-```
-
-显式 `onSearch` 后不会自动用关键词调用 `options`。
-
+## TreeSelect
 ## TreeSelect
 
 本节的增强配置适用于 AntDV TreeSelect。Element Plus TreeSelect 的树数据与选择属性直接使用底层组件协议。
@@ -180,7 +188,7 @@ Radio 对应 Radio.Group，字段保存单个 value：
   type: 'RadioGroup',
   field: 'level',
   label: '等级',
-  options: levelOptions,
+  options: { source: levelOptions },
   attrs: {
     optionType: 'button',
     buttonStyle: 'solid',
@@ -188,7 +196,7 @@ Radio 对应 Radio.Group，字段保存单个 value：
 }
 ```
 
-专属 `attrs` 是 RadioGroupProps；支持通用 `options`、`dictName`、值转换和 `labelField`。
+专属 `attrs` 是 RadioGroupProps；选项来源与值转换统一写在 `options` 配置包，`labelField` 仍位于字段顶层。
 
 ## CheckboxGroup
 
@@ -200,7 +208,7 @@ Checkbox 对应 Checkbox.Group，字段通常是 value 数组：
   field: 'permissions',
   labelField: 'permissionNames',
   label: '权限',
-  options: permissionOptions,
+  options: { source: permissionOptions },
   stringifyValue: true,
 }
 ```
@@ -215,7 +223,7 @@ Checkbox 对应 Checkbox.Group，字段通常是 value 数组：
 { type: 'Switch', field: 'enabled', label: '启用' }
 ```
 
-值未定义时会写入默认未选中值；`defaultChecked` 通过 `attrs.defaultChecked: true` 改为默认选中。
+未配置 `options` 时，Switch 使用 `false/true`。初始值只由 `initialValue`、外部 value 或数据源建立；不会根据 UI 的 `defaultChecked` 反推模型。
 
 ### 业务枚举模式
 
@@ -224,39 +232,34 @@ Checkbox 对应 Checkbox.Group，字段通常是 value 数组：
   type: 'Switch',
   field: 'status',
   label: '状态',
-  options: [
-    { label: '停用', value: 0 }, // 第一项：默认作为未选中状态的标签和值
-    { label: '启用', value: 1 }, // 第二项：默认作为选中状态的标签和值
-  ],
-  // options 已同时定义开关文案、绑定值和只读显示，无需再配置：
-  // valueLabels: ['停用', '启用'],
-  // attrs: { checkedChildren: '启用', unCheckedChildren: '停用' },
+  options: {
+    source: [
+      { label: '停用', value: 0 }, // 第 0 项：unchecked
+      { label: '启用', value: 1 }, // 第 1 项：checked
+    ],
+  },
 }
 ```
 
-配置 `options` 时，组件直接使用第一项作为未选中状态、第二项作为选中状态，同时取得各自的 `label` 和 `value`。因此通常只写 `options` 即可，不要重复配置 `valueLabels`、`checkedChildren`、`unCheckedChildren` 或默认值为 `false` 的 `firstIsChecked`。
+Switch 固定把归一化后的第 0 项作为 unchecked、第 1 项作为 checked，并把对应 value 与 label 交给当前 Adapter 映射到原生组件。业务需要不同含义时直接调整 source 的两项顺序与值。
 
-配置 `labelField` 时，Switch 会在初始化、外部值变化和用户切换时，将当前 options 对应的 label 同步写入该字段。异步 options 加载完成前不会先写入临时的 `false` 值。
-
-只有业务明确要求“第一项表示选中”时才反转顺序：
+配置 `labelField` 时，当前选项标签会通过统一模型入口同步到关联字段：
 
 ```ts
 {
   type: 'Switch',
   field: 'status',
-  label: '状态',
-  options: [
-    { label: '启用', value: 1 }, // firstIsChecked 为 true 后，第一项表示选中
-    { label: '停用', value: 0 }, // 第二项表示未选中
-  ],
-  attrs: {
-    firstIsChecked: true,
+  labelField: 'statusName',
+  options: {
+    source: [
+      { label: '停用', value: 0 },
+      { label: '启用', value: 1 },
+    ],
   },
 }
 ```
 
-未配置 `options` 时，Switch 默认使用 `true/false`；配置 `valueToNumber: true` 后改用 `1/0`。此时可用 `valueLabels` 补充只读文案，或通过 Ant Design Vue 的 `checkedChildren`、`unCheckedChildren` 自定义开关内部内容。
-
+## TagSelect
 ## TagSelect
 
 [TagSelect 的配置与事件](/manual/fields/built-in-inputs#tagselect)。

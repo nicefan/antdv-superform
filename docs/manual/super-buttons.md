@@ -13,7 +13,7 @@ SuperButtons 不只是独立按钮组件，也是页面组件和结构容器共�
 | SuperForm                                   | `buttons`                    | 提交前校验、提交、重置，并提供 `formData`                       |
 | SuperTable 查询表单                         | `searchForm.buttons`         | 查询、重置；配置 `limit` 时自动加入展开/收起                    |
 | SuperTable / Table                          | `buttons`、`rowButtons`      | 新增、编辑、详情、删除、批量操作，以及选中行和表格实例上下文    |
-| List / ListGroup / InputList                | `buttons`、`rowButtons`      | 数组新增、行删除和自定义行操作，并提供当前项与索引              |
+| GroupList / CardList / TabList / CollapseList / InputList | `buttons`、`rowButtons` | 数组新增、行删除和自定义行操作，并提供当前项与索引 |
 | SuperModal                                  | `buttons`                    | 自定义弹窗 footer，并向动作提供 `modalRef`                      |
 | Group / Descriptions                        | `buttons`                    | 分组标题区或底部动作，可按编辑/详情场景控制显示                 |
 | Card / Tabs / Collapse                      | `buttons`、页签项/折叠项按钮 | 卡片标题、页签栏右侧、折叠面板标题区的业务动作                  |
@@ -104,11 +104,9 @@ const buttons = {
 | 属性                  | 类型             | 默认值         | 用途                                  |
 | --------------------- | ---------------- | -------------- | ------------------------------------- |
 | `actions`             | array            | `[]`           | 动作名或 ButtonItem 数组              |
-| `attrs`               | object           | `{}`           | Ant Design Vue Space 属性和 HTML 属性 |
+| `attrs`               | object           | `{}`           | 当前 UI Space 属性和 HTML 属性        |
 | `limit`               | number           | —              | 超出数量进入“更多”菜单                |
-| `buttonType`          | string           | `'default'`    | 按钮类型                              |
-| `buttonShape`         | string           | `'default'`    | 按钮形状                              |
-| `size`                | string           | `'middle'`     | 按钮尺寸                              |
+| `buttonProps`         | object           | `{}`           | 组内按钮公共原生属性，类型来自当前 UI ButtonProps；单按钮 `attrs` 优先 |
 | `align`               | string           | —              | `left`、`center`、`right`             |
 | `placement`           | string           | —              | 表单内 `top`、`bottom`、`inline`      |
 | `divider`             | boolean          | 按按钮类型计算 | 链接/文本按钮默认显示分隔符           |
@@ -120,6 +118,17 @@ const buttons = {
 | `targetSlot`          | string           | 宿主决定       | 将按钮组渲染到宿主指定插槽            |
 | `methods`             | object           | `{}`           | 为字符串动作提供宿主方法表            |
 | `effectData`          | object           | `{}`           | 独立使用时补充响应式上下文            |
+
+组级原生按钮属性统一写在 `buttonProps`：
+
+```ts
+rowButtons: {
+  buttonProps: { type: 'link', size: 'small' }, // AntDV
+  actions: ['edit', 'delete'],
+}
+```
+
+公开外观合并顺序为 UI Adapter 默认值 → 业务全局配置 → 组级 `buttonProps` → 单按钮 `attrs`。Element Plus 等 Adapter 使用自身 ButtonProps，例如行按钮默认使用 `{ link: true, size: 'small' }`。组级原生按钮属性统一放在 `buttonProps`。
 
 ## 单个按钮属性 {#单个-buttonitem-全部属性}
 

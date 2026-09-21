@@ -1,22 +1,25 @@
 # 数组容器
 
-List、ListGroup、InputList 和 Table 都用 `field` 绑定数组，用 `columns` 描述每个元素。它们共享字段校验、只读映射和按钮体系，但布局、空数组行为和编辑能力不同。
+InputList、GroupList、CardList、TabList、CollapseList 和 Table 都用 `field` 绑定数组，用 `columns` 描述每个元素。
 
 ## 选型对比
 
-| 类型      | 最适合                             | 数据形态             | 空数组行为   |
-| --------- | ---------------------------------- | -------------------- | ------------ |
-| InputList | 字段少，一项能在一行完成           | 对象数组或原始值数组 | 至少保留一项 |
-| ListGroup | 一项需要多行、标题或分组           | 对象数组             | 至少保留一项 |
-| List      | 内容较多，需要列表外观和工具栏     | 对象数组             | 允许为空     |
-| Table     | 字段多、列结构明确、选择或编辑复杂 | 对象数组             | 允许为空     |
+| 类型 | 最适合 | 空数组行为 | 编辑方式 |
+| --- | --- | --- | --- |
+| InputList | 字段少，一项能在一行完成 | 至少保留一项 | 直接编辑 |
+| GroupList | 一项需要多行 Group 布局 | 至少保留一项 | 直接编辑 |
+| CardList | 卡片式对象列表 | 允许为空 | 直接编辑或 editModal |
+| TabList | 页签式对象列表 | 允许为空 | 直接编辑或 editModal |
+| CollapseList | 折叠式对象列表 | 允许为空 | 直接编辑或 editModal |
+| Table | 字段多、列结构明确 | 允许为空 | 表格编辑能力 |
 
 ```ts
-initialValue: () => [];
+initialValue: () => []
 ```
 
 数组初始值建议使用函数，避免多个表单实例共享引用。
 
+## 公共数据规则
 ## 公共数据规则
 
 - `columns` 中的 `field` 相对于当前行对象。
@@ -82,21 +85,19 @@ InputList 将每个数组元素排成紧凑输入行，适合联系人、价格�
 
 对象数组不要使用 `$index`。InputList 至少保留一行不等于这一行必填，是否允许空值由列规则控制。
 
-## ListGroup
+<span id="grouplist"></span>
 
-ListGroup 把每项渲染成独立 Group，适合地址、合同分段等多行结构。
+## GroupList
+
+GroupList 沿用原分组列表语义：每项渲染为独立 Group，空数组会补一项，支持 `attrs.labelIndex`、`attrs.rowKey`、行内新增/删除以及 Group 自定义 `component`。它不提供 `titleField` 或 `editModal`。
 
 ```ts
 {
-  type: 'ListGroup',
+  type: 'GroupList',
   field: 'addresses',
   title: ({ index }) => `地址 ${index + 1}`,
   subSpan: 12,
-  attrs: {
-    labelIndex: true,
-    rowKey: 'addressId',
-  },
-  contentAttrs: { class: 'address-group' },
+  attrs: { labelIndex: true, rowKey: 'addressId' },
   rowButtons: { actions: ['delete', 'add'] },
   columns: [
     { type: 'Hidden', field: 'addressId' },
@@ -106,51 +107,40 @@ ListGroup 把每项渲染成独立 Group，适合地址、合同分段等多行�
 }
 ```
 
-除 `field`、`columns`、`attrs.labelIndex`（`labelIndex`）、`attrs.rowKey`、`rowButtons` 外，它还继承 Group 的 `title`、`buttons`、`component`、`ignoreTableTitle`、`contentAttrs`、布局和 `descriptionsProps`。
+<span id="cardlist"></span>
+<span id="tablist"></span>
+<span id="collapselist"></span>
 
-`rowKey` 用于保持行身份，应选择稳定业务字段。ListGroup 空数组会补成 `[{}]`；需要校验每一项时，把规则配置在对应列字段上。
+## CardList / TabList / CollapseList
 
-## List
-
-List 使用 1.0 内置的轻量列表外观，允许空数组，适合内容块和顶部操作。
+三个列表共享行模型、稳定 key、增删、详情展示和弹窗草稿逻辑，只改变外观容器。它们允许空数组，`titleField` 可从当前记录读取标题并支持点路径；未配置时显示序号。行身份优先读取 `attrs.rowKey`，默认 `id`，缺失时使用内部稳定 key。
 
 ```ts
 {
-  type: 'List',
+  type: 'CardList',
   field: 'members',
-  title: '成员',
-  attrs: {
-    rowKey: 'id',
-    itemClass: 'member-item',
-    itemStyle: { minHeight: '56px' },
-  },
-  buttons: { actions: ['add', 'refresh'] },
-  rowButtons: { actions: ['edit', 'delete'] },
-  subSpan: 12,
-  columns: [],
-  descriptionsProps: { mode: 'form' },
+  label: '成员',
+  titleField: 'profile.name',
+  attrs: { rowKey: 'id', span: 12 },
+  editModal: { modalProps: { width: 640 } },
+  columns: [
+    { type: 'Input', field: 'profile.name', label: '姓名', required: true },
+    { type: 'Input', field: 'note', label: '备注', exclude: ['description'] },
+  ],
 }
 ```
 
-| 属性                | 类型            | 默认值 | 说明                                   |
-| ------------------- | --------------- | ------ | -------------------------------------- |
-| `field`             | string          | 必填   | 数组字段                               |
-| `title`             | string/function | —      | 列表标题                               |
-| `attrs.rowKey`      | string          | `'id'` | 指定行主键                             |
-| `attrs.itemClass`   | string/object   | —      | 每个列表项的 class                     |
-| `attrs.itemStyle`   | string/object   | —      | 每个列表项的 style                     |
-| `buttons`           | array/object    | —      | 顶部 `add` / `refresh`，无默认动作列表 |
-| `rowButtons`        | array/object    | —      | 每项 `delete` / `edit`，无默认动作列表 |
-| `columns`           | array           | 必填   | 每项字段                               |
-| `subSpan`           | number/string   | `8`    | 每项内部默认栅格                       |
-| `gutter`            | number          | `16`   | 每项内部栅格间距                       |
-| `rowProps`          | object          | `{}`   | 每项内部 Row 属性                      |
-| `descriptionsProps` | object          | —      | 只读项布局                             |
+- 默认直接编辑；配置 `editModal` 后列表内展示详情，新增/编辑在弹窗表单中完成。
+- 弹窗编辑使用深拷贝草稿，取消不写回；保存前校验。若打开新增弹窗后插入锚点已被删除，保存会明确失败而不会静默追加。
+- 列表标题旁的新增固定插入头部；当前行的新增固定插在当前行之后。
+- CardList 的 `attrs.span` 只控制每张卡片的 24 栅格宽度；Schema 顶层 `span` 仍控制整个字段宽度。默认卡片网格 gutter 为 `[16, 16]`。
+- TabList 的当前行新增、编辑、删除放在 tab bar 操作区，不改造原生 Tabs 为 editable-card，也不使用原生新增/关闭图标。新增后激活新行，删除激活项后回退相邻项。
+- CollapseList 新增后展开新行，删除后同步清理展开状态。
+- 查看模式只展示详情，不提供内置增删编辑入口；`exclude: ['form' | 'description']` 继续控制字段场景。
 
-`itemClass` 和 `itemStyle` 分别设置每个列表项的 class 与 style，二者都放在 `attrs` 中。
+`buttons: false` 可以关闭列表级操作，`rowButtons: false` 关闭行操作。三个列表的 `editModal.form` 可覆盖弹窗表单配置，默认复用 `columns`。
 
-List 允许删除最后一项。`rowKey` 缺失时默认读取 `id`，再回退内部 key；业务数据应显式设置稳定字段。
-
+## Table 数组容器
 ## Table 数组容器
 
 [Table 的列、编辑与 CRUD 配置](/manual/fields/table#table-数组容器)。

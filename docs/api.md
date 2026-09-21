@@ -248,8 +248,10 @@ pageClass: api-index-page
 ### 数组容器
 
 - [InputList](/manual/fields/collections#inputlist)
-- [ListGroup](/manual/fields/collections#listgroup)
-- [List](/manual/fields/collections#list)
+- [GroupList](/manual/fields/collections#grouplist)
+- [CardList](/manual/fields/collections#cardlist)
+- [TabList](/manual/fields/collections#tablist)
+- [CollapseList](/manual/fields/collections#collapselist)
 
 </section>
 

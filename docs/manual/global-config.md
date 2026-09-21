@@ -77,7 +77,7 @@ superform.configure({
 字段只声明名称：
 
 ```ts
-{ type: 'Select', field: 'status', label: '状态', dictName: 'enabled_status' }
+{ type: 'Select', field: 'status', label: '状态', options: { dictName: 'enabled_status' } }
 ```
 
 同一结果用于 Select 选项以及表格、详情的只读映射。
@@ -86,9 +86,9 @@ superform.configure({
 
 | 来源               | 适合场景               |
 | ------------------ | ---------------------- |
-| `options` 静态数组 | 页面常量、不会复用     |
-| `options` Ref/函数 | 依赖当前模型或实时接口 |
-| `dictName`         | 跨页面共享的标准字典   |
+| `options.source` 静态数据 | 页面常量、不会复用     |
+| `options.source` Ref/函数 | 依赖当前模型或实时接口 |
+| `options.dictName` | 跨页面共享的标准字典   |
 
 组件库不内置缓存。缓存、请求合并、有效期和租户隔离应在 dictApi 中完成：
 
@@ -101,7 +101,7 @@ async function dictApi(name) {
 }
 ```
 
-`dictApi(name)` 返回标准 `{ label, value }[]`，字段 `fieldNames` 只适配局部 options。返回契约见[字典接口](/manual/backend-contracts#字典接口)，显示配置见 [tagViewer](/manual/rendering#tagviewer-只读配置)。
+`dictApi(name)` 返回标准 `{ label, value }[]`。局部非标准字段通过 `options.fieldNames` 映射；`options.source` 与 `options.dictName` 同时存在时优先使用 source。返回契约见[字典接口](/manual/backend-contracts#字典接口)，显示配置见 [tagViewer](/manual/rendering#tagviewer-只读配置)。
 
 ## 按钮权限与默认按钮 {#图标、权限与按钮}
 

@@ -79,7 +79,7 @@ schemaHandler(effectData, ...componentEventArgs);
 | `parent`   | 上一级 effectData          | 需要沿嵌套上下文向上访问    |
 | `value`    | 当前字段值                 | 当前值判断                  |
 | `field`    | 当前字段在当前对象中的名称 | 通用处理函数                |
-| `index`    | 数组元素下标               | InputList、ListGroup、Table |
+| `index`    | 数组元素下标               | InputList、GroupList、CardList/TabList/CollapseList、Table |
 | `record`   | 数组或表格当前记录         | 行操作、列渲染              |
 | `isView`   | 当前是否处于只读展示       | 同一渲染函数适配编辑和查看  |
 
@@ -120,7 +120,7 @@ hidden: ({ parent }) => parent?.current?.mode !== "advanced";
 
 ## record / index：数组行 {#数组行上下文}
 
-在 InputList、ListGroup 和 Table 列中：
+在 InputList、GroupList、新列表容器和 Table 列中：
 
 ```ts
 {
@@ -135,17 +135,19 @@ hidden: ({ parent }) => parent?.current?.mode !== "advanced";
 
 `current` 与 `record` 通常都指向当前行对象；`record` 更能表达行级业务语义。数组结构和编辑模式见[数组容器](/manual/fields/collections)。
 
-## options：搜索参数 {#远程选项函数}
+## options：动态数据源 {#远程选项函数}
 
-`options` 为函数时也会收到上下文：
+`options.source` 为函数时只接收当前 effectData：
 
 ```ts
-options: ({ current }) => api.getCities({ province: current.province });
+options: {
+  source: ({ current }) => api.getCities({ province: current.province }),
+}
 ```
 
-Select 远程搜索时还会传入 `keyword`。开启条件、节流与返回格式见[选择输入：远程搜索](/manual/fields/selections#远程搜索)。
+Select / SelectV2 不再由 SuperForm 注入搜索 keyword、节流或 loading。远程搜索应使用当前 UI 的原生 `attrs.onSearch`、`remoteMethod` 等事件维护业务状态，再由 `options.source` 读取该状态。完整规则见[选择输入：远程搜索](/manual/fields/selections#远程搜索)。
 
-## 组件扩展上下文 {#页面组件的扩展上下文}
+## 组件扩展上下文## 组件扩展上下文 {#页面组件的扩展上下文}
 
 页面组件会在基础字段之上补充自己的上下文。例如 SuperTable 按钮还可能获得 `selectedRows`、`selectedRowKeys`、`tableRef` 及页面动作。不要假设所有字段位置都拥有这些值；可复用回调应只读取当前场景明确提供的数据。
 

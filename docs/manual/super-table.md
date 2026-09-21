@@ -21,7 +21,7 @@ const [register, table] = useTable({
   apis: { query: api.page },
   columns: [
     { field: "name", label: "姓名" },
-    { field: "status", label: "状态", type: "Select", dictName: "status" },
+    { field: "status", label: "状态", type: "Select", options: { dictName: "status" } },
   ],
 });
 </script>
@@ -239,10 +239,12 @@ searchForm: {
       type: 'Select',
       field: 'status',
       label: '状态',
-      options: [
-        { label: '启用', value: 1 },
-        { label: '停用', value: 0 },
-      ],
+      options: {
+        source: [
+          { label: '启用', value: 1 },
+          { label: '停用', value: 0 },
+        ],
+      },
     },
   ],
 }
@@ -272,10 +274,12 @@ const [register] = useTable({
         field: "status",
         label: "状态",
         value: status,
-        options: [
-          { label: "启用", value: 1 },
-          { label: "停用", value: 0 },
-        ],
+        options: {
+          source: [
+            { label: "启用", value: 1 },
+            { label: "停用", value: 0 },
+          ],
+        },
       },
     ],
   },
@@ -315,17 +319,19 @@ tabs: {
   field: 'status',
   initialValue: 'all',
   bordered: true,
-  options: [
-    { label: '全部', value: 'all' },
-    { label: '启用', value: 'enabled' },
-  ],
+  options: {
+    source: [
+      { label: '全部', value: 'all' },
+      { label: '启用', value: 'enabled' },
+    ],
+  },
   activeKey: statusTab,
   customTab: ({ option }) => option.label,
   slots: {},
 }
 ```
 
-`options` 也支持 `dictName`、`labelAsValue`；`activeKey` 可与外部 Ref 双向控制。设置 `tabs: false` 关闭。
+`tabs.options` 使用同一 OptionsConfig，可配置 `source`、`dictName`、`labelAsValue` 等；`activeKey` 可与外部 Ref 双向控制。设置 `tabs: false` 关闭。
 
 <span id="列与编辑"></span>
 

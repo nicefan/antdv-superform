@@ -30,7 +30,7 @@ AntDV Next / Element Plus / 第三方 UI
 
 | 来源 | 负责内容 | 配置入口 |
 | --- | --- | --- |
-| Adapter 固定能力 | Form、FormItem、Modal、Table、布局、反馈等基础能力 | 官方产品内置，或自定义 Adapter 实现 |
+| Adapter 固定渲染 | Form、FormItem、Modal、Table、布局、容器、反馈等固定 UI | `UIAdapter.render`，官方产品内置或自定义 Adapter 实现 |
 | Adapter 字段 | Input、Select、Rate 等 Adapter 已声明字段 | Vite 自动导入或 `initialize({ components })` |
 | 项目业务字段 | UserPicker、RichEditor 等业务组件 | `registerComponent(s)` |
 
@@ -86,6 +86,34 @@ superform.useAdapter(adapter);
 
 官方产品用户不需要也不应再调用 `useAdapter()`。
 
+### 固定 UI render 与业务覆盖
+
+固定 UI 统一登记在 `UIAdapter.render`：`form/formItem`、布局、Group/Card/Tabs/Collapse/Descriptions、按钮、提示、Modal、Upload、Table 等都使用同一张类型化 `UIRenderers` 表。Core 通过 `getUIRender(name)` 取得渲染函数，渲染协议集中在这一处。
+
+复杂 UI 结构可以在 Adapter 包内部拆到 `components/Tabs.ts`、`components/Table.ts` 等文件，但对 Core 仍只有一个 render 入口。字段自动导入与固定 UI 渲染保持独立。
+
+官方产品可在**首次初始化**时覆盖单个渲染器：
+
+```ts
+import { h } from 'vue'
+import superForm from 'superform-antdv'
+import BusinessGroup from './BusinessGroup.vue'
+
+superForm.initialize({
+  overrides: {
+    render: {
+      group: state => h(BusinessGroup, state.attrs, {
+        title: state.title,
+        actions: state.extra,
+        default: () => h('div', state.contentAttrs, state.content()),
+      }),
+    },
+  },
+})
+```
+
+Group 的优先级为 Schema `option.component` → `overrides.render.group` → UI 包 `render.group` → Core 默认 Group。render 按项浅合并；form/services/modal/upload/table 等非 render 协议覆盖时整项替换，不做递归深合并。首次初始化后不能再带 overrides 切换协议，无参数重复 initialize 仍保持幂等。
+
 ### 局部校验与语义图标
 
 支持 InputGroup 局部校验时，实现 `form.validateField(instance, path)`。其中 `path` 为 `(string | number)[]`，方法只校验该路径并返回 Promise。
@@ -94,7 +122,7 @@ superform.useAdapter(adapter);
 
 ## 跨框架复用范围 {#第三方-adapter}
 
-第三方包依赖 `superform`，通过 `superform/sdk` 实现 UIAdapter。Core 只调用 capability 契约，不认识具体 UI 组件、CSS class 或实例 API。
+第三方包依赖 `superform`，通过 `superform/sdk` 实现 UIAdapter。Core 只调用 `UIRenderers` 与 form/services/modal/icons/upload/table 等明确协议，不认识具体 UI 组件、CSS class 或实例 API。
 
 切换 Adapter 不承诺整份 Schema 原样复用。Core 容器和业务语义保持稳定，UI 组件名称、`attrs` 与事件仍以目标框架为准。
 

@@ -141,7 +141,7 @@ const detailSchema = defineDetail({
 1. `viewRender` 自定义显示。
 2. `labelField` 关联文本。
 3. `endField` 范围组合。
-4. `options` / `dictName` 值到标签映射和 `tagViewer`。
+4. `options.source` / `options.dictName` 值到标签映射和 `tagViewer`。
 5. Upload 或 Ext\* 组件的 `isView: true` 模式。
 6. 默认文本值。
 
@@ -149,7 +149,7 @@ const detailSchema = defineDetail({
 subItems: [
   { field: "departmentId", label: "部门", labelField: "departmentName" },
   { field: "startDate", endField: "endDate", label: "有效期" },
-  { field: "status", label: "状态", dictName: "status" },
+  { field: "status", label: "状态", options: { dictName: "status" } },
 ];
 ```
 

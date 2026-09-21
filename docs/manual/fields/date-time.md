@@ -2,7 +2,7 @@
 
 本页集中说明范围值映射与日期格式。AntDV 声明 DatePicker、DateRangePicker、DateMonthPicker、DateQuarterPicker、DateWeekPicker、DateYearPicker、TimePicker、TimeRangePicker；Element Plus 使用 DatePicker、TimePicker 及其 UI 范围模式，TimeSelect 按 UI 协议使用。
 
-以下专用范围组件名、默认格式和示例采用 AntDV。Element Plus 的范围选择通过 DatePicker 的 `type` 或 TimePicker 的 `isRange` 配置，并按组件要求显式设置 `valueFormat`；不能直接使用 AntDV 的 DateRangePicker 名称。
+以下默认格式以 AntDV 为主。Element Plus 同时提供固定别名 `DateRangePicker` → `DatePicker(type='daterange')`、`TimeRangePicker` → `TimePicker(isRange=true)`；别名的范围模式由 Adapter `fixedProps` 固定，用户 attrs 不能改回单值模式。原始 DatePicker/TimePicker 仍可直接使用自身 `type` / `isRange`。
 
 ## 默认值格式
 
@@ -47,17 +47,19 @@
 
 `attrs` 继承 Ant Design Vue DatePicker 属性，常用 `picker`、`format`、`valueFormat`、`showTime`、`allowClear`、`disabledDate`、`disabledTime`。
 
-`disabledDate` 会额外获得当前字段上下文：
+需要表单上下文时使用字段顶层 `disabledDate`：
 
 ```ts
-attrs: {
-  disabledDate(currentDate, { current }) {
-    return currentDate.isBefore(current.contractStart, 'day')
+{
+  type: 'DatePicker',
+  field: 'date',
+  disabledDate(effectData, currentDate, ...nativeArgs) {
+    return currentDate.isBefore(effectData.current.contractStart, 'day')
   },
 }
 ```
 
-第一个参数是日期对象，第二个参数是 effectData，适合同一 Schema 内的日期边界联动。
+顶层回调固定先接收 effectData，后面保持 UI 框架提供的原生参数顺序，并在存在时覆盖原生 `attrs.disabledDate`。如果只需要 UI 原生签名，直接配置 `attrs.disabledDate`，SuperForm 不改写它。
 
 ## DateRangePicker 的三种值模式
 
@@ -124,7 +126,7 @@ attrs: {
 }
 ```
 
-RangePicker 的 `disabledDate(currentDate, effectData)` 同样支持上下文。
+RangePicker 需要上下文时同样使用顶层 `disabledDate(effectData, ...原生参数)`；`attrs.disabledDate` 始终保持 UI 原生签名。
 
 ## TimePicker
 
@@ -173,7 +175,7 @@ TimeRangePicker 使用 AntDV Next 的范围时间组件，而不是两个独立 
 | 逗号字符串     | `stringifyValue`                 |
 | 只显示特殊格式     | 只设置 `format`                  |
 | 改变存储格式       | 设置 `valueFormat`               |
-| 与其他字段联动禁选 | `disabledDate(date, effectData)` |
+| 与其他字段联动禁选 | 顶层 `disabledDate(effectData, ...原生参数)` |
 
 可运行对比见[日期与时间示例](/examples?example=date-time)。
 

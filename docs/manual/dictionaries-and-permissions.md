@@ -14,9 +14,9 @@ next: false
 
 [查看字典接入](/manual/global-config#字典与接口服务)
 
-## options 与 dictName 的选择
+## options.source 与 options.dictName 的选择
 
-[查看options 与 dictName 的选择](/manual/global-config#options-与-dictname-的选择)
+[查看 options.source 与 options.dictName 的选择](/manual/global-config#options-与-dictname-的选择)
 
 ## 标签展示
 

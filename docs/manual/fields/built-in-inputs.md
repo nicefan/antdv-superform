@@ -79,7 +79,7 @@ TagSelect 把少量选项直接展示为可点击 Tag：
   type: 'TagSelect',
   field: 'topics',
   label: '主题',
-  options: topicOptions,
+  options: { source: topicOptions },
   attrs: {
     multiple: true,
     stringifyValue: false,

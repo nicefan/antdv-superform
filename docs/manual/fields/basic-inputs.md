@@ -103,7 +103,7 @@ AutoComplete 是“文本输入 + 建议列表”，最终值按标签语义输�
   type: 'AutoComplete',
   field: 'city',
   label: '城市',
-  options: ['北京', '上海', '深圳'],
+  options: { source: ['北京', '上海', '深圳'] },
   attrs: {
     backfill: true,
     allowClear: true,
@@ -111,20 +111,20 @@ AutoComplete 是“文本输入 + 建议列表”，最终值按标签语义输�
 }
 ```
 
-专属 Schema 属性为 `options`、`dictName` 和 `attrs: AutoCompleteProps`。`options` 支持数组、对象字典、Ref、函数或 Promise，内部按 label 作为输入值并默认 `filterOption: true`。
+专属 Schema 属性为 `options` 配置包和 `attrs: AutoCompleteProps`。数据写入 `options.source`，共享字典写入 `options.dictName`；内部按 label 作为输入值并默认 `filterOption: true`。
 
 ```ts
 // 响应式建议
-options: cityOptions;
+options: { source: cityOptions };
 
-// 异步建议；函数收到 effectData，但 AutoComplete 不提供 Select 的自动关键词节流协议
-options: ({ current }) => api.getCitySuggestions(current.province);
+// 异步建议；source 只接收 effectData
+options: { source: ({ current }) => api.getCitySuggestions(current.province) };
 
 // 全局字典
-dictName: "cities";
+options: { dictName: "cities" };
 ```
 
-需要远程关键词搜索、保存独立 value 时优先使用 [Select 远程搜索](/manual/fields/selections#远程搜索)；需要自由文本且业务协议特殊时使用 InputSlot。
+需要远程关键词搜索时使用当前 UI 的原生搜索事件自行维护关键词，并让 `options.source` 读取该响应式状态；需要保存独立 value 时优先使用 Select，需要自由文本且业务协议特殊时使用 InputSlot。
 
 ## 内置输入入口
 

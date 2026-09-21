@@ -73,7 +73,7 @@ const schema = {
       type: "Select",
       field: "status",
       label: "状态",
-      options: ["启用", "停用"],
+      options: { source: ["启用", "停用"] },
       attrs: {
         variant: "filled",
         popupMatchSelectWidth: true,
@@ -89,7 +89,7 @@ const schema = {
     {
       type: "RadioGroup",
       field: "direction",
-      options: ["横向", "纵向"],
+      options: { source: ["横向", "纵向"] },
       attrs: { orientation: "vertical" },
     },
   ],

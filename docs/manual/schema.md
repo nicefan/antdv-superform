@@ -105,7 +105,7 @@ Adapter 可以按字段类型补充输入或选择提示。各产品的默认属
 | --- | --- | --- |
 | 字段 | `field` 指向当前对象中的数据；输入和只读行为由场景决定 | Input、Select、Upload |
 | 对象容器 | `subItems` 组织子项；带 `field` 时可形成嵌套对象，不带时复用当前数据层级 | Group、Card |
-| 数组容器 | `field` 绑定模型中的数组，`columns` 描述数组元素 | InputList、ListGroup、Table |
+| 数组容器 | `field` 绑定模型中的数组，`columns` 描述数组元素 | InputList、GroupList、CardList、TabList、CollapseList、Table |
 | 展示与操作节点 | 组织内容或动作，不承担普通输入字段的值绑定 | InfoSlot、Buttons |
 
 页面级 SuperTable 管理独立列表和查询，字段级 Table 绑定表单模型中的数组。两者都使用 `columns`，但数据边界不同。详细结构见[布局容器](/manual/fields/containers)、[数组容器](/manual/fields/collections)和 [Table 数组表格](/manual/fields/table)。

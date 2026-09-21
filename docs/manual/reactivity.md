@@ -66,18 +66,18 @@ const schema = {
       type: "Select",
       field: "province",
       label: "省份",
-      options: provinceOptions,
+      options: { source: provinceOptions },
     },
-    { type: "Select", field: "city", label: "城市", options: cities },
+    { type: "Select", field: "city", label: "城市", options: { source: cities } },
   ],
 };
 ```
 
-- `options` 可以是数组、Ref 或函数；函数可返回数组或 Promise。
+- `options.source` 可以是数组、对象、Ref 或函数；函数只接收 effectData，可返回数组或 Promise。
 - `dataSource` 可以是对象或 Ref；Ref 指向新对象时，SuperForm 切换到新模型。
 - 字段 `value` 可以绑定 Ref，与模型字段进行双向同步。
 
-选项函数的远程搜索参数和触发条件见[选择输入：远程搜索](/manual/fields/selections#远程搜索)，数据源切换的具体行为见[Schema 与数据模型](/manual/fields-and-paths#数据源与双向绑定)。
+远程搜索通过当前 UI 的原生搜索事件维护业务关键词，再由 `options.source` 读取该响应式状态；完整规则见[选择输入：远程搜索](/manual/fields/selections#远程搜索)。数据源切换的具体行为见[Schema 与数据模型](/manual/fields-and-paths#数据源与双向绑定)。
 
 <span id="字段状态与计算"></span>
 
@@ -105,7 +105,7 @@ const schema = {
   type: 'RadioGroup',
   field: 'customerType',
   label: '客户类型',
-  options: { personal: '个人', company: '企业' },
+  options: { source: { personal: '个人', company: '企业' } },
   onUpdate: ({ current }) => {
     if (current.customerType !== 'company') current.companyName = undefined
   },
@@ -262,7 +262,7 @@ const schema = {
       type: "RadioGroup",
       field: "result",
       label: "审核结果",
-      options: { pass: "通过", reject: "驳回" },
+      options: { source: { pass: "通过", reject: "驳回" } },
       required: true,
       onUpdate: ({ current }) => {
         if (current.result !== "reject") current.reason = undefined;

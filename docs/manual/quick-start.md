@@ -36,10 +36,12 @@ const schema = defineForm({
       field: "status",
       label: "状态",
       initialValue: 1,
-      options: [
-        { label: "启用", value: 1 },
-        { label: "停用", value: 0 },
-      ],
+      options: {
+        source: [
+          { label: "启用", value: 1 },
+          { label: "停用", value: 0 },
+        ],
+      },
       // Select 会根据 label 自动生成 placeholder: '请选择状态'
     },
   ],
