@@ -1,5 +1,17 @@
 <script lang="ts">
-import { type PropType, defineComponent, h, shallowRef, toRef, watch, computed, ref, unref, toRaw, reactive } from 'vue'
+import {
+  type PropType,
+  defineComponent,
+  h,
+  shallowRef,
+  toRef,
+  watch,
+  computed,
+  ref,
+  toRaw,
+  reactive,
+  inject,
+} from 'vue'
 import { cloneModels, updateModelIndex } from '../utils/buildModel'
 import Collections from './Collections'
 import { DetailLayout } from './Detail'
@@ -41,7 +53,7 @@ export default defineComponent({
 
     const isFormItem = !labelIndex && (label || labelSlot)
 
-    const orgList = toRef(model, 'refData')
+    const orgList = toRef(model, 'refData') as Ref<any[]>
     const methods = {
       add: {
         onClick({ index, ...rest }) {
@@ -73,59 +85,94 @@ export default defineComponent({
         actions: ['add', 'delete'],
         ...(Array.isArray(rowButtons) ? { actions: rowButtons } : rowButtons),
       }
+
+    const genData = ({ itemOption, model, idx, refData, propChain }) => {
+      const ghostModel = new Map([[itemOption, model]])
+      if (labelIndex) {
+        itemOption.label ??= label
+        itemOption.labelSlot ??= labelSlot || (({ index }) => itemOption.label + String(index + 1))
+      }
+      //将按钮加入排板
+      if (itemOption.type === 'Group' && labelIndex) {
+        itemOption.buttons = rowButtonsConfig
+      } else if (rowButtonsConfig) {
+        ghostModel.set(rowButtonsConfig, reactive({ parent: orgList, index: idx, propChain, refData }))
+      }
+      return {
+        model: reactive({ parent: orgList, children: ghostModel, index: idx, propChain }),
+        refData,
+        key: nanoid(),
+        effectData: reactive({ parent: effectData, current: orgList, index: idx }),
+      }
+    }
+
     let backList: any[] = []
     const listItems = shallowRef<any[]>([])
-    // 监听数据变化,普通数组只监听整体变化和长度变化
-    watch(
-      [() => (isSingle ? orgList.value : [...orgList.value]), () => orgList.value.length, () => [...model.propChain]],
-      ([list]) => {
-        if (list.length === 0) {
-          orgList.value.push(isSingle ? undefined : {})
-          return
-        }
-        listItems.value = orgList.value.map((record, idx) => {
-          const propChain = [...model.propChain, idx]
-
-          let oldItem
-          if (backList.length === list.length) {
-            oldItem = backList[idx]
-          } else {
-            const oldIdx = backList.findIndex((item) => toRaw(unref(item.refData)) === toRaw(record))
-            if (oldIdx !== -1) {
-              oldItem = backList[oldIdx]
-              backList.splice(oldIdx, 1)
-            }
+    if (isSingle) {
+      const extProvider = inject<Obj>('exaProvider') || {}
+      // 监听数据变化,普通数组只监听整体变化和长度变化
+      watch(
+        [() => orgList.value, () => orgList.value.length, () => [...model.propChain]],
+        ([list, length], [oldList = []]) => {
+          if (length === 0) {
+            orgList.value.push(undefined)
           }
-          if (oldItem) {
-            if (!isSingle) oldItem.refData.value = record
-            if (oldItem.model.index !== idx) {
+          let isSync = list.length === backList.length && list === oldList
+          listItems.value = orgList.value.map((record, idx) => {
+            const propChain = [...model.propChain, idx]
+            const oldItem = backList[idx]
+            if (oldItem) {
               updateModelIndex(oldItem.model, propChain, idx)
               oldItem.effectData.index = idx
+              if (!isSync) {
+                extProvider.formRef?.value?.validate([propChain])
+              }
+              return oldItem
             }
-            return oldItem
-          }
-
-          const newModel: Obj = reactive({
-            initialValue: fristItem.initialValue,
-            index: idx,
-            parent: orgList,
-            propChain,
+            const newModel: Obj = reactive({
+              ...orgModel,
+              index: idx,
+              parent: orgList,
+              propChain,
+            })
+            const refData = computed({
+              get: () => orgList.value[newModel.index],
+              set: (val) => (orgList.value[newModel.index] = val),
+            })
+            newModel.refData = refData
+            const itemOption = { ...fristItem }
+            return genData({ itemOption, model: newModel, idx, refData, propChain })
           })
-          const refData = !isSingle
-            ? ref(record)
-            : computed({
-                get: () => orgList.value[newModel.index],
-                set: (val) => (orgList.value[newModel.index] = val),
-              })
-          newModel.refData = refData
+          backList = [...listItems.value]
+        },
+        { immediate: true }
+      )
+    } else {
+      const rowCache = new WeakMap()
+      watch(
+        [() => [...orgList.value], () => orgList.value.length, () => [...model.propChain]],
+        ([list]) => {
+          if (list.length === 0) {
+            orgList.value.push({})
+          }
+          listItems.value = orgList.value.map((record, idx) => {
+            const propChain = [...model.propChain, idx]
+            const oldItem = rowCache.get(toRaw(record))
+            if (oldItem) {
+              oldItem.refData.value = record
+              updateModelIndex(oldItem.model, propChain, idx)
+              oldItem.effectData.index = idx
+              return oldItem
+            }
 
-          const ghostModel = new Map()
-          let itemOption: Obj
-          if (isSingle) {
-            itemOption = { ...fristItem }
-            Object.assign(newModel, { initialValue: orgModel.initialValue, rules: orgModel.rules })
-            ghostModel.set(itemOption, newModel)
-          } else {
+            const refData = ref(record)
+            const newModel: Obj = reactive({
+              index: idx,
+              parent: orgList,
+              propChain,
+              refData,
+            })
+            let itemOption: Obj
             if (childrenMap.size === 1 && !fristItem.field && independentTypes.includes(fristItem.type)) {
               itemOption = { ...fristItem }
               Object.assign(newModel, {
@@ -133,43 +180,24 @@ export default defineComponent({
                 rules: orgModel.rules,
                 children: cloneModels(orgModel.children || new Map(), refData, propChain).modelsMap,
               })
-              ghostModel.set(itemOption, newModel)
             } else {
-              // 不推荐写法，根选项的动态选项配置不能带进来，所以无法补充配置
+              // 自动补充容器，根选项的动态选项配置不能带进来
               itemOption = {
                 // ..._option,
                 type: compact ? 'InputGroup' : 'Group',
-                // initialValue: undefined,
+                initialValue: undefined,
                 span: 'auto',
               }
               newModel.children = cloneModels(childrenMap, refData, propChain).modelsMap
-              ghostModel.set(itemOption, newModel)
             }
-          }
-          if (labelIndex) {
-            itemOption.label ??= label
-            itemOption.labelSlot ??= labelSlot || (({ index }) => itemOption.label + String(index + 1))
-          }
-          //将按钮加入排板
-          if (itemOption.type === 'Group' && labelIndex) {
-            itemOption.buttons = rowButtonsConfig
-          } else if (rowButtonsConfig) {
-            ghostModel.set(rowButtonsConfig, reactive({ parent: orgList, index: idx, propChain, refData }))
-          }
-          return {
-            model: reactive({ parent: orgList, children: ghostModel, index: idx, propChain }),
-            refData,
-            key: nanoid(),
-            effectData: reactive({ parent: effectData, current: orgList, index: idx }),
-          }
-        })
-        // 新行生成后替换增删操作的临时缓存，避免输入时因占位仍为空而重建组件。
-        backList = [...listItems.value]
-      },
-      {
-        immediate: true,
-      }
-    )
+            const rowData = genData({ itemOption, model: newModel, idx, refData, propChain })
+            rowCache.set(toRaw(record), rowData)
+            return rowData
+          })
+        },
+        { immediate: true }
+      )
+    }
 
     const render = () => {
       return listItems.value.map(({ model, effectData, key }) => {

@@ -12,6 +12,7 @@
       <Button data-testid="fill-value1" @click="fillValue1">填写 value1</Button>
       <Button data-testid="fill-value2" @click="fillValue2">填写 value2</Button>
       <Button data-testid="fill-array-value" @click="fillArrayValue">填写普通数组</Button>
+      <Button data-testid="reverse-list" @click="reverse">反转列表</Button>
       <Button data-testid="reset-values" @click="resetValues">重置</Button>
     </Space>
 
@@ -115,6 +116,10 @@ async function validateForm() {
   function replace() {
    dataSource.list.splice(1, 1, { value1: 'filled by value1', value2: '' })
   }
+  function reverse() {
+    dataSource.list.reverse()
+    dataSource.plainList.reverse()
+  }
 function deleteRow() {
   dataSource.plainList.splice(1, 1)
 }
@@ -131,7 +136,7 @@ function fillValue2() {
 }
 
 function fillArrayValue() {
-  form.setFieldsValue({ plainList: ['filled array value'] })
+  form.setFieldsValue({ plainList: ['filled array value',''] })
   validationState.value = 'idle'
   validationMessage.value = '已填写普通数组，请点击校验'
 }

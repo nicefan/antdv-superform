@@ -201,15 +201,16 @@ export function buildInnerNode(option, model: ModelData, effectData: Obj, attrs:
     const valueProps = useVModel({ option, model, effectData })
     const allAttrs = { ...attrs, ...valueProps }
     if (type === 'InputSlot') {
-      node = () => renderSlot?.(reactive({ props: allAttrs, ...effectData }))
-    }
-    const component = Controls[type]
-    if (!component) {
-      console.error(`组件 '${type}' 配置错误，请检查名称是否正确！`)
-    } else if (type.startsWith('Ext')) {
-      node = () => h(component, reactive({ option, effectData, ...allAttrs }), slots)
+      node = renderSlot && (() => renderSlot(reactive({ props: allAttrs, ...effectData })))
     } else {
-      node = () => h(component, reactive({ option, model, effectData, ...allAttrs }), slots)
+      const component = Controls[type]
+      if (!component) {
+        console.error(`组件 '${type}' 配置错误，请检查名称是否正确！`)
+      } else if (type.startsWith('Ext')) {
+        node = () => h(component, reactive({ option, effectData, ...allAttrs }), slots)
+      } else {
+        node = () => h(component, reactive({ option, model, effectData, ...allAttrs }), slots)
+      }
     }
   }
   return node

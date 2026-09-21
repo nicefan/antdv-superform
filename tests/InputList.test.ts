@@ -108,45 +108,6 @@ describe('InputList', () => {
     expect(new Set(keys).size).toBe(3)
   })
 
-  it('对象移除后重新加入时使用新索引槽位 key', async () => {
-    const first = { name: '甲' }
-    const second = { name: '乙' }
-    const data = reactive({ items: [first, second] })
-    const option = {
-      type: 'InputList',
-      field: 'items',
-      columns: [{ type: 'Input', field: 'name' }],
-    }
-    const render = setupInputList(option, data)
-    const firstKey = render()[0].key
-
-    data.items.splice(0, 1)
-    await nextTick()
-    data.items.push(first)
-    await nextTick()
-
-    expect(render()[1].key).not.toBe(firstKey)
-  })
-
-  it('对象列表只读重排时复用原索引槽位 key', async () => {
-    const first = { name: '甲' }
-    const second = { name: '乙' }
-    const data = reactive({ items: [first, second] })
-    const option = {
-      type: 'InputList',
-      field: 'items',
-      label: '名单',
-      columns: [{ type: 'Input', field: 'name' }],
-    }
-    const render = setupInputList(option, data, { isView: true })
-    const initialKeys = render().map((node) => node.key)
-
-    data.items.reverse()
-    await nextTick()
-
-    expect(render().map((node) => node.key)).toEqual(initialKeys)
-  })
-
   it('向只读详情布局传递展开后的配置且不使用动态 key', () => {
     const descriptionsProps = { column: 2 }
     const data = reactive({ items: [{ name: '甲' }] })
