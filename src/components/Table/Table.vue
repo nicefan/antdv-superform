@@ -38,7 +38,7 @@ export default defineComponent({
     const keyMap = new WeakMap<object, PropertyKey>()
     const rowKeyField = attrs.rowKey || 'id'
     const rowKey = (record) => {
-      const key = record[rowKeyField]
+      const key = typeof rowKeyField === 'function' ? rowKeyField(record) : record[rowKeyField]
       if (key !== undefined && key !== null) return key
 
       const raw = toRaw(record)
@@ -66,6 +66,17 @@ export default defineComponent({
         ...selectionAttrs,
       },
       onChange: (_selectedRowKeys, _selectedRows, info) => {
+        if (__rowSelection?.preserveSelectedRowKeys) {
+          const currentRows = availableRows()
+          const offPage = selectedRows.value.filter(row => !currentRows.has(rowKey(row)))
+          const merged = new Map([...offPage, ..._selectedRows].map(row => [rowKey(row), row]))
+          _selectedRowKeys = [...new Set([...offPage.map(rowKey), ..._selectedRowKeys])]
+          _selectedRows = _selectedRowKeys.map(key => merged.get(key)).filter(Boolean)
+        }
+        if (_selectedRowKeys.length === selectedRowKeys.value.length &&
+          _selectedRowKeys.every((key, index) => key === selectedRowKeys.value[index]) &&
+          _selectedRows.length === selectedRows.value.length &&
+          _selectedRows.every((row, index) => row === selectedRows.value[index])) return
         selectedRowKeys.value = _selectedRowKeys
         selectedRows.value = _selectedRows
         __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows, info)
@@ -77,6 +88,32 @@ export default defineComponent({
     }
 
     const childrenField = attrs.childrenColumnName || 'children'
+    const availableRows = () => {
+      const rows = new Map<any, Obj>()
+      const visit = (items) => items.forEach((item) => {
+        rows.set(rowKey(item), item)
+        if (Array.isArray(item[childrenField])) visit(item[childrenField])
+      })
+      visit(orgList.value)
+      return rows
+    }
+    watch(
+      () => [availableRows(), [...selectedRowKeys.value]] as const,
+      ([rows, keys]) => {
+        // 默认选择只关联当前数据；显式保留跨页选择时，仍将同键对象替换为最新实例。
+        const retained = __rowSelection?.preserveSelectedRowKeys
+        const nextKeys = retained ? [...keys] : keys.filter(key => rows.has(key))
+        const previous = new Map(selectedRows.value.map(row => [rowKey(row), row]))
+        const nextRows = nextKeys.map(key => rows.get(key) ?? (retained ? previous.get(key) : undefined)).filter((row): row is Obj => !!row)
+        const changed = nextKeys.length !== keys.length || nextRows.length !== selectedRows.value.length || nextRows.some((row, index) => row !== selectedRows.value[index])
+        if (changed) {
+          selectedRows.value = nextRows
+          if (nextKeys.length !== keys.length) selectedRowKeys.value = nextKeys
+          __rowSelection?.onChange?.(nextKeys, nextRows, { type: 'none' })
+        }
+      },
+      { immediate: true }
+    )
     const getExpandKeys = (list, deep = 0, level = 1) => {
       const arr: any[] = []
       const isEnd = deep === level
@@ -123,18 +160,16 @@ export default defineComponent({
         }
       },
       async onUpdate(newData, oldData) {
+        const key = rowKey(oldData)
+        const findTarget = () => orgList.value.findIndex(item => rowKey(item) === key)
+        if (findTarget() < 0) throw new Error('编辑记录已被移除，请取消本次编辑')
         if (option.apis?.update) {
           await option.apis.update(newData)
         }
-        Object.assign(oldData, newData)
-        const key = rowKey(oldData)
-        if (key) {
-          // 原始对象是解构对象时，更新记录
-          const idx = orgList.value.findIndex((item) => rowKey(item) === key)
-          if (idx > -1) {
-            orgList.value.splice(idx, 1, oldData)
-          }
-        }
+        // 等待接口期间可能重排或替换对象，只更新此刻仍存在的同键行，不能复活已删除记录。
+        const index = findTarget()
+        if (index < 0) throw new Error('保存期间记录已被移除，请刷新确认服务端结果')
+        Object.assign(orgList.value[index], newData)
         return reload?.()
       },
       async onDelete(items: any[]) {

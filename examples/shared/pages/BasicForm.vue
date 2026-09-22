@@ -92,6 +92,10 @@ async function search() {
 const schema: ExtFormOption = {
   dataSource: model,
   subSpan: 12,
+  attrs: {
+    labelCol: { style: { width: '120px' } },
+    labelWidth: '120px',
+  },
   subItems: [
     {
       type: isElement ? 'Input' : 'InputSearch',

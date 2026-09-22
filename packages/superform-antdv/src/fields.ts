@@ -1,4 +1,6 @@
-import { combineFieldHandlers, createFieldPropsAdapter, defineFieldAdapters, type UIAdapter } from 'superform/sdk'
+import { h } from 'vue'
+import { createFieldPropsAdapter, defineFieldAdapters, type UIAdapter } from 'superform/sdk'
+import TreeSelectField from './components/TreeSelectField'
 
 export const adaptAntdvFieldProps = createFieldPropsAdapter()
 
@@ -34,19 +36,7 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
     TreeSelect: {
       processors: ['tree'],
       defaults: { allowClear: true },
-      adaptProps: (attrs, { state, binding }) => ({
-        ...attrs,
-        ...(state.treeData !== undefined && { treeData: state.treeData }),
-        ...(binding['onUpdate:labelValue'] && {
-          onChange: combineFieldHandlers(
-            (value, labels) =>
-              binding['onUpdate:labelValue'](
-                Array.isArray(value) ? labels : Array.isArray(labels) ? labels[0] : labels
-              ),
-            attrs.onChange
-          ),
-        }),
-      }),
+      render: ({ slots, ...context }) => h(TreeSelectField, context, slots),
     },
     Switch: {
       processors: ['switch'],

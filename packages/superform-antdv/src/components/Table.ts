@@ -3,11 +3,26 @@ import { Table, Card, Tabs, TabPane } from 'antdv-next'
 import type { UIRenderers, UITableSelectors } from 'superform/sdk'
 export const renderTable: UIRenderers['table'] = (props, slots = {}) => {
   const { data, selection, expandedKeys, onExpandedChange, pagination, ...rest } = props
+  const renderColumns = (columns: any[] = []) =>
+    columns.map((column: any) => {
+      const { customRender, children, ...attrs } = column
+      return {
+        ...attrs,
+        ...(customRender
+          ? {
+              // antdv-next 使用 render，Core 的 customRender 参数需要在 Adapter 边界转换。
+              render: (text, record, index) => customRender({ text, record, index, column }),
+            }
+          : {}),
+        ...(children?.length ? { children: renderColumns(children) } : {}),
+      }
+    })
   return h(
     Table as any,
     {
       ...rest,
       dataSource: data,
+      columns: renderColumns(rest.columns),
       rowSelection: selection && {
         ...selection.attrs,
         selectedRowKeys: selection.selectedKeys,
@@ -48,9 +63,15 @@ export const renderTableFilter: UIRenderers['tableFilter'] = (props, slots = {})
       }
     )
   }
+  const { tabPosition, ...tabAttrs } = attrs
   const tabs = h(
     Tabs as any,
-    { ...attrs, activeKey: value, 'onUpdate:activeKey': onValueChange },
+    {
+      ...tabAttrs,
+      ...(tabPosition === undefined ? {} : { tabPlacement: tabPosition }),
+      activeKey: value,
+      'onUpdate:activeKey': onValueChange,
+    },
     {
       ...contentSlots,
       default: () => items.map((item: Obj) => h(TabPane, { ...item, tab: () => item.tab })),

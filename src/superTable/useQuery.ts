@@ -1,5 +1,5 @@
 import type { RootTableOption } from '../exaTypes'
-import { computed, reactive, ref, watch, mergeProps } from 'vue'
+import { reactive, ref, watch, unref, type Ref } from 'vue'
 import { throttle } from 'lodash-es'
 import { globalConfig } from '../plugin'
 import { merge } from '../utils/merge'
@@ -17,7 +17,7 @@ const pageTransform = (param) => {
   }
   return param
 }
-export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
+export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, source?: Ref<any[]>) {
   // const otherParam = {}
   const pageParam = reactive<Obj>({})
   const loading = ref(false)
@@ -52,7 +52,16 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
       if (requestId !== latestRequestId || controller.signal.aborted) return
 
       const _res = option.afterQuery?.(res) || res
-      return setPageData(resultTransform(_res))
+      const result = resultTransform(_res)
+      if (pagination.value && !Array.isArray(result) && result?.records?.length === 0 && Number.isFinite(result.total)) {
+        const last = Math.max(1, Math.ceil(result.total / (result.size || pageParam.size)))
+        if (pageParam.current > last) {
+          // 删除末页后重新取最后一页，不能保留超出范围的空页。
+          pageParam.current = last
+          return request({ ...param, ...pageTransform(pageParam) })
+        }
+      }
+      return setPageData(result)
     } finally {
       if (requestId === latestRequestId) {
         activeController = undefined
@@ -91,7 +100,10 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   }
 
   /** 仅供组件初始化阶段合并异步触发，只执行最后一次查询。 */
-  const throttleRequest = throttle(query, 300, { leading: false })
+  const throttleRequest = throttle((param?: Obj) => query(param).catch((error) => {
+    // 内部初始化请求没有外部调用者接收拒绝；公开 query/reload 仍保留取消拒绝语义。
+    if (error?.name !== 'AbortError') console.error(error)
+  }), 300, { leading: false })
   const cancelQuery = () => {
     activeController?.abort()
     activeController = undefined
@@ -123,17 +135,24 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
       }
       // 提取可响应属性绑定，
       Object.assign(pageParam, { size: def?.pageSize || 10, current: def?.current || 1 })
-      pagination.value = mergeProps(
-        {
-          onChange: goPage,
-          // onShowSizeChange: goPage,
+      // Vue mergeProps 会把同名事件合成为函数数组，分页组件只接受单一回调；在 Core 边界显式合并请求与业务回调。
+      const onChange = def?.onChange
+      const onShowSizeChange = def?.onShowSizeChange
+      pagination.value = {
+        ...def,
+        onChange: (current, size) => {
+          const result = goPage(current, size)
+          onChange?.(current, size)
+          return result
         },
-        {
-          ...def,
-          pageSize: pageParam.size,
-          current: pageParam.current,
-        }
-      )
+        onShowSizeChange: (current, size) => {
+          const result = goPage(current, size)
+          onShowSizeChange?.(current, size)
+          return result
+        },
+        pageSize: pageParam.size,
+        current: pageParam.current,
+      }
     },
     {
       immediate: true,
@@ -143,6 +162,18 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn) {
   watch(pageParam, (p) => {
     pagination.value && (pagination.value = { ...pagination.value, pageSize: p.size, current: p.current })
   })
+  watch(
+    () => [option.apis?.query, source?.value.length ?? unref(option.dataSource)?.length, pageParam.current, pageParam.size, pagination.value === false] as const,
+    ([queryApi, total]) => {
+      if (queryApi || !pagination.value || total === undefined) return
+      const current = Math.min(Math.max(1, pageParam.current), Math.max(1, Math.ceil(total / pageParam.size)))
+      pageParam.current = current
+      if (pagination.value.total !== total || pagination.value.current !== current) {
+        pagination.value = { ...pagination.value, total, current }
+      }
+    },
+    { immediate: true }
+  )
 
   return {
     goPage,

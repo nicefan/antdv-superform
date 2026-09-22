@@ -77,7 +77,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
   if (!isView && editable) {
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
 
-    const { methods, ..._context } = useTableEdit({ model, orgList, editableRef })
+    const { methods, ..._context } = useTableEdit({ model, orgList, editableRef, rowKey })
     Object.assign(context.methods, methods)
     Object.assign(context, _context)
   } else if (editMode === 'inline') {
@@ -86,13 +86,14 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
       orgList,
       listener,
       rowEditor,
+      rowKey,
     })
     context.list = list
     Object.assign(context.methods, methods)
     Object.assign(context, { buttonMethods, editButtonsSlot, getEditRender })
   }
   if (editMode === 'modal' || addMode === 'modal') {
-    const { modalSlot, methods } = modalRender({ rowKey, option, listener })
+    const { modalSlot, methods } = modalRender({ rowKey, option, listener, orgList })
     if (context.methods.edit) {
       // 编辑模式为行内编辑时，新增按钮使用弹窗模式
       context.methods.add = methods.add

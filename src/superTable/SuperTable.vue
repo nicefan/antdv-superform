@@ -9,7 +9,7 @@ import {
   watch,
   h,
   provide,
-  onUnmounted,
+  onBeforeUnmount,
   toRefs,
   shallowReactive,
   computed,
@@ -83,7 +83,7 @@ export default defineComponent({
       cancelQuery,
       setQueryParams,
       getQueryParams,
-    } = useQuery(option, updateSource)
+    } = useQuery(option, updateSource, dataRef)
     const { getScrollRef, redoHeight, listenResize } = useTableScroll(option, dataRef, wrapRef)
 
     // editable模式下，表格表单校验
@@ -140,7 +140,8 @@ export default defineComponent({
     })
 
     // const windowResize = new AbortController()
-    onUnmounted(() => {
+    // key 切换时先释放旧实例，避免旧 onUnmounted 在新 register 之后把引用清空。
+    onBeforeUnmount(() => {
       cancelQuery()
       // 异步更新option,添加resize事件，需提前配置销毁
       // windowResize.abort()

@@ -55,8 +55,26 @@ export const uiComponents = {
     component: ElFormItem,
     adaptProps: ({ name, ...props }) => ({ ...props, prop: name?.map(String) }),
   },
-  row: { component: ElRow },
-  col: { component: ElCol },
+  row: {
+    component: ElRow,
+    adaptProps: ({ gutter, style, ...attrs }) => {
+      if (!Array.isArray(gutter)) return { ...attrs, gutter, style }
+      const [horizontal, vertical] = gutter
+      return {
+        ...attrs,
+        gutter: horizontal,
+        // Element Plus 只有水平 gutter，垂直间距用 rowGap 保留 Core 的二维布局语义。
+        style: { ...(style || {}), rowGap: vertical ? `${vertical}px` : undefined },
+      }
+    },
+  },
+  col: {
+    component: ElCol,
+    adaptProps: ({ span, style, ...attrs }) =>
+      span === 'auto'
+        ? { ...attrs, span: 24, style: { ...(style || {}), flex: '1 1 0', maxWidth: 'none' } }
+        : { ...attrs, span, style },
+  },
   space: { component: ElSpace },
   card: {
     render: ({ state }) => {
@@ -112,17 +130,38 @@ export const uiComponents = {
   empty: { component: ElEmpty },
   modal: {
     render: ({ attrs: props, slots }) => {
-      const { visible, 'onUpdate:visible': onVisibleChange, afterClose, ...rest } = props
-      const { title, ...restSlots } = slots
+      const { visible, 'onUpdate:visible': onVisibleChange, afterClose, footer: footerProp, ...rest } = props
+      const { title, footer, ...restSlots } = slots
+      const defaultFooter = () => [
+        h(ElButton, {
+          onClick: async () => {
+            const result = await props.onCancel?.()
+            if (result !== false) onVisibleChange?.(false)
+          },
+        }, '取 消'),
+        h(ElButton, {
+          type: 'primary',
+          loading: props.confirmLoading,
+          onClick: () => props.onOk?.(),
+        }, '确 定'),
+      ]
       return h(
         ElDialog,
         {
           ...rest,
+          // 关闭图标、遮罩和 Escape 与底部取消按钮使用同一业务拦截。
+          beforeClose: rest.beforeClose || (async (done) => {
+            if (await props.onCancel?.() !== false) done()
+          }),
           modelValue: visible,
           'onUpdate:modelValue': onVisibleChange,
           onClosed: afterClose,
         },
-        title ? { ...restSlots, header: title } : restSlots
+        {
+          ...restSlots,
+          ...(title ? { header: title } : {}),
+          ...(footerProp === null ? {} : { footer: footer || defaultFooter }),
+        }
       )
     },
   },

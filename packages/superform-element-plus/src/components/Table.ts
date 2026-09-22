@@ -1,8 +1,26 @@
-import { h, nextTick, unref } from 'vue'
+import { computed, defineComponent, h, nextTick, unref } from 'vue'
 import { ElTable, ElTableColumn, ElPagination, ElTabs, ElTabPane, ElCard } from 'element-plus'
 import type { UIRenderers, UITableSelectors } from 'superform/sdk'
-export const renderTable: UIRenderers['table'] = (props, slots = {}) => {
-  const { data, columns = [], selection, expandedKeys, onExpandedChange, pagination, rowKey, scroll, ...rest } = props
+const TableRenderer = defineComponent({
+  inheritAttrs: false,
+  props: ['data', 'pagination', 'tableRef'],
+  setup(props, { attrs, slots }) {
+    // 分页结果保持引用稳定，避免 ElTable 的数据监听与父级实例同步相互触发。
+    const pageData = computed(() => {
+      const { data, pagination } = props
+      const size = pagination?.pageSize || 10
+      const offset = ((pagination?.current || 1) - 1) * size
+      return pagination && data.length > size ? data.slice(offset, offset + size) : data
+    })
+    return () => renderNativeTable({ ...attrs, data: props.data, pagination: props.pagination, ref: props.tableRef } as any, slots, pageData.value)
+  },
+})
+export const renderTable: UIRenderers['table'] = ({ ref, ...props }, slots = {}) =>
+  h(TableRenderer, { ...props, tableRef: ref }, slots)
+
+const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Obj, pageData: Obj[]) => {
+  const { data, columns = [], selection, expandedKeys, onExpandedChange, pagination, rowKey, scroll, ref: tableRef, ...rest } = props
+  // ElTable 不内置分页：全量本地数据由 Adapter 截取；接口已分页的数据不重复截取。
   const getRowKey = (row: Obj) => (typeof rowKey === 'function' ? rowKey(row) : row[rowKey])
   const getCellValue = (record: Obj, path: string | string[]) =>
     (Array.isArray(path) ? path : String(path).split('.')).reduce((value, key) => value?.[key], record)
@@ -23,17 +41,21 @@ export const renderTable: UIRenderers['table'] = (props, slots = {}) => {
             }
           : {
               header: () => slots.headerCell?.({ ...column, title }),
-              default: ({ row, $index }) =>
-                customRender?.({
-                  text: getCellValue(row, dataIndex),
-                  record: row,
-                  index: $index,
-                  column,
-                }) ?? getCellValue(row, dataIndex),
+              default: ({ row, $index }) => {
+                const cell =
+                  customRender?.({
+                    text: getCellValue(row, dataIndex),
+                    record: row,
+                    index: $index,
+                    column,
+                  }) ?? getCellValue(row, dataIndex)
+                // Element Plus 会对默认插槽结果调用 some；统一返回数组才能保留编辑节点等单个 VNode。
+                return cell == null ? [] : Array.isArray(cell) ? cell : [cell]
+              },
             }
       )
     })
-  let syncingSelection = false
+  let syncingSelection = true
   const syncSelection = (instance: any) => {
     if (!instance || !selection) return
     nextTick(() => {
@@ -45,16 +67,22 @@ export const renderTable: UIRenderers['table'] = (props, slots = {}) => {
           if (keys.has(getRowKey(row))) instance.toggleRowSelection?.(row, true)
           if (Array.isArray(row.children)) visit(row.children)
         })
-      visit(data)
+      visit(pageData)
       syncingSelection = false
     })
+  }
+  const assignTableRef = (instance: any) => {
+    syncSelection(instance)
+    // Element Plus 需要自己的 ref 同步选中行，同时必须把实例转交给 Core，保留表格公开方法。
+    if (typeof tableRef === 'function') tableRef(instance)
+    else if (tableRef && typeof tableRef === 'object') tableRef.value = instance
   }
   const table = h(
     ElTable as any,
     {
       ...rest,
-      ref: syncSelection,
-      data,
+      ref: assignTableRef,
+      data: pageData,
       rowKey: rowKey as any,
       maxHeight: unref(scroll)?.y ?? rest.maxHeight,
       expandRowKeys: expandedKeys as any,
@@ -68,7 +96,15 @@ export const renderTable: UIRenderers['table'] = (props, slots = {}) => {
         rowsOrExpanded ? keys.add(key) : keys.delete(key)
         onExpandedChange?.([...keys])
       },
-      onSelectionChange: (rows) => !syncingSelection && selection?.onChange?.(rows.map(getRowKey), rows, {}),
+      onSelectionChange: (rows) => {
+        if (syncingSelection || !selection) return
+        // ElTable 只返回当前切片的选择；本地其它页仍属于同一数据源，应与 AntDV 保持一致。
+        const pageKeys = new Set(pageData.map(getRowKey))
+        const selectedKeys = new Set(selection.selectedKeys)
+        const retained = data.filter(row => selectedKeys.has(getRowKey(row)) && !pageKeys.has(getRowKey(row)))
+        const nextRows = [...retained, ...rows]
+        selection.onChange?.(nextRows.map(getRowKey), nextRows, {})
+      },
     },
     {
       ...slots,
@@ -85,19 +121,24 @@ export const renderTable: UIRenderers['table'] = (props, slots = {}) => {
     }
   )
   if (!pagination) return table
+  const { small, ...paginationAttrs } = pagination.attrs || {}
+  const paginationProps = {
+    currentPage: pagination.current,
+    pageSize: pagination.pageSize,
+    // 查询结果异步返回前没有 total，Element Plus 会把分页判定为非法；本地数组模式则回退到当前数据量。
+    total: pagination.total ?? data.length,
+    pageSizes: pagination.pageSizeOptions,
+    layout: 'total, sizes, prev, pager, next, jumper',
+    onCurrentChange: (page) => pagination.onChange?.(page, pagination.pageSize),
+    onSizeChange: (size) =>
+      (pagination.onShowSizeChange || pagination.onChange)?.(pagination.current ?? 1, size),
+    ...paginationAttrs,
+    ...(small !== undefined ? { size: small ? 'small' : undefined } : {}),
+    small: false,
+  }
   return h('div', { class: 'sup-table-adapter' }, [
     table,
-    h(ElPagination as any, {
-      currentPage: pagination.current,
-      pageSize: pagination.pageSize,
-      total: pagination.total,
-      pageSizes: pagination.pageSizeOptions,
-      layout: 'total, sizes, prev, pager, next, jumper',
-      'onUpdate:currentPage': (page) => pagination.onChange?.(page, pagination.pageSize),
-      'onUpdate:pageSize': (size) =>
-        (pagination.onShowSizeChange || pagination.onChange)?.(pagination.current ?? 1, size),
-      ...pagination.attrs,
-    }),
+    h(ElPagination as any, paginationProps),
   ])
 }
 export const renderTableFilter: UIRenderers['tableFilter'] = (props, slots = {}) => {
@@ -107,7 +148,11 @@ export const renderTableFilter: UIRenderers['tableFilter'] = (props, slots = {})
     ElTabs as any,
     { ...attrs, modelValue: value, 'onUpdate:modelValue': onValueChange },
     {
-      default: () => items.map((item: Obj) => h(ElTabPane, { ...item, label: item.tab, name: item.key })),
+      default: () =>
+        items.map((item: Obj) => {
+          const { tab, key, ...attrs } = item
+          return h(ElTabPane, { ...attrs, key, name: key }, { label: () => tab })
+        }),
     }
   )
   const tabsRow = h('div', { class: 'sup-table-tabs' }, [tabs, tabExtra?.()])

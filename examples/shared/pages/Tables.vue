@@ -93,6 +93,7 @@ const rows = ref(
     start: '2026-09-01',
     end: '2026-09-30',
     note: '可在弹窗中编辑',
+    extraNote: '附加列示例',
     files: [],
   }))
 )
@@ -300,7 +301,7 @@ const schema = computed<RootTableOption>(() => ({
 let extraColumn = false
 function replaceColumns() {
   extraColumn = !extraColumn
-  table.value?.setColumns(extraColumn ? [...columns, { type: 'Text', field: 'note', label: '附加说明' }] : columns)
+  table.value?.setColumns(extraColumn ? [...columns, { type: 'Text', field: 'extraNote', label: '附加说明' }] : columns)
   event('更新列配置', { extraColumn })
 }
 </script>

@@ -23,9 +23,10 @@ const renderTabs: UIRenderers['tabs'] = (state) => {
           closeIcon: typeof closeIcon === 'function' ? closeIcon() : closeIcon,
         }
       })
+  const { tabPosition, ...tabAttrs } = state.attrs || {}
   return h(
     Tabs,
-    mergeProps(state.attrs || {}, {
+    mergeProps(tabPosition === undefined ? tabAttrs : { ...tabAttrs, tabPlacement: tabPosition }, {
       items,
       activeKey: state.activeKeys === undefined ? undefined : nativeKey(state.activeKeys),
       'onUpdate:activeKey': (key: string) => {

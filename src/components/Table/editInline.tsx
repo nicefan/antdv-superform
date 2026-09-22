@@ -1,81 +1,63 @@
-import { ref, shallowReactive, toRaw, watch, reactive, h, toRefs, defineComponent, unref, computed } from 'vue'
+import { shallowRef, shallowReactive, toRaw, reactive, h, toRefs, defineComponent, unref, computed } from 'vue'
 import { cloneDeep, isFunction } from 'lodash-es'
-import { ButtonGroup, hasFormComponent } from '../index'
-import { useControl, cloneModelsFlat, resetFields, getEffectData } from '../../utils'
+import { ButtonGroup, getSchemaTypeSource, hasFormComponent } from '../index'
+import { useControl, cloneModelsFlat, getEffectData } from '../../utils'
 import { getUIRender, getUIService } from '../../adapter'
 import { buildInnerNode } from '../Collections'
 import { formatRule } from '../../utils/buildModel'
 import { merge } from '../../utils/merge'
-import { FormValidationError } from '../../adapter/formValidation'
 
-function createEditCache(childrenMap) {
-  const editMap = new WeakMap()
-
-  const getEditInfo = (record) => {
-    const raw = toRaw(record)
-    let editInfo = editMap.get(raw)
-    if (!editInfo) {
-      editInfo = shallowReactive<Obj>({ isEdit: false, saving: false })
-      editMap.set(raw, editInfo)
-    }
-    return editInfo
+export default function ({ childrenMap, orgList, listener, rowEditor, rowKey }) {
+  // 只允许一个活动草稿，以稳定行键关联外部对象；重排、刷新不再清除编辑锁。
+  const active = shallowRef<Obj>()
+  const hasEditor = computed(() => !!active.value?.isEdit)
+  const getEditInfo = (record): Obj => {
+    const session = active.value
+    return session?.isEdit && rowKey(record) === session.key ? session : { isEdit: false }
   }
-
-  const setEditInfo = (data, info) => {
-    const editInfo = getEditInfo(data)
-    if (!editInfo.editData) {
-      const editData = reactive(cloneDeep(data))
-      const { modelsMap } = cloneModelsFlat(toRaw(childrenMap), editData)
-      Object.assign(editInfo, { ...info, forms: shallowReactive({}), modelsMap, editData })
-    } else {
-      resetFields(editInfo.editData, data)
-      Object.assign(editInfo, info)
+  const list = computed(() => {
+    const records = [...orgList.value]
+    const session = active.value
+    if (!session?.isEdit) return records
+    if (session.isNew) {
+      const anchor = session.anchorKey === undefined ? records.length - 1 : records.findIndex(row => rowKey(row) === session.anchorKey)
+      records.splice(anchor < 0 ? Math.min(session.index, records.length) : anchor + 1, 0, session.record)
+    } else if (!records.some(row => rowKey(row) === session.key)) {
+      // 目标被移除时保留可取消的草稿，不静默丢失输入，也不能保存回不存在的行。
+      records.splice(Math.min(session.index, records.length), 0, session.record)
     }
+    return records
+  })
+  const startEdit = (record, data, extra: Obj) => {
+    const editData = reactive(cloneDeep(data))
+    const { modelsMap } = cloneModelsFlat(toRaw(childrenMap), editData)
+    active.value = shallowReactive({
+      record, key: rowKey(record), editData, modelsMap, forms: shallowReactive({}),
+      isEdit: true, saving: false, ...extra,
+    })
   }
-  return { getEditInfo, setEditInfo }
-}
-
-export default function ({ childrenMap, orgList, listener, rowEditor }) {
-  // 数据监听
-  const hasEditor = ref(false)
-  const list = ref<Obj[]>([])
-  watch(
-    () => [...orgList.value],
-    (org) => {
-      list.value = org
-      hasEditor.value = false
-    },
-    { immediate: true }
-  )
-
-  const { getEditInfo, setEditInfo } = createEditCache(childrenMap)
-
   const methods = {
-    add({ index, resetData }) {
+    add({ index, record, resetData } = {} as Obj) {
+      if (hasEditor.value) return
+      const anchor = record ?? (index === undefined ? undefined : orgList.value[index])
+      if (index !== undefined && !anchor) throw new Error('新增位置已失效，请重新选择插入位置')
       const item = { ...resetData }
-      if (index !== undefined) {
-        list.value.splice(index + 1, 0, item)
-      } else {
-        list.value.push(item)
-      }
-      setEditInfo(item, {
-        index,
-        isEdit: true,
-        isNew: true,
-      })
-      hasEditor.value = true
+      const anchorKey = anchor && rowKey(anchor)
+      const position = anchor ? orgList.value.findIndex(row => rowKey(row) === anchorKey) + 1 : orgList.value.length
+      startEdit(item, item, { isNew: true, index: position, anchorKey })
     },
     edit({ record, selectedRows, resetData }) {
-      const data = record || selectedRows[0]
-      setEditInfo(merge(data, resetData), { isEdit: true })
-      hasEditor.value = true
+      if (hasEditor.value) return
+      const data = record || selectedRows?.[0]
+      const index = data ? orgList.value.findIndex(row => rowKey(row) === rowKey(data)) : -1
+      if (index < 0) throw new Error('编辑记录已不存在，请重新选择')
+      startEdit(orgList.value[index], merge({}, orgList.value[index], resetData), { isNew: false, index })
     },
     delete({ record, selectedRows }) {
-      const items = record ? [record] : selectedRows
-      return listener.onDelete(items)
+      if (hasEditor.value) return
+      return listener.onDelete(record ? [record] : selectedRows)
     },
   }
-
   const buttonMethods = {
     add: {
       disabled: () => hasEditor.value,
@@ -98,7 +80,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       onClick: async (args) => {
         const { record } = args
         const editInfo = getEditInfo(record)
-        if (editInfo.saving) return
+        if (!editInfo.isEdit || editInfo.saving) return
         editInfo.saving = true
         try {
           const formService = getUIService('form')
@@ -108,15 +90,19 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
           // 保存完成前保留编辑状态；请求失败时草稿仍可重试，不能提前解除编辑锁。
           const data = cloneDeep(toRaw(editInfo.editData))
           if (editInfo.isNew) {
-            await listener.onSave(data, editInfo.index)
+            const index = editInfo.anchorKey === undefined ? undefined : orgList.value.findIndex(row => rowKey(row) === editInfo.anchorKey)
+            if (index === -1) throw new Error('新增锚点已不存在，请取消后重新选择插入位置')
+            await listener.onSave(data, index)
             editInfo.isNew = false
           } else {
-            await listener.onUpdate(data, record)
+            const target = orgList.value.find(row => rowKey(row) === editInfo.key)
+            if (!target) throw new Error('编辑记录已被移除，请取消本次编辑')
+            await listener.onUpdate(data, target)
           }
           editInfo.isEdit = false
-          hasEditor.value = false
+          active.value = undefined
         } catch (error) {
-          if (error instanceof FormValidationError) getUIService('services').message('error', error.message)
+          if (error instanceof Error) getUIService('services').message('error', error.message)
           throw error
         } finally {
           editInfo.saving = false
@@ -128,16 +114,16 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
       disabled: ({ record }) => getEditInfo(record).saving,
       onClick: async (args) => {
         const editInfo = getEditInfo(args.record)
-        if (editInfo.saving) return
-        const custom = await rowEditor?.onCancel?.({ ...args, isNew: editInfo.isNew })
-        if (custom === false) return
-        if (editInfo.isNew) {
-          // 未指定插入位置时没有 index，且列表可能重排，必须按当前记录定位草稿。
-          const index = list.value.findIndex((item) => toRaw(item) === toRaw(args.record))
-          if (index >= 0) list.value.splice(index, 1)
+        if (!editInfo.isEdit || editInfo.saving) return
+        editInfo.saving = true
+        try {
+          const custom = await rowEditor?.onCancel?.({ ...args, isNew: editInfo.isNew })
+          if (custom === false) return
+          editInfo.isEdit = false
+          active.value = undefined
+        } finally {
+          editInfo.saving = false
         }
-        editInfo.isEdit = false
-        hasEditor.value = false
       },
     },
   ]
@@ -199,11 +185,12 @@ export default function ({ childrenMap, orgList, listener, rowEditor }) {
   })
 
   const getEditRender = (option, viewRender) => {
-    if (hasFormComponent(option.type) || option.type === 'InputSlot') {
+    // 依据字段声明识别 Adapter 输入，不能把项目组件注册表当作全部可编辑字段。
+    if (getSchemaTypeSource(option.type) === 'enhanced' || hasFormComponent(option.type) || option.type === 'InputSlot') {
       return ({ record }) => {
         const editInfo = getEditInfo(record)
         if (editInfo.isEdit) {
-          return h(InputNode, { option, editInfo, viewRender })
+          return h(InputNode, { key: editInfo.key, option, editInfo, viewRender })
         }
       }
     }
