@@ -60,9 +60,10 @@ const buildTagRender = ({ value, label = value, color, icon, tagViewer = true }:
     } else if (Array.isArray(tagOption) && isPlainObject(tagOption[0])) {
       const tag = tagOption.find((item) => item.value == value) // 字符串数字都匹配
       Object.assign(item, tag)
+    } else {
+      item.color = Object.hasOwn(tagOption, value) ? tagOption[value] : undefined
     }
-    item.color ??=
-      color || tagOption[value] || (value === true && 'success') || (value === false && 'error') || 'default'
+    item.color ??= (value === true && 'success') || (value === false && 'error') || 'default'
   }
   return h(
     Tag,
