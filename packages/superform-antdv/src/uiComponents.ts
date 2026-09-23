@@ -39,7 +39,7 @@ async function validateForm(instance: any, path?: (string | number)[]) {
   }
 }
 
-export const uiComponents = {
+export const uiComponents: UIComponentDefinitions = {
   form: {
     service: {
       validate: (instance) => validateForm(instance),
@@ -133,4 +133,4 @@ export const uiComponents = {
     render: ({ attrs, slots }) => renderTable(attrs, slots),
   },
   tableFilter: { render: ({ attrs, slots }) => renderTableFilter(attrs, slots) },
-} satisfies UIComponentDefinitions
+}

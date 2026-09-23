@@ -1,8 +1,8 @@
 # 日期与范围值
 
-本页集中说明范围值映射与日期格式。AntDV 声明 DatePicker、DateRangePicker、DateMonthPicker、DateQuarterPicker、DateWeekPicker、DateYearPicker、TimePicker、TimeRangePicker；Element Plus 使用 DatePicker、TimePicker 及其 UI 范围模式，TimeSelect 按 UI 协议使用。
+本页集中说明范围值映射与日期格式。AntDV 声明 DatePicker、DateRangePicker、DateMonthPicker、DateQuarterPicker、DateWeekPicker、DateYearPicker、TimePicker、TimeRangePicker；Element Plus 支持 DatePicker、DateRangePicker、TimePicker、TimeRangePicker 及原生 UI 范围模式，TimeSelect 按 UI 协议使用。
 
-以下默认格式以 AntDV 为主。Element Plus 同时提供固定别名 `DateRangePicker` → `DatePicker(type='daterange')`、`TimeRangePicker` → `TimePicker(isRange=true)`；别名的范围模式由 Adapter `fixedProps` 固定，用户 attrs 不能改回单值模式。原始 DatePicker/TimePicker 仍可直接使用自身 `type` / `isRange`。
+以下默认格式以 AntDV 为主。Element Plus 的 `DateRangePicker` 和 `TimeRangePicker` 分别使用日期、时间范围模式；单值模式使用 `DatePicker` 或 `TimePicker`。
 
 ## 默认值格式
 
@@ -180,3 +180,9 @@ TimeRangePicker 使用 AntDV Next 的范围时间组件，而不是两个独立 
 可运行对比见[日期与时间示例](/examples?example=date-time)。
 
 <span id="日期与时间"></span>
+
+## 范围提示与注册
+
+AntDV 日期/时间使用原生默认提示，显式 placeholder 优先。Element Plus 范围字段支持 `placeholder: ["开始", "结束"]`，也可以分别设置 `attrs.startPlaceholder` 和 `attrs.endPlaceholder`；显式设置的单端提示优先。
+
+范围字段可自动导入，手动注册时提供对应的 `DatePicker` 或 `TimePicker` 组件即可。

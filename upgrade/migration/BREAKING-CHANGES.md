@@ -538,3 +538,13 @@ declare global {
 - 表格编辑保持源记录和模型身份，删除未匹配的记录时跳过。
 
 完成依据与未执行的回归范围见 [更新归档](../status/ACCEPTED-2026-09-16.md)。
+
+## beta.2：统一渲染、字段配置与编辑状态
+
+- Adapter 固定 UI 改为 uiComponents 声明；render 接收 `{ type, attrs, state, slots }`，字段额外提供 option/model/effectData/binding。旧 transformProps/细分 capability 调用迁为属性适配和 render 上下文；具体契约见 ARCHITECTURE.md 与 ADR-0008。
+- 选项源写在 options.source，字典及值转换写在 options.dictName/fieldNames/valueToNumber/labelAsValue；删除字段 keepField/valueToString 写法，使用 endField/stringifyValue。Input/Select 不再隐式维护搜索及异步 loading；搜索字段使用 InputSearch，业务显式控制 loading。
+- Element Plus 增加 TextArea/InputPassword/InputSearch，与 Input 同源。日期/时间范围别名锁定模式，同源注册支持自动导入、原始名及范围名手动登记。
+- 表单使用统一 validate/validateField/clearValidate；字段错误为 FormValidationError，原生实例经 getNativeInstance 获取。详情复用字段/布局配置，不直接传 Form attrs。
+- 行内编辑保存失败保留草稿，按稳定 rowKey 重新定位来源记录；弹窗初始化改为 resetFields。行内新增锚点失效拒绝保存，弹窗新增失效警告后追加，调用方需区分模式。
+
+本节为当前迁移结论；上方升级阶段描述仅保留历史背景，与本节冲突时以本节及当前架构总览为准。

@@ -117,17 +117,9 @@ const schema = {
 }
 ```
 
-### 数据源绑定顺序 {#建模与绑定顺序}
+### 数据源绑定 {#建模与绑定顺序}
 
-内部流程可以概括为：
-
-```text
-1. 从空对象开始
-2. 按 Schema 建立完整字段结构
-3. 克隆为“标准初始模型”
-4. 读取并绑定 dataSource
-5. 按 Schema 补齐 dataSource 缺失字段
-```
+传入 `dataSource` 后，表单会按 Schema 补齐缺失字段，并将输入同步到传入对象：
 
 ```ts
 const record = ref({ id: 1, name: "张三" });

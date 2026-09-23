@@ -1,10 +1,10 @@
 <script lang="ts">
-import { h, type PropType, defineComponent } from 'vue'
+import { h, type Component, type PropType, defineComponent } from 'vue'
 import { mapKeys, camelCase } from 'lodash-es'
 import { ButtonGroup } from '../components/buttons'
 import type { ButtonItem, ExtButtonGroup } from '../exaTypes'
 
-export default defineComponent({
+const SuperButtons: Component = defineComponent({
   props: {
     limit: Number,
     buttonProps: Object as PropType<ExtButtonGroup['buttonProps']>,
@@ -44,4 +44,5 @@ export default defineComponent({
     return () => h(ButtonGroup, { option: { ...config, actions: __actions }, effectData })
   },
 })
+export default SuperButtons
 </script>

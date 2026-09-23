@@ -154,3 +154,13 @@ subItems: [
 ```
 
 详细映射见[渲染与插槽](/manual/rendering#默认只读映射)。
+
+## 与表单共享字段
+
+预览表单时，复用字段和布局并单独配置详情属性：
+
+```ts
+const detailSchema = { subItems: formSchema.subItems, subSpan: formSchema.subSpan };
+```
+
+不要把 Form 的 attrs 和提交按钮直接传给 SuperDetail；详情 attrs 使用 ExtDescriptionsProps。动态字段使用 computed 返回上述配置，数据通过 dataSource 提供。

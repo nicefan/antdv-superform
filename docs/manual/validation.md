@@ -192,3 +192,23 @@ columns: [{
 ```
 
 组规则与子字段规则均参与校验。
+
+## 统一校验错误
+
+`validate()`、`validateField(path)` 和 `submit()` 的字段校验失败使用 `FormValidationError`，两套 UI 的 `fields` 均为 `{ path: (string | number)[], messages: string[] }[]`；`cause` 保留原始错误。非字段异常仍原样抛出。
+
+```ts
+import { FormValidationError } from "superform-antdv";
+
+try {
+  await form.validate();
+} catch (error) {
+  if (error instanceof FormValidationError) {
+    console.log(error.fields);
+  } else {
+    throw error;
+  }
+}
+```
+
+Element Plus 项目从 `superform-element-plus` 导入同名类型。需要底层特有方法时，通过 `await form.getNativeInstance()` 取得原生实例。

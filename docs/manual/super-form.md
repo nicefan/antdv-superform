@@ -1,6 +1,6 @@
 # 表单 SuperForm
 
-SuperForm 是根表单容器，负责建立标准模型、绑定数据源、组织校验、等待子组件提交任务并暴露表单动作。`Form` 对应的就是 SuperForm，不需要在 `subItems` 中再放一个 Form 容器。
+SuperForm 是根表单容器，提供数据绑定、校验和提交等表单能力。`Form` 对应的就是 SuperForm，不需要在 `subItems` 中再放一个 Form 容器。
 
 <span id="创建与绑定表单"></span>
 
@@ -149,7 +149,11 @@ const schema = {
 | `setFieldsValue(partial)` | function | —      | 只更新已建立且本次提供的字段                   |
 | `getData()`               | function | —      | 当前模型引用                                   |
 | `dataSource`              | Ref      | `{}`   | 指向当前模型的只读 computed                    |
-| `getForm()`               | function | —      | 等待并返回内部表单实例                         |
+| `getForm()` | function | — | 等待并返回统一表单动作实例 |
+| `validate()` | function | — | 仅校验，不执行上传或提交回调 |
+| `validateField(path)` | function | — | 校验一个字段路径，例如 `["items", 0, "name"]` |
+| `clearValidate()` | function | — | 清除校验错误 |
+| `getNativeInstance()` | function | — | 读取当前 UI 的原生表单实例 |
 | `asyncCall(name, param?)` | function | —      | 调用内部实例能力的逃生口                       |
 
 ```ts

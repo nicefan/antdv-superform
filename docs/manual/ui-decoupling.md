@@ -30,7 +30,7 @@ AntDV Next / Element Plus / 第三方 UI
 
 | 来源 | 负责内容 | 配置入口 |
 | --- | --- | --- |
-| Adapter 固定渲染 | Form、FormItem、Modal、Table、布局、容器、反馈等固定 UI | `UIAdapter.render`，官方产品内置或自定义 Adapter 实现 |
+| Adapter 固定渲染 | Form、FormItem、Modal、Table、布局、容器、反馈等固定 UI | `uiComponents` 声明，归一化为 `UIAdapter.render` |
 | Adapter 字段 | Input、Select、Rate 等 Adapter 已声明字段 | Vite 自动导入或 `initialize({ components })` |
 | 项目业务字段 | UserPicker、RichEditor 等业务组件 | `registerComponent(s)` |
 
@@ -41,13 +41,13 @@ AntDV Next / Element Plus / 第三方 UI
 字段按以下来源解析：
 
 1. Core 内置节点，例如 `Text`、`Hidden`、`Fragment`、`Group`。
-2. 当前 Adapter 声明并指定处理器的增强字段，例如 `Select`、`Switch`、`DateRangePicker`、`Upload`。
+2. 当前 Adapter 声明并指定处理器的增强字段，例如 `Select`、`Switch`、`DateRangePicker`。
 3. `registerComponent(s)` 注册的项目业务字段。
 4. Vite 插件自动导入的普通 UI 字段。
 
-UI 字段使用真实组件名，例如 `TextArea`、`DateRangePicker`、`TimeRangePicker`、`RadioGroup` 和 `CheckboxGroup`。
+UI 字段使用 Adapter 声明名，例如 `TextArea`、`DateRangePicker`、`TimeRangePicker`、`RadioGroup` 和 `CheckboxGroup`。
 
-Element Plus 的 Schema 名称去掉导出上的 `El` 前缀，例如 `ElInput` 对应 `Input`。
+Element Plus 原生字段去掉 `El` 前缀，例如 `ElInput` 对应 `Input`；TextArea、InputPassword、InputSearch 复用 ElInput，日期/时间范围字段复用对应 Picker。
 
 ## 字段声明与组件引入 {#字段声明不等于组件引入}
 
@@ -78,7 +78,8 @@ import { defineUIAdapter } from "superform/sdk";
 
 const adapter = defineUIAdapter({
   name: "my-ui",
-  // 按目标 UI 框架实现基础能力、字段协议、处理器和默认配置
+  supportedFields: [],
+  uiComponents: {}, // 在这里补充 form、formItem、布局等所需能力
 });
 
 superform.useAdapter(adapter);
@@ -88,9 +89,7 @@ superform.useAdapter(adapter);
 
 ### 固定 UI render 与业务覆盖
 
-固定 UI 统一登记在 `UIAdapter.render`：`form/formItem`、布局、Group/Card/Tabs/Collapse/Descriptions、按钮、提示、Modal、Upload、Table 等都使用同一张类型化 `UIRenderers` 表。Core 通过 `getUIRender(name)` 取得渲染函数，渲染协议集中在这一处。
-
-复杂 UI 结构可以在 Adapter 包内部拆到 `components/Tabs.ts`、`components/Table.ts` 等文件，但对 Core 仍只有一个 render 入口。字段自动导入与固定 UI 渲染保持独立。
+固定 UI 通过 `uiComponents` 集中声明 `component` / `render`、`defaults`、`adaptProps`、`service` 与 `schemaDefaults`，创建时归一化为 `UIAdapter.render`：`form/formItem`、布局、Group/Card/Tabs/Collapse/Descriptions、按钮、提示、Modal、Upload、Table 等都使用同一张类型化 `UIRenderers` 表。Core 通过 `getUIRender(name)` 取得渲染函数，渲染协议集中在这一处。
 
 官方产品可在**首次初始化**时覆盖单个渲染器：
 
@@ -102,7 +101,7 @@ import BusinessGroup from './BusinessGroup.vue'
 superForm.initialize({
   overrides: {
     render: {
-      group: state => h(BusinessGroup, state.attrs, {
+      group: ({ attrs, state }) => h(BusinessGroup, attrs, {
         title: state.title,
         actions: state.extra,
         default: () => h('div', state.contentAttrs, state.content()),
@@ -112,11 +111,13 @@ superForm.initialize({
 })
 ```
 
-Group 的优先级为 Schema `option.component` → `overrides.render.group` → UI 包 `render.group` → Core 默认 Group。render 按项浅合并；form/services/modal/upload/table 等非 render 协议覆盖时整项替换，不做递归深合并。首次初始化后不能再带 overrides 切换协议，无参数重复 initialize 仍保持幂等。
+Group 的优先级为 Schema `option.component` → `overrides.render.group` → UI 包 `render.group` → Core 默认 Group。`overrides.uiComponents` 按项替换组件声明，`overrides.render` 按项覆盖渲染；二者同时提供同名渲染时 render 优先。服务按所属组件声明，覆盖时应提供该项需要的完整声明。首次初始化后不能再带 overrides 切换协议，无参数重复 initialize 仍保持幂等。
+
+字段和固定 UI 的自定义 render 均接收 `{ type, attrs, state, slots }`；字段另有 `option/model/effectData/binding`。扩展字段的事件应通过 `binding` 接入，避免重复绑定更新事件。用户 `attrs` 可以覆盖默认属性；TextArea 和范围字段的模式由字段类型确定。
 
 ### 局部校验与语义图标
 
-支持 InputGroup 局部校验时，实现 `form.validateField(instance, path)`。其中 `path` 为 `(string | number)[]`，方法只校验该路径并返回 Promise。
+表单服务在 `uiComponents.form.service` 中实现 `validate`、`validateField`、`clearValidate`；支持 InputGroup 局部校验时，实现 `validateField(instance, path)`。其中 `path` 为 `(string | number)[]`，方法只校验该路径并返回 Promise。
 
 `icons.semantic` 将语义名映射为 `() => VNodeChild`。可从 `superform/sdk` 导入 `builtInIcons` 复用默认图标。
 

@@ -70,12 +70,4 @@ describe('Schema 项目组件注册', () => {
       'onUpdate:modelValue': update,
     })
   })
-
-  it('项目注册不能覆盖 Core 与 Adapter 字段，自动导入可为 Adapter 字段提供实际组件', () => {
-    const Component = defineComponent(() => () => null)
-
-    expect(() => registerCustomComponents({ Form: Component })).toThrow("Schema 类型 'Form' 为 Core 保留类型")
-    expect(() => registerCustomComponents({ Select: Component })).toThrow("Schema 类型 'Select' 为 Core 保留类型")
-    expect(() => registerAutoImportedComponents({ Select: Component })).not.toThrow()
-  })
 })

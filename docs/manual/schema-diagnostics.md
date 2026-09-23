@@ -70,7 +70,7 @@ SuperForm、SuperTable、SuperDetail 接收 Schema 时把结果分组输出到�
 | ----------------- | ----------------------------- |
 | `deprecated-api`  | 使用非现行配置                |
 | `missing-type`    | 非表格字段未声明 type         |
-| `missing-options` | 选择字段没有 options/dictName |
+| `missing-options` | 选择字段没有 options 配置 |
 | `duplicate-field` | 同级 field 重复               |
 
 ### suggestion

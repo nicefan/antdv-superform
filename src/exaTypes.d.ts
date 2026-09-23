@@ -547,6 +547,7 @@ interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
 //   subItems: UniOption[]
 // }
 interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
+  attrs?: Obj & UIContainerProps<'Tabs'>
   activeKey?: Ref<string | undefined>
   buttons?: ExtButtons<'add' | 'refresh'>
   subItems: ExtTabItem[]
@@ -564,7 +565,7 @@ interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type' | 'attrs'> {
 }
 interface ExtCollapseOption extends ExtBaseOption {
   title?: VSlot
-  activeKey?: string | Ref<string>
+  activeKey?: string | string[] | Ref<string | string[]>
   subItems: CollapseItem[]
 }
 interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
@@ -657,7 +658,7 @@ interface ExtTagInputOption extends ExtFormItemOption {
 }
 export interface TreeFieldOption<TreeData = unknown> {
   labelField?: string
-  treeData?: TreeData | Fn<Promise<TreeData>> | Fn<TreeData>
+  treeData?: TreeData | Ref<TreeData> | Fn<Promise<TreeData>> | Fn<TreeData>
 }
 
 export interface SwitchFieldOption extends SelectFieldOption {}
@@ -753,7 +754,8 @@ type CoreWidgetTypes = {
 type UIFormComponentOption<K extends keyof UIFormComponentProps> = ExtFormItemOption &
   (K extends keyof UIFormComponentOptionExtensions ? UIFormComponentOptionExtensions[K] : unknown) & {
     // UI 库的必填 Props 可能由动态属性、Adapter 默认值或增强处理器补充，Schema 静态 attrs 只约束已填写的属性。
-    attrs?: Partial<UIFormComponentProps[K]> & HTMLAttributes
+    // 组件自身的属性类型优先，避免 HTML 的同名属性将范围 placeholder 收窄为字符串。
+    attrs?: Partial<UIFormComponentProps[K]> & Omit<HTMLAttributes, keyof UIFormComponentProps[K]>
   }
 
 type AdapterWidgetTypes = {
@@ -832,6 +834,7 @@ export {
   ExtInputGroupOption,
   ExtTabsOption,
   ExtCollapseOption,
+  CollapseItem,
   ExtListOption,
   ExtGroupListOption,
   ExtDescriptionsOption,

@@ -30,7 +30,12 @@ const [register, form] = useForm({
       label: '金额输入',
       attrs: { min: 0, precision: 2, addonAfter: '元' },
     },
-    { type: 'AutoComplete', field: 'city', label: '城市', options: { source: ['北京', '上海', '深圳'] } },
+    {
+      type: 'AutoComplete',
+      field: 'city',
+      label: '城市',
+      options: { source: ['北京', '上海', '深圳'] },
+    },
     { type: 'TextArea', field: 'fixedRemark', label: '固定行文本域', attrs: { rows: 3 } },
     {
       type: 'TextArea',

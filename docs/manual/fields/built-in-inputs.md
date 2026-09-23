@@ -94,4 +94,4 @@ TagSelect 把少量选项直接展示为可点击 Tag：
 | `attrs.multiple: true`       | value 数组 |
 | `attrs.stringifyValue: true` | 逗号字符串 |
 
-顶层 ExtSelect 的 `options`、`dictName`、`valueToNumber`、`labelAsValue`、`stringifyValue` 也可使用。组件事件包括 `onCheck(effectData, tag, checked)` 与 `onChange(effectData, tag, nextSelected)`。
+`options` 使用配置包，`dictName`、`valueToNumber`、`labelAsValue` 放在 options 内；`stringifyValue` 放在字段顶层。组件事件包括 `onCheck(effectData, tag, checked)` 与 `onChange(effectData, tag, nextSelected)`。

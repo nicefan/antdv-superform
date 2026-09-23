@@ -22,3 +22,9 @@ pnpm docs:dev
 pnpm build:repl
 pnpm docs:build
 ```
+
+## 示例与源码联调
+
+根目录 `pnpm dev:antdv` / `pnpm dev:element-plus` 分别启动两套源码 example，各一个入口，按基础表单、字段联动、容器、表格、上传弹窗、扩展和综合示例分组。右侧观察区和底部测试区可收缩，承载开发、演示与人工验证。
+
+文档 REPL 使用 public/repl 内的版本产物，不会随源码自动更新。修改组件能力后需在发布流程中重新生成 REPL 产物再验收；修改 Markdown 不等于在线资源已同步。依赖已有时无需重复 install。

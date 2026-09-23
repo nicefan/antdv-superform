@@ -117,11 +117,11 @@ export default defineConfig({
           ],
         },
         {
-          text: '工具与迁移',
+          text: '工具与接入',
           items: [
             { text: 'AI 编码指引', link: '/manual/ai-guide' },
             { text: 'Schema 诊断', link: '/manual/schema-diagnostics' },
-            { text: '1.0 迁移指南', link: '/manual/antdv-next-upgrade' },
+            { text: 'AntDV 接入配置', link: '/manual/antdv-next-upgrade' },
           ],
         },
       ],

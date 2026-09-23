@@ -356,7 +356,6 @@ Select 的关键词搜索、过滤和 loading 使用当前 UI 组件的原生 at
 
 
 ## 扩展组件
-## 扩展组件
 
 通过 Core API 注册项目字段，注册名就是 schema 类型名：
 
@@ -383,7 +382,7 @@ superform.registerComponents({ UserPicker })
 superform.initialize({
   overrides: {
     render: {
-      group: state => h(BusinessGroup, state.attrs, {
+      group: ({ attrs, state }) => h(BusinessGroup, attrs, {
         title: state.title,
         actions: state.extra,
         default: state.content,
@@ -467,3 +466,7 @@ pnpm run build
 ## License
 
 [MIT](LICENSE)
+
+### Element Plus 输入扩展
+
+`TextArea`、`InputPassword`、`InputSearch` 与 `Input` 共用 ElInput，自动导入和 `initialize({ components })` 均支持。TextArea 固定多行模式，InputPassword 默认提供显隐按钮，InputSearch 提供搜索按钮与回车事件；异步 loading 由业务控制。日期与时间范围分别使用 DateRangePicker、TimeRangePicker。原生属性仍以所选 UI 为准。

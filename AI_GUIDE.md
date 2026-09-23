@@ -122,6 +122,8 @@ async function save() {
 | Schema `onSubmit(data)` | false 或 `{ errMessage }` 阻止提交 |
 | `resetFields(data?)` | 无参恢复初始值；传记录按已有模型字段回填，数组整体复制 |
 | `setFieldsValue(partial)` | 只更新已建立且本次传入的字段 |
+| `validate(), validateField(path), clearValidate()` | 统一校验动作；字段失败为 FormValidationError，fields 包含 path/messages，cause 保留原始错误 |
+| `getNativeInstance()` | 获取当前 UI 原生实例 |
 | `getData(), dataSource, getForm()` | 读取数据 / 数据源 / 异步获取实例 |
 | Schema `dataSource` | 绑定对象或 Ref，库会补齐并修改其字段；useForm 仅接收 schema |
 | `ignoreRules` | 搜索场景使用；隐藏必填标识并禁用自动校验触发，不等于跳过 submit 的显式校验 |
@@ -158,7 +160,7 @@ options: { dictName: 'status' }
 
 Select / SelectV2 不提供自动远程搜索处理。关键词事件、过滤和 loading 使用当前 UI 的原生 `attrs.onSearch` / `remoteMethod` 等配置；`options.source` 只接收 effectData，可读取业务自己维护的响应式关键词。
 
-AntDV 日期/时间范围用AntDV 日期/时间范围用 `field` 与 `endField` 保存起止值；有 endField 时优先拆分，否则可用 stringifyValue 保存逗号字符串。日期默认 YYYY-MM-DD，时间默认 HH:mm:ss；其他 Adapter 以自身字段协议为准。
+AntDV 日期/时间范围用 `field` 与 `endField` 保存起止值；有 endField 时优先拆分，否则可用 stringifyValue 保存逗号字符串。日期默认 YYYY-MM-DD，时间默认 HH:mm:ss；其他 Adapter 以自身字段协议为准。
 
 <a id="table"></a>
 
@@ -288,3 +290,11 @@ isSingle 返回单个文件；valueKey 仅保存对应属性；vModelFields.file
 
 提交生成结果前，按本次场景核对：导入与注册、接口签名、Schema 层级、回填字段、值形态及权限。需要的检查遵循项目约定，不把未执行检查描述为通过。
 
+
+## 输入扩展与编辑约束
+
+Element Plus 支持 TextArea、InputPassword、InputSearch，三者与 Input 共用 ElInput 注册源；名称目录驱动自动导入。TextArea 固定 textarea，InputPassword 固定 password 且默认 showPassword。InputSearch 支持 enterButton、loading 和 onSearch；loading 由业务控制，普通 Input 不隐式切换搜索模式。原生 attrs/slots 仍按对应 UI 使用。
+
+详情 Schema 只复用表单 subItems 与布局，不把 Form 原生 attrs/buttons 直接传给 SuperDetail。Table 行内草稿按稳定行键定位；保存失败保留草稿，保存期间禁用重复保存与取消。行内新增锚点失效拒绝保存；弹窗新增锚点失效 warning 后末尾追加。弹窗回填使用 resetFields，取消不更新表格。
+
+Adapter 的固定 UI 在 uiComponents 声明组件、默认值和 service；自定义 render 接收 { type, attrs, state, slots }，字段另有 option/model/effectData/binding。不要重复合成字段更新事件。

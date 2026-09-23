@@ -103,7 +103,8 @@ rowEditor: {
   },
   modalProps: { width: 760, maskClosable: false },
   onSave(context) {
-    if (!context.record.name) return false
+    console.log('保存上下文', context)
+    // 返回 false 可阻止内置保存；字段校验放在 form/columns 的 rules 中。
   },
   onCancel(context) {
     console.log('取消行编辑', context.record)
@@ -111,7 +112,7 @@ rowEditor: {
 }
 ```
 
-`editMode` 和 `addMode` 可独立选择。`form` 省略或未提供 `subItems` 时复用 columns；显式 `subItems` 适合编辑字段与列表列不同。`onSave` 返回 `false` 阻止内置保存；`onCancel` 在取消前执行。
+`editMode` 和 `addMode` 可独立选择。`form` 省略或未提供 `subItems` 时复用 columns；显式 `subItems` 适合编辑字段与列表列不同。`onSave` 返回 `false` 阻止内置保存；`onCancel` 在取消前执行，返回 false 可阻止取消。弹窗 onSave 从 context.source 读取提交草稿；行内回调保留行操作上下文。
 
 ## modalProps 与 descriptionsProps
 
@@ -134,7 +135,7 @@ rowEditor: {
 
 ## tabs 表格标签
 
-`tabs` 接受 TabsHeader 或 `false`，用于在表格顶部以选项切换过滤值。它包含 `field`、`initialValue`、`bordered`、`options`、`dictName`、`labelAsValue`、`activeKey`、`slots`、`customTab`；详例见[SuperTable：tabs 标签筛选](/manual/super-table#tabs-标签筛选)。
+`tabs` 接受 TabsHeader 或 `false`，用于在表格顶部以选项切换过滤值。它包含 `field`、`initialValue`、`bordered`、`options`、`activeKey`、`slots`、`customTab`，其中 dictName、labelAsValue 属于 options 配置包；详例见[SuperTable：tabs 标签筛选](/manual/super-table#tabs-标签筛选)。
 
 ## CRUD 接口
 
@@ -153,3 +154,7 @@ apis: {
 
 
 [Table 编辑示例](/examples?example=table-local)
+
+## 行标识与跨页选择
+
+为可编辑或可选择的表格配置稳定、唯一的 `attrs.rowKey`。需要跨远程页保留选择时，显式配置 `preserveSelectedRowKeys`。

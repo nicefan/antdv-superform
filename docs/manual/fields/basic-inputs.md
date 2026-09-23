@@ -8,7 +8,7 @@
 
 ## Element Plus 支持清单
 
-`Input`、`InputNumber`、`InputOtp`、`InputTag`、`Autocomplete`、`Mention`、`Switch`、`Select`、`SelectV2`、`Cascader`、`TreeSelect`、`Radio`、`RadioGroup`、`Checkbox`、`CheckboxGroup`、`DatePicker`、`TimePicker`、`TimeSelect`、`ColorPicker`、`Rate`、`Slider`、`Segmented`、`Transfer`。
+`Input`、`TextArea`、`InputPassword`、`InputSearch`、`InputNumber`、`InputOtp`、`InputTag`、`Autocomplete`、`Mention`、`Switch`、`Select`、`SelectV2`、`Cascader`、`TreeSelect`、`Radio`、`RadioGroup`、`Checkbox`、`CheckboxGroup`、`DatePicker`、`DateRangePicker`、`TimePicker`、`TimeRangePicker`、`TimeSelect`、`ColorPicker`、`Rate`、`Slider`、`Segmented`、`Transfer`。
 
 同名不代表两套产品具有完全相同的 Props 或增强能力；`AutoComplete` / `Autocomplete`、`InputOTP` / `InputOtp` 的大小写按清单填写。
 
@@ -16,8 +16,9 @@
 
 | 字段 | AntDV | Element Plus |
 | --- | --- | --- |
-| Input | 默认提示、搜索动作与等待状态 | 默认提示、搜索动作与附加按钮 |
-| TextArea / InputNumber | 提示、宽度等默认属性 | 多行输入使用 Input 的 UI 属性；InputNumber 使用 UI 协议 |
+| Input | 原生单行输入与默认提示 | 原生单行输入与默认提示 |
+| InputSearch / InputPassword | 原生搜索 / 密码组件 | 基于 Input 的搜索入口 / 固定密码模式 |
+| TextArea / InputNumber | 提示、宽度等默认属性 | TextArea 固定多行模式；InputNumber 使用原生协议 |
 | AutoComplete | 选项与标签值处理 | Autocomplete 使用 UI 建议接口 |
 | Select / RadioGroup / CheckboxGroup | [选项处理](/manual/fields/selections) | 对应字段及 SelectV2 接入[选项处理](/manual/fields/selections) |
 | TreeSelect | 树选项与关联标签处理 | UI 树选择协议 |
@@ -30,7 +31,7 @@
 
 ## Input
 
-Input 适合单行字符串，按 label 生成输入提示。以下搜索按钮与事件示例采用 AntDV 写法；Element Plus 通过附加按钮提供搜索入口。
+Input 适合单行字符串，按 label 生成输入提示。搜索输入使用独立的 InputSearch。
 
 ```ts
 {
@@ -53,9 +54,9 @@ Input 适合单行字符串，按 label 生成输入提示。以下搜索按钮�
 // 普通 Input
 { type: 'Input', field: 'code', label: '编码' }
 
-// 配置 onSearch 后切换为 Input.Search
+// 两套 UI 均使用独立搜索字段
 {
-  type: 'Input',
+  type: 'InputSearch',
   field: 'keyword',
   label: '关键词',
   attrs: { enterButton: '查询' },
@@ -65,7 +66,9 @@ Input 适合单行字符串，按 label 生成输入提示。以下搜索按钮�
 }
 ```
 
-`onSearch(effectData, value)` 存在时组件使用 Input.Search，并在 Promise 等待期间维护搜索按钮 loading。`enterButton` 通过 `attrs.enterButton` 控制搜索按钮；没有 `enterButton` 时，`addonAfter` 也可被复用为搜索入口。
+顶层 `onSearch(effectData, value, event)` 接收表单上下文；`attrs.onSearch(value, event)` 保留组件参数。异步等待状态由业务设置 `attrs.loading` 或 `dynamicAttrs`，不会根据返回的 Promise 自动管理。普通 Input 不提供搜索增强。
+
+Element Plus 的 `enterButton` 支持布尔值或文字，默认显示搜索图标；回车和按钮点击触发搜索，加载或禁用时不触发，输入法确认不触发。可用 `slots.enterButton` 自定义按钮内容；原生 `slots.append` 优先，提供后其中的按钮行为由业务负责。AntDV 使用自身 InputSearch 原生属性。
 
 需要密码或独立搜索组件时，也可以直接使用 Adapter 已声明的 `InputPassword`、`InputSearch`。这些字段仍需由自动导入插件或 `initialize({ components })` 提供实际组件。
 
@@ -88,7 +91,11 @@ Input 适合单行字符串，按 label 生成输入提示。以下搜索按钮�
 
 ## TextArea
 
-AntDV TextArea 默认宽度为 100%、允许清空，并按 label 生成提示。Element Plus 多行输入使用 `Input` 的 `attrs.type: "textarea"`。
+AntDV TextArea 默认宽度为 100%、允许清空，并按 label 生成提示。Element Plus TextArea 复用 ElInput，固定 `type: "textarea"`；用 `attrs.rows` 配置行数。原始 Input 仍可自行配置 type。
+
+## InputPassword
+
+两套 UI 均可写 `{ type: "InputPassword", field: "password", label: "密码" }`。Element Plus 固定 password 模式，默认 `showPassword: true`，可显式关闭显隐按钮；AntDV 使用原生 InputPassword 属性。
 
 ## InputNumber
 
@@ -111,7 +118,7 @@ AutoComplete 是“文本输入 + 建议列表”，最终值按标签语义输�
 }
 ```
 
-专属 Schema 属性为 `options` 配置包和 `attrs: AutoCompleteProps`。数据写入 `options.source`，共享字典写入 `options.dictName`；内部按 label 作为输入值并默认 `filterOption: true`。
+专属 Schema 属性为 `options` 配置包和 `attrs: AutoCompleteProps`。数据写入 `options.source`，共享字典写入 `options.dictName`；默认 `filterOption: true`；需要标签作为值时显式配置 `options.labelAsValue: true`。
 
 ```ts
 // 响应式建议

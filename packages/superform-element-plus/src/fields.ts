@@ -1,3 +1,4 @@
+import InputSearchField from './components/InputSearchField'
 import TreeSelectField from './components/TreeSelectField'
 import { h } from 'vue'
 import { createFieldPropsAdapter, defineFieldAdapters, type UIAdapter, type FieldPropsAdapter } from 'superform/sdk'
@@ -18,6 +19,14 @@ const adaptRangePlaceholder: FieldPropsAdapter = ({ placeholder, ...attrs }) => 
 /** 原始组件仍动态提供；字段只声明额外的属性差异。 */
 export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAdapters(
   {
+    TextArea: { fixedProps: { type: 'textarea' } },
+    InputPassword: {
+      fixedProps: { type: 'password' },
+      defaults: { showPassword: true },
+    },
+    InputSearch: {
+      render: ({ slots, ...context }) => h(InputSearchField, context, slots),
+    },
     Switch: {
       processors: ['switch'],
       adaptProps(attrs, { state }) {

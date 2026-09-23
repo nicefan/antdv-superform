@@ -22,6 +22,7 @@ import type {
   TimePickerProps,
   TimeRangePickerProps,
   TooltipProps,
+  TabsProps,
   TreeSelectProps,
   UploadProps,
 } from 'antdv-next'
@@ -57,6 +58,7 @@ declare global {
         FormItem: FormItemProps
         Row: RowProps
         Space: SpaceProps
+        Tabs: TabsProps
       }
     }
 

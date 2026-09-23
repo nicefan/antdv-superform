@@ -135,3 +135,7 @@ Core 的底层插件还支持 `superFormImport`、`dtsModule`、`typesImport` �
 
 
 <span id="组件注册与按需导入"></span>
+
+## 同源字段
+
+Element Plus 的 `TextArea`、`InputPassword`、`InputSearch` 可与 `Input` 共用组件注册；`DateRangePicker` 与 `DatePicker`、`TimeRangePicker` 与 `TimePicker` 也是如此。动态生成的字段名称仍需加入 `types` 扫描补充列表。

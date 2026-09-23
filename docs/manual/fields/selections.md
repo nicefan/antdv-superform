@@ -100,7 +100,7 @@ options: { source: ({ current }) => api.getOptions(current.category) }
 }
 ```
 
-Core 会先归一化为标准 `label/value` 再交给字段组件和只读展示。只有在**没有配置顶层 options、但配置了 labelField** 时，才会读取原生 `attrs.options/fieldNames` 查找标签；这条兼容路径不会把原生 options 提升为标准专项配置。
+需要让 `labelField` 从原生选项中读取标签时，可在未配置顶层 `options` 的情况下使用 `attrs.options/fieldNames`；如果配置了顶层 `options`，则以顶层配置为准。
 
 ## Select
 ## Select
@@ -260,8 +260,11 @@ Switch 固定把归一化后的第 0 项作为 unchecked、第 1 项作为 check
 ```
 
 ## TagSelect
-## TagSelect
 
 [TagSelect 的配置与事件](/manual/fields/built-in-inputs#tagselect)。
 
 <span id="选择输入"></span>
+
+## TreeSelect 数据与标签
+
+顶层 treeData 支持数组、Ref，以及接收 effectData 的同步/异步函数。未配置时保留原生 attrs.treeData（AntDV）或 attrs.data（Element Plus）。labelField 接收选择项标签，外部赋值和异步标签更新也会同步；单选为单个标签，多选为标签数组。自定义节点字段和懒加载参数按目标 UI 原生属性配置。

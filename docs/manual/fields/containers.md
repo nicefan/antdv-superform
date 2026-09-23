@@ -213,3 +213,9 @@ Descriptions 在其他 Schema 中嵌入只读信息；独立详情页面优先 S
 ## 容器外观属性
 
 Descriptions 使用 `column`、`contentStyle`、`labelStyle` 控制列数和内容样式；Card、Tabs、Collapse 的标题区域可使用 `extra`。Tabs/Collapse 项的初始激活与关闭配置包括 `defaultActiveKey`、`closeIcon`，以当前产品包类型为准。
+
+## 状态、插槽与默认值
+
+Tabs 的 activeKey 可使用 Ref；Collapse 的 activeKey 支持单值或数组及其 Ref。容器 attrs 使用对应 UI 原生属性，显式值覆盖默认值；例如 accordion: false 不应写成省略。Tabs 的 title/extra 等内容通过插槽声明，动态隐藏或禁用当前页时会回退到有效项。
+
+TabList/CollapseList 新增后激活或展开新项，删除当前项后回退相邻项。列表项标题可通过 `titleField` 读取记录字段，详见[列表容器](/manual/fields/collections#cardlist-tablist-collapselist)。

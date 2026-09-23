@@ -74,15 +74,17 @@ describe("发布声明", () => {
     );
     expect(rootDeclaration).not.toContain("antdvAdapter");
     expect(rootDeclaration).not.toContain("elementPlusAdapter");
+    // Adapter 的 fieldComponents 配置属性可出现在根声明中，但全量组件常量只能由 /components 导出。
+    const fieldComponentsExport = /export\s+(?:declare\s+)?(?:const|let|var)\s+fieldComponents\b|export\s*\{[^}]*\bfieldComponents\b/;
     expect(antdvDeclaration).toContain("antdvAdapter");
-    expect(antdvDeclaration).not.toContain("fieldComponents");
+    expect(antdvDeclaration).not.toMatch(fieldComponentsExport);
     expect(antdvComponentsDeclaration).toContain("fieldComponents");
     expect(antdvDeclaration).toContain("initialize");
     expect(antdvDeclaration).toContain("SuperForm");
     expect(antdvDeclaration).not.toContain("element-plus");
     expect(antdvDeclaration).not.toMatch(/from ['"]superform(?:\/|['"])/);
     expect(elementPlusDeclaration).toContain("elementPlusAdapter");
-    expect(elementPlusDeclaration).not.toContain("fieldComponents");
+    expect(elementPlusDeclaration).not.toMatch(fieldComponentsExport);
     expect(elementPlusComponentsDeclaration).toContain("fieldComponents");
     expect(elementPlusDeclaration).toContain("initialize");
     expect(elementPlusDeclaration).toContain("SuperForm");

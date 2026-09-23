@@ -176,10 +176,9 @@ const columns: RootTableOption['columns'] = [
   },
   { type: 'Upload', field: 'files', label: '附件', attrs: { uploadMode: 'custom' }, exclude: ['table'] },
   {
-    type: isElement ? 'Input' : 'TextArea',
+    type: 'TextArea',
     field: 'note',
     label: '说明',
-    attrs: isElement ? { type: 'textarea' } : {},
     exclude: ['table'],
     span: 24,
   },

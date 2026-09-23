@@ -29,6 +29,9 @@ import type { ElementPlusFieldName } from "./adapter";
 /** Element Plus 字段全量组件，键名统一使用 Schema 的无 El 前缀名称。 */
 export const fieldComponents: Record<ElementPlusFieldName, Component> = {
   Input: ElInput,
+  TextArea: ElInput,
+  InputPassword: ElInput,
+  InputSearch: ElInput,
   InputNumber: ElInputNumber,
   InputOtp: ElInputOtp,
   InputTag: ElInputTag,

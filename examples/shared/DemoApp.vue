@@ -81,10 +81,17 @@ const pages = [
   },
   {
     id: 'containers',
-    title: '容器与列表',
+    title: '容器布局',
     kicker: 'LAYOUT',
-    description: '分组、页签、折叠面板，以及可编辑的动态列表。',
+    description: '分组、卡片、页签与折叠面板的布局和状态。',
     component: defineAsyncComponent(() => import('./pages/Containers.vue')),
+  },
+  {
+    id: 'lists',
+    title: '动态列表',
+    kicker: 'LISTS',
+    description: '列表增删、直接与弹窗编辑，以及对象和普通值数组。',
+    component: defineAsyncComponent(() => import('./pages/Lists.vue')),
   },
   {
     id: 'tables',

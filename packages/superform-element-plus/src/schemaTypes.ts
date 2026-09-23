@@ -1,3 +1,4 @@
+import type { InputSearchProps } from './components/InputSearchField'
 import type {
   FormComponentProps,
   RangeFieldOption,
@@ -17,8 +18,11 @@ declare global {
         CheckboxGroup: FormComponentProps<typeof import('element-plus')['ElCheckboxGroup']>
         ColorPicker: FormComponentProps<typeof import('element-plus')['ElColorPicker']>
         DatePicker: FormComponentProps<typeof import('element-plus')['ElDatePicker']>
-        DateRangePicker: FormComponentProps<typeof import('element-plus')['ElDatePicker']>
+        DateRangePicker: Omit<FormComponentProps<typeof import('element-plus')['ElDatePicker']>, 'placeholder'> & { placeholder?: string | [string, string] }
         Input: FormComponentProps<typeof import('element-plus')['ElInput']>
+        TextArea: FormComponentProps<typeof import('element-plus')['ElInput']>
+        InputPassword: FormComponentProps<typeof import('element-plus')['ElInput']>
+        InputSearch: InputSearchProps
         InputNumber: FormComponentProps<typeof import('element-plus')['ElInputNumber']>
         InputOtp: FormComponentProps<typeof import('element-plus')['ElInputOtp']>
         InputTag: FormComponentProps<typeof import('element-plus')['ElInputTag']>
@@ -32,7 +36,7 @@ declare global {
         Slider: FormComponentProps<typeof import('element-plus')['ElSlider']>
         Switch: FormComponentProps<typeof import('element-plus')['ElSwitch']>
         TimePicker: FormComponentProps<typeof import('element-plus')['ElTimePicker']>
-        TimeRangePicker: FormComponentProps<typeof import('element-plus')['ElTimePicker']>
+        TimeRangePicker: Omit<FormComponentProps<typeof import('element-plus')['ElTimePicker']>, 'placeholder'> & { placeholder?: string | [string, string] }
         TimeSelect: FormComponentProps<typeof import('element-plus')['ElTimeSelect']>
         Transfer: FormComponentProps<typeof import('element-plus')['ElTransfer']>
         TreeSelect: FormComponentProps<typeof import('element-plus')['ElTreeSelect']>

@@ -79,7 +79,7 @@ const modalRows = ref([
 const showUpload = ref(true),
   failUpload = ref(false),
   uploadCalls = ref(0)
-const { event, run, status, isElement } = useDemo(() => ({
+const { event, run, status } = useDemo(() => ({
   model,
   saved,
   modalRows: modalRows.value,
@@ -138,10 +138,9 @@ const rename = useModalForm(
     subItems: [
       { type: 'Input', field: 'title', label: '任务名称', required: true },
       {
-        type: isElement ? 'Input' : 'TextArea',
+        type: 'TextArea',
         field: 'note',
         label: '备注',
-        attrs: isElement ? { type: 'textarea' } : {},
       },
     ],
   },

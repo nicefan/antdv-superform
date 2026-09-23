@@ -89,7 +89,7 @@ const total = computed(() =>
   order.lines.reduce((sum, row) => sum + (Number(row.quantity) || 0) * (Number(row.price) || 0), 0)
 )
 const quantity = computed(() => order.lines.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0))
-const { run, status, event, isElement } = useDemo(() => ({
+const { run, status, event } = useDemo(() => ({
   order,
   total: total.value,
   quantity: quantity.value,
@@ -165,10 +165,9 @@ const schema: ExtFormOption = {
           subItems: [
             { type: 'Input', field: 'address', label: '地址' },
             {
-              type: isElement ? 'Input' : 'TextArea',
+              type: 'TextArea',
               field: 'note',
               label: '说明',
-              attrs: isElement ? { type: 'textarea' } : {},
             },
           ],
         },
@@ -178,7 +177,10 @@ const schema: ExtFormOption = {
   ],
 }
 const [register, form] = useForm(schema)
-const preview = useModal(() => h(SuperDetail, { schema, dataSource: order }), { title: '订单预览', width: 1000 })
+const preview = useModal(
+  () => h(SuperDetail, { schema: { subItems: schema.subItems, subSpan: schema.subSpan }, dataSource: order }),
+  { title: '订单预览', width: 1000 }
+)
 async function submit() {
   await run('提交订单', async () => {
     const data = await form.submit()

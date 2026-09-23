@@ -1,153 +1,59 @@
-# 迁移到 superform-antdv 1.0
+# AntDV 接入配置
 
-1.0 同时完成包拆分、AntDV Next 升级和 UI Adapter 解耦。本页列出 AntDV 项目最直接的迁移顺序。
+业务项目使用 `superform-antdv` 和 `antdv-next`，Vue 版本需满足包的 peerDependencies。产品包已内置 Core，业务运行时无需另行安装 superform。
 
-## 版本与安装
-
-- Vue `>= 3.5.0`
-- AntDV Next `>= 1.5.0`
-
-```bash
-pnpm remove antdv-superform ant-design-vue @ant-design/icons-vue
-pnpm add superform-antdv antdv-next
-```
-
-业务运行时不再单独安装 Core `superform`。需要 CLI 时才把 `superform` 添加为开发依赖。
-
-## 初始化迁移
-
-旧写法：
+## 初始化 {#初始化迁移}
 
 ```ts
-app.use(superform, options);
+import superForm from 'superform-antdv'
+
+superForm.initialize()
+superForm.configure({ schemaDiagnostics: true })
 ```
 
-新写法：
+字段组件由 Vite 自动导入插件或 `initialize({ components })` 提供。只选择一个产品包，同一应用不混用 Element Plus 产品。语言由 UI 的 ConfigProvider 管理。
+
+## 字段名称 {#schema-字段名称}
+
+使用 Adapter 声明的名称，如 TextArea、InputPassword、InputSearch、DateRangePicker、TimeRangePicker、RadioGroup、CheckboxGroup。完整目录见[UI 输入组件](/manual/fields/basic-inputs)。
+
+选项字段使用 `options: { source }` 或 `options: { dictName }`；值转换配置放在 options 内。范围双字段使用 endField，逗号字符串使用 stringifyValue。
+
+## 原生属性 {#antdv-next-属性变化}
+
+attrs 采用 AntDV Next 原生 Props，事件参数也遵循原生组件。需要表单上下文时用顶层事件，动态属性使用 dynamicAttrs。InputSearch 的异步 loading 由业务管理。
+
+日期格式、树选择标签、输入与选项见对应[字段指南](/manual/fields/basic-inputs)。表单校验错误使用[统一错误结构](/manual/validation#统一校验错误)。
+
+## 项目组件 {#自定义组件迁移}
+
+通过 `registerComponent(s)` 注册业务组件；项目组件不能覆盖 Core 或 Adapter 保留字段。固定 UI 的项目级覆盖使用首次初始化的 overrides，见[Adapter](/manual/ui-decoupling)。
+
+## 自动导入 {#构建插件迁移}
 
 ```ts
-import superform from "superform-antdv";
-
-superform.initialize();
-superform.configure(options);
-```
-
-`locale` 不再属于 SuperForm 配置，应通过 AntDV `ConfigProvider` 设置。字段组件使用 Vite 自动导入、手动 `initialize({ components })` 或 `/components` 全量入口，详见[安装](/manual/installation)。
-
-## Schema 字段名称
-
-UI 字段使用 AntDV 的真实组件名，不保留旧 SuperForm 别名：
-
-| 旧名称 | 1.0 名称 |
-| --- | --- |
-| `Textarea` | `TextArea` |
-| `DateRange` | `DateRangePicker` |
-| `TimeRange` | `TimeRangePicker` |
-| `Radio` 组选项 | `RadioGroup` |
-| `Checkbox` 组选项 | `CheckboxGroup` |
-
-`Radio` 和 `Checkbox` 仍可表示 AntDV 的单控件，但不再承担 options 增强。范围字段的 `endField`、`stringifyValue` 语义保持不变。
-
-## AntDV Next 属性变化
-
-旧底层组件属性不会由兼容层转换，Schema 的 `attrs` 应直接使用 AntDV Next Props：
-
-| 场景 | 删除的旧属性 | 当前写法 |
-| --- | --- | --- |
-| 输入、选择、日期、时间 | `bordered` | `variant` |
-| AutoComplete | `dataSource` | `options` |
-| AutoComplete、Select、TreeSelect | `dropdownMatchSelectWidth` | `popupMatchSelectWidth` |
-| AutoComplete、Select、TreeSelect | `dropdownRender` | `popupRender` |
-| 弹层样式 | `dropdownStyle` / `popupStyle` | 对应组件的 `styles` |
-| 弹层类名 | `dropdownClassName` / `popupClassName` | 对应组件的 `classes` |
-| 打开状态事件 | `onDropdownVisibleChange` | `onOpenChange` |
-| TimePicker | `addon` | `renderExtraFooter` |
-| RadioGroup | `vertical` | `orientation` |
-| Upload 图标 | `removeIcon` / `downloadIcon` / `previewIcon` | `showUploadList` 对象 |
-| Upload 转换 | `transformFile` | `beforeUpload` |
-
-```ts
-const schema = {
-  type: "Form",
-  subItems: [
-    {
-      type: "Select",
-      field: "status",
-      label: "状态",
-      options: { source: ["启用", "停用"] },
-      attrs: {
-        variant: "filled",
-        popupMatchSelectWidth: true,
-        onOpenChange: (open) => console.log(open),
-      },
-    },
-    {
-      type: "DateRangePicker",
-      field: "startedAt",
-      endField: "endedAt",
-      attrs: { valueFormat: "YYYY-MM-DD" },
-    },
-    {
-      type: "RadioGroup",
-      field: "direction",
-      options: { source: ["横向", "纵向"] },
-      attrs: { orientation: "vertical" },
-    },
-  ],
-};
-```
-
-## 自定义组件迁移
-
-- `components.UserPicker` → `superform.registerComponent("UserPicker", UserPicker)`。
-- 批量业务组件使用 `registerComponents()`。
-- 删除 `ExtUserPicker` 前缀，Schema 直接使用 `UserPicker`。
-- `registComponent`、`registerFormComponents`、`configureComponents` 已移除。
-- `components.Input/Table/Modal` 等底层替换不再支持；默认属性迁到 `defaultProps`，协议级替换迁到自定义 Adapter。
-
-## 构建插件迁移
-
-```ts
-import SuperFormComponents from "superform-antdv/unplugin";
+import SuperFormComponents from 'superform-antdv/unplugin'
 
 SuperFormComponents({
-  dirs: ["src"],
-  entry: "src/main.ts",
-  dts: "src/superform-components.d.ts",
-});
+  dirs: ['src'],
+  entry: 'src/main.ts',
+  dts: 'src/superform-components.d.ts',
+})
 ```
 
-官方插件已内置 AntDV resolver 和类型模块。Rollup、Webpack 子入口已经删除。
-
-## 其他旧属性
-
-以下旧属性只用于识别迁移代码，新 Schema 不应继续使用：
-
-| 旧属性 | 当前写法 |
-| --- | --- |
-| `blocked` | `block` |
-| `wrapping` | `breakAfter` |
-| `hideInTable` / `hideInForm` / `hideInDescription` | `exclude` |
-| `validOn` | `visibleIn` |
-| `invalidDisabled` / `roleMode` | `unauthorized` |
-| `forSlot` | `targetSlot` |
-| `valueToLabel` | `labelAsValue` |
-| `valueToString` | `stringifyValue` |
-| `keepField` | `endField` |
-| `searchSchema` | `searchForm` |
-| `editForm` | `rowEditor.form` |
-| TreeSelect `data` | `treeData` |
+动态 Schema 名称通过插件 types 补充，完整配置见[自动导入](/manual/auto-components)。
 
 ## 图标配置
 
-图标配置使用渲染函数，例如 `icon: () => h(MyIcon)`。覆盖和移除方式见[按钮配置](/manual/super-buttons#按钮配置)。
+图标使用 `() => VNodeChild`，例如 `icon: () => h(UserIcon)`。动作默认图标可在全局 defaultButtons、按钮组或单项覆盖。
 
-## 检查清单
+## 接入检查 {#检查清单}
 
-1. 全局替换包入口与五个旧字段别名。
-2. 删除 `app.use(superform, options)`，在挂载前调用 `initialize()` 和 `configure()`。
-3. 确认每个 Adapter 字段由自动导入或手动组件表提供。
-4. 将业务组件迁到 `registerComponent(s)`。
-5. 按 AntDV Next Props 修正 `attrs`。
-6. 运行项目类型检查、生产构建和关键表单、弹窗、上传、表格回归。
+- 字段组件已自动或手动登记。
+- UI 原生属性与目标产品匹配。
+- 表格 rowKey 稳定唯一。
+- API 数据和字段名一致，回填记录使用 resetFields。
+- 详情单独配置 attrs，仅与表单共享字段及布局。
 
-完整的不兼容变化记录位于仓库 `upgrade/migration/BREAKING-CHANGES.md`。
+<span id="版本与安装"></span>
+<span id="其他旧属性"></span>

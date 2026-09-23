@@ -2,7 +2,7 @@
   <section class="demo-section">
     <h2>个人资料</h2>
     <div class="demo-guide">
-      填写姓名和联系方式，选择兴趣与日期。点击“提交”可查看校验结果；“填入示例”只更新已有字段，“重置”恢复初始数据。搜索姓名会模拟一次异步查询。
+      填写姓名和联系方式，选择兴趣与日期。点击“提交”可查看校验结果；“填入示例”只更新已有字段，“重置”恢复初始数据。点击姓名搜索按钮或按回车会模拟一次异步查询；密码支持显隐切换，备注使用多行输入。
     </div>
     <div class="demo-actions">
       <button class="demo-control primary" @click="run('提交', form.submit)">提交</button
@@ -27,7 +27,7 @@
         切换选项</button
       ><button class="demo-control" @click="preview = !preview">{{ preview ? '返回编辑' : '查看详情' }}</button>
     </div>
-    <SuperDetail v-if="preview" :schema="schema" :data-source="model" />
+    <SuperDetail v-if="preview" :schema="detailSchema" :data-source="model" />
     <SuperForm v-show="!preview" :schema="schema" @register="register" />
     <p role="status" class="demo-status">{{ status }}</p>
     <Teleport to="#demo-test-content"
@@ -55,13 +55,14 @@
           <li>清空姓名提交，应出现统一校验错误；右侧“事件与结果”显示 fields.path/messages。</li>
           <li>切换详情保留当前数据与表单实例，返回编辑后可继续操作。</li>
           <li>清空日期范围应同时清空两个存储字段；显式提示和日期格式应保留。</li>
+          <li>搜索按钮与回车每次只记录一条“姓名搜索”，加载期间不重复提交；密码显隐和备注换行不影响其他字段。</li>
         </ol>
       </div></Teleport
     >
   </section>
 </template>
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { SuperForm, SuperDetail, useForm, type ExtFormOption } from '@demo/product'
 import { useDemo } from '../context'
 const model = reactive({
@@ -93,23 +94,17 @@ const schema: ExtFormOption = {
   dataSource: model,
   subSpan: 12,
   attrs: {
-    labelCol: { style: { width: '120px' } },
-    labelWidth: '120px',
+    ...(isElement ? { labelWidth: '120px' } : {}),
+    ...(!isElement ? { labelCol: { style: { width: '120px' } } } : {}),
   },
   subItems: [
     {
-      type: isElement ? 'Input' : 'InputSearch',
+      type: 'InputSearch',
       field: 'name',
       label: '姓名',
       required: true,
       rules: { min: 2, message: '姓名至少两个字符' },
-      attrs: isElement
-        ? {
-            onKeyup: (e: KeyboardEvent) => {
-              if (e.key === 'Enter') void search()
-            },
-          }
-        : { enterButton: true, loading: searching },
+      attrs: reactive({ enterButton: true, loading: searching }),
       onSearch: search,
     },
     {
@@ -119,6 +114,7 @@ const schema: ExtFormOption = {
       rules: { type: 'email', message: '请输入有效邮箱' },
       slots: { prefix: () => '@' },
     },
+    { type: 'InputPassword', field: 'password', label: '密码', exclude: ['description'] },
     { type: 'InputNumber', field: 'age', label: '年龄', attrs: { min: 0, max: 120 } },
     { type: 'Select', field: 'city', labelField: 'cityLabel', label: '城市', options: { source: cities } },
     {
@@ -167,13 +163,15 @@ const schema: ExtFormOption = {
       attrs: { multiple: true },
     },
     {
-      type: isElement ? 'Input' : 'TextArea',
+      type: 'TextArea',
       field: 'note',
       label: '备注',
       span: 24,
-      attrs: { ...(isElement ? { type: 'textarea' } : {}), rows: 3 },
+      attrs: { rows: 3 },
     },
   ],
 }
+// 详情仅复用字段与布局，避免将表单校验和原生 Form 属性传给详情。
+const detailSchema = computed(() => ({ subItems: schema.subItems, subSpan: schema.subSpan }))
 const [register, form] = useForm(schema)
 </script>

@@ -34,3 +34,7 @@ superForm.initialize({ components: fieldComponents })
 ```
 
 完整说明见[项目 README](https://github.com/nicefan/antdv-superform)。
+
+### Element Plus 输入扩展
+
+`TextArea`、`InputPassword`、`InputSearch` 与 `Input` 共用 ElInput，自动导入和 `initialize({ components })` 均支持。TextArea 固定多行模式，InputPassword 默认提供显隐按钮，InputSearch 提供搜索按钮与回车事件；异步 loading 由业务控制。日期与时间范围分别使用 DateRangePicker、TimeRangePicker。原生属性仍以所选 UI 为准。

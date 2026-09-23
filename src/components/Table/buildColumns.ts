@@ -164,7 +164,7 @@ function parseRender(viewRender, editRender, effectData) {
 
 export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, effectData }) {
   const buttonsConfig = mergeButtonConfig(globalProps.rowButtons || {}, buttons)
-  const { columnProps, ...config } = buttonsConfig
+  const { columnProps, ...config } = buttonsConfig as typeof buttonsConfig & { columnProps?: Obj }
   const buttonsSlot = createButtons({ config, methods, isView })
   if (!buttonsSlot) return
   const render = (param) => {

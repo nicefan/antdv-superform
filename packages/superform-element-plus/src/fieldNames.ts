@@ -1,6 +1,9 @@
 /** 纯名称目录：供初始化与自动导入共用，不引入 UI 组件。 */
 export const elementPlusFieldImports = {
   Input: 'ElInput',
+  TextArea: 'ElInput',
+  InputPassword: 'ElInput',
+  InputSearch: 'ElInput',
   InputNumber: 'ElInputNumber',
   InputOtp: 'ElInputOtp',
   InputTag: 'ElInputTag',

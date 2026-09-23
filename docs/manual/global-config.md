@@ -156,6 +156,8 @@ superform.configure({
 
 ## 组件默认属性 {#defaultprops-合并顺序}
 
+普通属性按以下顺序覆盖；范围、多行和密码字段的固定模式由字段类型确定，不能通过 `attrs` 改为其他模式。
+
 ```text
 Adapter 默认值 → configure.defaultProps → Schema attrs → dynamicAttrs / 运行状态
 ```
