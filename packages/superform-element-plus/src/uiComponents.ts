@@ -1,4 +1,4 @@
-import { h } from 'vue'
+import { h, mergeProps } from 'vue'
 import {
   ElCard,
   ElCheckTag,
@@ -49,6 +49,8 @@ export const uiComponents: UIComponentDefinitions = {
       clearValidate: (instance) => instance.clearValidate(),
     },
     component: ElForm,
+    adaptProps: ({ hideRequiredMark, validateTrigger, ...attrs }) =>
+      hideRequiredMark ? { ...attrs, hideRequiredAsterisk: true } : attrs,
   },
   formItem: {
     defaults: { validateEvent: true },
@@ -70,10 +72,12 @@ export const uiComponents: UIComponentDefinitions = {
   },
   col: {
     component: ElCol,
-    adaptProps: ({ span, style, ...attrs }) =>
-      span === 'auto'
-        ? { ...attrs, span: 24, style: { ...(style || {}), flex: '1 1 0', maxWidth: 'none' } }
-        : { ...attrs, span, style },
+    // ElCol 的默认 span 为 24；auto 显式传 null 才不会生成 el-col-24。
+    adaptProps: ({ span: inSpan, flex, ...attrs }) => {
+      const span = inSpan === 'auto' || flex !== undefined ? null : inSpan
+      const flexStyle = flex ?? (inSpan === 'auto' ? '1 1 0' : undefined)
+      return mergeProps(attrs, { span, style: { flex: flexStyle } })
+    }
   },
   space: { component: ElSpace },
   card: {
@@ -101,8 +105,9 @@ export const uiComponents: UIComponentDefinitions = {
   descriptions: { render: ({ state }) => h(Descriptions, { state }) },
   actionGroup: {
     schemaDefaults: {
-      rowButtons: { buttonProps: { link: true, size: 'small' } },
+      rowButtons: { buttonProps: { text: true } },
       ButtonActions: {
+        save: { attrs: { type: 'primary' } },
         expand: { attrs: { link: true } },
         add: { attrs: { type: 'primary' } },
         delete: { attrs: { type: 'danger' } },
@@ -138,12 +143,12 @@ export const uiComponents: UIComponentDefinitions = {
             const result = await props.onCancel?.()
             if (result !== false) onVisibleChange?.(false)
           },
-        }, '取 消'),
+        }, ()=>'取 消'),
         h(ElButton, {
           type: 'primary',
           loading: props.confirmLoading,
           onClick: () => props.onOk?.(),
-        }, '确 定'),
+        }, ()=>'确 定'),
       ]
       return h(
         ElDialog,

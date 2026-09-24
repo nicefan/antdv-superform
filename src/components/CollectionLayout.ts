@@ -30,15 +30,15 @@ export function createCollectionLayout(
     if (props.layout === 'compact') {
       return nodes.map((node) => {
         if (node.hidden.value) return false
-        const { span, flex } = node.layout.compactProps
+        const { span, flex, style } = node.layout.compactProps
         const width = Number(span) ? ((Number(span) / 24) * 100).toFixed(2) + '%' : undefined
         return h(node.content, {
           key: node.key,
-          style: {
+          style: mergeProps({
             width,
             flex: flex ?? (span === 'auto' ? '1 1 0' : undefined),
             minWidth: 0,
-          },
+          },style),
         })
       })
     }

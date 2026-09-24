@@ -68,6 +68,7 @@ export default {
     provide('inheritOptions', {
       disabled: attrs.disabled,
       subSpan: option.subSpan,
+      ignoreRules,
     })
 
     const submitValidate = (data) =>
@@ -83,7 +84,7 @@ export default {
       )
 
     if (ignoreRules) {
-      Object.assign(attrs, { hideRequiredMark: true, validateTrigger: 'none' })
+      Object.assign(attrs, { hideRequiredMark: true, validateTrigger: false })
     }
 
     const actions = {

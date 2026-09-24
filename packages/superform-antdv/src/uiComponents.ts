@@ -47,6 +47,8 @@ export const uiComponents: UIComponentDefinitions = {
       clearValidate: (instance) => instance.clearValidate(),
     },
     component: Form,
+    adaptProps: ({ hideRequiredMark, ...attrs }) =>
+      hideRequiredMark ? { ...attrs, requiredMark: false } : attrs,
   },
   formItem: { defaults: { validateFirst: true }, component: FormItem },
   row: { component: Row },
@@ -70,6 +72,7 @@ export const uiComponents: UIComponentDefinitions = {
     schemaDefaults: {
       rowButtons: { buttonProps: { type: 'link', size: 'small' } },
       ButtonActions: {
+        save: { attrs: { type: 'primary' } },
         expand: { attrs: { type: 'link' } },
         add: { attrs: { type: 'primary' } },
         delete: { attrs: { danger: true } },

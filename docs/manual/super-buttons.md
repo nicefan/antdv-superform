@@ -63,7 +63,7 @@ buttons: {
 }
 ```
 
-内置名称为 `add`、`delete`、`edit`、`detail`、`submit`、`search`、`reset`。字符串只有在宿主提供同名方法时才有动作；`export`、`import`、`download` 必须自行配置 `onClick`。
+内置名称为 `add`、`delete`、`edit`、`detail`、`submit`、`search`、`reset`、`save`、`cancel`、`expand`。字符串只有在宿主提供同名方法时才有动作；`export`、`import`、`download` 必须自行配置 `onClick`。
 
 ## 内置动作与默认配置 {#内置动作与全局默认}
 
@@ -137,13 +137,12 @@ rowButtons: {
 | `name`                | string                    | —        | 动作标识；命中内置动作时继承默认配置和方法 |
 | `label`               | string/function           | 按动作名 | 文本、插槽名或上下文函数                   |
 | `customRender`        | string/function           | —        | 完全自定义按钮内容                         |
-| `icon` | `() => VNodeChild` | 内置动作图标 | 渲染函数；显式 `undefined` 移除图标 |
-| `color`               | string                    | —        | 语义色或自定义颜色                         |
+| `icon` | `(context?) => VNodeChild` | 内置动作图标 | 可读取按钮上下文的渲染函数；显式 `undefined` 移除图标 |
 | `attrs`               | object                    | `{}`     | Ant Design Vue Button 属性                 |
 | `confirmText`         | string/function           | —        | 点击后先确认                               |
 | `tooltip`             | string                    | —        | 普通提示                                   |
 | `disabledTooltip`     | string/function           | —        | 禁用时提示                                 |
-| `dropdown`            | array/object/Ref/function | —        | 按钮旁的下拉选项                           |
+| `dropdown`            | ActionMenuSource          | —        | 一级同步菜单；数组、键值对象、Ref 或接收 context 的同步函数 |
 | `roleName`            | string                    | —        | 权限标识                                   |
 | `unauthorized`        | string                    | `'hide'` | 无权限时隐藏或禁用                         |
 | `visibleIn`           | string                    | `'both'` | 编辑/详情显示范围                          |
@@ -185,14 +184,16 @@ rowButtons: {
 {
   label: '变更状态',
   dropdown: [
-    { label: '启用', value: 'enable' }, // value 会作为 onClick 的第二个参数
+    { label: '启用', value: 'enable' },
     { label: '停用', value: 'disable' },
   ],
-  onClick: (context, value) => updateStatus(context.record, value),
+  onClick: (context) => updateStatus(context.record, context.value),
 }
 ```
 
-`dropdown` 使用通用选项格式；适合多个相近动作，不适合承载复杂表单。
+`ActionMenuSource` 只支持一级同步菜单：原始值数组、`{ value, label, icon?, disabled? }` 数组、值到标签的对象、上述数据的 `Ref`，或接收 `context` 并同步返回上述数据的函数。不支持嵌套选项和 Promise。选中值统一放在 `context.value`；`onClick` 的第二个参数只在宿主提供原动作时用于调用该动作。
+
+`moreLabel` 未设置时显示省略号图标；设置后使用自定义内容。
 
 <span id="权限与上下文"></span>
 

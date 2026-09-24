@@ -12,7 +12,7 @@ export default function createButtons({ config, methods, effectData, isView }: U
 
   let actions = buttons.actions || []
   if (!visibleIn) {
-    buttons.actions = actions = actions.filter((item) => {
+    actions = actions.filter((item) => {
       if (typeof item === 'string') {
         return !isView
       } else {
@@ -27,5 +27,5 @@ export default function createButtons({ config, methods, effectData, isView }: U
   }
   if (actions.length === 0) return
 
-  return (props = {}) => h(ButtonGroup, { option: buttons, methods, effectData, ...props })
+  return (props = {}) => h(ButtonGroup, { option: { ...buttons, actions }, methods, effectData, ...props })
 }

@@ -241,7 +241,7 @@ export default defineComponent({
             block: false,
             span: 24,
             // FormItem 对单个与多个子节点采用不同包装；固定根节点，避免 1/2 行切换时重挂首行并清除校验状态。
-            render: () => h('div', render()),
+            render: () => h('div', { style: 'width: 100%' }, render()),
           },
           model,
         ],

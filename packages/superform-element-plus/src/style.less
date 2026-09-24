@@ -1,0 +1,15 @@
+.sup-form {
+  .el-form-item .el-form-item {
+    margin-bottom: var(--el-form-item-margin-bottom);
+  }
+}
+
+.sup-table-search > .el-form,
+.sup-form-simple {
+  .el-form-item {
+    // 嵌套 FormItem 的间距恢复规则也读取此变量，保持查询与简化表单一致。
+    --el-form-item-margin-bottom: 0;
+    // margin-top: 6px;
+    // margin-bottom: var(--el-form-item-margin-bottom);
+  }
+}

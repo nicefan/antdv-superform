@@ -1,11 +1,11 @@
-import { createOfficialProduct } from "superform/sdk";
-import { createElementPlusAdapter, type ElementPlusFieldName } from "./adapter";
+import { createOfficialProduct } from 'superform/sdk'
+import { createElementPlusAdapter, type ElementPlusFieldName } from './adapter'
+import './style.less'
 
-const product = createOfficialProduct<ElementPlusFieldName>(
-  "superform-element-plus",
-  (components) => createElementPlusAdapter({ components })
-);
+const product = createOfficialProduct<ElementPlusFieldName>('superform-element-plus', (components) =>
+  createElementPlusAdapter({ components })
+)
 
-export * from "superform";
-export * from "./adapter";
-export default product;
+export * from 'superform'
+export * from './adapter'
+export default product

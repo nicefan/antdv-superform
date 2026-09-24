@@ -1,110 +1,54 @@
-import { h, unref, type VNodeChild } from 'vue'
-import { Button, Divider, Dropdown, Menu, MenuItem, Space, Tooltip } from 'antdv-next'
-import { builtInIcons, toNode, type UIActionGroupProps } from 'superform/sdk'
+import { h, type VNodeChild } from 'vue'
+import { Button, Divider, Dropdown, Menu, MenuItem, SubMenu, Space, Tooltip } from 'antdv-next'
+import { builtInIcons, type UIActionGroupProps, type UIActionItem } from 'superform/sdk'
 
-function stopActionEvent(event: any) {
+function stop(event: any) {
   ;(event?.domEvent || event)?.stopPropagation?.()
 }
 
-function renderActionContent(button: Obj, effectData: Obj, labelOnly: boolean, iconOnly: boolean) {
-  return [
-    button.icon && !labelOnly ? button.icon() : undefined,
-    !button.icon || !iconOnly ? toNode(button.label, effectData) : undefined,
-  ]
+function menuItems(button: UIActionItem) {
+  return button.menu?.map((item) => h(MenuItem, {
+    key: `${button.key}:${item.key}`, disabled: button.disabled || item.disabled,
+    onClick: (event) => { stop(event); return button.onSelect(item.value, event.domEvent || event) },
+  }, { icon: item.icon, default: item.label }))
 }
 
-function renderActionButton(button: Obj, effectData: Obj, labelOnly: boolean, iconOnly: boolean) {
-  const attrs = { ...button.attrs, disabled: unref(button.attrs?.disabled), loading: unref(button.attrs?.loading) }
-  const callAction = (event: any) => {
-    stopActionEvent(event)
-    return button.onClick?.(event)
+function renderButton(button: UIActionItem, props: UIActionGroupProps) {
+  const attrs = { ...button.attrs, disabled: button.disabled,
+    onClick: (event) => { stop(event); if (!button.menu) return button.onClick(event) },
   }
-  const menu = unref(button.menu)
-  let content: VNodeChild
-  if (menu) {
-    content = h(
-      Dropdown,
-      { disabled: attrs.disabled, ...button.dropdownProps },
-      {
-        popupRender: () =>
-          h(Menu, { onClick: callAction }, () =>
-            menu.map((item: Obj) =>
-              h(
-                MenuItem,
-                { key: item.value, disabled: item.disabled },
-                {
-                  icon: item.icon,
-                  default: () => toNode(item.label, effectData),
-                }
-              )
-            )
-          ),
-        default: () =>
-          h(Button, attrs, () => [
-            ...renderActionContent(button, effectData, labelOnly, iconOnly),
-            builtInIcons.expand(),
-          ]),
-      }
-    )
-  } else if (button.render) {
-    content = button.render({ props: attrs, ...effectData })
-  } else {
-    content = h(Button, { ...attrs, onClick: callAction }, () =>
-      renderActionContent(button, effectData, labelOnly, iconOnly)
-    )
+  let content: VNodeChild = button.render ? button.render(attrs) : h(Button, attrs, () => [
+    !props.labelOnly && button.icon?.(),
+    (!props.iconOnly || !button.icon) && button.label(),
+    button.menu && builtInIcons.expand(),
+  ])
+  if (button.menu) {
+    const trigger = content
+    content = h(Dropdown, { ...button.dropdownProps, disabled: button.disabled }, {
+      default: () => trigger,
+      popupRender: () => h(Menu, {}, () => menuItems(button)),
+    })
   }
-  return h(Tooltip, { title: unref(button.tooltipTitle) }, { default: () => content })
+  return h(Tooltip, {}, { title: button.tooltip, default: () => h('span', { onClick: stop }, [content]) })
 }
 
 export function renderActionGroup(props: UIActionGroupProps) {
-  const { groupProps, buttons, moreButtons, defaultButtonProps, labelOnly, iconOnly, moreLabel, effectData } = props
-  const divider =
-    props.divider ??
-    (groupProps?.direction !== 'vertical' &&
-      ['link', 'text'].includes(String(defaultButtonProps?.variant ?? defaultButtonProps?.type ?? '')))
-  const content = buttons.flatMap((button: Obj, index: number) => [
-    renderActionButton(button, effectData, !!labelOnly, !!iconOnly),
+  const { groupProps, buttons, moreButtons, defaultButtonProps } = props
+  const divider = props.divider ?? (groupProps?.direction !== 'vertical' &&
+    ['link', 'text'].includes(String(defaultButtonProps?.variant ?? defaultButtonProps?.type ?? '')))
+  const content = buttons.flatMap((button, index) => [
+    h('span', { key: button.key }, [renderButton(button, props)]),
     divider && index < buttons.length - 1 ? h(Divider, { type: 'vertical', class: 'sup-buttons-divider' }) : undefined,
   ])
-  if (moreButtons.length) {
-    content.push(
-      h(
-        Dropdown,
-        {},
-        {
-          default: () =>
-            h(Button, defaultButtonProps, () => (moreLabel ? toNode(moreLabel, effectData) : builtInIcons.more())),
-          popupRender: () =>
-            h(Menu, {}, () =>
-              moreButtons.map((button: Obj) =>
-                h(
-                  MenuItem,
-                  {
-                    key: button.label,
-                    disabled: unref(button.attrs?.disabled),
-                    onClick: (event) => {
-                      stopActionEvent(event)
-                      return button.onClick?.(event)
-                    },
-                  },
-                  {
-                    icon: button.icon,
-                    default: () => toNode(button.label, effectData),
-                  }
-                )
-              )
-            ),
-        }
-      )
-    )
-  }
-  return h(
-    Space,
-    {
-      size: divider ? 0 : 'small',
-      ...groupProps,
-      class: ['sup-buttons', groupProps?.class],
-    },
-    () => content
-  )
+  if (moreButtons.length) content.push(h(Dropdown, {}, {
+    default: () => h(Button, { ...defaultButtonProps, onClick: stop }, props.moreLabel),
+    popupRender: () => h(Menu, {}, () => moreButtons.map((button) => button.menu
+      ? h(SubMenu, { key: button.key, disabled: button.disabled }, {
+          title: button.label, icon: button.icon, default: () => menuItems(button),
+        })
+      : h(MenuItem, { key: button.key, disabled: button.disabled,
+          onClick: (event) => { stop(event); return button.onClick(event.domEvent || event) },
+        }, { icon: button.icon, default: button.label }))),
+  }))
+  return h(Space, { size: divider ? 0 : 'small', ...groupProps, class: ['sup-buttons', groupProps?.class] }, () => content)
 }

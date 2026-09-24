@@ -2,10 +2,18 @@
 import { h, type Component, type PropType, defineComponent } from 'vue'
 import { mapKeys, camelCase } from 'lodash-es'
 import { ButtonGroup } from '../components/buttons'
-import type { ButtonItem, ExtButtonGroup } from '../exaTypes'
+import type { ExtButtonGroup } from '../exaTypes'
 
 const SuperButtons: Component = defineComponent({
   props: {
+    align: String as PropType<ExtButtonGroup['align']>,
+    divider: { type: Boolean, default: undefined },
+    moreLabel: [String, Function, Object] as PropType<ExtButtonGroup['moreLabel']>,
+    attrs: Object as PropType<ExtButtonGroup['attrs']>,
+    methods: Object as PropType<ExtButtonGroup['methods']>,
+    visibleIn: String as PropType<ExtButtonGroup['visibleIn']>,
+    validOn: String as PropType<ExtButtonGroup['validOn']>,
+    roleMode: String as PropType<ExtButtonGroup['roleMode']>,
     limit: Number,
     buttonProps: Object as PropType<ExtButtonGroup['buttonProps']>,
     /** 按钮显示方式icon/label */
@@ -16,7 +24,7 @@ const SuperButtons: Component = defineComponent({
     /** @deprecated 使用 `unauthorized: 'disable'` */
     invalidDisabled: Boolean,
     disabled: [Boolean, Function] as PropType<boolean | Fn<boolean>>,
-    actions: Array as PropType<ButtonItem[]>,
+    actions: Array as PropType<ExtButtonGroup['actions']>,
     effectData: Object,
   },
   setup(props, { slots }) {
@@ -41,7 +49,9 @@ const SuperButtons: Component = defineComponent({
             attrs,
           }
         })
-    return () => h(ButtonGroup, { option: { ...config, actions: __actions }, effectData })
+    return () => h('div', {
+      style: { display: 'flex', justifyContent: { left: 'flex-start', center: 'center', right: 'flex-end' }[props.align || 'left'] },
+    }, [h(ButtonGroup, { option: { ...config, actions: __actions }, effectData })])
   },
 })
 export default SuperButtons

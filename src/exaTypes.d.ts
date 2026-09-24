@@ -279,7 +279,7 @@ interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
 interface ButtonItem {
   label?: VSlot
   /** 全局默认配置指定的名称 */
-  name?: string
+  name?: import('./components/buttons/defaults').BuiltInButtonName | (string & {})
   customRender?: VSlot
   /** 确认提示文本 */
   confirmText?: string | Fn<string>
@@ -298,17 +298,18 @@ interface ButtonItem {
   visibleIn?: 'form' | 'detail' | 'both'
   /** @deprecated 使用 `visibleIn` */
   validOn?: 'form' | 'detail' | 'both'
-  dropdown?: SelectOptions
+  dropdown?: ActionMenuSource
   dropdownProps?: UIActionProps<'Dropdown'>
   tooltip?: string
   /** 按钮禁用时的提示 */
   disabledTooltip?: string | Fn<string>
-  icon?: () => VNodeChild
+  icon?: (context?: Obj) => VNodeChild
   attrs?: UIActionProps<'Button'> & HTMLAttributes
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
   /** 传递到内置方法时的所需参数 */
   meta?: Obj
+  /** 菜单值为 context.value；第二参数为可选的宿主动作调用函数。 */
   onClick?: Fn
 }
 type TableApis = {
@@ -623,8 +624,20 @@ export type OptionsSource =
   | Ref<DefaultOptionsType>
   | ((effectData: Obj) => DefaultOptionsType | Promise<DefaultOptionsType>)
 
-// 动作下拉仍使用数据源类型，不参与输入字段配置包的迁移。
-type SelectOptions = OptionsSource
+/** 一级同步动作菜单；函数接收当前按钮的业务上下文。 */
+export type ActionMenuOption = {
+  value: unknown
+  label?: VSlot | number
+  icon?: (context?: Obj) => VNodeChild
+  disabled?: boolean | Fn<boolean>
+}
+export type ActionMenuData =
+  | readonly (string | number | boolean | ActionMenuOption)[]
+  | Readonly<Record<string, VSlot | number>>
+export type ActionMenuSource =
+  | ActionMenuData
+  | Ref<ActionMenuData>
+  | ((context: Obj) => ActionMenuData)
 
 export type OptionsConfig = {
   /** 与 dictName 同时配置时优先使用 source，并给出警告。 */
