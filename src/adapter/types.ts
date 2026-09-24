@@ -77,11 +77,22 @@ export interface UIServiceHandle {
 
 export type UIMessageType = 'success' | 'error' | 'info' | 'warning'
 
+/** 确认成功后关闭；拒绝时保留弹窗，取消与销毁均需要通知关闭。 */
+export interface UIConfirmOptions extends Obj {
+  title?: unknown
+  content?: unknown
+  okText?: string
+  cancelText?: string
+  onOk?: () => unknown | Promise<unknown>
+  onCancel?: (...args: any[]) => unknown | Promise<unknown>
+  afterClose?: () => void
+}
+
 export interface ServiceAdapter {
   /** 显示轻量消息。 */
   message: (type: UIMessageType, content: unknown) => void
   /** 打开命令式确认框。 */
-  confirm: (props: Obj) => UIServiceHandle
+  confirm: (props: UIConfirmOptions) => UIServiceHandle
   /** 打开命令式信息框，主要用于可更新的加载与错误反馈。 */
   info: (props: Obj) => UIServiceHandle
 }
@@ -322,16 +333,40 @@ export interface UIDescriptionsProps {
   rows: UIDescriptionItem[][]
 }
 
+/** Core 已解析业务上下文，UI 只消费内容、状态和标准事件。 */
+export interface UIActionMenuItem {
+  key: string | number
+  value: unknown
+  label: () => VNodeChild
+  icon?: () => VNodeChild
+  disabled: boolean
+}
+
+export interface UIActionItem {
+  key: string | number
+  name?: string
+  label: () => VNodeChild
+  icon?: () => VNodeChild
+  tooltip?: () => VNodeChild
+  attrs: Obj
+  disabled: boolean
+  loading: boolean
+  menu?: UIActionMenuItem[]
+  dropdownProps?: Obj
+  render?: (attrs: Obj) => VNodeChild
+  onClick: (event?: unknown) => unknown
+  onSelect: (value: unknown, event?: unknown) => unknown
+}
+
 export interface UIActionGroupProps {
   groupProps?: Obj
-  buttons: Obj[]
-  moreButtons: Obj[]
+  buttons: UIActionItem[]
+  moreButtons: UIActionItem[]
   defaultButtonProps?: Obj
   divider?: boolean
   labelOnly?: boolean
   iconOnly?: boolean
-  moreLabel?: unknown
-  effectData: Obj
+  moreLabel: () => VNodeChild
 }
 
 export interface UIAdapter {

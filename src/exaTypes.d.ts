@@ -279,7 +279,7 @@ interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
 interface ButtonItem {
   label?: VSlot
   /** 全局默认配置指定的名称 */
-  name?: string
+  name?: import('./components/buttons/defaults').BuiltInButtonName | (string & {})
   customRender?: VSlot
   /** 确认提示文本 */
   confirmText?: string | Fn<string>
@@ -303,12 +303,13 @@ interface ButtonItem {
   tooltip?: string
   /** 按钮禁用时的提示 */
   disabledTooltip?: string | Fn<string>
-  icon?: () => VNodeChild
+  icon?: (context?: Obj) => VNodeChild
   attrs?: UIActionProps<'Button'> & HTMLAttributes
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
   /** 传递到内置方法时的所需参数 */
   meta?: Obj
+  /** 菜单值为 context.value；第二参数为可选的宿主动作调用函数。 */
   onClick?: Fn
 }
 type TableApis = {

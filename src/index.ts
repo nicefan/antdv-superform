@@ -36,6 +36,7 @@ export type {
   TableAdapter,
   UIMessageType,
   UIServiceHandle,
+  UIConfirmOptions,
   UploadAdapter,
   UITableColumn,
   UITableFilterProps,
@@ -52,6 +53,8 @@ export type {
   UIFormItemProps,
   UIDescriptionsProps,
   UIActionGroupProps,
+  UIActionItem,
+  UIActionMenuItem,
 } from './adapter'
 export { registerAutoImportedComponents } from './components'
 export { configure, registerComponent, registerComponents, useAdapter } from './plugin'
@@ -61,3 +64,5 @@ export type { AdapterDefaultProps, SuperFormConfig } from './plugin'
 export default plugin
 
 export type * from './exaTypes'
+
+export type { BuiltInButtonName } from './components/buttons/defaults'

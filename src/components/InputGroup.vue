@@ -64,7 +64,11 @@ export default defineComponent({
 
     // 生成FormItem
     const rules = computed(() =>
-      props.disabled ? undefined : !option.required || unref(inheritAttrs.required) ? ruleObj : ruleObj.slice(1)
+      props.disabled
+        ? undefined
+        : (!option.required || unref(inheritAttrs.required) ? ruleObj : ruleObj.slice(1)).map((rule) =>
+            inheritAttrs.ignoreRules ? { ...rule, trigger: 'none', validateTrigger: false } : rule
+          )
     )
     const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps, extProps)
     const _label = createLabelNode(option, props.effectData)

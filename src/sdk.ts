@@ -29,6 +29,7 @@ export type {
   TableAdapter,
   UIMessageType,
   UIServiceHandle,
+  UIConfirmOptions,
   UploadAdapter,
   UITableColumn,
   UITableFilterProps,
@@ -46,6 +47,8 @@ export type {
   UIDescriptionsProps,
   UIDescriptionItem,
   UIActionGroupProps,
+  UIActionItem,
+  UIActionMenuItem,
 } from './adapter'
 export { globalConfig } from './config'
 export { toNode } from './utils/toNode'
@@ -60,3 +63,5 @@ export {
   defineFieldAdapters,
   combineFieldHandlers,
 } from './adapter/fieldProtocol'
+
+export type { BuiltInButtonName } from './components/buttons/defaults'

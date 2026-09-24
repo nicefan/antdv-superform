@@ -79,7 +79,7 @@ export function useCollectionNodes(props: CollectionNodeProps, buildNode: typeof
       const viewNode = getViewNode(option, reactive({ ...toRefs(effectData), isView: true }))
       innerNode = () => (editableRef.value ? inputNode() : viewNode ? viewNode() : refData.value)
     }
-    const colProps: Obj = { ...option.colProps, span }
+    const colProps: Obj = { ...option.colProps, ...(span !== undefined && { span }) }
     defaults(colProps, { span: presetSpan }, globalProps.Col, { span: 8 })
     if (colProps.span === 0 || colProps.flex) {
       colProps.span = undefined
@@ -91,8 +91,13 @@ export function useCollectionNodes(props: CollectionNodeProps, buildNode: typeof
     if (props.fieldWrapper !== 'none' && !independent && (!block || (option.field && option.label))) {
       // 非容器组件带field,或者非block的元素，生成FormItem，如infoSlot, button独立一行显示
       const __rules = formatRule(subData.rules, effectData)
+      // 保留规则供显式 validate/submit 使用，只屏蔽输入时的自动触发。
       const rules = computed(() =>
-        unref(attrs.disabled) ? undefined : !option.required || required.value ? __rules : __rules.slice(1)
+        unref(attrs.disabled)
+          ? undefined
+          : (!option.required || required.value ? __rules : __rules.slice(1))?.map((rule) =>
+              inheritOptions.ignoreRules ? { ...rule, trigger: 'none', validateTrigger: false } : rule
+            )
       )
       const formItemAttrs = mergeProps(globalProps.FormItem, option.formItemProps)
       const label = createLabelNode(option, effectData)
@@ -114,12 +119,13 @@ export function useCollectionNodes(props: CollectionNodeProps, buildNode: typeof
     // 紧凑组沿用外层上下文，不新增原先被紧凑分支跳过的继承包装。
     if (independent && props.fieldWrapper !== 'none') {
       // 容器组件转递继承属性
-      const inheritOptions: Obj = {
+      const inheritData: Obj = {
         required,
         disabled: attrs.disabled,
         subSpan: option.subSpan ?? presetSpan,
+        ignoreRules: inheritOptions.ignoreRules,
       }
-      node = () => h(DataProvider, { name: 'inheritOptions', data: inheritOptions }, innerNode)
+      node = () => h(DataProvider, { name: 'inheritOptions', data: inheritData }, innerNode)
     }
 
     const isBlock = block ?? (containers.includes(type) && !option.span)

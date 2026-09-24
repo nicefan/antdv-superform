@@ -4,44 +4,12 @@ import { defaults, merge } from 'lodash-es'
 import { isRef, ref, type Ref } from 'vue'
 import { toNode } from '../../utils'
 import { getUIService } from '../../adapter'
-import { builtInIcons } from '../../icons'
+import { builtInButtons, buttonText } from './defaults'
 
 const getDefault = () => {
   const actions: Obj<ButtonItem> = merge(
-    {
-      add: {
-        icon: builtInIcons.add,
-        label: '新增',
-      },
-      delete: {
-        icon: builtInIcons.delete,
-        label: '删除',
-        confirmText: '确定要删除吗？',
-        disabled: (param) => !param.record && !(param.selectedRows?.length > 0),
-      },
-      edit: {
-        icon: builtInIcons.edit,
-        label: '修改',
-        disabled: (param) => !param.record && !(param.selectedRows?.length === 1),
-      },
-      detail: {
-        icon: builtInIcons.detail,
-        label: '查看',
-        disabled: (param) => !param.record && !(param.selectedRows?.length === 1),
-      },
-      submit: {
-        icon: builtInIcons.submit,
-        label: '提交',
-      },
-      search: {
-        icon: builtInIcons.search,
-        label: '查询',
-      },
-      reset: {
-        icon: builtInIcons.reset,
-        label: '重置',
-      },
-    },
+    {},
+    builtInButtons,
     globalProps.ButtonActions,
     globalConfig.defaultButtons
   )
@@ -60,11 +28,11 @@ function buildDefaultActions(methods) {
         actions[key].onClick = methods[key]
       } else {
         const { icon, ...config } = methods[key]
-        merge(actions[key], { attrs: { title: actions[key].label } }, config)
+        merge(actions[key], config)
         if (Object.prototype.hasOwnProperty.call(methods[key], 'icon')) actions[key].icon = icon
       }
     } else {
-      actions[key] = methods[key]
+      actions[key] = typeof methods[key] === 'function' ? { onClick: methods[key] } : methods[key]
     }
   })
   return actions
@@ -127,8 +95,8 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
           try {
             getUIService('services').confirm({
               title: () => toNode(text, param),
-              okText: '确定',
-              cancelText: '取消',
+              okText: buttonText.confirm,
+              cancelText: buttonText.cancel,
               ...globalProps.Modal,
               onCancel: async (...args) => {
                 const result = await globalProps.Modal?.onCancel?.(...args)

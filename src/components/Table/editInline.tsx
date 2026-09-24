@@ -75,8 +75,8 @@ export default function ({ childrenMap, orgList, listener, rowEditor, rowKey }) 
 
   const editActions = [
     {
-      label: '保存',
-      loading: true,
+      name: 'save',
+      attrs: { loading: true },
       onClick: async (args) => {
         const { record } = args
         const editInfo = getEditInfo(record)
@@ -110,7 +110,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor, rowKey }) 
       },
     },
     {
-      label: '取消',
+      name: 'cancel',
       disabled: ({ record }) => getEditInfo(record).saving,
       onClick: async (args) => {
         const editInfo = getEditInfo(args.record)

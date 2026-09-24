@@ -2,7 +2,7 @@
 import { ButtonGroup } from '../components/buttons'
 import { ref, reactive, h, toRaw, watch, nextTick } from 'vue'
 import Controls from '../components'
-import { getEffectData, getSemanticIconNode } from '../utils'
+import { getEffectData } from '../utils'
 import type { RootTableOption } from 'src/exaTypes'
 import { omit } from 'lodash-es'
 
@@ -65,10 +65,6 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
     if (limit && subItems.length > limit)
       buttonsConfig.actions = [
         {
-          label: () => [
-            expanded.value ? '收起 ' : '展开 ',
-            getSemanticIconNode(expanded.value ? 'collapse' : 'expand'),
-          ],
           name: 'expand',
           onClick: () => (expanded.value = !expanded.value),
         } as any,
@@ -79,11 +75,13 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
       align: 'right',
       span: 'auto',
       render: () =>
-        h(ButtonGroup, {
-          option: buttonsConfig,
-          methods: defaultAction,
-          effectData: getEffectData({ table: tableRef, form: formRef }),
-        }),
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end', width: '100%' } }, [
+          h(ButtonGroup, {
+            option: buttonsConfig,
+            methods: defaultAction,
+            effectData: getEffectData({ table: tableRef, form: formRef, expanded }),
+          }),
+        ]),
     })
   }
   // 更新初始化数据
