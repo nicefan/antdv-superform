@@ -71,6 +71,7 @@ export default defineComponent({
 
     watchEffect(() => props.schema && setOption(toRaw(props.schema)))
 
+    let onTableQuery: Fn | undefined
     const {
       loading,
       pagination,
@@ -83,7 +84,7 @@ export default defineComponent({
       cancelQuery,
       setQueryParams,
       getQueryParams,
-    } = useQuery(option, updateSource, dataRef)
+    } = useQuery(option, updateSource, dataRef, () => onTableQuery?.())
     const { getScrollRef, redoHeight, listenResize } = useTableScroll(option, dataRef, wrapRef)
 
     // editable模式下，表格表单校验
@@ -125,6 +126,7 @@ export default defineComponent({
 
     const tableRef = ref({ ...exposed })
     const register = (comp) => {
+      onTableQuery = comp.onQueryRequest
       // 组件公开实例不是 reactive 对象，先包装后再保留其属性响应性。
       Object.assign(tableRef.value, toRefs(reactive(comp)), exposed)
       ctx.emit('register', tableRef.value)

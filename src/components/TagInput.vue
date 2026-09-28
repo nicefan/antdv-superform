@@ -1,10 +1,14 @@
 <template>
-  <component v-for="(tag, index) in tags" :key="tag" :is="() => renderTag(tag, index)" />
-  <component :is="renderInput" v-if="inputVisible" />
-  <component :is="renderAddTag" v-else />
+  <div class="sup-tag-input-group">
+    <component v-for="(tag, index) in tags" :key="tag" :is="renderTag" :tag="tag" :index="index" />
+    <span v-if="inputVisible" class="sup-tag-input-editor">
+      <component :is="renderInput" />
+    </span>
+    <component :is="renderAddButton" v-else />
+  </div>
 </template>
 <script lang="ts" setup>
-import { computed, h, nextTick, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { getSemanticIconNode, toNode } from '../utils'
 import { resolveUIField, getUIRender } from '../adapter'
 
@@ -24,7 +28,7 @@ const props = withDefaults(
     closable?: boolean | Fn
   }>(),
   {
-    newLabel: '添加',
+    newLabel: '',
     closable: true,
   }
 )
@@ -50,7 +54,9 @@ const renderInput = () => {
     {
       ref: (instance) => (inputRef.value = instance),
       class: 'sup-tag-input',
+      size: 'small',
       onBlur: handleInputConfirm,
+      onKeydown: handleInputKeydown,
     },
     props.option,
     context.state
@@ -91,7 +97,8 @@ const handleClose = (removedTag) => {
   updateValue(_tags)
 }
 
-const renderTag = (tag: string, index: number) => {
+// 保持组件类型稳定，切换输入框时复用已有标签，避免重新挂载触发入场动画。
+const renderTag = ({ tag, index }: { tag: string; index: number }) => {
   const node = getUIRender('tag')(
     {
       removable: getClosable(tag, index),
@@ -102,9 +109,9 @@ const renderTag = (tag: string, index: number) => {
   return tag.length > 20 ? getUIRender('tooltip')({ title: tag }, { default: () => node }) : node
 }
 
-const renderAddTag = () =>
-  getUIRender('tag')(
-    { class: 'sup-tag-add', onClick: showInput },
+const renderAddButton = () =>
+  getUIRender('button')(
+    { size: 'small', 'aria-label': '添加标签', onClick: showInput, class: 'sup-tag-add' },
     { default: () => [getSemanticIconNode('add'), toNode(props.newLabel, props.effectData)] }
   )
 
@@ -114,6 +121,14 @@ const updateValue = (val: string[]) => {
   } else {
     emit('update:value', val)
   }
+}
+
+const handleInputKeydown = (event: KeyboardEvent) => {
+  // 输入法选词的回车不提交标签；229 兼容部分浏览器在组合输入结束时的按键事件。
+  if (event.key !== 'Enter' || event.isComposing || event.keyCode === 229) return
+  event.preventDefault()
+  event.stopPropagation()
+  handleInputConfirm()
 }
 
 const handleInputConfirm = () => {

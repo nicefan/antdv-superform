@@ -2,9 +2,9 @@ import { useConfig as useAntdvConfig } from 'antdv-next/config-provider/context'
 import { h } from 'vue'
 import {
   ConfigProvider,
-  Upload,
   Card,
   CheckableTag,
+  CheckableTagGroup,
   Col,
   Empty,
   Form,
@@ -26,9 +26,9 @@ import { renderTable, renderTableFilter, tableSelectors } from './components/Tab
 import { renderActionGroup } from './components/ActionGroup'
 import { renderUpload } from './components/Upload'
 
-async function validateForm(instance: any, path?: (string | number)[]) {
+async function validateForm(instance: any, paths?: (string | number)[][]) {
   try {
-    if (path) await instance.validateFields([path])
+    if (paths) await instance.validateFields(paths)
     else await instance.validate()
   } catch (error: any) {
     if (!Array.isArray(error?.errorFields)) throw error
@@ -42,8 +42,8 @@ async function validateForm(instance: any, path?: (string | number)[]) {
 export const uiComponents: UIComponentDefinitions = {
   form: {
     service: {
-      validate: (instance) => validateForm(instance),
-      validateField: validateForm,
+      validate: validateForm,
+      validateField: (instance, path) => validateForm(instance, [path]),
       clearValidate: (instance) => instance.clearValidate(),
     },
     component: Form,
@@ -83,6 +83,7 @@ export const uiComponents: UIComponentDefinitions = {
     render: ({ attrs }) => renderActionGroup(attrs),
   },
   tooltip: { component: Tooltip },
+  button: { component: Button },
   tag: {
     component: Tag,
     adaptProps: ({ removable, onRemove, ...attrs }) => ({ ...attrs, closable: removable, onClose: onRemove }),
@@ -94,6 +95,23 @@ export const uiComponents: UIComponentDefinitions = {
       checked: selected,
       onChange: onSelectedChange,
     }),
+  },
+  checkableTagGroup: {
+    render: ({ attrs: { options, selected, multiple, onSelectedChange } }) =>
+      h(CheckableTagGroup, {
+        options,
+        classes: { item: 'tag-select' },
+        multiple,
+        value: multiple ? selected : selected[0] ?? null,
+        onChange: (value: string | number | (string | number)[] | null) => {
+          const nextSelected = Array.isArray(value) ? value : value === null ? [] : [value]
+          const added = nextSelected.find((item) => !selected.includes(item))
+          const removed = selected.find((item) => !nextSelected.includes(item))
+          // 原生分组只提供最终值；还原点击项，由 Core 保留单选不可取消及 check/change 语义。
+          if (added !== undefined) onSelectedChange(added, true)
+          else if (removed !== undefined) onSelectedChange(removed, false)
+        },
+      }),
   },
   empty: { component: Empty },
   modal: {
@@ -109,14 +127,14 @@ export const uiComponents: UIComponentDefinitions = {
       },
     },
     component: Modal,
-    adaptProps: ({ visible, 'onUpdate:visible': onVisibleChange, ...attrs }) => ({
+    adaptProps: ({ visible, 'onUpdate:visible': onVisibleChange, destroyOnClose, ...attrs }) => ({
       ...attrs,
       open: visible,
+      destroyOnHidden: destroyOnClose,
       'onUpdate:open': onVisibleChange,
     }),
   },
-  upload: { service: { listIgnore: Upload.LIST_IGNORE }, render: ({ attrs, slots }) => renderUpload(attrs, slots) },
-  uploadTrigger: { component: Button },
+  upload: { render: ({ state, slots }) => renderUpload(state, slots) },
   preview: {
     render: ({ attrs: props }) => {
       const { visible, 'onUpdate:visible': onVisibleChange, images = [], current, width, height } = props

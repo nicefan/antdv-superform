@@ -3,13 +3,14 @@
 /* eslint-disable no-use-before-define */
 import Vue from 'vue'
 
-import type { Component, CSSProperties, HTMLAttributes, VNodeChild, VNodeTypes, Ref } from 'vue'
+import type { Component, CSSProperties, HTMLAttributes, VNode, VNodeChild, VNodeTypes, Ref } from 'vue'
 
 import { RuleConfig } from './utils/buildRule'
+import type { UIUploadFile } from './adapter/types'
 
-// type VNode = VNodeChild
 // type Readonly<T = any> = Vue.DeepReadonly<T>
 type VSlot = string | Fn
+type IconNode = VNode | Component | VSlot
 
 interface HelpMessage {
   color: 'success' | 'info' | 'warning' | 'error'
@@ -166,7 +167,7 @@ interface ExtBaseOption {
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
-  tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: () => VNodeChild })
+  tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: IconNode })
   // help?: HelpMessage
   /** 校验规则，指定value而没指定field时无效 */
   rules?: RuleConfig | RuleConfig[]
@@ -303,7 +304,7 @@ interface ButtonItem {
   tooltip?: string
   /** 按钮禁用时的提示 */
   disabledTooltip?: string | Fn<string>
-  icon?: (context?: Obj) => VNodeChild
+  icon?: IconNode
   attrs?: UIActionProps<'Button'> & HTMLAttributes
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
@@ -377,7 +378,7 @@ type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
 export interface ModalSchemaProps {
   title?: VSlot
   content?: VSlot
-  icon?: () => VNodeChild
+  icon?: IconNode
   buttons?: ExtButtons
   destroyOnClose?: boolean
   maskClosable?: boolean
@@ -387,7 +388,11 @@ export interface ModalSchemaProps {
 }
 
 export type ExtModalProps = ModalSchemaProps & Omit<UIModalProps<'Modal'>, keyof ModalSchemaProps>
-export type ModalOpenOptions = Partial<ExtModalProps> & { data?: Obj }
+export type ExtModalFormProps = ExtModalProps & {
+  /** 确认流程的校验、提交任务或 onOk 失败时通知；不改变弹窗保留的失败语义。 */
+  onSubmitError?: (error: unknown) => void | Promise<void>
+}
+export type ModalOpenOptions = Partial<ExtModalFormProps> & { data?: Obj }
 
 /** SuperForm 稳定的表格容器语义。 */
 export interface TableSchemaProps {
@@ -433,6 +438,8 @@ interface ExtTableOption extends ExtBaseOption {
   rowEditor?: {
     editMode?: 'inline' | 'modal'
     addMode?: 'inline' | 'modal'
+    /** 行内编辑是否仅允许同时编辑一行，默认 false；开启后查询请求会清除草稿。 */
+    singleEdit?: boolean
     form?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[] }
     modalProps?: ExtModalProps
     /**提交保存前 */
@@ -556,10 +563,10 @@ interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
 interface ExtTabItem extends Omit<ExtGroupBaseOption, 'type' | 'attrs'> {
   label: VSlot
   key?: string
-  icon?: () => VNodeChild
+  icon?: IconNode
   attrs?: {
     closable?: boolean
-    closeIcon?: () => VNodeChild
+    closeIcon?: IconNode
     forceRender?: boolean
   }
   subItems: UniOption[]
@@ -572,7 +579,7 @@ interface ExtCollapseOption extends ExtBaseOption {
 interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
   label: VSlot
   key?: string
-  icon?: () => VNodeChild
+  icon?: IconNode
   subItems: UniOption[]
   buttons?: ExtButtons
 }
@@ -587,8 +594,8 @@ interface ExtFormItemOption extends ExtBaseOption, RangeFieldOption {
     | boolean
     | Obj<string>
     | string[]
-    | { label?: string; value: any; color: string; icon?: () => VNodeChild }[]
-    | Fn<string | { label: string; color?: string; icon?: () => VNodeChild }>
+    | { label?: string; value: any; color: string; icon?: IconNode }[]
+    | Fn<string | { label: string; color?: string; icon?: IconNode }>
   formItemProps?: FormItemSchemaProps & UIContainerProps<'FormItem'>
   descriptionsProps?: ExtDescriptionsProps
   /**是否可编辑 */
@@ -628,7 +635,7 @@ export type OptionsSource =
 export type ActionMenuOption = {
   value: unknown
   label?: VSlot | number
-  icon?: (context?: Obj) => VNodeChild
+  icon?: IconNode
   disabled?: boolean | Fn<boolean>
 }
 export type ActionMenuData =
@@ -691,6 +698,20 @@ export interface AutoCompleteFieldOption {
 
 /** SuperForm 自身消费的上传配置，底层组件属性由 Adapter 补充。 */
 export interface UploadSchemaProps {
+  fileList?: UIUploadFile[]
+  disabled?: boolean
+  showList?: boolean
+  removable?: boolean
+  downloadable?: boolean
+  previewable?: boolean
+  /** 返回 false 拒绝选入；异步校验完成后才加入领域列表。 */
+  beforeSelect?: (file: File) => boolean | void | Promise<boolean | void>
+  /** 返回 false 或拒绝 Promise 时保留文件。 */
+  beforeRemove?: (file: UIUploadFile) => boolean | void | Promise<boolean | void>
+  isImage?: (file: UIUploadFile) => boolean
+  onChange?: (change: { file: UIUploadFile; fileList: UIUploadFile[] }) => void
+  onPreview?: (file: Obj) => unknown | Promise<unknown>
+  onDownload?: (file: UIUploadFile) => unknown
   apis?: {
     upload?: (data: FormData, { onUploadProgress: Fn }) => Promise<any>
     delete?: (file: Obj) => Promise<any>
@@ -723,7 +744,13 @@ export interface UploadSchemaProps {
   isView?: boolean
 }
 
-export type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upload'>, keyof UploadSchemaProps>
+/** 原生属性只控制选择入口及外观，文件生命周期由 Core 接管。 */
+export type ExtUploadProps = UploadSchemaProps & Omit<UIUploadProps<'Upload'>,
+  keyof UploadSchemaProps | 'showUploadList' | 'showFileList' | 'beforeUpload' | 'onRemove' |
+  'customRequest' | 'httpRequest' | 'isImageUrl' | 'iconRender' | 'itemRender' |
+  'autoUpload' | 'limit' | 'onSuccess' | 'onError' | 'onProgress' | 'onExceed' |
+  'action' | 'data' | 'headers' | 'method' | 'withCredentials'
+>
 
 interface ExtUpload extends ExtFormItemOption {
   vModelFields?: {

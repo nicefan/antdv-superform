@@ -3,6 +3,7 @@
     <h2>个人资料</h2>
     <div class="demo-guide">
       填写姓名和联系方式，选择兴趣与日期。点击“提交”可查看校验结果；“填入示例”只更新已有字段，“重置”恢复初始数据。点击姓名搜索按钮或按回车会模拟一次异步查询；密码支持显隐切换，备注使用多行输入。
+      标签支持自由添加、单选和多选；点击“添加”后输入内容，移开焦点即可保存。数组与字符串模式的结果可在右侧数据观察窗对比。
     </div>
     <div class="demo-actions">
       <button class="demo-control primary" @click="run('提交', form.submit)">提交</button
@@ -50,12 +51,26 @@
           >
             读取原生实例
           </button>
+          <button
+            class="demo-control"
+            :disabled="preview"
+            @click="
+              run('填入多行标签', () => form.setFieldsValue({
+                tags: ['设计', '开发', '自动化测试', '组件封装', '交互设计', '无障碍体验', '性能优化', '跨框架适配'],
+              }))
+            "
+          >
+            填入多行标签
+          </button>
         </div>
         <ol>
           <li>清空姓名提交，应出现统一校验错误；右侧“事件与结果”显示 fields.path/messages。</li>
           <li>切换详情保留当前数据与表单实例，返回编辑后可继续操作。</li>
           <li>清空日期范围应同时清空两个存储字段；显式提示和日期格式应保留。</li>
           <li>搜索按钮与回车每次只记录一条“姓名搜索”，加载期间不重复提交；密码显隐和备注换行不影响其他字段。</li>
+          <li>个人标签之间应有间距，添加输入框在剩余空间足够时同行；填入多行标签或缩窄窗口后应自然换行。重复输入已有标签不会新增。</li>
+          <li>再次点击选中的单选标签应保留选中；多选可逐项取消。右侧“事件与结果”记录 check 的点击项与选中状态、change 的选中项数组。</li>
+          <li>标签字符串与能力字符串始终保存为逗号分隔字符串；删除或取消全部选中后为空字符串，点击“重置”可恢复初始值。</li>
         </ol>
       </div></Teleport
     >
@@ -72,7 +87,10 @@ const model = reactive({
   city: '杭州',
   cityLabel: '',
   tags: ['设计', '开发'],
+  tagText: 'Vue,TypeScript',
+  primarySkill: '表单',
   skills: ['表单'],
+  skillText: '表单,布局',
   enabled: true,
   start: '2026-09-01',
   end: '2026-09-30',
@@ -80,6 +98,7 @@ const model = reactive({
 const preview = ref(false)
 const cities = ref(['上海', '深圳', '杭州'])
 const searching = ref(false)
+const skillOptions = ['表单', '表格', '布局', '数据联动', '组件封装', '性能优化']
 const { isElement, event, run, status } = useDemo(() => ({ model, cities: cities.value, searching: searching.value }))
 async function search() {
   searching.value = true
@@ -156,11 +175,36 @@ const schema: ExtFormOption = {
     },
     { type: 'TagInput', field: 'tags', label: '个人标签' },
     {
+      type: 'TagInput',
+      field: 'tagText',
+      label: '标签字符串',
+      attrs: { stringifyValue: true, newLabel: '添加技能' },
+    },
+    {
+      type: 'TagSelect',
+      field: 'primarySkill',
+      label: '主要能力（单选）',
+      options: { source: skillOptions },
+      onCheck: (_effectData, tag, checked) => event('单选 check', { tag, checked }),
+      onChange: (_effectData, tag, selected) => event('单选 change', { tag, selected }),
+    },
+    {
       type: 'TagSelect',
       field: 'skills',
-      label: '关注能力',
-      options: { source: ['表单', '表格', '布局'] },
+      label: '关注能力（多选）',
+      options: { source: skillOptions },
       attrs: { multiple: true },
+      onCheck: (_effectData, tag, checked) => event('多选 check', { tag, checked }),
+      onChange: (_effectData, tag, selected) => event('多选 change', { tag, selected }),
+    },
+    {
+      type: 'TagSelect',
+      field: 'skillText',
+      label: '能力字符串',
+      options: { source: skillOptions },
+      attrs: { multiple: true, stringifyValue: true },
+      onCheck: (_effectData, tag, checked) => event('字符串多选 check', { tag, checked }),
+      onChange: (_effectData, tag, selected) => event('字符串多选 change', { tag, selected }),
     },
     {
       type: 'TextArea',

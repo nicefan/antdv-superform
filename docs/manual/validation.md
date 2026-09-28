@@ -167,9 +167,6 @@ validator: async (_effectData, value) => {
 
 FormItem 全局默认 `validateFirst: true`，即同一字段遇到首个失败规则后停止。可通过[全局配置](/manual/global-config)或节点的 `formItemProps` 调整。
 
-## ignoreRules：搜索校验 {#ignorerules-的边界}
-
-`ignoreRules` 会隐藏必填标识并把表单的 `validateTrigger` 设为 `none`。SuperTable 的搜索表单会自动使用它，因为搜索条件不应阻止查询；普通新增或编辑表单不建议开启。
 
 SuperForm 的完整提交、重置和动作 API 见[表单 SuperForm](/manual/super-form)。
 

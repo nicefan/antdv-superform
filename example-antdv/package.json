@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:old": "vite --open /src/index.html",
     "build": "vite build"
   },
   "dependencies": {

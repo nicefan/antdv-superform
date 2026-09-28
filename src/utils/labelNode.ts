@@ -21,7 +21,7 @@ export const createLabelNode = (option, effectData) => {
                 {
                   class: 'sup-label-tooltip',
                 },
-                (tooltip.icon ? tooltip.icon() : getSemanticIconNode('info')) as any
+                (tooltip.icon ? toNode(tooltip.icon, effectData) : getSemanticIconNode('info')) as any
               ),
           }),
       ]

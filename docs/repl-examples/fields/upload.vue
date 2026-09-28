@@ -28,7 +28,7 @@ const [register, form] = useForm({
         uploadMode: 'custom',
         isSingle: true,
         accept: '.xlsx',
-        tip: '保留 originFileObj，由业务上传',
+        tip: '原始 File 保存在 file 属性，由业务上传',
       },
     },
     {

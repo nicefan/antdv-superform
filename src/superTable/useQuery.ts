@@ -17,7 +17,7 @@ const pageTransform = (param) => {
   }
   return param
 }
-export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, source?: Ref<any[]>) {
+export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, source?: Ref<any[]>, onRequest?: Fn) {
   // const otherParam = {}
   const pageParam = reactive<Obj>({})
   const loading = ref(false)
@@ -48,6 +48,8 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, sou
     activeController = controller
     loading.value = true
     try {
+      // 仅在真正发起远程查询时清理单行编辑，本地翻页不丢弃草稿。
+      onRequest?.()
       const res = await queryApi(_data, { signal: controller.signal })
       if (requestId !== latestRequestId || controller.signal.aborted) return
 

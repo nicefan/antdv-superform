@@ -7,6 +7,10 @@ import type {
   SwitchFieldOption,
 } from 'superform'
 
+type ElementPlusPaginationProps = FormComponentProps<typeof import('element-plus')['ElPagination']> & {
+  placement?: ('topStart' | 'topCenter' | 'topEnd' | 'bottomStart' | 'bottomCenter' | 'bottomEnd' | 'none')[]
+}
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace SuperFormTypeRegistry {
@@ -92,13 +96,13 @@ declare global {
     interface UITableComponentPropSources {
       elementPlus: {
         Table: FormComponentProps<typeof import('element-plus')['ElTable']> & {
-          pagination?: false | FormComponentProps<typeof import('element-plus')['ElPagination']>
+          pagination?: false | ElementPlusPaginationProps
           rowSelection?: false | Obj
           height?: string | number
           ref?: any
         }
         Column: FormComponentProps<typeof import('element-plus')['ElTableColumn']>
-        Pagination: FormComponentProps<typeof import('element-plus')['ElPagination']>
+        Pagination: ElementPlusPaginationProps
       }
     }
   }

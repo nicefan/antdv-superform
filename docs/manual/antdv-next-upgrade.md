@@ -45,7 +45,7 @@ SuperFormComponents({
 
 ## 图标配置
 
-图标使用 `() => VNodeChild`，例如 `icon: () => h(UserIcon)`。动作默认图标可在全局 defaultButtons、按钮组或单项覆盖。
+图标接受 VNode、组件或渲染函数，例如 `icon: () => h(UserIcon)`。动作默认图标可在全局 defaultButtons、按钮组或单项覆盖。
 
 ## 接入检查 {#检查清单}
 

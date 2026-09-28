@@ -28,8 +28,8 @@ export const getTableOption = () => {
         subSpan: 24,
       },
       modalProps: {
-        title: ({ isNew }) => {
-          return h('div', [EditIcon(), ' 数据' + (isNew ? '新增' : '修改')])
+        title: ({ meta }) => {
+          return h('div', [EditIcon(), ' 数据' + (meta?.isNew ? '新增' : '修改')])
         },
       },
     },
@@ -94,7 +94,7 @@ export const getTableOption = () => {
         type: 'Input',
         label: '标题',
         field: 'title',
-        editable: true,
+        // editable: true,
         rules: { required: true },
       },
       {
@@ -102,7 +102,7 @@ export const getTableOption = () => {
         label: '日期',
         field: 'date',
         endField: 'date2',
-        editable: true,
+        // editable: true,
         rules: { required: true },
       },
       {
@@ -118,6 +118,7 @@ export const getTableOption = () => {
               { label: '数字', value: 'number', color: 'blue' },
             ]),
         },
+        exclude: ['form'],
         initialValue: () => type.value,
         /** 带有options或字典的自动标签化显示，tagViewer配置为数组或对象，指定value，color, 如果值为字典序值，,即可读取全局颜色配置 */
         // viewRender:({text}) => text.replaceAll(',', ' /')
@@ -134,7 +135,7 @@ export const getTableOption = () => {
           // valueToNumber: true,
         },
         stringifyValue: true,
-        editable: true,
+        // editable: true,
         attrs: {
           mode: 'multiple',
           // style: 'width:100%'

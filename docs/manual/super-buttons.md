@@ -95,7 +95,7 @@ const buttons = {
 };
 ```
 
-合并顺序为：库内置动作 → 全局 `defaultButtons` → 宿主方法 → 当前 `actions` 对象。因此，全局配置负责团队默认规范，页面对象只覆盖当前业务差异。自定义动作必须在 `defaultButtons` 或当前对象中提供 `onClick`。
+全局配置负责团队默认规范，页面对象只覆盖当前业务差异。自定义动作必须在 `defaultButtons` 或当前对象中提供 `onClick`。
 
 <span id="按钮配置"></span>
 
@@ -137,8 +137,8 @@ rowButtons: {
 | `name`                | string                    | —        | 动作标识；命中内置动作时继承默认配置和方法 |
 | `label`               | string/function           | 按动作名 | 文本、插槽名或上下文函数                   |
 | `customRender`        | string/function           | —        | 完全自定义按钮内容                         |
-| `icon` | `(context?) => VNodeChild` | 内置动作图标 | 可读取按钮上下文的渲染函数；显式 `undefined` 移除图标 |
-| `attrs`               | object                    | `{}`     | Ant Design Vue Button 属性                 |
+| `icon` | VNode / Component / 渲染函数 | 内置动作图标 | 函数可读取按钮上下文；显式 `undefined` 移除图标 |
+| `attrs`               | object                    | `{}`     | 当前 UI 的 Button 属性                 |
 | `confirmText`         | string/function           | —        | 点击后先确认                               |
 | `tooltip`             | string                    | —        | 普通提示                                   |
 | `disabledTooltip`     | string/function           | —        | 禁用时提示                                 |

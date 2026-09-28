@@ -210,7 +210,9 @@ export default defineComponent({
       const items: UIContainerItem[] = rows.value.map((row, index) => ({
         key: row.key,
         title: () =>
-          toNode(option.titleField ? get(row.model.refData, option.titleField) : String(index + 1), row.effectData),
+          option.titleField
+            ? get(row.model.refData, option.titleField) || [`新建`, toNode(title, props.effectData)]
+            : [toNode(title, props.effectData), String(index + 1)],
         extra: !isView && option.type !== 'TabList' && row.buttons ? () => row.buttons.render() : undefined,
         content: () =>
           isView || editor

@@ -71,7 +71,7 @@ export function getUIRender<K extends keyof UIRenderers>(name: K): UIRenderers[K
   return render
 }
 
-export function getUIService<K extends 'form' | 'services' | 'icons' | 'upload' | 'table'>(
+export function getUIService<K extends 'form' | 'services' | 'icons' | 'table'>(
   name: K
 ): NonNullable<UIAdapter[K]> {
   const adapter = getUIAdapter()

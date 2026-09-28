@@ -15,6 +15,7 @@ export default defineComponent({
     slots: Object,
   },
   emits: ['update:activeKey'],
+  inheritAttrs: false,
   setup(props, { attrs, slots, emit }) {
     const { optionsRef } = useOptions(props.options, props.effectData)
     const activeKey = ref(props.activeKey ?? props.defaultActiveKey) as Ref<string | number | undefined>

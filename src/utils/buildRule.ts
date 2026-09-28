@@ -100,7 +100,7 @@ export interface RuleConfig {
   /** 最小长度/最小值 */
   min?: number
   /** 自定义验证器, 返回true验证通过，返回Error,提示Error中消息 */
-  validator?: (effectData: Obj, value: any) => boolean | Error | Promise<any>
+  validator?: (effectData: Obj, value: any) => undefined | boolean | Error | Promise<any>
   /** 提示消息 */
   message?: string
 }

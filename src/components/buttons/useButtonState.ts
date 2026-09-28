@@ -77,7 +77,7 @@ export function useButtonState(
       key: index,
       name: item.name,
       label: () => toNode(item.label, param),
-      icon: item.icon ? () => item.icon?.(param) : undefined,
+      icon: item.icon ? () => toNode(item.icon, param) : undefined,
       tooltip: () => tooltipTitle.value,
       get disabled() { return action.disabled || item.pending.value },
       get attrs() {
@@ -88,7 +88,7 @@ export function useButtonState(
           key: menuIndex,
           value: entry.value,
           label: () => toNode(entry.label, param),
-          icon: entry.icon ? () => entry.icon?.(param) : undefined,
+          icon: entry.icon ? () => toNode(entry.icon, param) : undefined,
           disabled: !!(typeof entry.disabled === 'function' ? entry.disabled(param) : toValue(entry.disabled)),
         })) : undefined
       },

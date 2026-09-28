@@ -1,7 +1,5 @@
 <template>
-  <template v-if="optionsRef.length">
-    <component v-for="{ label, value } of optionsRef" :key="value" :is="() => renderOption(label, value)" />
-  </template>
+  <component v-if="optionsRef.length" :is="renderGroup" />
   <div v-else class="sup-tag-select-empty">{{ placeholder }}</div>
 </template>
 <script lang="ts" setup>
@@ -56,15 +54,13 @@ const handleChange = (tag, checked) => {
   emit('change', tag, nextSelected)
 }
 
-const renderOption = (label, value) =>
-  getUIRender('checkableTag')(
-    {
-      class: 'tag-select',
-      selected: selected.value.includes(value),
-      onSelectedChange: (checked) => handleChange(value, checked),
-    },
-    { default: () => label }
-  )
+const renderGroup = () =>
+  getUIRender('checkableTagGroup')({
+    options: optionsRef.value,
+    selected: selected.value,
+    multiple: props.multiple,
+    onSelectedChange: handleChange,
+  })
 
 const updateValue = (val: string[]) => {
   if (!props.multiple) {

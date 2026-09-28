@@ -32,6 +32,8 @@
 }
 ```
 
+标准栅格未显式设置顶层 `span` 时保留 `colProps.span`；显式设置顶层 `span` 时由它覆盖。
+
 `gutter` 默认是 `16`，也可以通过 `rowProps` 配置 Row，通过 `colProps` 配置单个 Col：
 
 ```ts
@@ -64,7 +66,7 @@ subItems: [
 
 未设置 `span` 的布局容器默认独立成块，因此 Card、Tabs、Collapse 等通常无需重复写 `block: true`。给容器设置 `span` 后，它可以像普通字段一样进入栅格。
 
-`span: 'auto'` 适用于按钮或辅助节点；也可以使用 `colProps.flex` 让 Col 按内容或剩余空间伸缩。
+`span: 'auto'` 适用于按钮或辅助节点，`subSpan: 'auto'` 同样适用；也可以使用 `colProps.flex` 让 Col 按内容或剩余空间伸缩。
 
 ## Row / Col 布局属性 {#布局组件属性}
 

@@ -206,6 +206,8 @@ await table.query()
 | 行内 | rowEditor.editMode='inline' |
 | 弹窗 | rowEditor.editMode='modal'；新增方式用 rowEditor.addMode |
 
+行内编辑默认支持多行，各行可独立保存或取消，rowKey 须稳定唯一；rowEditor.singleEdit: true 限制单行并在实际查询请求前清理编辑状态，本地翻页保留草稿。保存仅校验当前行全部规则（含未展示或只读字段），成功后独立刷新，刷新失败不改变保存结果。
+
 rowEditor.form.subItems 可独立配置编辑字段；onSave(context) 返回 false 阻止保存，onCancel 在取消关闭前触发。
 接口签名：info(key, row)、save(data)、update(data)、delete(keys, rows)。保存、更新、删除成功后刷新查询。
 
@@ -213,7 +215,7 @@ rowEditor.form.subItems 可独立配置编辑字段；onSave(context) 返回 fal
 
 ### 按钮：actions、icon、权限
 
-动作名：`add/delete/edit/detail/submit/search/reset`。字符串动作依赖宿主提供同名方法；导入、导出等业务动作自行写 onClick，不假定 apis.export 自动执行。
+动作名：`add/delete/edit/detail/submit/search/reset/save/cancel/expand`。字符串动作依赖宿主提供同名方法；导入、导出等业务动作自行写 onClick，不假定 apis.export 自动执行。
 
 ```ts
 buttons: {
@@ -225,10 +227,11 @@ buttons: {
 ```
 
 - 覆盖内置动作可用 `onClick(context, action)` 调用原动作，例如 `action({ resetData })`；自定义动作没有该能力。
-- icon 为 `() => VNodeChild`，例如 `() => h(UserIcon)`，h 从 Vue 导入。内置动作有默认图标；icon:undefined 移除。
+- icon 接受 VNode、组件或渲染函数，例如 `() => h(UserIcon)`，h 从 Vue 导入。内置动作有默认图标；icon:undefined 移除。
 - labelMode：icon/label/both；limit 折叠多余按钮；confirmText 提供确认。
 - roleName 配合全局 buttonRoles；unauthorized：hide/disable；visibleIn：form/detail/both。
-- 合并顺序：内置默认 → 全局 defaultButtons → 宿主方法 → 当前 actions 对象。
+- 合并顺序：全局 defaultButtons 设置默认动作，当前 actions 对象覆盖对应配置；公共 buttonProps 设置按钮外观，局部 attrs 优先。
+- dropdown 为一级同步菜单（数组、键值对象、Ref 或上下文函数），选中值从 context.value 读取，onClick 第二参数仍为可选宿主动作。组禁用时所有按钮均不可执行，动作执行期间不重复触发。
 
 <a id="detail"></a>
 
@@ -251,7 +254,7 @@ const modal = useModalForm(
 modal.openModal({ data: record })
 ```
 
-onOk resolve 后关闭，reject/抛错保留；openModal 的 data 先写入表单。
+onOk resolve 后关闭，reject/抛错保留；openModal 的 data 先写入表单。onSubmitError(error: unknown) 通知确认链路中的校验、提交任务及业务 onOk 异常，可由本次打开参数覆盖；字段校验为 FormValidationError，其他异常原样保留。通知失败不替换原错误，直接 formActions.submit() 不经过该通知入口。
 动作：closeModal()、setModal(props)、formActions.resetFields()。
 自定义内容：`useModal(() => h(CustomPanel), props)`。在浏览器的 Vue setup 中使用，不在 SSR 服务端执行。
 
@@ -259,15 +262,17 @@ onOk resolve 后关闭，reject/抛错保留；openModal 的 data 先写入表�
 
 ### Upload：上传与文件导入
 
+beforeSelect(File) 支持异步选入校验，beforeRemove 控制删除；showList/removable/downloadable/previewable 控制列表和操作，isImage 判定图片，onChange 接收 { file, fileList }。提交等待异步选入、上传及 base64/text 读取，上传或读取失败保留错误并阻止提交。
+
 增强配置放 attrs；上传 API 来自 `attrs.apis.upload` 或 `defaultProps.Upload.apis.upload`。
 
 | uploadMode | 行为 |
 | --- | --- |
 | auto / submit | 选中即上传 / 提交时等待上传 |
-| custom | 不上传，保留 originFileObj 供业务处理 |
+| custom | 不上传，保留 file（原始 File）供业务处理 |
 | base64 / text | 读取为 base64 / 文本 |
 
-文件导入用 `attrs: { uploadMode: 'custom', isSingle: true, accept: '.xlsx' }`，提交时读取 file.originFileObj。
+文件导入用 `attrs: { uploadMode: 'custom', isSingle: true, accept: '.xlsx' }`，提交时读取 file.file。
 isSingle 返回单个文件；valueKey 仅保存对应属性；vModelFields.fileList 同步完整列表；infoNames 映射 uid/name/url；maxSize/minSize 单位 MB；hideOnMax 达到数量后隐藏入口；repeatable 默认 false。
 
 <a id="custom"></a>

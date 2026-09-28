@@ -1,6 +1,29 @@
+.sup-table-adapter > .sup-table-pagination {
+  display: flex;
+
+  &.sup-table-pagination-top {
+    margin-bottom: 16px;
+  }
+
+  &.sup-table-pagination-bottom {
+    margin-top: 16px;
+  }
+}
+
 .sup-form {
   .el-form-item .el-form-item {
     margin-bottom: var(--el-form-item-margin-bottom);
+  }
+}
+
+// 行内与整表编辑统一覆盖嵌套表单项间距，保留错误状态但不展示校验文本。
+.sup-table-wrapper .el-form-item.sup-table-edit-item {
+  --el-form-item-margin-bottom: 0;
+  margin: 0;
+
+  .el-form-item__error,
+  .el-form-item__label {
+    display: none;
   }
 }
 

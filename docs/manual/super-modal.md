@@ -47,6 +47,9 @@ onOk: async (data) => {
 };
 ```
 
+ `onSubmitError(error: unknown)`可获取表单提交回调及业务 `onOk` 的异常。
+
+
 返回对象中的 `formActions` 是完整 useForm 动作：
 
 ```ts
@@ -110,7 +113,6 @@ modal = useModal(renderContent, {
 | `modalSlot`          | function | —      | 手动渲染入口，主要供封装使用 |
 | `formActions`        | object   | —      | 仅 `useModalForm` 提供       |
 
-Modal 的 `title`、`width`、`centered`、`maskClosable`、`destroyOnClose`、`afterClose` 等属性遵循 Ant Design Vue Modal 契约。全局默认值通过 `defaultProps.Modal` 设置。
 
 <span id="生命周期"></span>
 

@@ -5,7 +5,6 @@ import {
   type PropType,
   computed,
   ref,
-  h,
   reactive,
   inject,
   shallowRef,
@@ -18,17 +17,18 @@ import { globalProps } from '../plugin'
 import usePreview from './usePreview'
 import { isArray, isFunction } from 'lodash-es'
 import { downloadByData, getBase64WithFile } from '../utils/file'
-import { createUploadController, type UploadFileInfo } from './upload/controller'
+import type { UIUploadFile, UIUploadState } from '../adapter/types'
+import { createUploadController } from './upload/controller'
 
-const imgs = '.png,.jpg,.jpeg,.gif,.webp,.svg,.tif,.tiff'
+const imgs = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'tif', 'tiff'])
 function fileIsImage(file) {
   if (file.thumbUrl) return true
-  if (file.url || file.originFileObj) {
-    const exName = (file.name || file.url)?.match(/[^\\.]*$/)?.[0]
-    if (exName && imgs.includes(exName)) {
+  if (file.url || file.file) {
+    const exName = (file.name || file.url)?.split(/[?#]/)[0].match(/\.([^.\/\\]+)$/)?.[1].toLowerCase()
+    if (exName && imgs.has(exName)) {
       return true
     } else {
-      const type = file.type || file.url?.match(/^data:(\S*?);/)?.[1]
+      const type = file.type || file.file?.type || file.url?.match(/^data:(\S*?);/)?.[1]
       return type?.startsWith('image')
     }
   }
@@ -61,7 +61,10 @@ function createLoadModal(title, onOk?: Fn) {
   return { setError, ...modal }
 }
 
+let nextFileId = 0
+
 export default defineComponent({
+  inheritAttrs: false,
   props: {
     option: { type: Object, required: true },
     model: Object,
@@ -69,11 +72,10 @@ export default defineComponent({
     value: null as unknown as PropType<any>,
     fileList: Array as PropType<any[]>,
     /** 指定文件信息字段 */
-    infoNames: Object as PropType<Partial<Pick<UploadFileInfo, 'uid' | 'name' | 'url'>>>,
+    infoNames: Object as PropType<Partial<Pick<UIUploadFile, 'uid' | 'name' | 'url'>>>,
     /** 指定文件信息中一个属性存为绑定值 */
     valueKey: String,
     //TODO apis 可从全局配置， 当前配置为字符串时，作为url参数传到全局api方法
-    customRequest: Function,
     minSize: Number,
     maxSize: Number,
     isSingle: Boolean,
@@ -86,11 +88,14 @@ export default defineComponent({
     repeatable: Boolean,
     isView: Boolean,
     disabled: Boolean,
-    isImageUrl: Function,
-    beforeUpload: Function,
-    showUploadList: { type: [Object, Boolean], default: undefined },
+    isImage: Function,
+    beforeSelect: Function,
+    beforeRemove: Function,
+    showList: { type: Boolean, default: true },
+    removable: { type: Boolean, default: true },
+    downloadable: { type: Boolean, default: undefined },
+    previewable: { type: Boolean, default: true },
     onPreview: Function,
-    onRemove: Function,
     onDownload: Function,
     onChange: Function,
     apis: Object,
@@ -105,15 +110,14 @@ export default defineComponent({
       maxSize,
       infoNames,
       repeatable,
-      showUploadList,
       onPreview,
       onDownload,
-      isImageUrl = fileIsImage,
+      isImage = fileIsImage,
       hideOnMax,
       valueKey,
     } = props
     const maxCount = (isSingle ? 1 : props.maxCount) || Infinity
-    const { accept, listType } = ctx.attrs as Obj
+    const { accept } = ctx.attrs as Obj
     const controller = createUploadController({
       mode,
       valueKey,
@@ -131,6 +135,25 @@ export default defineComponent({
     const { onSubmit } = inject<any>('exaProvider', {})
 
     const innerFileList = ref<any[]>([])
+    const objectUrls = new Set<string>()
+    let disposed = false
+    onScopeDispose(() => {
+      disposed = true
+      objectUrls.forEach((url) => URL.revokeObjectURL(url))
+    })
+    watch(innerFileList, (files, previous) => {
+      const retainedIds = new Set(files.map((file) => file.uid))
+      previous.forEach((file) => {
+        if (!retainedIds.has(file.uid)) controller.clearTask(file.uid)
+      })
+      const retained = new Set(files.map((file) => file.objectUrl))
+      objectUrls.forEach((url) => {
+        if (!retained.has(url)) {
+          URL.revokeObjectURL(url)
+          objectUrls.delete(url)
+        }
+      })
+    })
 
     const outFileList = shallowRef<any[]>([])
     const outValues = shallowRef<any>()
@@ -177,7 +200,8 @@ export default defineComponent({
     )
 
     const isLoading = ref(false)
-    const unregisterSubmit = onSubmit?.(() => {
+    const unregisterSubmit = onSubmit?.(async () => {
+      await selecting
       isLoading.value = controller.hasPendingWork(innerFileList.value)
       if (isLoading.value) {
         const modal = createLoadModal(' 文件同步中，请稍候...')
@@ -190,7 +214,7 @@ export default defineComponent({
           .catch((err) => {
             isLoading.value = false
             modal.setError('文件上传失败', err)
-            return false
+            throw err
           })
           .finally(() => (isLoading.value = false))
       }
@@ -199,96 +223,93 @@ export default defineComponent({
     // 动态字段移除后，不再让已卸载的上传组件阻塞表单提交。
     if (unregisterSubmit) onScopeDispose(unregisterSubmit)
 
-    const beforeUpload = (file, resFileList) => {
-      if (props.beforeUpload) {
-        const res = props.beforeUpload(file, resFileList)
-        if (res !== undefined) return res
-      }
-      const errMessage = controller.validate(file, resFileList, innerFileList.value)
-
-      if (errMessage) {
-        getUIService('services').message('error', errMessage)
-        return getUIService('upload').listIgnore
-      }
-      if (mode === 'custom') {
-        // 显示上传列表时，返回false，禁用原上传！
-        if (showUploadList !== false) {
-          return false
+    // 串行接受选择，异步校验期间也不能绕过数量及重名限制。
+    let selecting = Promise.resolve()
+    const select = (rawFile: File) => {
+      const task = selecting.then(async () => {
+        if (disposed || props.isView || props.disabled) return
+        if (await props.beforeSelect?.(rawFile) === false) return
+        if (disposed || props.isView || props.disabled) return
+        const file: UIUploadFile = {
+          uid: `upload-${Date.now()}-${++nextFileId}`,
+          file: rawFile, name: rawFile.name, type: rawFile.type, size: rawFile.size,
+          status: mode === 'auto' || mode === 'base64' || mode === 'text' ? 'uploading' : 'waiting',
         }
-      } else if (maxCount === 1 && innerFileList.value.length) {
-        const info = innerFileList.value[0]
-        controller.clearTask(info.uid)
-        if (info.status === 'done' && apis.delete) {
-          // 提交时进行远程删除
-          const __file = { ...outFileList.value[0] }
-          controller.queueDelete(__file, () => apis.delete(__file))
+        const error = controller.validate(file, [file], innerFileList.value)
+        if (error) {
+          getUIService('services').message('error', error)
+          return
         }
-      }
-    }
-
-    function handleChange({ file, fileList, event }) {
-      if (file.status === 'removed') {
-        // 删除完成后清除上传任务
-        controller.clearTask(file.uid)
-      } else if (file.status === 'uploading') {
-        if (!event && mode !== 'auto') {
-          file.status = 'waiting'
+        if (isImage(file)) {
+          file.objectUrl = URL.createObjectURL(rawFile)
+          objectUrls.add(file.objectUrl)
         }
-      }
-      //beforeUpload返回false时，file为原始File对象，无status
-      props.onChange?.({ file, fileList, event })
-      updateFileList([...fileList])
-    }
-
-    const customRequest = (args) => {
-      const { file } = args
-
-      if (mode === 'auto') {
-        return controller.registerRequest(file.uid, () => upload(args))
-      } else if (mode === 'submit') {
-        controller.registerRequest(file.uid, () => upload(args))
-      } else if (mode === 'base64' || mode === 'text') {
-        return getBase64WithFile(file, mode).then(({ result }) => successHandler({ url: result }, file))
-      }
+        const previous = maxCount === 1 ? innerFileList.value : []
+        previous.forEach((item) => {
+          controller.clearTask(item.uid)
+          if (item.status === 'done' && apis.delete) {
+            const info = reconvert(item)
+            controller.queueDelete(info, () => apis.delete(info))
+          }
+        })
+        updateFileList(maxCount === 1 ? [file] : [...innerFileList.value, file])
+        if (mode === 'base64' || mode === 'text') {
+          controller.registerRequest(file.uid, () => getBase64WithFile(rawFile, mode).then(
+            ({ result }) => successHandler({ url: result }, file),
+            (error) => errorHandler(error, file)
+          ))
+        } else if (mode !== 'custom') {
+          controller.registerRequest(file.uid, () => upload(file))
+        }
+        props.onChange?.({ file, fileList: [...innerFileList.value] })
+      }).catch((error) => {
+        getUIService('services').message('error', error?.message || '文件选择失败')
+      })
+      selecting = task
+      return task
     }
 
     const errorHandler = (error, file) => {
       const changeItem = innerFileList.value.find((item) => item.uid === file.uid)
+      // 删除、替换或卸载后不再应用迟到结果，也不让已移除文件阻塞提交。
+      if (disposed || !changeItem) return
       Object.assign(changeItem, { error, status: 'error' })
       updateFileList([...innerFileList.value])
-      // onError(error, undefined, file)
+      props.onChange?.({ file: changeItem, fileList: [...innerFileList.value] })
       return Promise.reject(error)
     }
     const successHandler = (data, file) => {
       const changeItem = innerFileList.value.find((item) => item.uid === file.uid)
+      if (disposed || !changeItem) return
       Object.assign(changeItem, convertInfo(data), { status: 'done' })
       updateFileList([...innerFileList.value])
+      props.onChange?.({ file: changeItem, fileList: [...innerFileList.value] })
       return data
     }
 
-    const upload = (args) => {
-      const { file, filename, onProgress, onError, onSuccess } = args
-
+    const upload = (file: UIUploadFile) => {
       if (!apis.upload) {
         return Promise.resolve().then(() => errorHandler(Error('Api config error'), file))
       }
       const formData: any = new FormData()
-      formData.append(filename, file)
+      formData.append((ctx.attrs.name as string) || 'file', file.file!)
       const onUploadProgress = (e) => {
         if (e.total > 0) {
           e.percent = (e.loaded / e.total) * 100
         }
-        onProgress(e)
+        const item = innerFileList.value.find((item) => item.uid === file.uid)
+        if (!disposed && item) item.percent = e.percent
       }
 
-      return apis.upload(formData, { onUploadProgress }).then(
+      return Promise.resolve().then(() => apis.upload(formData, { onUploadProgress })).then(
         (res) => successHandler(res, file),
         (err) => errorHandler(err, file)
       )
     }
 
-    const remove = async (file) => {
-      let result = await props.onRemove?.(file)
+    const beforeRemove = async (file) => {
+      if (props.isView || props.disabled) return false
+      let result = await props.beforeRemove?.(file)
       if (result !== false && apis.delete && file.status === 'done') {
         return new Promise((resolve) => {
           const modal = getUIService('services').confirm({
@@ -302,14 +323,7 @@ export default defineComponent({
               const __file = reconvert(file)
               const handler = () => apis.delete(__file)
               if (mode === 'submit') {
-                controller.queueDelete(
-                  __file,
-                  () => handler()
-                  // .then(
-                  //   () => removeFileMap.delete(__file)
-                  //   // () => updateFileList([...innerFileList.value, __file]) // 删除失败后还原文件
-                  // )
-                )
+                controller.queueDelete(__file, handler)
                 resolve(true)
               } else {
                 modal.update({
@@ -336,63 +350,66 @@ export default defineComponent({
       }
       return result
     }
+    const removing = new Set<string>()
+    const remove = async (file: UIUploadFile) => {
+      if (props.isView || props.disabled || !props.removable || removing.has(file.uid)) return
+      removing.add(file.uid)
+      try {
+        if (await beforeRemove(file) === false || disposed) return
+        controller.clearTask(file.uid)
+        updateFileList(innerFileList.value.filter((item) => item.uid !== file.uid))
+        props.onChange?.({ file, fileList: [...innerFileList.value] })
+      } catch (error: any) {
+        getUIService('services').message('error', error?.message || '文件删除失败')
+      } finally {
+        removing.delete(file.uid)
+      }
+    }
     const downloading = ref(false)
-    const fileDownload =
-      onDownload ||
-      ((file) => {
-        if (apis.download && !downloading.value) {
-          const downModal = createLoadModal('文件下载中，请稍候...')
-          apis
-            .download(reconvert(file))
-            .then((result) => downloadByData(result, file.name))
-            .then(() => downModal.destroy())
-            .catch((err) => {
-              downModal.setError('文件下载失败', err)
-            })
-            .finally(() => (isLoading.value = false))
-        }
-      })
-
-    // 查看模式时，控制操作按钮
-    const listConfig = computed(() =>
-      typeof showUploadList === 'boolean'
-        ? showUploadList
-        : {
-            showRemoveIcon: !props.isView && !props.disabled,
-            showDownloadIcon: props.isView,
-            ...showUploadList,
-          }
-    )
+    const canDownload = computed(() => props.downloadable ?? Boolean(onDownload || apis.download))
+    const fileDownload = (file: UIUploadFile) => {
+      if (!canDownload.value) return
+      if (onDownload) return onDownload(file)
+      if (apis.download && !downloading.value) {
+        downloading.value = true
+        const downModal = createLoadModal('文件下载中，请稍候...')
+        return Promise.resolve()
+          .then(() => apis.download(reconvert(file)))
+          .then((result) => downloadByData(result, file.name))
+          .then(() => downModal.destroy())
+          .catch((err) => {
+            downModal.setError('文件下载失败', err)
+          })
+          .finally(() => (downloading.value = false))
+      }
+    }
 
     const filePreview = async (file) => {
+      if (!props.previewable) return
       if (onPreview) {
         const src = await onPreview(reconvert(file))
         src && preview.open(src)
-      } else if (isImageUrl(file)) {
-        let current
+      } else if (isImage(file)) {
+        let current = -1
         const images = innerFileList.value
-          .filter((item) => isImageUrl(item))
+          .filter((item) => isImage(item))
           .map((item, idx) => {
-            if (item === file) current = idx
+            // Adapter 可能复制文件对象，使用稳定 uid 定位预览项。
+            if (item.uid === file.uid) current = idx
             const url = item.url || item.thumbUrl
-            if (!url && item.originFileObj) {
-              item.objectUrl = window.URL.createObjectURL(item.originFileObj)
+            if (!url && !item.objectUrl && item.file) {
+              item.objectUrl = window.URL.createObjectURL(item.file)
+              objectUrls.add(item.objectUrl)
             }
             return url || item.objectUrl
           })
-        preview.open({ images, current })
+        if (images[current]) preview.open({ images, current })
+        else fileDownload(file)
+      } else {
+        fileDownload(file)
       }
     }
 
-    const iconRender = ({ file, listType }) => {
-      if (file.status === 'waiting') {
-        return getSemanticIconNode('sync')
-      } else if (file.status === 'uploading') {
-        return getSemanticIconNode('loading')
-      } else {
-        return getSemanticIconNode('attachment')
-      }
-    }
     const __title = props.title
     const title = typeof props.title === 'string' ? props.title : '上传文件'
     const effectData = reactive({ ...toRaw(props.effectData), fileList: innerFileList })
@@ -401,46 +418,28 @@ export default defineComponent({
     accept && tips.push('支持文件格式：' + accept)
     maxSize && tips.push('单个文件不超过' + maxSize + 'MB')
     const tip = props.tip ?? tips.join(', ')
-    const slots: Obj = { ...ctx.slots }
-    if (listType === 'picture-card') {
-      slots.default = () =>
-        ctx.slots.default?.(effectData) ||
-        h('div', [getSemanticIconNode('add'), titleSlot ? titleSlot() : h('div', { style: 'margin-top:8px' }, title)])
-    } else {
-      slots.default = () => [
-        ctx.slots.default?.(effectData) ||
-          getUIRender('uploadTrigger')(
-            {},
-            { default: () => [getSemanticIconNode('upload'), titleSlot ? titleSlot() : title] }
-          ),
-        tip && h('div', { class: 'sup-upload-tip' }, tip),
-      ]
-    }
     const isView = computed(() => props.disabled || props.isView)
     const hideBody = computed(() => hideOnMax && maxCount && innerFileList.value.length >= maxCount)
-    return () =>
-      isView.value && innerFileList.value.length === 0
-        ? h('div', { class: 'sup-upload-tip' }, '暂无附件')
-        : getUIRender('upload')(
-            {
-              class: { 'upload-disabled': isView.value },
-              customRequest,
-              beforeUpload,
-              fileList: innerFileList.value,
-              onChange: handleChange,
-              onPreview: filePreview,
-              onRemove: remove,
-              showUploadList: listConfig.value,
-              maxCount,
-              isImageUrl,
-              iconRender,
-              onDownload: fileDownload,
-            },
-            {
-              ...slots,
-              default: () => isView.value || (hideBody.value ? null : slots.default()),
-            }
-          )
+    return () => getUIRender('upload')({
+      attrs: ctx.attrs,
+      files: innerFileList.value,
+      readonly: isView.value,
+      showList: props.showList,
+      removable: props.removable && !isView.value,
+      downloadable: canDownload.value,
+      previewable: props.previewable,
+      hideTrigger: isView.value || Boolean(hideBody.value),
+      title: () => titleSlot ? titleSlot() : title,
+      tip,
+      select,
+      remove,
+      preview: filePreview,
+      download: fileDownload,
+      isImage: (file) => Boolean(isImage(file)),
+    } satisfies UIUploadState, {
+      ...ctx.slots,
+      ...(ctx.slots.default && { default: () => ctx.slots.default?.(effectData) }),
+    })
   },
 })
 </script>

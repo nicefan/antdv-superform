@@ -3,8 +3,8 @@ import type { Component, Slots, VNodeChild } from 'vue'
 export interface FormAdapter {
   /** 只校验指定字段路径，供复合字段更新时使用。 */
   validateField?: (instance: any, path: (string | number)[]) => Promise<unknown>
-  /** 成功时忽略原生返回值；字段失败拒绝为 FormValidationError，其它异常原样抛出。 */
-  validate: (instance: any) => Promise<unknown>
+  /** paths 指定本次校验的字段；省略时校验整表。字段失败拒绝为 FormValidationError，其它异常原样抛出。 */
+  validate: (instance: any, paths?: (string | number)[][]) => Promise<unknown>
   /** 清理当前 UI 表单实例的校验状态。 */
   clearValidate: (instance: any) => void
 }
@@ -104,9 +104,35 @@ export interface ModalAdapter {
   wrapContext?: (content: (props?: Obj) => VNodeChild, context: unknown, props: Obj) => VNodeChild
 }
 
-export interface UploadAdapter {
-  /** UI 框架拒绝文件但不加入列表时使用的特殊返回值。 */
-  listIgnore: unknown
+export interface UIUploadFile {
+  uid: string
+  name: string
+  file?: File
+  url?: string
+  type?: string
+  size?: number
+  percent?: number
+  status?: 'waiting' | 'uploading' | 'done' | 'error'
+  [key: string]: any
+}
+
+/** 文件和任务由 Core 管理，原生 Upload 仅提供选择入口及列表呈现。 */
+export interface UIUploadState {
+  attrs: Obj
+  files: UIUploadFile[]
+  readonly: boolean
+  showList: boolean
+  removable: boolean
+  downloadable: boolean
+  previewable: boolean
+  hideTrigger: boolean
+  title: () => VNodeChild
+  tip: string
+  select: (file: File) => Promise<void>
+  remove: (file: UIUploadFile) => Promise<void>
+  preview: (file: UIUploadFile) => unknown
+  download: (file: UIUploadFile) => unknown
+  isImage: (file: UIUploadFile) => boolean
 }
 
 export interface UITableSelection {
@@ -247,12 +273,18 @@ export interface UIRenderers {
   descriptions: (props: UIDescriptionsProps) => VNodeChild
   actionGroup: (props: UIActionGroupProps) => VNodeChild
   tooltip: (props: Obj, slots?: Obj) => VNodeChild
+  button: (props: Obj, slots?: Obj) => VNodeChild
   tag: (props: Obj, slots?: Obj) => VNodeChild
   checkableTag: (props: Obj, slots?: Obj) => VNodeChild
+  checkableTagGroup: (props: {
+    options: { label: VNodeChild; value: string | number; disabled?: boolean }[]
+    selected: (string | number)[]
+    multiple?: boolean
+    onSelectedChange: (value: string | number, checked: boolean) => void
+  }) => VNodeChild
   empty: () => VNodeChild
   modal: (props: Obj, slots?: Obj) => VNodeChild
-  upload: (props: Obj, slots?: Obj) => VNodeChild
-  uploadTrigger: (props: Obj, slots?: Obj) => VNodeChild
+  upload: (state: UIUploadState, slots?: Obj) => VNodeChild
   preview: (props: Obj) => VNodeChild
   table: (props: UITableRenderProps, slots?: Obj) => VNodeChild
   tableFilter: (props: UITableFilterProps, slots?: Obj) => VNodeChild
@@ -264,7 +296,7 @@ export interface UIFormItemProps extends Obj {
 }
 
 /** component 接收 props/slots；State 协议通过 render 显式组织结构。 */
-export type UIStateComponentName = 'group' | 'card' | 'tabs' | 'collapse' | 'descriptions'
+export type UIStateComponentName = 'group' | 'card' | 'tabs' | 'collapse' | 'descriptions' | 'upload'
 export type UIRenderContext<K extends keyof UIRenderers> = RenderContext<
   NonNullable<Parameters<UIRenderers[K]>[0]>,
   K extends UIStateComponentName | 'empty' ? Obj : NonNullable<Parameters<UIRenderers[K]>[0]>
@@ -286,8 +318,6 @@ export type UIComponentDefinition<K extends keyof UIRenderers> = (
     ? FormAdapter
     : K extends 'modal'
     ? ModalAdapter
-    : K extends 'upload'
-    ? UploadAdapter
     : K extends 'table'
     ? TableAdapter
     : never
@@ -298,12 +328,11 @@ export type UIComponentDefinition<K extends keyof UIRenderers> = (
 export type UIComponentDefinitions = { [K in keyof UIRenderers]?: UIComponentDefinition<K> }
 
 /** 声明配置在创建 Adapter 时转换，运行时仍只消费 render 函数表。 */
-export type UIAdapterDefinition = Omit<UIAdapter, 'render' | 'form' | 'modal' | 'upload' | 'table' | 'defaults'> & {
+export type UIAdapterDefinition = Omit<UIAdapter, 'render' | 'form' | 'modal' | 'table' | 'defaults'> & {
   uiComponents: UIComponentDefinitions
   render?: UIComponentRenders
   form?: never
   modal?: never
-  upload?: never
   table?: never
   defaults?: never
 }
@@ -382,14 +411,13 @@ export interface UIAdapter {
   icons?: IconAdapter
   services?: ServiceAdapter
   modal?: ModalAdapter
-  upload?: UploadAdapter
   table?: TableAdapter
   defaults?: Obj<Obj>
 }
 
 /** 渲染按单项覆盖，其它协议整项替换，避免深合并出不完整的服务实现。 */
 export type UIAdapterOverrides = Partial<
-  Pick<UIAdapter, 'form' | 'icons' | 'services' | 'modal' | 'upload' | 'table'>
+  Pick<UIAdapter, 'form' | 'icons' | 'services' | 'modal' | 'table'>
 > & {
   render?: UIComponentRenders
   uiComponents?: UIComponentDefinitions

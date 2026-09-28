@@ -120,9 +120,14 @@ export function useTableScroll(
     }
     // Pager height
     let paginationHeight = 0
-    const paginationEl = query(wrapEl, selectors.pagination)
-    if (paginationEl) {
-      paginationHeight = paginationEl.offsetHeight + 16
+    // 可用高度从表格顶部计算，上方分页已占据布局空间，只扣除表格下方的分页。
+    if (selectors.pagination) {
+      const tableTop = tableEl.getBoundingClientRect().top
+      wrapEl.querySelectorAll<HTMLElement>(selectors.pagination).forEach((paginationEl) => {
+        if (paginationEl.offsetHeight && paginationEl.getBoundingClientRect().top >= tableTop) {
+          paginationHeight += paginationEl.offsetHeight + 16
+        }
+      })
     }
 
     // 表格最大高度

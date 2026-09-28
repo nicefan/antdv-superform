@@ -3,7 +3,7 @@ import { h, isRef, ref, reactive, type PropType, defineComponent, toRaw, toRef, 
 import { nanoid } from 'nanoid'
 import { createButtons } from '../buttons'
 import { buildData } from './buildData'
-import { getUIRender } from '../../adapter'
+import { getUIRender, getUIService } from '../../adapter'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
@@ -68,15 +68,18 @@ export default defineComponent({
       onChange: (_selectedRowKeys, _selectedRows, info) => {
         if (__rowSelection?.preserveSelectedRowKeys) {
           const currentRows = availableRows()
-          const offPage = selectedRows.value.filter(row => !currentRows.has(rowKey(row)))
-          const merged = new Map([...offPage, ..._selectedRows].map(row => [rowKey(row), row]))
+          const offPage = selectedRows.value.filter((row) => !currentRows.has(rowKey(row)))
+          const merged = new Map([...offPage, ..._selectedRows].map((row) => [rowKey(row), row]))
           _selectedRowKeys = [...new Set([...offPage.map(rowKey), ..._selectedRowKeys])]
-          _selectedRows = _selectedRowKeys.map(key => merged.get(key)).filter(Boolean)
+          _selectedRows = _selectedRowKeys.map((key) => merged.get(key)).filter(Boolean)
         }
-        if (_selectedRowKeys.length === selectedRowKeys.value.length &&
+        if (
+          _selectedRowKeys.length === selectedRowKeys.value.length &&
           _selectedRowKeys.every((key, index) => key === selectedRowKeys.value[index]) &&
           _selectedRows.length === selectedRows.value.length &&
-          _selectedRows.every((row, index) => row === selectedRows.value[index])) return
+          _selectedRows.every((row, index) => row === selectedRows.value[index])
+        )
+          return
         selectedRowKeys.value = _selectedRowKeys
         selectedRows.value = _selectedRows
         __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows, info)
@@ -90,10 +93,11 @@ export default defineComponent({
     const childrenField = attrs.childrenColumnName || 'children'
     const availableRows = () => {
       const rows = new Map<any, Obj>()
-      const visit = (items) => items.forEach((item) => {
-        rows.set(rowKey(item), item)
-        if (Array.isArray(item[childrenField])) visit(item[childrenField])
-      })
+      const visit = (items) =>
+        items.forEach((item) => {
+          rows.set(rowKey(item), item)
+          if (Array.isArray(item[childrenField])) visit(item[childrenField])
+        })
       visit(orgList.value)
       return rows
     }
@@ -102,10 +106,15 @@ export default defineComponent({
       ([rows, keys]) => {
         // 默认选择只关联当前数据；显式保留跨页选择时，仍将同键对象替换为最新实例。
         const retained = __rowSelection?.preserveSelectedRowKeys
-        const nextKeys = retained ? [...keys] : keys.filter(key => rows.has(key))
-        const previous = new Map(selectedRows.value.map(row => [rowKey(row), row]))
-        const nextRows = nextKeys.map(key => rows.get(key) ?? (retained ? previous.get(key) : undefined)).filter((row): row is Obj => !!row)
-        const changed = nextKeys.length !== keys.length || nextRows.length !== selectedRows.value.length || nextRows.some((row, index) => row !== selectedRows.value[index])
+        const nextKeys = retained ? [...keys] : keys.filter((key) => rows.has(key))
+        const previous = new Map(selectedRows.value.map((row) => [rowKey(row), row]))
+        const nextRows = nextKeys
+          .map((key) => rows.get(key) ?? (retained ? previous.get(key) : undefined))
+          .filter((row): row is Obj => !!row)
+        const changed =
+          nextKeys.length !== keys.length ||
+          nextRows.length !== selectedRows.value.length ||
+          nextRows.some((row, index) => row !== selectedRows.value[index])
         if (changed) {
           selectedRows.value = nextRows
           if (nextKeys.length !== keys.length) selectedRowKeys.value = nextKeys
@@ -143,6 +152,7 @@ export default defineComponent({
         { immediate: true }
       )
     }
+
     const listener = {
       async onSave(data, index?: number) {
         if (option.apis?.save) {
@@ -150,27 +160,18 @@ export default defineComponent({
           if (data.parentId) {
             expandedRowKeys.value = [...expandedRowKeys.value, data.parentId]
           }
-          return reload?.()
-        } else {
-          if (index !== undefined) {
-            orgList.value.splice(index + 1, 0, data)
-          } else {
-            orgList.value.push(data)
-          }
+          reload?.()
+          return
         }
+        if (index !== undefined) orgList.value.splice(index + 1, 0, data)
+        else orgList.value.push(data)
       },
       async onUpdate(newData, oldData) {
-        const key = rowKey(oldData)
-        const findTarget = () => orgList.value.findIndex(item => rowKey(item) === key)
-        if (findTarget() < 0) throw new Error('编辑记录已被移除，请取消本次编辑')
         if (option.apis?.update) {
           await option.apis.update(newData)
         }
-        // 等待接口期间可能重排或替换对象，只更新此刻仍存在的同键行，不能复活已删除记录。
-        const index = findTarget()
-        if (index < 0) throw new Error('保存期间记录已被移除，请刷新确认服务端结果')
-        Object.assign(orgList.value[index], newData)
-        return reload?.()
+        Object.assign(oldData, newData)
+        reload?.()
       },
       async onDelete(items: any[]) {
         const keys = items.map((item) => rowKey(item))
@@ -215,6 +216,7 @@ export default defineComponent({
     const { list, methods, buttonMethods = methods, modalSlot } = context
     // TODO: 补充TS
     const actions = {
+      onQueryRequest: () => context.onQueryRequest?.(),
       selectedRowKeys,
       selectedRows,
       setSelectedRows: (arr: any[]) => {
@@ -279,7 +281,8 @@ export default defineComponent({
             default: () => [
               titleSlot &&
                 getUIRender('col')(
-                  { class: 'sup-title' },
+                  // 显式使用内容宽度，避免 Element Plus 的默认 24 栅格将按钮挤到下一行。
+                  { class: 'sup-title', flex: '0 1 auto' },
                   {
                     default: createLabelNode({ labelSlot: titleSlot, tooltip: option.tooltip }, effectData),
                   }
@@ -303,25 +306,27 @@ export default defineComponent({
       const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, ...tableAttrs } = attrs
       return [
         ...modalSlot.map((slot) => slot()),
-        getUIRender('table')(
-          {
-            ...globalProps.Table,
-            ref: tableRef,
-            data: list.value,
-            columns: reactive(columns),
-            tableLayout: 'fixed',
-            pagination: false,
-            ...tableAttrs,
-            selection: rowSelection && {
-              ...rowSelection,
-              selectedKeys: selectedRowKeys.value,
+        (context.wrapTable || ((render) => render()))(() =>
+          getUIRender('table')(
+            {
+              ...globalProps.Table,
+              ref: tableRef,
+              data: list.value,
+              columns: reactive(columns),
+              tableLayout: 'fixed',
+              pagination: false,
+              ...tableAttrs,
+              selection: rowSelection && {
+                ...rowSelection,
+                selectedKeys: selectedRowKeys.value,
+              },
+              rowKey,
+              expandedKeys: expandedRowKeys.value,
+              onExpandedChange: updateExpand,
+              class: ['sup-table-wrapper', option.editable && 'sup-table-editable'],
             },
-            rowKey,
-            expandedKeys: expandedRowKeys.value,
-            onExpandedChange: updateExpand,
-            class: ['sup-table-wrapper', option.editable && 'sup-table-editable'],
-          },
-          __slots
+            __slots
+          )
         ),
       ]
     }

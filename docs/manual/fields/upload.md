@@ -134,7 +134,7 @@ infoNames: {
 | `title`        | string/function | `'上传文件'` | 上传按钮内容                         |
 | `accept`       | string          | —            | 扩展名或 MIME 类型                   |
 | `maxCount`     | number          | `Infinity`   | 最大文件数量                         |
-| `beforeUpload` | function        | —            | 业务前置校验                         |
+| `beforeSelect` | function        | —            | 接收原始 File，支持异步选入校验       |
 | `isView`       | boolean         | `false`      | 强制只读查看模式，通常由详情自动传入 |
 
 ```ts
@@ -150,20 +150,20 @@ attrs: {
 }
 ```
 
-底层 `beforeUpload` 返回非 `undefined` 时会影响内置选择流程；只有需要额外业务校验时配置，通用大小和重复校验优先使用专属属性。
+`beforeSelect(file: File)` 返回 `false` 或抛错会拒绝选入，异步校验完成后才加入列表。大小、数量及重名限制使用专属属性。`accept` 按扩展名或 MIME 匹配，忽略大小写和规则两端空白。
 
 ## 提交时机与错误
 
 - `auto` 会等待仍在上传的任务，上传错误会阻止表单提交。
 - `submit` 在表单提交时启动等待文件，并延后处理待删除的远程文件。
-- `custom` 不注册远程上传，业务从 `originFileObj` 读取原始 File。
-- `base64` / `text` 读取失败会保留错误状态。
+- `custom` 不自动上传，业务从文件对象的 `file` 属性读取原始 File。
+- `base64` / `text` 的读取纳入提交等待，失败保留文件及错误状态并阻止提交。
 
 ```ts
 const modal = useModalForm(schema, {
   onOk: async ({ file }) => {
     const body = new FormData();
-    body.append("file", file.originFileObj);
+    body.append("file", file.file);
     return api.import(body);
   },
 });
@@ -171,6 +171,22 @@ const modal = useModalForm(schema, {
 
 ## 预览与只读
 
-图片默认使用预览器。Ant Design Vue UploadProps 的 `onPreview(file)`、`isImageUrl(file)`、`listType`、`showUploadList` 等继续通过 attrs 使用。详情模式隐藏上传和删除入口、保留下载；无附件显示“暂无附件”。
+`listType` 支持 text、picture、picture-card 三种列表样式；隐藏选择入口后仍显示文件列表。上传接口通过 `apis.upload` 配置。
+
+| attrs 属性 | 类型 / 默认值 | 说明 |
+| --- | --- | --- |
+| `showList` | boolean / true | 是否显示列表 |
+| `removable` | boolean / true | 是否显示删除操作，只读或禁用时不能删除 |
+| `downloadable` | boolean / 按配置决定 | 配置下载接口或回调时默认启用，可显式关闭 |
+| `previewable` | boolean / true | 是否允许预览 |
+| `beforeRemove` | function | 接收 UIUploadFile，返回 false 或拒绝 Promise 时保留文件 |
+| `isImage` | function | 接收 UIUploadFile，返回是否为图片 |
+| `onChange` | function | 接收 `{ file, fileList }` |
+| `onDownload` | function | 接收 UIUploadFile，自定义下载 |
+| `onPreview` | function | 接收映射后的业务文件，可异步返回预览地址 |
+
+`UIUploadFile` 包含 uid、name、可选的 file（原始 File）、url、type、size、percent 和 status；status 为 waiting、uploading、done 或 error，并允许业务扩展字段。`slots.file` 可自定义文件项。
+
+详情模式隐藏上传和删除入口，下载仍由配置决定；无附件显示“暂无附件”。
 
 不依赖后端的模式可在[文件上传示例](/examples?example=upload)中运行。

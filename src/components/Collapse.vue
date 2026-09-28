@@ -34,7 +34,7 @@ export default defineComponent({
         option,
         effectData,
         model,
-        header: () => [option.icon?.(), toNode(option.label, effectData)],
+        header: () => [toNode(option.icon, effectData), toNode(option.label, effectData)],
         key: key || field || String(idx),
         hidden,
         disabled,

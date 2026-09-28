@@ -117,13 +117,13 @@ Group 的优先级为 Schema `option.component` → `overrides.render.group` →
 
 ### 局部校验与语义图标
 
-表单服务在 `uiComponents.form.service` 中实现 `validate`、`validateField`、`clearValidate`；支持 InputGroup 局部校验时，实现 `validateField(instance, path)`。其中 `path` 为 `(string | number)[]`，方法只校验该路径并返回 Promise。
+表单服务在 `uiComponents.form.service` 中实现 `validate`、`validateField`、`clearValidate`；支持 InputGroup 局部校验时，实现 `validateField(instance, path)`。其中 `path` 为 `(string | number)[]`，方法只校验该路径并返回 Promise。`validate(instance, paths?)` 支持路径数组 `(string | number)[][]`，用于按行批量校验；省略 paths 时校验整个表单。
 
 `icons.semantic` 将语义名映射为 `() => VNodeChild`。可从 `superform/sdk` 导入 `builtInIcons` 复用默认图标。
 
 ## 跨框架复用范围 {#第三方-adapter}
 
-第三方包依赖 `superform`，通过 `superform/sdk` 实现 UIAdapter。Core 只调用 `UIRenderers` 与 form/services/modal/icons/upload/table 等明确协议，不认识具体 UI 组件、CSS class 或实例 API。
+第三方包依赖 `superform`，通过 `superform/sdk` 实现 UIAdapter。Core 只调用 `UIRenderers` 与 form/services/modal/icons/table 服务及 Upload state 等明确协议，不认识具体 UI 组件、CSS class 或实例 API。
 
 切换 Adapter 不承诺整份 Schema 原样复用。Core 容器和业务语义保持稳定，UI 组件名称、`attrs` 与事件仍以目标框架为准。
 

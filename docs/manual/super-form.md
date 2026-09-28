@@ -65,7 +65,7 @@ form.resetFields(structuredClone(row));
 | `attrs`             | object          | `{}`    | 传给 Ant Design Vue Form，如 `layout`、`labelCol` |
 | `isContainer`       | boolean         | `false` | 增加页面容器样式，适合独立页面表单                |
 | `compact`           | boolean         | `false` | 减少纵向间距，适合搜索或密集编辑                  |
-| `ignoreRules`       | boolean         | `false` | 关闭触发校验并隐藏必填标识，仅适合搜索表单        |
+| `ignoreRules`       | boolean         | `false` | 关闭自动触发校验并隐藏必填标识，显式校验及提交仍校验        |
 | `subSpan`           | number/string   | `8`     | 子项默认栅格；字符串仅支持 `'auto'`               |
 | `gutter`            | number          | `16`    | Row 间距                                          |
 | `rowProps`          | object          | `{}`    | 根 Row 响应式布局属性                             |

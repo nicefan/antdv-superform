@@ -114,6 +114,10 @@ rowEditor: {
 
 `editMode` 和 `addMode` 可独立选择。`form` 省略或未提供 `subItems` 时复用 columns；显式 `subItems` 适合编辑字段与列表列不同。`onSave` 返回 `false` 阻止内置保存；`onCancel` 在取消前执行，返回 false 可阻止取消。弹窗 onSave 从 context.source 读取提交草稿；行内回调保留行操作上下文。
 
+### 行内编辑与保存
+
+默认允许多行同时编辑或新增，各行可独立保存或取消，请提供稳定且唯一的 rowKey。`rowEditor.singleEdit: true` 限制为单行编辑。
+
 ## modalProps 与 descriptionsProps
 
 ```ts

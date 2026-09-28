@@ -22,9 +22,9 @@ import { renderTable, renderTableFilter, tableSelectors } from './components/Tab
 import { renderActionGroup } from './components/ActionGroup'
 import { renderUpload } from './components/Upload'
 
-async function validateForm(instance: any, path?: (string | number)[]) {
+async function validateForm(instance: any, paths?: (string | number)[][]) {
   try {
-    if (path) await instance.validateField([path.join('.')])
+    if (paths) await instance.validateField(paths.map((path) => path.join('.')))
     else await instance.validate()
   } catch (error: any) {
     // 原生校验失败返回字段字典；运行异常不能伪装成字段校验失败。
@@ -33,7 +33,7 @@ async function validateForm(instance: any, path?: (string | number)[]) {
     if (!fields.length || !fields.every(([, errors]) => Array.isArray(errors))) throw error
     throw new FormValidationError(
       fields.map(([name, errors]) => ({
-        path: path || name.split('.'),
+        path: paths?.find((path) => path.join('.') === name) || name.split('.'),
         messages: (errors as { message?: string }[]).flatMap((item) => (item.message ? [item.message] : [])),
       })),
       error
@@ -44,8 +44,8 @@ async function validateForm(instance: any, path?: (string | number)[]) {
 export const uiComponents: UIComponentDefinitions = {
   form: {
     service: {
-      validate: (instance) => validateForm(instance),
-      validateField: validateForm,
+      validate: validateForm,
+      validateField: (instance, path) => validateForm(instance, [path]),
       clearValidate: (instance) => instance.clearValidate(),
     },
     component: ElForm,
@@ -77,7 +77,7 @@ export const uiComponents: UIComponentDefinitions = {
       const span = inSpan === 'auto' || flex !== undefined ? null : inSpan
       const flexStyle = flex ?? (inSpan === 'auto' ? '1 1 0' : undefined)
       return mergeProps(attrs, { span, style: { flex: flexStyle } })
-    }
+    },
   },
   space: { component: ElSpace },
   card: {
@@ -117,7 +117,12 @@ export const uiComponents: UIComponentDefinitions = {
     },
     render: ({ attrs }) => renderActionGroup(attrs),
   },
-  tooltip: { component: ElTooltip, adaptProps: ({ title, ...props }) => ({ ...props, content: title }) },
+  tooltip: {
+    component: ElTooltip,
+    adaptProps: ({ title, ...props }) => ({ ...props, content: title }),
+    defaults: { placement: 'top' },
+  },
+  button: { component: ElButton },
   tag: {
     adaptProps: ({ removable, onRemove, ...attrs }) => ({ ...attrs, closable: removable, onClose: onRemove }),
     render: ({ attrs: props, slots }) => {
@@ -132,32 +137,76 @@ export const uiComponents: UIComponentDefinitions = {
       onChange: onSelectedChange,
     }),
   },
+  checkableTagGroup: {
+    render: ({ attrs: { options, selected, onSelectedChange } }) =>
+      h(
+        'div',
+        { class: 'sup-tag-select-group' },
+        options.map(({ label, value, disabled }) =>
+          h(
+            ElCheckTag,
+            {
+              key: value,
+              class: 'tag-select',
+              checked: selected.includes(value),
+              disabled,
+              onChange: (checked: boolean) => onSelectedChange(value, checked),
+            },
+            { default: () => label }
+          )
+        )
+      ),
+  },
   empty: { component: ElEmpty },
   modal: {
     render: ({ attrs: props, slots }) => {
-      const { visible, 'onUpdate:visible': onVisibleChange, afterClose, footer: footerProp, ...rest } = props
+      const {
+        visible,
+        'onUpdate:visible': onVisibleChange,
+        afterClose,
+        footer: footerProp,
+        maskClosable,
+        keyboard,
+        closable,
+        centered,
+        ...rest
+      } = props
       const { title, footer, ...restSlots } = slots
       const defaultFooter = () => [
-        h(ElButton, {
-          onClick: async () => {
-            const result = await props.onCancel?.()
-            if (result !== false) onVisibleChange?.(false)
+        h(
+          ElButton,
+          {
+            onClick: async () => {
+              const result = await props.onCancel?.()
+              if (result !== false) onVisibleChange?.(false)
+            },
           },
-        }, ()=>'取 消'),
-        h(ElButton, {
-          type: 'primary',
-          loading: props.confirmLoading,
-          onClick: () => props.onOk?.(),
-        }, ()=>'确 定'),
+          () => '取 消'
+        ),
+        h(
+          ElButton,
+          {
+            type: 'primary',
+            loading: props.confirmLoading,
+            onClick: () => props.onOk?.(),
+          },
+          () => '确 定'
+        ),
       ]
       return h(
         ElDialog,
         {
           ...rest,
+          closeOnClickModal: maskClosable ?? rest.closeOnClickModal,
+          closeOnPressEscape: keyboard ?? rest.closeOnPressEscape,
+          showClose: closable ?? rest.showClose,
+          alignCenter: centered ?? rest.alignCenter,
           // 关闭图标、遮罩和 Escape 与底部取消按钮使用同一业务拦截。
-          beforeClose: rest.beforeClose || (async (done) => {
-            if (await props.onCancel?.() !== false) done()
-          }),
+          beforeClose:
+            rest.beforeClose ||
+            (async (done) => {
+              if ((await props.onCancel?.()) !== false) done()
+            }),
           modelValue: visible,
           'onUpdate:modelValue': onVisibleChange,
           onClosed: afterClose,
@@ -170,8 +219,7 @@ export const uiComponents: UIComponentDefinitions = {
       )
     },
   },
-  upload: { service: { listIgnore: false }, render: ({ attrs, slots }) => renderUpload(attrs, slots) },
-  uploadTrigger: { component: ElButton },
+  upload: { render: ({ state, slots }) => renderUpload(state, slots) },
   preview: {
     render: ({ attrs: props }) => {
       if (!props.visible) return null

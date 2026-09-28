@@ -50,7 +50,7 @@ const submitHandler = (...arg) => {
 }
 const getData = () => {
   return {
-    name: '白龙',
+    name: '',
     street: '白龙',
     text: 'text',
     array: ['a', 'b'],
@@ -101,6 +101,7 @@ const [SuperButtons] = useButtons({
   actions: [
     { label: '切换选项', onClick: changeSelect },
     { label: '校验', onClick: submit },
+    { label: '清除校验', onClick: form.clearValidate },
     { label: '赋值', onClick: setValue },
     { label: '重置', onClick: reset },
     {

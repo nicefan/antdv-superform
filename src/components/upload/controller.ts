@@ -1,14 +1,6 @@
-export interface UploadFileInfo {
-  uid: string
-  file?: File
-  name: string
-  type: string
-  url: string
-  size?: number
-  percent?: number
-  status?: 'waiting' | 'error' | 'success' | 'done' | 'uploading' | 'removed'
-  [key: string]: any
-}
+import type { UIUploadFile } from '../../adapter/types'
+
+export type UploadFileInfo = UIUploadFile
 
 export type UploadMode = 'auto' | 'submit' | 'custom' | 'base64' | 'text'
 
@@ -24,8 +16,13 @@ interface UploadControllerOptions {
 }
 
 function accepts(file: UploadFileInfo, accept: string) {
-  return accept.split(',').some((rule) => {
-    return file.name?.endsWith(rule) || (file.type && new RegExp(`^${rule.replace('*', '\\S*')}$`).test(file.type))
+  const name = file.name?.toLowerCase() || ''
+  const type = file.type?.toLowerCase() || ''
+  return accept.split(',').some((value) => {
+    const rule = value.trim().toLowerCase()
+    if (!rule) return false
+    if (rule.startsWith('.')) return name.endsWith(rule)
+    return rule.endsWith('/*') ? type.startsWith(rule.slice(0, -1)) : type === rule
   })
 }
 
@@ -43,7 +40,7 @@ export function createUploadController(options: UploadControllerOptions) {
     name: 'name',
     ...infoNames,
   }
-  if (mode === 'custom') names.originFileObj = 'originFileObj'
+  if (mode === 'custom') names.file = 'file'
 
   const uploadTasks = new Map<string, Promise<any>>()
   const waitingTasks = new Map<string, () => Promise<any>>()
@@ -99,9 +96,11 @@ export function createUploadController(options: UploadControllerOptions) {
   }
 
   const registerRequest = (uid: string, request: () => Promise<any>) => {
-    if (mode === 'auto') {
+    if (mode === 'auto' || mode === 'base64' || mode === 'text') {
       const task = request()
       uploadTasks.set(uid, task)
+      // 即时任务可能先于表单提交失败；保留原 Promise 供提交读取错误。
+      void task.catch(() => undefined)
       return task
     }
     if (mode === 'submit') waitingTasks.set(uid, request)
@@ -111,9 +110,9 @@ export function createUploadController(options: UploadControllerOptions) {
 
   const submit = async (files: UploadFileInfo[]) => {
     let uploads: Promise<any> = Promise.resolve()
-    if (mode === 'auto') {
+    if (mode === 'auto' || mode === 'base64' || mode === 'text') {
       const failed = files.find((file) => file.status === 'error')
-      if (failed) throw failed.response || { message: '文件上传错误，请删除后重新上传！' }
+      if (failed) throw failed.error || failed.response || { message: '文件处理失败，请删除后重新选择！' }
       uploads = Promise.all(uploadTasks.values())
     } else if (mode === 'submit') {
       const tasks = files
@@ -127,8 +126,17 @@ export function createUploadController(options: UploadControllerOptions) {
     }
 
     const data = await uploads
-    // 删除失败不能中断表单提交，保持历史提交语义。
-    await Promise.all([...removeTasks.values()].map((handler) => handler())).catch((error) => console.error(error))
+    // 取出本批任务后立即清空，避免后续提交重复删除；新加入的任务留给下次提交。
+    const deletes = [...removeTasks.values()]
+    removeTasks.clear()
+    // 删除失败不阻断提交，但仍需等待本批所有删除完成，不隐式重试历史任务。
+    await Promise.all(deletes.map(async (handler) => {
+      try {
+        await handler()
+      } catch (error) {
+        console.error(error)
+      }
+    }))
     return data
   }
 
@@ -136,6 +144,7 @@ export function createUploadController(options: UploadControllerOptions) {
     return (
       removeTasks.size > 0 ||
       (mode === 'auto' && files.some((file) => file.status === 'uploading')) ||
+      ((mode === 'base64' || mode === 'text') && files.some((file) => file.status !== 'done')) ||
       (mode === 'submit' && files.some((file) => file.status !== 'done'))
     )
   }

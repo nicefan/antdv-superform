@@ -9,7 +9,7 @@ import type {
 } from './types'
 
 // 这些协议将原生属性放在 attrs 内；其它协议直接传递属性对象。
-const stateNames = new Set<keyof UIRenderers>(['group', 'card', 'tabs', 'collapse', 'descriptions'])
+const stateNames = new Set<keyof UIRenderers>(['group', 'card', 'tabs', 'collapse', 'descriptions', 'upload'])
 
 /** 业务覆盖与组件声明共用上下文协议，内部调用签名只在此转换。 */
 export function normalizeUIRenderers(render: UIComponentRenders = {}) {
@@ -20,7 +20,7 @@ export function normalizeUIRenderers(render: UIComponentRenders = {}) {
 /** 创建时确定调用路径，渲染时只合成当前上下文，不猜测组件或函数类型。 */
 export function normalizeUIComponents(definitions: UIComponentDefinitions = {}) {
   const render: Partial<UIRenderers> = {}
-  const result: Pick<UIAdapter, 'render' | 'form' | 'modal' | 'upload' | 'table' | 'defaults'> = { render }
+  const result: Pick<UIAdapter, 'render' | 'form' | 'modal' | 'table' | 'defaults'> = { render }
   for (const name of Object.keys(definitions) as (keyof UIRenderers)[]) {
     const definition = definitions[name]
     if (!definition) continue

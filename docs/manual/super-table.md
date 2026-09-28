@@ -293,6 +293,8 @@ const [register] = useTable({
 
 ## 分页与请求动作 {#分页与请求动作}
 
+两套 UI 支持 `pagination.placement` 数组：`topStart`、`topCenter`、`topEnd`、`bottomStart`、`bottomCenter`、`bottomEnd`，默认 `['bottomEnd']`；`['none']` 隐藏分页。每个方向最多一组，如 `['topEnd', 'bottomEnd']` 显示同步的上下分页。Element Plus 分页与表格间距为 16px。
+
 ```ts
 pagination: false // 显式关闭分页
 

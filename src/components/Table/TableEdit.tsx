@@ -85,6 +85,7 @@ export default function ({ model, orgList, editableRef, rowKey }) {
                 wrapperCol: {},
                 name: model.value.propChain,
                 rules: rules?.value,
+                class: 'sup-table-edit-item',
               },
               { default: inputSlot }
             )

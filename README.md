@@ -247,6 +247,8 @@ const [register, table] = useTable({
 </script>
 ```
 
+行内编辑使用 `rowEditor.editMode: 'inline'`，默认支持多行独立保存；`rowEditor.singleEdit: true` 限制单行，并在实际查询请求前清理编辑状态。完整行为见 [Table 使用说明](./docs/manual/fields/table.md)。
+
 查询响应可以直接返回数组，或者返回：
 
 ```ts

@@ -96836,6 +96836,7 @@ export {
   fs as Slider,
   _h as Space,
   gp as SpaceCompact,
+  ks as SubMenu,
   lf as Switch,
   Hs as TabPane,
   _s as Tabs,

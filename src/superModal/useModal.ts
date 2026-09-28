@@ -4,7 +4,7 @@ import { ButtonGroup } from '../components/buttons'
 import { globalProps } from '../plugin'
 import { getUIAdapter, getUIRender } from '../adapter'
 
-import type { ExtFormOption, ExtModalProps, ModalOpenOptions } from '../exaTypes'
+import type { ExtFormOption, ExtModalProps, ExtModalFormProps, ModalOpenOptions } from '../exaTypes'
 import { useForm } from '../superForm'
 import { toNode } from '../utils'
 
@@ -26,7 +26,7 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
       .finally(() => (confirmLoading.value = false))
   }
 
-  const titleSlot = () => (config.icon ? [config.icon(), toNode(config.title)] : toNode(config.title))
+  const titleSlot = () => (config.icon ? [toNode(config.icon), toNode(config.title)] : toNode(config.title))
 
   let cancelling: Promise<unknown> | undefined
   const onCancel = (...args) => {
@@ -85,20 +85,25 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
 
 export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
   const { modalSlot, openModal, modalRef, closeModal, setModal, config: modalConfig } = createModal(content, config)
-  const ins: any = getCurrentInstance() // || currentInstance
-  // Element Plus Dialog 依赖 Teleport 挂载到 document.body，DocumentFragment 未连接到文档时不会显示弹窗。
+  const ins = getCurrentInstance()
+  // Element Plus Dialog 默认在宿主内渲染，每次挂载都需连接到文档。
   const wrap = document.createElement('div')
-  document.body.appendChild(wrap)
   let vm
   const contextAdapter = getUIAdapter().modal
   const configContext = contextAdapter?.useContext?.()
+  const afterClose = () => {
+    // 不改写持久配置，避免重复打开时叠加回调；清理后允许业务回调重新打开。
+    const callback = modalConfig.afterClose
+    if (modalConfig.destroyOnClose) destroy()
+    callback?.()
+  }
   const Wrapper = (props) => {
     return (
       contextAdapter?.wrapContext?.(
-        (contextProps = {}) => modalSlot({ ...props, ...contextProps }, {}),
+        (contextProps = {}) => modalSlot({ ...props, ...contextProps, afterClose }, {}),
         configContext,
         props
-      ) ?? modalSlot(props, {})
+      ) ?? modalSlot({ ...props, afterClose }, {})
     )
   }
 
@@ -107,34 +112,19 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
     wrap.remove()
     vm = null
   }
-  onUnmounted(() => {
-    vm && destroy()
-  })
+  onUnmounted(destroy)
 
   const open = (option?: Partial<ExtModalProps>) => {
-    if (modalRef.value) {
+    if (vm) {
       return openModal(option)
     } else {
       vm = createVNode(Wrapper)
-      vm.appContext = ins?.appContext // 这句很关键，关联起了数据
-
+      vm.appContext = ins?.appContext
+      document.body.appendChild(wrap)
       render(vm, wrap)
-      if (modalConfig.destroyOnClose) {
-        const afterClose = modalConfig.afterClose
-        setModal({
-          afterClose() {
-            afterClose?.()
-            destroy()
-          },
-        })
-      }
       return nextTick(() => openModal(option))
     }
   }
-  // const close = () => {
-  //   if (config.)
-  // }
-
   return {
     modalRef,
     openModal: open,
@@ -144,13 +134,25 @@ export function useModal(content?: () => VNodeTypes, config?: ExtModalProps) {
   }
 }
 
-export function useModalForm(formOption: ExtFormOption, config: ExtModalProps = {}) {
+export function useModalForm(formOption: ExtFormOption, config: ExtModalFormProps = {}) {
   const { title, ...option } = formOption as any
+  const { onSubmitError, ...modalConfig } = config
   const [register, form] = useForm(option)
-  const modal = useModal(register(), { maskClosable: false, title, ...config })
-  const openModal = ({ data, onOk = config.onOk, ...__config }: ModalOpenOptions = {}) => {
-    const __onOk = () => {
-      return form.submit().then((data) => (onOk ? onOk(data) : data))
+  const modal = useModal(register(), { maskClosable: false, title, ...modalConfig })
+  const openModal = ({ data, onOk = config.onOk, onSubmitError: notifyError = onSubmitError, ...__config }: ModalOpenOptions = {}) => {
+    const __onOk = async () => {
+      try {
+        const data = await form.submit()
+        return onOk ? await onOk(data) : data
+      } catch (error) {
+        // 仅在表单确认链路通知一次；通知失败也不能替换原始提交错误。
+        try {
+          await notifyError?.(error)
+        } catch (notificationError) {
+          console.error(notificationError)
+        }
+        throw error
+      }
     }
     form.resetFields(data)
     return modal.openModal({ ...__config, onOk: __onOk })

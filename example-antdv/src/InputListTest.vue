@@ -58,7 +58,7 @@ const [register, form] = useForm({
             validator: (data, val) => {
               const value1 = String(val.value1 || '').trim()
               const value2 = String(val.value2 || '').trim()
-              return value1 || value2 || new Error('value1 或 value2 至少填写一项')
+              if (!value1 && !value2) return new Error('value1 或 value2 至少填写一项')
             },
           },
           subItems: [

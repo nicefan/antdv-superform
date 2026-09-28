@@ -41,6 +41,9 @@ export const elementPlusFields: NonNullable<UIAdapter['fields']> = defineFieldAd
             }
           : attrs
       },
+      defaults: {
+        inlinePrompt: true,
+      }
     },
     Select: {
       processors: ['options'],

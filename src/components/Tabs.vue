@@ -37,7 +37,7 @@ export default defineComponent({
       })
       const { hidden, attrs } = useControl({ option, effectData })
       const tabKey = key || field || String(idx)
-      const tabLabel = () => [icon?.(), toNode(label, effectData)]
+      const tabLabel = () => [toNode(icon, effectData), toNode(label, effectData)]
       watchEffect(() => updatePaneVisibility(idx, tabKey, unref(hidden) || unref(attrs.disabled)))
       return {
         attrs: reactive(attrs),

@@ -44,7 +44,7 @@ export default defineConfig(({ command }) => ({
   plugins: [
     SuperFormComponents({
       dirs: ['../examples/shared'],
-      entry: 'src/main.ts',
+      entry: 'main.ts',
       types: ['Input', 'InputSearch', 'TextArea'],
       dts: 'superform-components.d.ts',
     }),

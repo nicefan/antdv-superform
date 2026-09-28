@@ -1,6 +1,6 @@
 # SuperForm UI Adapter 架构总览
 
-维护日期：2026-09-23。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
+维护日期：2026-09-28。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
 
 ## 1. 分层与入口
 
@@ -49,19 +49,33 @@ Form 建立模型及初始数据，再绑定外部 dataSource；resetFields 按�
 
 公开表单动作包含 submit、validate、validateField(path)、clearValidate、resetFields、setFieldsValue、getNativeInstance。getForm 返回统一动作实例。Adapter 的表单 service 归一化字段错误为 FormValidationError（fields.path/messages、cause），其它错误原样传播。InputGroup 通过提供的 validateField 校验当前路径。
 
-提交顺序为校验 → 注册提交任务 → onSubmit → submit 事件 → 返回数据副本。上传控制器管理值映射、文件校验、上传与删除任务；字段卸载注销对应提交任务，不承诺撤销已发出的网络请求。
+提交顺序为校验 → 注册提交任务 → onSubmit → submit 事件 → 返回数据副本。ignoreRules 隐藏必填标记并屏蔽普通字段和 InputGroup 的自动校验，显式校验与提交仍执行规则。Element Plus 查询及 ignoreRules 表单上下间距为 6px。
+
+Upload 使用 UIUploadState/UIUploadFile，Core 管理选入校验、文件列表、上传、读取及删除任务；Adapter 使用原生受控列表，不触发原生网络上传。beforeSelect/beforeRemove 控制选入及删除，showList/removable/downloadable/previewable 控制展示与操作，原始 File 保存在 file 属性。提交等待选入及上传/读取完成；删除按批等待，失败不阻止提交或隐式重试。字段卸载注销提交任务，删除、替换或卸载后忽略迟到结果，不承诺撤销已发出的网络请求。Upload 不提供独立 service 或 uploadTrigger。
+
+useModal 支持销毁后重建宿主、本次打开配置覆盖和 afterClose 隔离。useModalForm.onSubmitError 接收确认链路中的校验、提交任务及 onOk 原始错误，本次打开可覆盖；通知异常不替换原错误，失败保留弹窗并恢复 loading。Element Plus confirm/info 使用实例独立的受控 Dialog，支持 update/destroy 和关闭属性映射。
 
 ## 6. Table 与查询
 
 query 回第一页，reload 保留页码，goPage 切页；公开动作等待实例注册并返回 Promise。内部响应式调度采用 300ms 尾部节流；新查询取消旧请求并以编号丢弃过期响应。apis.query 的第二参数为 `{ signal }`。
 
-Table 整表模型绑定源记录，按对象身份复用并更新路径；行内草稿按稳定 rowKey 定位，数据重排或同键替换不使用旧下标保存。保存校验、回调和接口成功后退出编辑；失败保留草稿，等待期间防止重复保存与取消。目标移除时拒绝保存，草稿可取消。
+Table 整表模型绑定源记录，按对象身份复用并更新路径；行内默认多行草稿按稳定 rowKey 隔离，使用当前记录保存，保存锁及取消按行独立。共用 Form 以独立路径登记草稿及补充校验项；保存校验当前行全部规则，包含未展示和只读字段，无规则行不校验其他行。显式校验串行，接口请求可并行。校验、回调及接口成功后退出编辑，失败保留草稿；保存期间防止重复保存与取消，输入仍可编辑。
+
+rowEditor.singleEdit 限制单行，并在实际查询请求前清理编辑状态；本地翻页与默认多行模式保留草稿。新增/更新成功后本地写回，有 query API 时独立刷新；刷新失败不改变保存结果。行内及整表编辑无额外单元格边距、不展示校验文本，保留错误状态与提示。
 
 行内新增锚点失效拒绝保存；弹窗新增锚点失效 warning 后末尾追加。弹窗表单以 resetFields 初始化，支持延迟注册和 destroyOnClose 后回填；取消不修改来源数据。弹窗模式下表格保持展示态。
 
-选择按稳定行键同步当前记录，清除无效选择；跨远程页保留选择由 preserveSelectedRowKeys 显式控制。数据缩减时回退有效页。稳定行键应由业务提供且保持唯一。
+选择按稳定行键同步当前记录，清除无效选择；跨远程页保留选择由 preserveSelectedRowKeys 显式控制。数据缩减时回退有效页。稳定行键应由业务提供且保持唯一。标题与按钮同行并保留按钮对齐。Element Plus 支持 pagination.placement 上下六种位置及 none，默认 bottomEnd，分页间距 16px，自适应高度仅额外扣除下方分页。
 
-## 7. 详情、类型与工具
+## 7. 按钮、布局与图标
+
+内置动作名为 add/delete/edit/detail/submit/search/reset/save/cancel/expand。配置按 Core 默认语义及图标 → UI 默认外观 → defaultButtons → 宿主配置 → 局部动作合成；公共原生属性覆盖默认动作属性，局部 attrs 最后覆盖，权限、组禁用与 pending 仍由 Core 约束。
+
+ActionGroup 消费 UIActionItem/UIActionMenuItem 的内容函数、attrs、disabled、菜单及标准事件，不解析 effectData；原生 loading 从 attrs.loading 透传。dropdown 使用一级同步 ActionMenuSource，选择值写入 context.value，onClick 第二参数仍为可选宿主动作。公开图标支持节点、组件及函数，由 toNode 归一化。
+
+标准栅格未显式配置顶层 span 时保留 colProps.span，显式 span 优先。Element Plus 的 span/subSpan: auto 通过弹性布局占剩余空间，不生成 el-col-24。
+
+## 8. 详情、类型与工具
 
 SuperDetail 响应 schema 替换，dataSource 优先于 Schema 数据源，仅换配置时保留数据。表单预览只复用字段与布局，避免把 Form 原生 attrs/buttons 当作详情配置。
 

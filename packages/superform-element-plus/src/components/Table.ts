@@ -121,7 +121,7 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
     }
   )
   if (!pagination) return table
-  const { small, ...paginationAttrs } = pagination.attrs || {}
+  const { small, placement = (pagination as Obj).placement ?? ['bottomEnd'], ...paginationAttrs } = pagination.attrs || {}
   const paginationProps = {
     currentPage: pagination.current,
     pageSize: pagination.pageSize,
@@ -136,9 +136,15 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
     ...(small !== undefined ? { size: small ? 'small' : undefined } : {}),
     small: false,
   }
+  // 每个方向最多展示一组分页，与 AntDV 的 placement 数组语义保持一致。
+  const renderPagination = (position?: string) => position && h('div', {
+    class: ['sup-table-pagination', position.startsWith('top') ? 'sup-table-pagination-top' : 'sup-table-pagination-bottom'],
+    style: { justifyContent: position.endsWith('Start') ? 'flex-start' : position.endsWith('Center') ? 'center' : 'flex-end' },
+  }, [h(ElPagination as any, paginationProps)])
   return h('div', { class: 'sup-table-adapter' }, [
+    renderPagination(placement.find((position: string) => position.startsWith('top'))),
     table,
-    h(ElPagination as any, paginationProps),
+    renderPagination(placement.find((position: string) => position.startsWith('bottom'))),
   ])
 }
 export const renderTableFilter: UIRenderers['tableFilter'] = (props, slots = {}) => {

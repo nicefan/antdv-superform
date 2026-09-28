@@ -32,13 +32,24 @@
   margin: 0 2px;
 }
 
-.sup-tag-input {
-  width: 78px;
+.sup-tag-input-group,
+.sup-tag-select-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-.sup-tag-add {
-  background: #fff;
-  border-style: dashed;
+// 独立占位约束输入框宽度，避免原生 Input 的块级布局或默认宽度将其挤到下一行。
+.sup-tag-input-editor {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 78px;
+  max-width: 100%;
+
+  .sup-tag-input {
+    width: 100%;
+  }
 }
 
 .sup-tag-select-empty,
@@ -86,6 +97,29 @@
   list-style: none;
 }
 
+// ElUpload 的列表与选择入口共用根节点，只隐藏入口以保留原生列表。
+.sup-upload-hide-trigger [class*='-upload--'] {
+  display: none;
+}
+
+.sup-upload-no-remove {
+  [class$='-icon--close'],
+  [class$='-icon--close-tip'],
+  [class$='-upload-list__item-delete'] {
+    display: none;
+  }
+}
+
+.sup-upload-no-preview [class$='-upload-list__item-preview'] {
+  display: none;
+}
+
+.sup-upload-actions {
+  display: inline-flex;
+  gap: 8px;
+  padding-inline: 8px;
+}
+
 .sup-list-item {
   display: flex;
   align-items: center;
@@ -102,3 +136,17 @@
     margin-inline-start: 24px;
   }
 }
+  .sup-descriptions-mode-form {
+      .sup-descriptions-item-input {
+        width: 100%;
+        min-width: 0;
+        min-height: 32px;
+        padding: 4px 11px;
+        color: rgba(0, 0, 0, 0.85);
+        line-height: 24px;
+        background-color: #f5f5f5;
+        border: 1px solid #d9d9d9;
+        border-radius: 2px;
+        box-sizing: border-box;
+      }
+    }
