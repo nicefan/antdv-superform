@@ -5,25 +5,31 @@
   gap:0;
   line-height: 1;
 }
+
+.sup-table .sup-table-wrapper {
 // 行内与整表编辑均保持紧凑单元格，只隐藏校验文本，不移除错误状态。
-.sup-table-wrapper .ant-form-item.sup-table-edit-item {
-  margin: 0;
+  .ant-form-item.sup-table-edit-item {
+    margin: 0;
 
-  .ant-form-item-explain,
-  .ant-form-item-extra,
-  .ant-form-item-label,
-  .ant-form-item-margin-offset {
-    display: none;
+    .ant-form-item-explain,
+    .ant-form-item-extra,
+    .ant-form-item-label,
+    .ant-form-item-margin-offset {
+      display: none;
+    }
   }
-}
-
-.sup-table-wrapper {
-  .ant-table-cell > .ant-form-item {
+  .ant-table-pagination.ant-pagination {
+    margin: 16px 0 0;
+  }
+ .ant-table-cell > .ant-form-item {
     margin-bottom: 0;
 
     .ant-form-item-control > .ant-form-item-explain,
     .ant-form-item-label {
       display: none;
+    }
+    .ant-form-item-control-input-content{
+      display:initial;
     }
   }
 
@@ -52,9 +58,6 @@
   }
 }
 
-.sup-table .ant-table-pagination.ant-pagination {
-  margin: 16px 0 0;
-}
 
 .sup-table-search > .ant-form,
 .sup-form-simple {

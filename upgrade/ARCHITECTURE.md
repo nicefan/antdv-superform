@@ -1,6 +1,6 @@
 # SuperForm UI Adapter 架构总览
 
-维护日期：2026-09-28。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
+维护日期：2026-09-29。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
 
 ## 1. 分层与入口
 
@@ -66,6 +66,8 @@ rowEditor.singleEdit 限制单行，并在实际查询请求前清理编辑状�
 行内新增锚点失效拒绝保存；弹窗新增锚点失效 warning 后末尾追加。弹窗表单以 resetFields 初始化，支持延迟注册和 destroyOnClose 后回填；取消不修改来源数据。弹窗模式下表格保持展示态。
 
 选择按稳定行键同步当前记录，清除无效选择；跨远程页保留选择由 preserveSelectedRowKeys 显式控制。数据缩减时回退有效页。稳定行键应由业务提供且保持唯一。标题与按钮同行并保留按钮对齐。Element Plus 支持 pagination.placement 上下六种位置及 none，默认 bottomEnd，分页间距 16px，自适应高度仅额外扣除下方分页。
+
+高度来源统一为 `maxHeight: number | 'viewport' | 'parent'`，数字表示内容滚动区域高度，两个字符串按视口或父元素剩余空间扣除表头、页脚及分页等占用后计算。未配置时自然布局；`fixedHeight: true` 保留固定高度，`heightOffset` 仅在空间计算模式额外扣减。根级、attrs 和全局 Table 默认属性统一归一化，模式字符串不透传原生 maxHeight。高度约束可动态启停，清除时释放监听并恢复样式及原生 scroll；AntDV 根据实际内容决定是否启用纵向滚动，Element Plus 按整表高度换算后下发。
 
 ## 7. 按钮、布局与图标
 

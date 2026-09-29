@@ -59,7 +59,7 @@ const [register, table] = useTable({
 | `pagination`                 | boolean/object       | 标准分页   | `false` 关闭分页，object 用于自定义分页                                                            |
 | `editable`                   | boolean/function     | `false`    | 整表编辑状态                                                                                       |
 | `indexColumn`                | boolean/object       | `false`    | 序号列                                                                                             |
-| 高度策略                     | boolean/number       | 见高度章节 | `isContainer`、`isScanHeight`、`inheritHeight`、`maxHeight`、`isFixedHeight`、`resizeHeightOffset` |
+| 高度策略                     | number/string/boolean | 未设置 | `maxHeight`、`fixedHeight`、`heightOffset`；外观容器使用 `isContainer` |
 | `attrs`                      | object               | `{}`       | Ant Design Vue Table 属性                                                                          |
 | `apis`                       | object               | `{}`       | 查询、详情、保存、更新、删除接口                                                                   |
 | `params`                     | object/Ref           | `{}`       | 响应式附加查询参数                                                                                 |
@@ -396,32 +396,32 @@ tabs: {
 
 ### 高度配置总览
 
-| 属性                 | 类型    | 默认值  | 实际控制范围                                         | 典型场景                 |
-| -------------------- | ------- | ------- | ---------------------------------------------------- | ------------------------ |
-| `isScanHeight`       | boolean | `true`  | 从表格位置计算到视口底部的剩余高度                   | 独立列表页、页面最后区域 |
-| `inheritHeight`      | boolean | `false` | 从父容器取得可用高度                                 | Flex、Tabs 内部填充      |
-| `maxHeight`          | number  | —       | 当前实现中作为表格行滚动区域的最大高度               | 页面上下还有其他内容     |
-| `isFixedHeight`      | boolean | `false` | 固定表格外观高度，数据较少时保留空白，分页保持在底部 | 多个列表对齐、固定工作区 |
-| `resizeHeightOffset` | number  | `0`     | 在自动计算结果上额外扣除的底部距离                   | 页脚、底部安全间距       |
+| 属性 | 类型 | 默认值 | 作用 |
+| --- | --- | --- | --- |
+| `maxHeight` | `number \| 'viewport' \| 'parent'` | 未设置 | 内容滚动区域的高度上限，或高度的计算来源 |
+| `fixedHeight` | boolean | 未设置 | 为 `true` 时保留指定或计算出的高度，内容较少也不收缩 |
+| `heightOffset` | number | 未设置 | `viewport` / `parent` 模式额外扣除的底部空间，单位 px |
 
-> `isFixedHeight: true` 和 `resizeHeightOffset: 36` 是常见的业务推荐值，但不是当前源码内置默认值。项目希望所有列表保持一致时，可通过全局 `defaultProps.Table` 统一设置。
+未配置 `maxHeight` 时按内容自然布局，不自动限制到视口或父容器。`fixedHeight`、`heightOffset` 单独配置不启用高度计算。需要直接控制原生表格滚动时，可以使用 `attrs.scroll`。
 
-### 自动填满到窗口底部
+高度属性建议写在 Schema 根级，也支持写入 `attrs` 或通过 `defaultProps.Table` 统一配置；根级值优先。`isContainer` 只控制外观与间距，不启用高度约束。
+
+### 根据视口剩余空间计算
 
 ```ts
 {
-  isContainer: true,
-  // isScanHeight 默认 true，满足需求时可以省略
-  resizeHeightOffset: 36,
+  maxHeight: 'viewport',
+  fixedHeight: true,
+  heightOffset: 24,
   columns,
 }
 ```
 
-自动高度从表格顶部位置计算到视口底部的距离，扣除外层底部 margin/padding、分页、表头、标题和 `resizeHeightOffset` 后，将剩余空间交给表格行区域滚动。它适合 SuperTable 位于独立页面主体或页面最后一个区块的情况。
+从表格当前位置到视口底部计算剩余空间，扣除外层底部间距、查询区等已占据的位置、表头、标题、页脚、下方分页和 `heightOffset` 后，得到内容区域高度上限。`viewport` 不是把整个视口高度直接赋给表格。内容不足时是否保留空白由 `fixedHeight` 控制。
 
-页面结构变化、数据变化、展开行变化和窗口尺寸变化都会触发重新计算；业务代码改变外围布局后，也可调用 `table.redoHeight()`。
+窗口、容器和数据变化会触发重算；业务改变外围布局后也可调用 `table.redoHeight()`。
 
-### 继承父容器高度
+### 根据父容器剩余空间计算
 
 ```vue
 <template>
@@ -432,7 +432,8 @@ tabs: {
 
 <script setup lang="ts">
 const [register] = useTable({
-  inheritHeight: true,
+  maxHeight: 'parent',
+  fixedHeight: true,
   apis: { query: api.page },
   columns,
 });
@@ -440,55 +441,52 @@ const [register] = useTable({
 
 <style scoped>
 .workspace {
-  flex: 1;
-  min-height: 0;
+  height: 480px;
   overflow: hidden;
 }
 </style>
 ```
 
-`inheritHeight` 适合 Flex 布局。父级除了 `flex: 1` 和 `overflow: hidden`，通常还要设置 `min-height: 0`，否则 Flex 子项可能无法收缩，最终仍把页面撑高。
+父容器必须具有明确的可用高度，也可以由 Flex 布局分配，并设置 `min-height: 0` 以允许收缩。表格读取父元素内容区底边，扣除表格上方及非内容区域的占用；父元素尺寸变化时自动重算。不需要给 SuperTable 自身设置固定高度。
 
-### 限制滚动区域高度
+### 自定义内容区域高度上限
 
 ```ts
 {
-  isScanHeight: false,
   maxHeight: 360,
   columns,
 }
 ```
 
-`maxHeight` 适合详情、图表和表格混排的页面。按当前实现，它直接作为表格行滚动区域高度，不包含查询表单、表头和分页；因此不要把它理解为整个 SuperTable 根节点的总高度。若业务需要整个组件严格限制在某个高度，应由外层容器控制，并结合 `inheritHeight`。
+数字 `maxHeight` 直接表示内容滚动区域高度上限，单位 px，不包含查询区、标题、表头、页脚和分页。内容超过上限时内部滚动，内容较少时自然收缩。`heightOffset` 不影响数字模式。
 
-### 固定表格区域并将分页置底
+### 固定高度
 
 ```ts
-{
-  isFixedHeight: true,
-  maxHeight: 360,
-  columns,
-}
+{ maxHeight: 360, fixedHeight: true, columns }
+{ maxHeight: 'viewport', fixedHeight: true, columns }
+{ maxHeight: 'parent', fixedHeight: true, columns }
 ```
 
-开启 `isFixedHeight` 后，即使当前页数据较少，表格区域也保留计算高度；分页位于固定区域之后，多个并列表格或上下切换的数据集不会因行数变化产生跳动。它是高度策略的修饰项：需要配合默认开启的 `isScanHeight`、`inheritHeight` 或 `maxHeight` 使用，单独配置没有可计算的高度来源。
+`fixedHeight: true` 配合任一 `maxHeight` 模式使用，少量数据或空数据时也保留相应高度，分页跟随固定区域排列。关闭 `fixedHeight` 后恢复按内容收缩；将 `maxHeight` 清为 `undefined` 后移除高度约束并恢复原生 `attrs.scroll`。
 
-### 全局统一底部修正与固定高度
+### 项目级高度配置
 
 ```ts
-import superForm from "superform-antdv";
+import superForm from 'superform-antdv';
 
 superForm.configure({
   defaultProps: {
     Table: {
-      isFixedHeight: true,
-      resizeHeightOffset: 36,
+      maxHeight: 'viewport',
+      fixedHeight: true,
+      heightOffset: 24,
     },
   },
 });
 ```
 
-全局默认适合统一页面壳的底部留白。个别嵌入式表格仍可在 Schema 根级使用 `isFixedHeight: false`、`resizeHeightOffset: 0` 覆盖。
+库不设置默认高度策略。项目需要统一页面布局时再显式配置；个别表格可在 Schema 根级用 `fixedHeight: false`、`heightOffset: 0` 覆盖，或显式设置 `maxHeight: undefined` 恢复自然高度。
 
 <span id="动作与状态"></span>
 

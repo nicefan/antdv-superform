@@ -16,7 +16,6 @@ const departmentId = ref()
 const [registerDepartments] = useTable(
   {
     title: '部门',
-    isScanHeight: false,
     pagination: false,
     attrs: {
       rowKey: 'id',
@@ -32,7 +31,6 @@ const [registerDepartments] = useTable(
 
 const [registerEmployees] = useTable({
   title: '部门员工',
-  isScanHeight: false,
   pagination: false,
   immediate: false,
   attrs: { rowKey: 'id' },

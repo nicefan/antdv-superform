@@ -89,5 +89,6 @@ export const tableSelectors: UITableSelectors = {
   wrapper: '.ant-table-wrapper',
   empty: '.ant-empty',
   emptyCell: '.ant-table-tbody .ant-table-cell',
-  body: '.ant-table-body',
+  body: '.ant-table-body, .ant-table-content',
+  bodyContent: '.ant-table-tbody',
 }

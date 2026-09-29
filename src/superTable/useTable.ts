@@ -1,4 +1,4 @@
-import { computed, h, toValue, type VNode } from 'vue'
+import { computed, h, nextTick, toValue, type VNode } from 'vue'
 import SuperTable from './SuperTable.vue'
 import { useGetRef } from '../utils'
 import type { RootTableOption } from '../exaTypes'
@@ -11,6 +11,7 @@ type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise
 
 export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
   const [tableRef, getTable] = useGetRef()
+  const [readyTableRef, getReadyTable] = useGetRef()
   const syncOption = Promise.resolve(typeof option === 'function' ? option() : option)
 
   const register: RegisterMethod = (actions?: Obj): any => {
@@ -20,8 +21,11 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
         data && actions.setData(data)
       }
       tableRef.value = actions
+      // 外层先注册以接收 Schema，内层注册后才具备选择、展开及行操作。
+      if (typeof actions.setSelectedRows === 'function') readyTableRef.value = actions
     } else if (actions === null) {
       tableRef.value = undefined
+      readyTableRef.value = undefined
     } else {
       return (props, ctx) => h(SuperTable, { ...props, onRegister: register }, ctx?.slots)
     }
@@ -29,7 +33,13 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
 
   // 注册前触发的异步操作等待实例就绪，并透传底层返回值和异常。
   const asyncCall = async (key?: string, ...params: any[]) => {
-    const form = await getTable()
+    let form = await getTable()
+    await syncOption
+    if (key && (!(key in form) || ['resetSearchForm', 'validate', 'redoHeight'].includes(key))) {
+      form = await getReadyTable()
+      // 模板引用在本轮渲染结束后才完整，重置、校验和测量需等待挂载完成。
+      await nextTick()
+    }
     if (key && key in form) {
       if (typeof form[key] === 'function') {
         return form[key](...params)
@@ -57,10 +67,10 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       getTable,
       tableRef,
       redoHeight() {
-        asyncCall('redoHeight')
+        return asyncCall('redoHeight')
       },
       setData(data: Obj[]) {
-        asyncCall('setPageData', data)
+        return asyncCall('setPageData', data)
       },
       /** 返回当前表格数据 */
       getData() {
@@ -73,7 +83,7 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       },
       /** 设置表格列 */
       setColumns(cols: RootTableOption['columns']) {
-        asyncCall('setColumns', cols)
+        return asyncCall('setColumns', cols)
       },
       /** 刷新数据，不改动查询条件与当前页 */
       reload() {
@@ -85,31 +95,31 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
       },
       /** 查询完成，返回结果回调 */
       onLoaded(callback: (data: any) => void) {
-        asyncCall('onLoaded', callback)
+        return asyncCall('onLoaded', callback)
       },
       /** 重置查询表单，并重新查询 */
       resetSearchForm(param?: Obj) {
-        tableRef.value?.resetSearchForm(param)
+        return asyncCall('resetSearchForm', param)
       },
       getQueryParams: () => tableRef.value?.getQueryParams(),
       // setQueryParams: (params: Obj) => asyncCall('setQueryParams', params),
       selectedRowKeys: computed(() => tableRef.value?.selectedRowKeys),
       selectedRows: computed(() => tableRef.value?.selectedRows),
       /** 设置选中行 */
-      setSelectedRows: (arr: any[]) => tableRef.value?.setSelectedRows(arr),
+      setSelectedRows: (arr: any[]) => asyncCall('setSelectedRows', arr),
       expandedRowKeys: computed(() => tableRef.value?.expandedRowKeys),
-      setExpandedRowKeys: (arr: any[]) => tableRef.value?.setExpandedRowKeys(arr),
+      setExpandedRowKeys: (arr: any[]) => asyncCall('setExpandedRowKeys', arr),
       expandAll() {
-        asyncCall('expandAll')
+        return asyncCall('expandAll')
       },
       /** 新增行 */
-      add: (param?: AddParam) => tableRef.value?.add(param),
+      add: (param?: AddParam) => asyncCall('add', param),
       /** 修改行，须判断是否已有选中行 */
-      edit: (param?: ModalMeta) => tableRef.value?.edit(param),
+      edit: (param?: ModalMeta) => asyncCall('edit', param),
       /** 删除行，须判断是否已有选中行 */
-      delete: () => tableRef.value?.delete(),
+      delete: () => asyncCall('delete'),
       /** 查看详情，须判断是否已有选中行 */
-      detail: (param?: ModalMeta) => tableRef.value?.detail(param),
+      detail: (param?: ModalMeta) => asyncCall('detail', param),
       asyncCall,
       /** `editable`模式下进行表单校验 */
       validate() {

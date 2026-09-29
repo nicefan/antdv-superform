@@ -17,7 +17,7 @@ const pageTransform = (param) => {
   }
   return param
 }
-export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, source?: Ref<any[]>, onRequest?: Fn) {
+export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, source?: Ref<any[]>) {
   // const otherParam = {}
   const pageParam = reactive<Obj>({})
   const loading = ref(false)
@@ -25,10 +25,10 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, sou
   let latestRequestId = 0
   let activeController: AbortController | undefined
 
-  const callbacks: Fn[] = []
-  const onLoaded = (cb: Fn) => callbacks.push(cb)
-  if (option.onLoaded) {
-    callbacks.push(option.onLoaded)
+  const callbacks = new Set<Fn>()
+  const onLoaded = (cb: Fn) => {
+    callbacks.add(cb)
+    return () => callbacks.delete(cb)
   }
 
   const request = async (param?: Obj) => {
@@ -48,8 +48,6 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, sou
     activeController = controller
     loading.value = true
     try {
-      // 仅在真正发起远程查询时清理单行编辑，本地翻页不丢弃草稿。
-      onRequest?.()
       const res = await queryApi(_data, { signal: controller.signal })
       if (requestId !== latestRequestId || controller.signal.aborted) return
 
@@ -87,7 +85,9 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, sou
         pagination.value = { ...pagination.value, total: res.total }
       }
     }
-    return Promise.all(callbacks.map((cb) => cb(res)))
+    // Schema 可能在注册后异步设置，加载完成时读取，避免初始化时漏掉回调。
+    const handlers = option.onLoaded ? [option.onLoaded, ...callbacks] : [...callbacks]
+    return Promise.all(handlers.map((cb) => cb(res)))
   }
 
   const goPage = (current, size = pageParam.size) => {
@@ -107,6 +107,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, sou
     if (error?.name !== 'AbortError') console.error(error)
   }), 300, { leading: false })
   const cancelQuery = () => {
+    throttleRequest.cancel()
     activeController?.abort()
     activeController = undefined
     latestRequestId += 1

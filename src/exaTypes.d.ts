@@ -466,18 +466,15 @@ interface ExtTableOption extends ExtBaseOption {
   editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ExtModalProps }
 }
 
-interface TableScanHight {
-  maxHeight?: number
-  /** 自动计算高度至底部 */
-  isScanHeight?: boolean
-  /**计算高度时表格底部至边缘边距不等于36px时，进行补齐 */
-  resizeHeightOffset?: number
-  /** 固定高度，分页移至底部 */
-  isFixedHeight?: boolean
-  /** 按父元素填充高度 */
-  inheritHeight?: boolean
+interface TableHeightOptions {
+  /** 内容滚动区域高度上限；viewport/parent 按剩余空间计算，未配置时按内容自然布局。 */
+  maxHeight?: number | 'viewport' | 'parent'
+  /** 配合 maxHeight 保留固定高度，内容较少时也不收缩。 */
+  fixedHeight?: boolean
+  /** viewport/parent 模式额外扣除的底部空间，不影响数字 maxHeight。 */
+  heightOffset?: number
 }
-interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableScanHight {
+interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableHeightOptions {
   isContainer?: boolean
   apis?: TableApis
   dataSource?: Obj[] | Ref<any[]>
@@ -504,7 +501,7 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableS
     advanced?: boolean
   }
   pagination?: ExtTablePaginationProps | false
-  attrs?: ExtTableProps & TableScanHight
+  attrs?: ExtTableProps & TableHeightOptions
 }
 /** CardList、TabList、CollapseList 共用的数组配置。 */
 interface ExtListOption extends ExtBaseOption, ExtRow {

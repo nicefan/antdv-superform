@@ -38,7 +38,7 @@
     "unplugin": "^3.3.0"
   },
   "peerDependencies": {
-    "antdv-next": ">=1.5.0",
+    "antdv-next": ">=1.5.6",
     "vue": ">=3.5.0"
   },
   "devDependencies": {

@@ -199,6 +199,8 @@ await table.query()
 
 稳定主键放 attrs.rowKey（默认 id）；选择用 attrs.rowSelection={}，不用 true。已有明确动作时不使用 asyncCall。
 
+高度配置写在 Schema 根级：maxHeight 为数字时限制内容滚动区域高度（不含表头和分页），为 'viewport' / 'parent' 时按对应剩余空间计算。未配置时自然布局，无默认高度模式；fixedHeight: true 配合 maxHeight 保留固定高度，heightOffset 仅对 'viewport' / 'parent' 额外扣减。固定高度和偏移单独配置不启用高度约束。
+
 | 编辑方式 | 配置 |
 | --- | --- |
 | 单列 | 列 editable=true，在字段事件中保存 |

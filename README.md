@@ -249,6 +249,8 @@ const [register, table] = useTable({
 
 行内编辑使用 `rowEditor.editMode: 'inline'`，默认支持多行独立保存；`rowEditor.singleEdit: true` 限制单行，并在实际查询请求前清理编辑状态。完整行为见 [Table 使用说明](./docs/manual/fields/table.md)。
 
+表格未配置 `maxHeight` 时按内容自然布局。数字 `maxHeight` 限制内容滚动区域高度；`'viewport'`、`'parent'` 根据视口或父容器剩余空间计算上限。`fixedHeight: true` 保留固定高度，`heightOffset` 仅在两种空间计算模式中额外扣除底部距离。详见 [高度配置](./docs/manual/super-table.md#高度配置总览)。
+
 查询响应可以直接返回数组，或者返回：
 
 ```ts

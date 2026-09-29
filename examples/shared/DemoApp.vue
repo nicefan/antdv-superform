@@ -101,6 +101,13 @@ const pages = [
     component: defineAsyncComponent(() => import('./pages/Tables.vue')),
   },
   {
+    id: 'table-scroll',
+    title: '表格高度',
+    kicker: 'SCROLL',
+    description: '自动计算页面高度、填充父元素高度、指定最大高度。',
+    component: defineAsyncComponent(() => import('./pages/TableScroll.vue')),
+  },
+  {
     id: 'overlays',
     title: '上传与弹窗',
     kicker: 'WORKFLOW',

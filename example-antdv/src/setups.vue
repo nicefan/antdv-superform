@@ -7,7 +7,7 @@
       <a-button @click="rename('新增2')" roleName="add2">新增2</a-button>
       <div @click="rename('新增3')" roleName="add3">新增3</div>
     </super-buttons>
-    <div style="margin-top: 16px">
+    <div style="margin-top: 16px;">
       <super-table @register="registTable" :rowSelection="false" />
     </div>
     <!-- <component :is="FormModalSlot" /> -->
@@ -88,9 +88,10 @@ export default defineComponent({
       ...getTableOption(),
       // searchschema: undefined,
       // maxHeight: 500,
-      // inheritHeight: true,
-      // resizeHeightOffset: 16,
-      isFixedHeight: true,
+      maxHeight: 'viewport',
+      heightOffset: 16,
+      // fixedHeight: true,
+
       pagination: {
         // pageSize: 30,
         showSizeChanger: true,

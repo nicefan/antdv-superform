@@ -34,7 +34,7 @@ export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) 
     subItems.forEach((item, index) => {
       if (index >= limit) {
         const hidden = item.hidden
-        item.hidden = (...args) => !expanded.value || hidden?.(...args)
+        item.hidden = (...args) => !expanded.value || (typeof hidden === 'function' ? hidden(...args) : hidden)
       }
     })
   }

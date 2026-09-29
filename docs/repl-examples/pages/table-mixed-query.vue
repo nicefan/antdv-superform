@@ -12,7 +12,6 @@ const filters = reactive({ status: undefined })
 const status = toRef(filters, 'status')
 
 const [register] = useTable({
-  isScanHeight: false,
   pagination: false,
   attrs: { rowKey: 'id' },
   apis: { query: mockApis.customers.list },

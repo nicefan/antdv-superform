@@ -44,7 +44,7 @@ export default defineComponent({
   setup(props, ctx) {
     const { style, class: ctxClass, ...ctxAttrs } = ctx.attrs
     // 注册 schema 前只保留根节点透传属性，完整配置会在 setOption 时合入。
-    const option = shallowReactive({ attrs: ctxAttrs }) as unknown as RootTableOption
+    const option = shallowReactive({ attrs: ctxAttrs }) as unknown as RootTableOption & { attrs: Obj }
     const dataRef = ref([])
     const wrapRef = ref()
 
@@ -61,17 +61,16 @@ export default defineComponent({
     const searchForm = ref()
     const setOption = (_option: RootTableOption) => {
       if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'table', 'SuperTable')
-      const { isScanHeight, inheritHeight, isFixedHeight, isContainer, ...attrs } = mergeProps(
+      const { maxHeight, fixedHeight, heightOffset, isContainer, ...attrs } = mergeProps(
         globalProps.Table,
         { ..._option.attrs },
         { ...option.attrs }
       )
-      Object.assign(option, { isScanHeight, inheritHeight, isFixedHeight, isContainer }, _option, { attrs })
+      Object.assign(option, { maxHeight, fixedHeight, heightOffset, isContainer }, _option, { attrs })
     }
 
     watchEffect(() => props.schema && setOption(toRaw(props.schema)))
 
-    let onTableQuery: Fn | undefined
     const {
       loading,
       pagination,
@@ -84,8 +83,8 @@ export default defineComponent({
       cancelQuery,
       setQueryParams,
       getQueryParams,
-    } = useQuery(option, updateSource, dataRef, () => onTableQuery?.())
-    const { getScrollRef, redoHeight, listenResize } = useTableScroll(option, dataRef, wrapRef)
+    } = useQuery(option, updateSource, dataRef)
+    const { getScrollRef, debounceRedoHeight, listenResize, stopResize } = useTableScroll(option, dataRef, wrapRef)
 
     // editable模式下，表格表单校验
     const tableFormRef = shallowRef()
@@ -94,17 +93,13 @@ export default defineComponent({
       setData: (data) => {
         data && updateSource(data)
       },
-      redoHeight,
+      redoHeight: debounceRedoHeight,
       goPage,
       reload,
       query,
       onLoaded,
       resetSearchForm(data) {
-        try {
-          return searchForm.value.formRef.resetFields(data)
-        } catch (e) {
-          console.warn(e)
-        }
+        return searchForm.value?.formRef?.resetFields(data)
       },
       setPageData,
       getQueryParams,
@@ -126,7 +121,6 @@ export default defineComponent({
 
     const tableRef = ref({ ...exposed })
     const register = (comp) => {
-      onTableQuery = comp.onQueryRequest
       // 组件公开实例不是 reactive 对象，先包装后再保留其属性响应性。
       Object.assign(tableRef.value, toRefs(reactive(comp)), exposed)
       ctx.emit('register', tableRef.value)
@@ -164,7 +158,7 @@ export default defineComponent({
           unWatch() // 由于立即监听，第一次执行后方法还没初始化，需下次执行解除监听
           return
         }
-        const { columns, maxHeight, isScanHeight = true, inheritHeight } = opt
+        const { columns } = opt
         // 列表控件子表单模型
         const model = reactive({
           refData: dataRef,
@@ -221,19 +215,24 @@ export default defineComponent({
             throttleRequest()
           }
         })
-        if (isScanHeight || inheritHeight || maxHeight) {
-          listenResize()
-          tableAttrs.scroll = getScrollRef
-          const { onChange, onExpandedRowsChange } = tableAttrs
-          tableAttrs.onChange = (...args) => {
-            // !loading.value && redoHeight()
-            onChange?.(...args)
-          }
-          tableAttrs.onExpandedRowsChange = (param) => {
-            onExpandedRowsChange?.(param)
-            redoHeight()
-          }
-          watch(dataRef, redoHeight)
+        // 未配置高度时保留原生 scroll；允许运行时启用或清除高度约束。
+        watch(
+          () => [option.maxHeight, option.attrs?.scroll],
+          () => {
+            if (option.maxHeight == null) {
+              stopResize()
+              tableAttrs.scroll = attrs.scroll
+            } else {
+              tableAttrs.scroll = getScrollRef
+              listenResize()
+            }
+          },
+          { immediate: true }
+        )
+        const { onExpandedRowsChange } = tableAttrs
+        tableAttrs.onExpandedRowsChange = (param) => {
+          onExpandedRowsChange?.(param)
+          debounceRedoHeight()
         }
         const table = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
         if (option.editable) {
@@ -265,7 +264,7 @@ export default defineComponent({
 
     return () =>
       tableSlot.value &&
-      h(DataProvider, { name: 'exaProvider', data: { data: dataRef } }, () =>
+      h(DataProvider, { name: 'exaProvider', data: { data: dataRef, onLoaded } }, () =>
         !searchForm.value || option.searchForm?.teleport
           ? h(
               'div',

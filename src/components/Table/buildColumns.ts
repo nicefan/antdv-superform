@@ -175,7 +175,7 @@ export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, eff
     key: 'action',
     fixed: 'right',
     minWidth: 100,
-    width: 100,
+    // width: 100,
     align: 'center',
     resizable: false,
     ...columnProps,

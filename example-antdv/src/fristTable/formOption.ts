@@ -82,11 +82,12 @@ export const getTableOption = () => {
       activeKey: activeKey,
       customTab: ({ item }) => h('span', { style: 'font-size:18px' }, item.tab),
     },
-    slots: {
-      footer: 'tableFooter',
-    },
+    // slots: {
+    //   footer: 'tableFooter',
+    // },
     columnProps: {
       ellipsis: true,
+      resizable: true,
     },
     columns: [
       { type: 'Hidden', field: 'id' },

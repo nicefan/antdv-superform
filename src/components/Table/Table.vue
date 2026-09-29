@@ -216,7 +216,6 @@ export default defineComponent({
     const { list, methods, buttonMethods = methods, modalSlot } = context
     // TODO: 补充TS
     const actions = {
-      onQueryRequest: () => context.onQueryRequest?.(),
       selectedRowKeys,
       selectedRows,
       setSelectedRows: (arr: any[]) => {
@@ -304,12 +303,19 @@ export default defineComponent({
     }
     const render = () => {
       const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, ...tableAttrs } = attrs
+      // 高度策略由 SuperTable 计算为 scroll，不把模式字符串透传成原生 maxHeight。
+      const {
+        maxHeight: _maxHeight,
+        fixedHeight: _fixedHeight,
+        heightOffset: _heightOffset,
+        ...tableDefaults
+      } = globalProps.Table || {}
       return [
         ...modalSlot.map((slot) => slot()),
         (context.wrapTable || ((render) => render()))(() =>
           getUIRender('table')(
             {
-              ...globalProps.Table,
+              ...tableDefaults,
               ref: tableRef,
               data: list.value,
               columns: reactive(columns),

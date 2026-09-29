@@ -192,11 +192,15 @@ export interface UITableSelectors {
   empty?: string
   emptyCell?: string
   body?: string
+  /** 不受滚动上限约束的行内容，用于判断是否需要纵向滚动。 */
+  bodyContent?: string
 }
 
 export interface TableAdapter {
   /** 自动高度计算需要访问的 UI 私有 DOM 节点，由 Adapter 明确声明。 */
   selectors: UITableSelectors
+  /** 原生纵向滚动约束的范围，默认行区域；整表模式需计入表头和页脚。 */
+  scrollHeightScope?: 'body' | 'table'
 }
 
 export interface ComponentModelConfig {

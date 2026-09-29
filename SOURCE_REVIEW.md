@@ -81,19 +81,16 @@
   - 影响：类型允许且编辑器会提示的自定义只读格式在这两类字段中静默失效，例如金额格式仍显示原始数字。
   - 建议：明确 Text/HTML 是否支持 `viewRender`；若支持，应与其他不可编辑字段统一走 `getViewNode`，并补充优先级测试。
 
-- [ ] **SuperTable 高度默认值与预期公共契约存在差异**
+- [x] **SuperTable 高度配置无库默认策略**
 
   - 位置：`src/superTable/SuperTable.vue`、`src/superTable/useTableScroll.ts`、`src/plugin.ts`
-  - 现状：`isScanHeight` 运行时默认 `true`，但 `isFixedHeight` 未设置默认值（实际为 `false`），`resizeHeightOffset` 计算时未配置按 `0` 处理；业务预期默认值分别为 `true` 和 `36`。
-  - 影响：按业务预期省略后两项时，数据较少不会固定表格区域，也不会额外保留 36px 页面底部距离。
-  - 建议：确认这两个值是库默认还是项目默认。若属于库契约，在 `globalProps.Table` 或 Schema 归一化阶段显式设置并补充高度计算测试；若属于项目策略，仅通过安装配置统一注入。
+  - 当前契约：`maxHeight`、`fixedHeight`、`heightOffset` 均不设默认配置；未提供 `maxHeight` 时自然布局，固定高度与偏移单独配置不启用高度计算。
+  - 项目统一策略通过 `defaultProps.Table` 显式配置，库不预设固定高度或底部留白。
 
-- [ ] **`maxHeight` 当前不是整个 SuperTable 的总高度**
+- [x] **明确 `maxHeight` 为内容滚动区域高度上限**
 
   - 位置：`src/superTable/useTableScroll.ts`
-  - 现状：`maxHeight` 直接赋给内部表格行滚动高度；查询表单、表头和分页不包含在该数值中。开启 `isFixedHeight` 后也只据此计算 `.ant-table` 高度。
-  - 影响：如果公开语义定义为“包含查询区与分页的整个表格组件高度”，实际页面会高于配置值。
-  - 建议：明确属性应表示滚动体高度还是 SuperTable 总高度；若采用后者，需要从总高度中扣除查询区、分页、标题与表头，并覆盖有无搜索、分页和标题的组合测试。
+  - 当前契约：数字直接限制内容区域；`'viewport'` / `'parent'` 从对应剩余空间扣除非内容区域后计算上限。`fixedHeight` 仅控制内容较少时是否保留高度，数字模式不扣除 `heightOffset`。
 
 - [ ] **SuperTable 的分页运行时默认值与 AI 指南不一致**
 
@@ -153,12 +150,10 @@
   - 现状：List 从 `attrs.rowKey` 读取业务主键，但 `attrs` 只声明为 `ListProps | Obj`，没有像 ListGroup 一样明确公开 `rowKey`。
   - 建议：为 List 的 attrs 补充 `rowKey?: string`，并统一数组容器的主键说明与测试。
 
-- [ ] **SuperTable 高度属性在根级与 `attrs` 中的处理不一致**
+- [x] **统一 SuperTable 高度属性的根级与 `attrs` 处理**
 
   - 位置：`src/exaTypes.d.ts` 的 `RootTableOption.attrs`、`src/superTable/SuperTable.vue`
-  - 现状：类型允许在 `attrs` 中配置完整 `TableScanHight`，运行时只从 attrs 提升 `isScanHeight`、`inheritHeight`、`isFixedHeight`；`maxHeight`、`resizeHeightOffset` 的消费路径读取根级 option。
-  - 影响：按类型把后两项写入 attrs 时可能不生效。
-  - 建议：统一所有高度属性的规范层级，并让类型、归一化和文档保持一致。
+  - 当前处理：`TableHeightOptions` 声明 `maxHeight`、`fixedHeight`、`heightOffset`，根级与 `attrs` 均可配置；运行时统一提升到根级消费，根级显式值优先，全局 Table 默认属性参与归一化。
 
 ## API 与类型整理建议
 

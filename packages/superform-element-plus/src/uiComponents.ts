@@ -105,7 +105,7 @@ export const uiComponents: UIComponentDefinitions = {
   descriptions: { render: ({ state }) => h(Descriptions, { state }) },
   actionGroup: {
     schemaDefaults: {
-      rowButtons: { buttonProps: { text: true } },
+      rowButtons: { buttonProps: { link: true } },
       ButtonActions: {
         save: { attrs: { type: 'primary' } },
         expand: { attrs: { link: true } },
@@ -230,6 +230,9 @@ export const uiComponents: UIComponentDefinitions = {
       })
     },
   },
-  table: { service: { selectors: tableSelectors }, render: ({ attrs, slots }) => renderTable(attrs, slots) },
+  table: {
+    service: { selectors: tableSelectors, scrollHeightScope: 'table' },
+    render: ({ attrs, slots }) => renderTable(attrs, slots),
+  },
   tableFilter: { render: ({ attrs, slots }) => renderTableFilter(attrs, slots) },
 }

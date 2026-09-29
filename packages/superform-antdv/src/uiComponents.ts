@@ -70,14 +70,14 @@ export const uiComponents: UIComponentDefinitions = {
   descriptions: { render: ({ state }) => h(Descriptions, { state }) },
   actionGroup: {
     schemaDefaults: {
-      rowButtons: { buttonProps: { type: 'link', size: 'small' } },
+      rowButtons: { buttonProps: { type: 'link', variant: 'link', size: 'small' } },
       ButtonActions: {
-        save: { attrs: { type: 'primary' } },
+        save: { attrs: { color: 'primary' } },
         expand: { attrs: { type: 'link' } },
-        add: { attrs: { type: 'primary' } },
+        add: { attrs: { color: 'primary' } },
         delete: { attrs: { danger: true } },
-        submit: { attrs: { type: 'primary' } },
-        search: { attrs: { type: 'primary' } },
+        submit: { attrs: { color: 'primary' } },
+        search: { attrs: { color: 'primary' } },
       },
     },
     render: ({ attrs }) => renderActionGroup(attrs),

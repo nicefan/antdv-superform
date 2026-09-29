@@ -1,13 +1,15 @@
 <template>
   <section class="demo-section">
     <h2>成员管理</h2>
+    <p class="demo-status"><a href="#table-scroll">表格高度示例：自动计算页面高度 / 填充父元素高度 / 指定最大高度</a></p>
     <div class="demo-guide">
-      搜索姓名或选择状态分类，查询结果与分页一起更新。勾选行后可批量删除；编辑支持行内、弹窗、整表三种模式。全部请求由内存数据模拟，结果可在观察窗追踪。
+      搜索姓名或选择状态分类，查询结果与分页一起更新。勾选行后可批量删除；行内编辑可切换多行或单行，另有弹窗与整表编辑。全部请求由内存数据模拟，结果可在观察窗追踪。
     </div>
     <div class="demo-actions">
       <label class="demo-control-label"
         >编辑方式<select class="demo-control-input" v-model="mode">
-          <option value="inline">行内编辑</option>
+          <option value="inline">多行编辑</option>
+          <option value="single">单行编辑</option>
           <option value="modal">弹窗编辑</option>
           <option value="all">整表编辑</option>
         </select></label
@@ -199,6 +201,7 @@ const schema = computed<RootTableOption>(() => ({
   attrs: {
     rowKey: 'id',
     rowSelection: { onChange: (keys) => event('选择变化', keys) },
+    border: true,
     ...(isElement
       ? {}
       : {
@@ -231,6 +234,7 @@ const schema = computed<RootTableOption>(() => ({
       ...(remote.value ? ['edit', 'delete', 'detail'] : ['add', 'edit', 'delete', 'detail']),
       {
         label: '检查',
+        attrs: { color: 'purple' },
         disabled: ({ record }) => !record.enabled,
         onClick: ({ record }) => event('检查当前行', record),
       },
@@ -240,6 +244,7 @@ const schema = computed<RootTableOption>(() => ({
   rowEditor: {
     editMode: mode.value === 'modal' ? 'modal' : 'inline',
     addMode: mode.value === 'modal' ? 'modal' : 'inline',
+    singleEdit: mode.value === 'single',
     onSave: () => {
       event('onSave', { veto: vetoSave.value })
       return vetoSave.value ? false : undefined

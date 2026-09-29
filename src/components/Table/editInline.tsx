@@ -1,4 +1,4 @@
-import { shallowRef, shallowReactive, toRaw, reactive, h, toRefs, defineComponent, unref, computed, nextTick, onBeforeUnmount } from 'vue'
+import { shallowRef, shallowReactive, toRaw, reactive, h, toRefs, defineComponent, unref, computed, nextTick, onBeforeUnmount, inject } from 'vue'
 import { cloneDeep, isFunction } from 'lodash-es'
 import { ButtonGroup, getSchemaTypeSource, hasFormComponent } from '../index'
 import { useControl, cloneModelsFlat, getEffectData } from '../../utils'
@@ -24,12 +24,15 @@ export default function ({ childrenMap, orgList, listener, rowEditor, rowKey }) 
     session.isEdit = false
     if (sessions.get(session.key) === session) sessions.delete(session.key)
   }
-  const onQueryRequest = () => {
+  const { onLoaded } = inject<{ onLoaded?: (callback: Fn) => () => void }>('exaProvider', {})
+  // 加载成功后再清理单行草稿；重建列或卸载表格时释放订阅。
+  const stopLoaded = onLoaded?.(() => {
     if (rowEditor?.singleEdit) {
       sessions.forEach((session) => { session.isEdit = false })
       sessions.clear()
     }
-  }
+  })
+  onBeforeUnmount(() => stopLoaded?.())
   const list = computed(() => {
     const records = [...orgList.value]
     for (const session of sessions.values()) {
@@ -261,7 +264,6 @@ export default function ({ childrenMap, orgList, listener, rowEditor, rowKey }) 
     buttonMethods,
     getEditRender,
     editButtonsSlot,
-    onQueryRequest,
     wrapTable: (render) => h(RowForm, null, { default: render }),
   }
 }

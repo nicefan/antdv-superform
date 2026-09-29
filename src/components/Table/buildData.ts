@@ -61,7 +61,6 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
     getEditRender?: Fn
     editButtonsSlot?: Fn
     wrapTable?: Fn
-    onQueryRequest?: Fn
   } = {
     list: orgList,
     modalSlot: [],
@@ -83,7 +82,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
     Object.assign(context.methods, methods)
     Object.assign(context, _context)
   } else if (editMode === 'inline') {
-    const { list, methods, buttonMethods, editButtonsSlot, getEditRender, wrapTable, onQueryRequest } = inlineRender({
+    const { list, methods, buttonMethods, editButtonsSlot, getEditRender, wrapTable } = inlineRender({
       childrenMap,
       orgList,
       listener,
@@ -92,7 +91,7 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
     })
     context.list = list
     Object.assign(context.methods, methods)
-    Object.assign(context, { buttonMethods, editButtonsSlot, getEditRender, wrapTable, onQueryRequest })
+    Object.assign(context, { buttonMethods, editButtonsSlot, getEditRender, wrapTable })
   }
   if (editMode === 'modal' || addMode === 'modal') {
     const { modalSlot, methods } = modalRender({ rowKey, option, listener, orgList })
