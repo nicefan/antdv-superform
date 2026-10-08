@@ -1,3 +1,5 @@
+import { h } from 'vue'
+import { translate } from 'superform/sdk'
 import { Modal, message } from 'antdv-next'
 import type { Component } from 'vue'
 import { builtInIcons, defineUIAdapter, extendUIAdapter, type UIAdapter, type UIAdapterOverrides } from 'superform/sdk'
@@ -25,14 +27,18 @@ export function createAntdvAdapter(options: AntdvAdapterOptions = {}): UIAdapter
       services: {
         message: (type, content) => message[type](content as any),
         confirm(props) {
-          const modal = Modal.confirm(props as any)
+          const modal = Modal.confirm({
+            ...props,
+            okText: props.okText ?? h(() => translate('confirm')),
+            cancelText: props.cancelText ?? h(() => translate('cancel')),
+          } as any)
           return {
             update: (next) => modal.update(next as any),
             destroy: () => modal.destroy(),
           }
         },
         info(props) {
-          const modal = Modal.info(props as any)
+          const modal = Modal.info({ ...props, okText: props.okText ?? h(() => translate('confirm')) } as any)
           return {
             update: (next) => modal.update(next as any),
             destroy: () => modal.destroy(),

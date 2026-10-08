@@ -1,4 +1,5 @@
 <script lang="ts">
+import { translate } from '../locale'
 import { getSemanticIconNode } from '../utils/useIcon'
 import {
   defineComponent,
@@ -36,7 +37,7 @@ function fileIsImage(file) {
 
 function createLoadModal(title, onOk?: Fn) {
   const modal = getUIService('services').info({
-    title: () => title,
+    title,
     okButtonProps: {
       loading: true,
     },
@@ -204,7 +205,7 @@ export default defineComponent({
       await selecting
       isLoading.value = controller.hasPendingWork(innerFileList.value)
       if (isLoading.value) {
-        const modal = createLoadModal(' 文件同步中，请稍候...')
+        const modal = createLoadModal(() => translate('uploadSync'))
         return controller
           .submit(innerFileList.value)
           .then((data) => {
@@ -213,7 +214,7 @@ export default defineComponent({
           })
           .catch((err) => {
             isLoading.value = false
-            modal.setError('文件上传失败', err)
+            modal.setError(() => translate('uploadFailed'), err)
             throw err
           })
           .finally(() => (isLoading.value = false))
@@ -263,7 +264,7 @@ export default defineComponent({
         }
         props.onChange?.({ file, fileList: [...innerFileList.value] })
       }).catch((error) => {
-        getUIService('services').message('error', error?.message || '文件选择失败')
+        getUIService('services').message('error', error?.message || translate('selectFailed'))
       })
       selecting = task
       return task
@@ -313,9 +314,7 @@ export default defineComponent({
       if (result !== false && apis.delete && file.status === 'done') {
         return new Promise((resolve) => {
           const modal = getUIService('services').confirm({
-            title: '确定删除吗？',
-            okText: '确定',
-            cancelText: '取消',
+            title: () => translate('deleteFileConfirm'),
             closable: false,
             maskClosable: false,
             ...globalProps.Modal,
@@ -328,12 +327,12 @@ export default defineComponent({
               } else {
                 modal.update({
                   okCancel: false,
-                  title: '文件删除中……',
+                  title: () => translate('deletingFile'),
                 })
                 return handler().then(resolve, () => {
                   modal.update({
                     okCancel: false,
-                    title: '文件删除失败',
+                    title: () => translate('deleteFileFailed'),
                     type: 'error',
                     onOk: undefined,
                   })
@@ -360,7 +359,7 @@ export default defineComponent({
         updateFileList(innerFileList.value.filter((item) => item.uid !== file.uid))
         props.onChange?.({ file, fileList: [...innerFileList.value] })
       } catch (error: any) {
-        getUIService('services').message('error', error?.message || '文件删除失败')
+        getUIService('services').message('error', error?.message || translate('deleteFileFailed'))
       } finally {
         removing.delete(file.uid)
       }
@@ -372,13 +371,13 @@ export default defineComponent({
       if (onDownload) return onDownload(file)
       if (apis.download && !downloading.value) {
         downloading.value = true
-        const downModal = createLoadModal('文件下载中，请稍候...')
+        const downModal = createLoadModal(() => translate('downloadingFile'))
         return Promise.resolve()
           .then(() => apis.download(reconvert(file)))
           .then((result) => downloadByData(result, file.name))
           .then(() => downModal.destroy())
           .catch((err) => {
-            downModal.setError('文件下载失败', err)
+            downModal.setError(() => translate('downloadFileFailed'), err)
           })
           .finally(() => (downloading.value = false))
       }
@@ -411,13 +410,15 @@ export default defineComponent({
     }
 
     const __title = props.title
-    const title = typeof props.title === 'string' ? props.title : '上传文件'
+    const title = () => typeof props.title === 'string' ? props.title : translate('upload')
     const effectData = reactive({ ...toRaw(props.effectData), fileList: innerFileList })
     const titleSlot = isFunction(__title) && (() => __title(effectData))
-    const tips: string[] = []
-    accept && tips.push('支持文件格式：' + accept)
-    maxSize && tips.push('单个文件不超过' + maxSize + 'MB')
-    const tip = props.tip ?? tips.join(', ')
+    const tip = computed(() => {
+      const tips: string[] = []
+      accept && tips.push(translate('fileFormats', { accept }))
+      maxSize && tips.push(translate('fileSizeTip', { maxSize }))
+      return props.tip ?? tips.join(', ')
+    })
     const isView = computed(() => props.disabled || props.isView)
     const hideBody = computed(() => hideOnMax && maxCount && innerFileList.value.length >= maxCount)
     return () => getUIRender('upload')({
@@ -429,8 +430,8 @@ export default defineComponent({
       downloadable: canDownload.value,
       previewable: props.previewable,
       hideTrigger: isView.value || Boolean(hideBody.value),
-      title: () => titleSlot ? titleSlot() : title,
-      tip,
+      title: () => titleSlot ? titleSlot() : title(),
+      tip: tip.value,
       select,
       remove,
       preview: filePreview,

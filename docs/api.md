@@ -302,6 +302,8 @@ pageClass: api-index-page
 
 - [initialize](/manual/installation#显式初始化)
 - [configure](/manual/global-config#统一应用入口)
+- [locale / zhCN / enUS](/manual/locale#配置语言)
+- [SuperFormLocale / SuperFormLocaleConfig](/manual/locale#覆盖文案)
 - [registerComponent / registerComponents](/manual/custom-fields#注册项目组件)
 - [defaultProps / setDefaultProps](/manual/global-config#defaultprops-合并顺序)
 - [dictApi](/manual/backend-contracts#字典接口)

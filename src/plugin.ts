@@ -1,3 +1,4 @@
+import { setLocale } from "./locale";
 import { merge } from "lodash-es";
 import {
   registerAdapterFieldTypes,
@@ -42,6 +43,7 @@ export function useAdapter(adapter: UIAdapter) {
 export function configure(config: SuperFormConfig = {}) {
   const { defaultProps, ...runtimeConfig } = config;
   Object.assign(globalConfig, runtimeConfig);
+  if (Object.prototype.hasOwnProperty.call(config, "locale")) setLocale(config.locale);
   if (defaultProps) setDefaultProps(defaultProps);
 }
 

@@ -14,7 +14,7 @@ import {
   ElTooltip,
   ElButton,
 } from 'element-plus'
-import { FormValidationError, type UIComponentDefinitions } from 'superform/sdk'
+import { translate, FormValidationError, type UIComponentDefinitions } from 'superform/sdk'
 import Descriptions from './components/Descriptions'
 import renderTabs from './components/Tabs'
 import renderCollapse from './components/Collapse'
@@ -181,7 +181,7 @@ export const uiComponents: UIComponentDefinitions = {
               if (result !== false) onVisibleChange?.(false)
             },
           },
-          () => '取 消'
+          () => props.cancelText ?? translate('cancel')
         ),
         h(
           ElButton,
@@ -190,7 +190,7 @@ export const uiComponents: UIComponentDefinitions = {
             loading: props.confirmLoading,
             onClick: () => props.onOk?.(),
           },
-          () => '确 定'
+          () => props.okText ?? translate('confirm')
         ),
       ]
       return h(

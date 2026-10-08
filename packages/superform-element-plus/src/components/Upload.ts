@@ -1,3 +1,4 @@
+import { translate } from 'superform/sdk'
 import { ElButton, ElProgress, ElUpload, useNamespace, type UploadFile, type UploadUserFile } from 'element-plus'
 import { defineComponent, h, ref, type PropType } from 'vue'
 import { builtInIcons, type UIRenderers, type UIUploadState } from 'superform/sdk'
@@ -86,21 +87,21 @@ const NativeUpload = defineComponent({
                   ? h('img', { class: upload.be('list', 'item-thumbnail'), src: file.url, alt: item.name }) : null,
                 h('div', { class: upload.be('list', 'item-info') }, [
                   h(ElButton, { link: true, disabled: !state.previewable, onClick: () => state.preview(item) }, { default: () => item.name }),
-                  item.status === 'waiting' && h('span', {}, ' 待处理'),
-                  item.status === 'error' && h('span', { role: 'status' }, ' 处理失败'),
+                  item.status === 'waiting' && h('span', {}, ' ' + translate('uploadWaiting')),
+                  item.status === 'error' && h('span', { role: 'status' }, ' ' + translate('uploadError')),
                   item.status === 'uploading' && h(ElProgress, { percentage: item.percent ?? 0, strokeWidth: 2 }),
                 ]),
                 h('span', { class: pictureCard ? upload.be('list', 'item-actions') : 'sup-upload-actions' }, [
-                  pictureCard && state.previewable && h(ElButton, { link: true, onClick: () => state.preview(item) }, { default: () => '预览' }),
-                  h(ElButton, { link: true, onClick: () => state.download(item) }, { default: () => '下载' }),
-                  state.removable && !state.readonly && h(ElButton, { link: true, onClick: () => state.remove(item) }, { default: () => '删除' }),
+                  pictureCard && state.previewable && h(ElButton, { link: true, onClick: () => state.preview(item) }, { default: () => translate('preview') }),
+                  h(ElButton, { link: true, onClick: () => state.download(item) }, { default: () => translate('download') }),
+                  state.removable && !state.readonly && h(ElButton, { link: true, onClick: () => state.remove(item) }, { default: () => translate('delete') }),
                 ]),
               ]
             },
           }),
           tip: () => slots.tip?.() ?? (!state.hideTrigger && state.tip && h('div', { class: 'sup-upload-tip' }, state.tip)),
         }),
-        state.readonly && state.showList && !state.files.length && h('div', { class: 'sup-upload-tip' }, '暂无附件'),
+        state.readonly && state.showList && !state.files.length && h('div', { class: 'sup-upload-tip' }, translate('uploadEmpty')),
       ])
     }
   },

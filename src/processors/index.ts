@@ -1,3 +1,4 @@
+import { translate } from '../locale'
 import { computed, ref, unref, watch, watchEffect } from 'vue'
 import { findOption, useOptions } from '../utils/useOptions'
 import type { FieldState } from '../adapter/types'
@@ -42,11 +43,11 @@ function optionsProcessor({ option, effectData, attrs }: FieldProcessorContext):
 const processors: Record<string, FieldProcessor> = {
   options: optionsProcessor,
   picker: ({ option }) => ({
-    state: computed(() => ({ placeholder: `请选择${option.label ?? ''}` })),
+    state: computed(() => ({ placeholder: translate('select', { label: option.label }) })),
   }),
   range: ({ option }) => ({
     state: computed(() => ({
-      placeholder: [`请选择开始${option.label ?? ''}`, `请选择结束${option.label ?? ''}`] as [string, string],
+      placeholder: [translate('selectStart', { label: option.label }), translate('selectEnd', { label: option.label })] as [string, string],
     })),
   }),
   tree: ({ option, effectData }) => {

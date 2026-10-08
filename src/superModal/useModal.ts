@@ -1,3 +1,4 @@
+import { translate } from '../locale'
 import { ref, reactive, h, nextTick, getCurrentInstance, createVNode, render, onUnmounted } from 'vue'
 import type { VNode, VNodeTypes } from 'vue'
 import { ButtonGroup } from '../components/buttons'
@@ -52,6 +53,8 @@ export function createModal(content?: (() => VNodeTypes) | VNode, { buttons, ...
         class: 'sup-modal',
         'onUpdate:visible': updateVisible,
         confirmLoading: confirmLoading.value,
+        okText: translate('confirm'),
+        cancelText: translate('cancel'),
         ...config,
         title: undefined,
         ...props,

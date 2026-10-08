@@ -1,61 +1,57 @@
+import { translate } from '../locale'
 import { isNumber } from "lodash-es"
-
-function formatStr(str: string, data: Obj = {}) {
-  const reg = new RegExp('{(\\w*)}', 'g')
-  return str.replace(reg, (match, key) => data[key] || '')
-}
 
 const ruleTypeMap = {
   email: {
     type: 'email',
-    message: '请输入正确的邮箱地址',
+    message: 'email',
   },
   integer: {
     type: 'integer',
-    message: '{label}必须为整数',
+    message: 'integer',
     pattern: /^[+]{0,1}(\d+)$/,
     transform: (value) => Number(value),
   },
   number: {
     type: 'number',
-    message: '{label}必须为数字',
+    message: 'number',
     transform: (value) => Number(value),
   },
   idcard: {
     pattern: /^[1-9]\d{5}(19[4-9]|20[0,1])\d(0[1-9]|1[0-2])([0-2][0-9]|30|31)\d{3}[\d|X|x]$/,
-    message: '请输入正确的身份证号',
+    message: 'idcard',
   },
   phone: {
     pattern: /^(\d{3,4}-?)?\d{7,8}$/,
-    message: '请输入正确的电话号码',
+    message: 'phone',
   },
   mobile: {
     pattern: /^1[3-9][0-9]\d{8}$/,
-    message: '请输入正确的手机号',
+    message: 'mobile',
   },
   twoDecimal: {
     pattern: /^-?\d+(\.\d{1,2})?$/,
-    message: '最多支持2位小数',
+    message: 'twoDecimal',
   },
   word: {
     pattern: /^[A-Za-z0-9][A-Za-z0-9_]*$/,
-    message: '{label}只能为字母数字及下划线，且首字符不能为_',
+    message: 'word',
   },
-}
+} as const
 const rangeMsg = {
   'string': {
-    len: '{label}长度必须等于{len}',
-    max: '{label}长度不能超过{max}',
-    min: '{label}长度至少为{min}',
-    range: '{label}长度必须{min}至{max}之间',
+    len: 'stringLen',
+    max: 'stringMax',
+    min: 'stringMin',
+    range: 'stringRange',
   },
   'number': {
-    len: '{label}需等于{len}',
-    max: '{label}需小于{max}',
-    min: '{label}需大于{min}',
-    range: '{label}需在{min}至{max}之间',
+    len: 'numberLen',
+    max: 'numberMax',
+    min: 'numberMin',
+    range: 'numberRange',
   },
-}
+} as const
 // eslint-disable-next-line max-params
 function getRangeRule(type, len, max, min) {
   let rule
@@ -107,6 +103,7 @@ export interface RuleConfig {
 
 function buildRule(item: RuleConfig, label = '') {
   const { trigger, required, type = 'string', len, max, min, pattern, validator, message } = item || {}
+  // 校验器在失败时调用消息函数，已有模型和列表克隆无需因语言切换而重建。
   const rules: any[] = []
   if (required) {
     if (type === 'string' || type in ruleTypeMap) {
@@ -117,17 +114,17 @@ function buildRule(item: RuleConfig, label = '') {
         pattern: /^[\s\S]*.*[^\s][\s\S]*$/,
         // transform: (value) => value + '',
         // whitespace: true,
-        message: message || `${label}不能为空！`,
+        message: message ?? (() => translate('required', { label })),
       })
     } else {
-      rules.push({ required, trigger, message: message || `${label}不能为空！` })
+      rules.push({ required, trigger, message: message ?? (() => translate('required', { label })) })
     }
   }
 
   const typeRule = ruleTypeMap[type]
   if (typeRule) {
-    const message = formatStr(typeRule.message, { label })
-    rules.push({ ...typeRule, trigger, message })
+    const ruleMessage = message ?? (() => translate(typeRule.message, { label }))
+    rules.push({ ...typeRule, trigger, message: ruleMessage })
   }
 
   if (pattern) {
@@ -136,8 +133,8 @@ function buildRule(item: RuleConfig, label = '') {
 
   if (len || isNumber(max) || isNumber(min)) {
     const rule = getRangeRule(type, len, max, min)
-    const message = formatStr(rule.message, { label, len, max, min })
-    rules.push({ ...rule, trigger, message, type })
+    const ruleMessage = message ?? (() => translate(rule.message, { label, len, max, min }))
+    rules.push({ ...rule, trigger, message: ruleMessage, type })
   }
 
   if (validator) {

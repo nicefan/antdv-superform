@@ -4,7 +4,7 @@ import { defaults, merge } from 'lodash-es'
 import { isRef, ref, type Ref } from 'vue'
 import { toNode } from '../../utils'
 import { getUIService } from '../../adapter'
-import { builtInButtons, buttonText } from './defaults'
+import { builtInButtons } from './defaults'
 
 const getDefault = () => {
   const actions: Obj<ButtonItem> = merge(
@@ -95,8 +95,6 @@ export function mergeActions(actions, methods = {}, commonAttrs = {}) {
           try {
             getUIService('services').confirm({
               title: () => toNode(text, param),
-              okText: buttonText.confirm,
-              cancelText: buttonText.cancel,
               ...globalProps.Modal,
               onCancel: async (...args) => {
                 const result = await globalProps.Modal?.onCancel?.(...args)

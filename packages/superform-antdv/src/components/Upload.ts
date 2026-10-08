@@ -1,6 +1,6 @@
 import { Button, Upload, type UploadFile } from 'antdv-next'
 import { h } from 'vue'
-import { builtInIcons, type UIRenderers } from 'superform/sdk'
+import { translate, builtInIcons, type UIRenderers } from 'superform/sdk'
 
 export const renderUpload: UIRenderers['upload'] = (state, slots = {}) => {
   const resolve = (file: UploadFile) => state.files.find((item) => item.uid === file.uid)
@@ -18,7 +18,7 @@ export const renderUpload: UIRenderers['upload'] = (state, slots = {}) => {
         showRemoveIcon: state.removable && !state.readonly,
         showPreviewIcon: state.previewable,
         showDownloadIcon: state.downloadable,
-        extra: (file: UploadFile) => resolve(file)?.status === 'waiting' ? ' 待处理' : null,
+        extra: (file: UploadFile) => resolve(file)?.status === 'waiting' ? ' ' + translate('uploadWaiting') : null,
       },
       maxCount: undefined,
       customRequest: undefined,
@@ -53,6 +53,6 @@ export const renderUpload: UIRenderers['upload'] = (state, slots = {}) => {
         : h(Button, {}, { default: () => [builtInIcons.upload(), state.title()] })),
     }),
     !state.hideTrigger && state.tip && h('div', { class: 'sup-upload-tip' }, state.tip),
-    state.readonly && state.showList && !state.files.length && h('div', { class: 'sup-upload-tip' }, '暂无附件'),
+    state.readonly && state.showList && !state.files.length && h('div', { class: 'sup-upload-tip' }, translate('uploadEmpty')),
   ])
 }

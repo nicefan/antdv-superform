@@ -8,6 +8,7 @@
   </div>
 </template>
 <script lang="ts" setup>
+import { translate } from '../locale'
 import { computed, nextTick, ref } from 'vue'
 import { getSemanticIconNode, toNode } from '../utils'
 import { resolveUIField, getUIRender } from '../adapter'
@@ -111,7 +112,7 @@ const renderTag = ({ tag, index }: { tag: string; index: number }) => {
 
 const renderAddButton = () =>
   getUIRender('button')(
-    { size: 'small', 'aria-label': '添加标签', onClick: showInput, class: 'sup-tag-add' },
+    { size: 'small', 'aria-label': translate('addTag'), onClick: showInput, class: 'sup-tag-add' },
     { default: () => [getSemanticIconNode('add'), toNode(props.newLabel, props.effectData)] }
   )
 

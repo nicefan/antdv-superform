@@ -1,3 +1,4 @@
+import { translate } from '../../locale'
 import { ref, h, inject, computed } from 'vue'
 import { useModal } from '../../superModal'
 import inlineRender from './editInline'
@@ -21,7 +22,7 @@ function buildDetail(option, modelsMap, rowKey) {
     ...modalProps,
   }
   const getTitle = (param) => {
-    return toNode(modalConfig.title, param) || `${title ? title + ' - ' : ''}详情`
+    return toNode(modalConfig.title, param) || `${title ? title + ' - ' : ''}${translate('detailTitle')}`
   }
   const { openModal, modalSlot } = useModal(detail, modalConfig)
 
@@ -36,7 +37,7 @@ function buildDetail(option, modelsMap, rowKey) {
         source.value = data
       }
       meta.name = 'detail'
-      openModal({ ...meta, title: getTitle({ ...params, source: source.value, meta }) })
+      openModal({ ...meta, title: () => getTitle({ ...params, source: source.value, meta }) })
     }
   }
 }

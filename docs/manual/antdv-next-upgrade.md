@@ -11,7 +11,7 @@ superForm.initialize()
 superForm.configure({ schemaDiagnostics: true })
 ```
 
-字段组件由 Vite 自动导入插件或 `initialize({ components })` 提供。只选择一个产品包，同一应用不混用 Element Plus 产品。语言由 UI 的 ConfigProvider 管理。
+字段组件由 Vite 自动导入插件或 `initialize({ components })` 提供。只选择一个产品包，同一应用不混用 Element Plus 产品。SuperForm 内置文案由 `configure({ locale })` 管理，原生 UI 文案由 ConfigProvider 管理，见[语言包](/manual/locale)。
 
 ## 字段名称 {#schema-字段名称}
 

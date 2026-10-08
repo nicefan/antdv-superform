@@ -1,3 +1,4 @@
+import { translate } from '../../locale'
 import { defaults } from 'lodash-es'
 import { globalProps } from '../../plugin'
 import { createModal } from '../../superModal'
@@ -27,7 +28,7 @@ export default function editModal({ rowKey, option, listener, orgList }) {
   const getTitle = ({ meta, ...param }: Obj) => {
     return (
       toNode(modalProps.title, { meta, ...param }) ||
-      `${formOption.title ? formOption.title + ' - ' : ''}  ${meta.title || meta.label}`
+      `${formOption.title ? formOption.title + ' - ' : ''}  ${toNode(meta.title || meta.label, { meta, ...param })}`
     )
   }
   const methods = {
@@ -35,13 +36,13 @@ export default function editModal({ rowKey, option, listener, orgList }) {
       const { meta = {}, resetData, index } = args
       // 行按钮的 index 是当前页下标，打开弹窗时按当前记录确定源数组位置。
       const position = args.record ? orgList.value.findIndex(row => rowKey(row) === rowKey(args.record)) : index
-      meta.title ??= '新增'
+      meta.title ??= () => translate('add')
       meta.name = 'add'
       meta.isNew = true
       formActions.resetFields(resetData)
       return openModal({
         ...meta,
-        title: getTitle({ ...args, resetData, meta }),
+        title: () => getTitle({ ...args, resetData, meta }),
         onOk: async () => {
           return formActions.submit().then(async (data) => {
             const custom = await rowEditor?.onSave?.({ ...args, source: data, meta })
@@ -60,15 +61,15 @@ export default function editModal({ rowKey, option, listener, orgList }) {
       const { record, selectedRows, resetData, meta = {} } = args
       const data = record || selectedRows[0]
       if (!data) {
-        return Promise.reject(new Error('未选择记录'))
+        return Promise.reject(new Error(translate('recordNotSelected')))
       }
       const res = await option.apis?.info?.(rowKey(data), data)
       const source = merge({}, data, res, resetData)
       formActions.resetFields(source)
-      defaults(meta, { name: 'edit', title: '编辑', isNew: false })
+      defaults(meta, { name: 'edit', title: () => translate('editTitle'), isNew: false })
       return openModal({
         ...meta,
-        title: getTitle({ ...args, source, meta }),
+        title: () => getTitle({ ...args, source, meta }),
 
         onOk: async () => {
           return formActions.submit().then(async (newData) => {

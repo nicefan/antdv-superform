@@ -11,3 +11,4 @@ README 仅保留阶段状态及专题索引；实施与验证结果按需查阅�
 - [Form `ignoreRules`](./ignore-rules.md)
 - [表格行编辑](./table-inline.md)
 - [上传组件](./upload.md)
+- [语言包](./locale.md)

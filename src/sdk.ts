@@ -51,6 +51,7 @@ export type {
   UIActionItem,
   UIActionMenuItem,
 } from './adapter'
+export { translate } from './locale'
 export { globalConfig } from './config'
 export { toNode } from './utils/toNode'
 

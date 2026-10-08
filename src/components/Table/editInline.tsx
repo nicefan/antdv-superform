@@ -1,3 +1,4 @@
+import { translate } from '../../locale'
 import { shallowRef, shallowReactive, toRaw, reactive, h, toRefs, defineComponent, unref, computed, nextTick, onBeforeUnmount, inject } from 'vue'
 import { cloneDeep, isFunction } from 'lodash-es'
 import { ButtonGroup, getSchemaTypeSource, hasFormComponent } from '../index'
@@ -59,7 +60,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor, rowKey }) 
     add({ index, record, resetData } = {} as Obj) {
       if (locked.value) return
       const anchor = record ?? (index === undefined ? undefined : orgList.value[index])
-      if (index !== undefined && !anchor) throw new Error('新增位置已失效，请重新选择插入位置')
+      if (index !== undefined && !anchor) throw new Error(translate('insertPositionInvalid'))
       const item = { ...resetData }
       const anchorKey = anchor && rowKey(anchor)
       const position = anchor ? orgList.value.findIndex(row => rowKey(row) === anchorKey) + 1 : orgList.value.length
@@ -129,7 +130,7 @@ export default function ({ childrenMap, orgList, listener, rowEditor, rowKey }) 
           const data = cloneDeep(toRaw(editInfo.editData))
           if (editInfo.isNew) {
             const index = editInfo.anchorKey === undefined ? undefined : orgList.value.findIndex(row => rowKey(row) === editInfo.anchorKey)
-            if (index === -1) throw new Error('新增锚点已不存在，请取消后重新选择插入位置')
+            if (index === -1) throw new Error(translate('insertAnchorDeleted'))
             await listener.onSave(data, index)
             editInfo.isNew = false
           } else {

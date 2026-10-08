@@ -1,3 +1,4 @@
+import { translate } from '../../locale'
 import { computed, defineComponent, h, reactive, unref, watch } from 'vue'
 import { createButtons } from '../buttons'
 import { mergeButtonConfig } from '../buttons/mergeButtonConfig'
@@ -171,7 +172,7 @@ export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, eff
     return editButtonsSlot?.(param, config) || buttonsSlot({ key: param.record, effectData: param })
   }
   return {
-    title: '操作',
+    title: () => translate('actionColumn'),
     key: 'action',
     fixed: 'right',
     minWidth: 100,
@@ -188,7 +189,7 @@ export const buildIndexColumn = (option, attrs) => {
   if (!indexColumn) return
   return {
     key: 'INDEX',
-    title: '序号',
+    title: () => translate('indexColumn'),
     width: 60,
     align: 'center',
     customRender: ({ index }) => {

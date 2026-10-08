@@ -1,3 +1,4 @@
+import { translate } from '../../locale'
 import type { UIUploadFile } from '../../adapter/types'
 
 export type UploadFileInfo = UIUploadFile
@@ -76,17 +77,17 @@ export function createUploadController(options: UploadControllerOptions) {
 
   const validate = (file: UploadFileInfo, selectedFiles: UploadFileInfo[], currentFiles: UploadFileInfo[]) => {
     if (maxCount > 1 && currentFiles.length + selectedFiles.indexOf(file) >= maxCount) {
-      return `文件数量最多${maxCount}`
+      return translate('fileCount', { maxCount })
     }
-    if (accept && !accepts(file, accept)) return '请选择正确的文件类型！'
+    if (accept && !accepts(file, accept)) return translate('fileType')
     if (minSize || maxSize) {
       const size = (file.size || 0) / 1024 / 1024
-      if (minSize && minSize > size) return `文件最小需要${minSize}M`
-      if (maxSize && maxSize < size) return `文件最大不超过${maxSize}M`
+      if (minSize && minSize > size) return translate('fileMinSize', { minSize })
+      if (maxSize && maxSize < size) return translate('fileMaxSize', { maxSize })
     }
     if (!repeatable) {
       const repeated = currentFiles.find((item) => item.name === file.name)
-      if (repeated) return `文件重复: ${repeated.name}`
+      if (repeated) return translate('fileDuplicate', { name: repeated.name })
     }
   }
 
@@ -112,7 +113,7 @@ export function createUploadController(options: UploadControllerOptions) {
     let uploads: Promise<any> = Promise.resolve()
     if (mode === 'auto' || mode === 'base64' || mode === 'text') {
       const failed = files.find((file) => file.status === 'error')
-      if (failed) throw failed.error || failed.response || { message: '文件处理失败，请删除后重新选择！' }
+      if (failed) throw failed.error || failed.response || { message: translate('fileProcessFailed') }
       uploads = Promise.all(uploadTasks.values())
     } else if (mode === 'submit') {
       const tasks = files

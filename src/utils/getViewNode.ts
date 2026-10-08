@@ -1,3 +1,4 @@
+import { translate } from '../locale'
 import { globalConfig } from '../config'
 import { h, reactive, inject, computed, mergeProps, toValue } from 'vue'
 import { createButtons } from '../components/buttons'
@@ -89,7 +90,7 @@ export function getViewNode(option, effectData: Obj = {}) {
     } else if (colType === 'Switch') {
       return ({ text, value } = effectData) => {
         const current = text ?? value ?? toValue(initialValue)
-        return current === true ? '是' : current === false ? '否' : current
+        return current === true ? translate('yes') : current === false ? translate('no') : current
       }
     }
   })() //as false | undefined | ((param?: Obj) => VNode)
@@ -115,7 +116,7 @@ export function getViewNode(option, effectData: Obj = {}) {
       const text = param.text ?? toValue(initialValue)
       if (typeof text === 'boolean' && tagViewer === true) {
         return buildTagRender({
-          label: text ? '是' : '否',
+          label: translate(text ? 'yes' : 'no'),
           color: text ? 'success' : 'error',
         })
       }

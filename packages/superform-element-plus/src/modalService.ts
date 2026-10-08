@@ -1,6 +1,6 @@
 import { ElButton, ElDialog } from 'element-plus'
 import { defineComponent, getCurrentInstance, h, nextTick, ref, render, shallowReactive, type VNodeChild } from 'vue'
-import { builtInIcons, type UIConfirmOptions, type UIServiceHandle } from 'superform/sdk'
+import { translate, builtInIcons, type UIConfirmOptions, type UIServiceHandle } from 'superform/sdk'
 
 export function resolveServiceContent(content: unknown): any {
   return typeof content === 'function' ? content() : content
@@ -69,13 +69,13 @@ export function openServiceModal(props: UIConfirmOptions, confirm: boolean): UIS
           ...cancelButtonProps,
           disabled: pending.value || cancelButtonProps?.disabled,
           onClick: () => act(false),
-        }, () => cancelText || '取消'),
+        }, () => cancelText ?? translate('cancel')),
         h(ElButton, {
           type: 'primary',
           ...okButtonProps,
           loading: pending.value || okButtonProps?.loading,
           onClick: () => act(true),
-        }, () => okText || '确定'),
+        }, () => okText ?? translate('confirm')),
       ],
     })
   })

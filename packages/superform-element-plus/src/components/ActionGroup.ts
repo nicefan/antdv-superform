@@ -69,7 +69,7 @@ export function renderActionGroup(props: UIActionGroupProps) {
     props.divider ??
     (groupProps?.direction !== 'vertical' && (!!defaultButtonProps?.link || defaultButtonProps?.text === true))
   const content = buttons.flatMap((button, index) => [
-    renderButton(button, props),
+    h('span', { key: button.key, style: { display: 'flex' } }, [renderButton(button, props)]),
     divider && index < buttons.length - 1 ? h(ElDivider, { direction: 'vertical' }) : undefined,
   ])
   if (moreButtons.length)

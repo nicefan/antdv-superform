@@ -1,3 +1,4 @@
+import { translate } from '../../locale'
 import { toRaw, watch, reactive, h, defineComponent, computed, unref, toRefs, toRef } from 'vue'
 import { isFunction } from 'lodash-es'
 import { getSchemaTypeSource, hasFormComponent } from '../index'
@@ -38,7 +39,7 @@ export default function ({ model, orgList, editableRef, rowKey }) {
       // 原生分页行号只代表当前页，行按钮优先按稳定键定位源数组。
       const position = record ? orgList.value.findIndex(row => rowKey(row) === rowKey(record)) : index
       if (position !== undefined) {
-        if (!orgList.value[position]) throw new Error('新增位置已失效，请重新选择插入位置')
+        if (!orgList.value[position]) throw new Error(translate('insertPositionInvalid'))
         orgList.value.splice(position + 1, 0, item)
       } else {
         orgList.value.push(item)

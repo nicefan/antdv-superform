@@ -62,6 +62,9 @@ export { configure, registerComponent, registerComponents, useAdapter } from './
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'
 export type { AdapterDefaultProps, SuperFormConfig } from './plugin'
 
+export { zhCN, enUS } from './locale'
+export type { SuperFormLocale, SuperFormLocaleConfig } from './locale'
+
 export default plugin
 
 export type * from './exaTypes'

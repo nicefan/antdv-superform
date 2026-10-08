@@ -1,4 +1,5 @@
 <script lang="ts">
+import { translate } from '../locale'
 import {
   defineComponent,
   h,
@@ -79,14 +80,14 @@ export default defineComponent({
       draft.value = cloneDeep(row?.model.refData || {})
       editorKey.value++
       return editor.openModal({
-        title: props.option.editModal?.modalProps?.title || (row ? '编辑' : '新增'),
+        title: props.option.editModal?.modalProps?.title || (() => translate(row ? 'editTitle' : 'add')),
         onOk: async () => {
           if (props.isView) return
           const data = await formRef.value.submit()
           if (row) {
             // 以稳定行模型定位，弹窗期间重排不能把数据写回另一行。
             const index = rows.value.indexOf(row)
-            if (index < 0) throw new Error('当前记录已删除')
+            if (index < 0) throw new Error(translate('recordDeleted'))
             Object.assign(source.value[index], data)
           } else {
             const record = data
@@ -94,7 +95,7 @@ export default defineComponent({
             else {
               // 保存时重新定位稳定行身份，避免弹窗期间重排后插错位置。
               const index = rows.value.indexOf(anchor)
-              if (index < 0) throw new Error('新增位置对应的记录已删除')
+              if (index < 0) throw new Error(translate('insertRecordDeleted'))
               source.value.splice(index + 1, 0, record)
             }
             activateAddedRow(record)
@@ -106,7 +107,7 @@ export default defineComponent({
       add: ({ listItemKey }: Obj = {}) => {
         if (props.isView) return
         const anchor = rows.value.find((item) => item.key === listItemKey)
-        if (listItemKey !== undefined && !anchor) throw new Error('新增位置对应的记录已删除')
+        if (listItemKey !== undefined && !anchor) throw new Error(translate('insertRecordDeleted'))
         if (editor) return openEditor(undefined, anchor || null)
         const record = {}
         if (anchor) source.value.splice(rows.value.indexOf(anchor) + 1, 0, record)

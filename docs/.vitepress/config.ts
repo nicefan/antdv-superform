@@ -110,6 +110,7 @@ export default defineConfig({
           text: '项目配置与扩展',
           items: [
             { text: '全局配置', link: '/manual/global-config' },
+            { text: '语言包', link: '/manual/locale' },
             { text: '接口与数据适配', link: '/manual/backend-contracts' },
             { text: '自定义字段', link: '/manual/custom-fields' },
             { text: 'unplugin 自动导入', link: '/manual/auto-components' },
