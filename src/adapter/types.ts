@@ -150,10 +150,32 @@ export interface UITablePagination {
   pageSize?: number
   total?: number
   pageSizeOptions?: Array<number | string>
+  /** 分页业务通知，查询统一由 onTableChange 驱动。 */
   onChange?: (page: number, pageSize?: number) => unknown
   onShowSizeChange?: (page: number, pageSize: number) => unknown
   /** UI 包公开的分页扩展属性，由对应 Adapter 消费。 */
   attrs?: Obj
+}
+
+export interface UITableSorter {
+  /** 查询字段路径，嵌套字段使用点分路径。 */
+  field: string
+  order: 'asc' | 'desc'
+}
+
+export interface UITableParams {
+  /** 空筛选不保留字段，取消排序不保留排序项。 */
+  filters: Record<string, unknown[]>
+  sorters: UITableSorter[]
+}
+
+export interface UITableChange extends UITableParams {
+  action: 'filter' | 'sort' | 'paginate'
+  pagination?: Pick<UITablePagination, 'current' | 'pageSize' | 'total'>
+  /** 原生本地筛选或排序只同步状态，不触发远程查询。 */
+  remote?: boolean
+  /** 排除本地处理列的远程状态；未提供时由 Core 沿用远程事件的完整状态。 */
+  remoteParams?: UITableParams
 }
 
 export interface UITableColumn extends Obj {
@@ -172,6 +194,7 @@ export interface UITableRenderProps extends Obj {
   rowKey: string | ((row: Obj) => PropertyKey)
   expandedKeys?: unknown[]
   onExpandedChange?: (keys: unknown[]) => void
+  onTableChange?: (change: UITableChange) => void
 }
 
 export interface UITableFilterProps {

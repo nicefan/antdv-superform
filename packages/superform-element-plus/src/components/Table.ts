@@ -1,25 +1,69 @@
-import { computed, defineComponent, h, nextTick, unref } from 'vue'
+import { computed, defineComponent, h, mergeProps, nextTick, reactive, unref, watch } from 'vue'
 import { ElTable, ElTableColumn, ElPagination, ElTabs, ElTabPane, ElCard } from 'element-plus'
-import type { UIRenderers, UITableSelectors } from 'superform/sdk'
+import type { UIRenderers, UITableChange, UITableParams, UITableSelectors } from 'superform/sdk'
+type PaginationState = { current: number; pageSize: number; changed: boolean }
 const TableRenderer = defineComponent({
   inheritAttrs: false,
   props: ['data', 'pagination', 'tableRef'],
   setup(props, { attrs, slots }) {
+    // Element Plus 的 filter-change 只返回本次变化的列，需要实例级状态合成完整筛选。
+    const tableParams: UITableParams = { filters: {}, sorters: [] }
+    // 先同步受控值，原生 change 才能合并页码和条数变化；上下分页共享同一模型。
+    const pageState = reactive<PaginationState>({ current: 1, pageSize: 10, changed: false })
+    watch([
+      () => props.pagination?.attrs?.currentPage ?? props.pagination?.current ?? props.pagination?.attrs?.defaultCurrentPage ?? 1,
+      () => props.pagination?.attrs?.pageSize ?? props.pagination?.pageSize ?? props.pagination?.attrs?.defaultPageSize ?? 10,
+    ], ([current, pageSize]) => {
+      pageState.current = current
+      pageState.pageSize = pageSize
+    }, { immediate: true, flush: 'sync' })
     // 分页结果保持引用稳定，避免 ElTable 的数据监听与父级实例同步相互触发。
     const pageData = computed(() => {
       const { data, pagination } = props
-      const size = pagination?.pageSize || 10
-      const offset = ((pagination?.current || 1) - 1) * size
+      const size = pageState.pageSize
+      const offset = (pageState.current - 1) * size
       return pagination && data.length > size ? data.slice(offset, offset + size) : data
     })
-    return () => renderNativeTable({ ...attrs, data: props.data, pagination: props.pagination, ref: props.tableRef } as any, slots, pageData.value)
+    return () => renderNativeTable({ ...attrs, data: props.data, pagination: props.pagination, ref: props.tableRef } as any, slots, pageData.value, tableParams, pageState)
   },
 })
 export const renderTable: UIRenderers['table'] = ({ ref, ...props }, slots = {}) =>
   h(TableRenderer, { ...props, tableRef: ref }, slots)
 
-const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Obj, pageData: Obj[]) => {
-  const { data, columns = [], selection, expandedKeys, onExpandedChange, pagination, rowKey, scroll, ref: tableRef, ...rest } = props
+const callHandler = (handler, ...args) => {
+  const handlers = Array.isArray(handler) ? handler : [handler]
+  handlers.forEach((fn) => fn?.(...args))
+}
+const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Obj, pageData: Obj[], tableParams: UITableParams, pageState: PaginationState) => {
+  const { data, columns = [], selection, expandedKeys, onExpandedChange, onTableChange, pagination, rowKey, scroll, ref: tableRef, ...rest } = props
+  const flatColumns: Obj[] = []
+  const visitColumns = (items: Obj[]) => items.forEach((column) => {
+    flatColumns.push(column)
+    if (column.children) visitColumns(column.children)
+  })
+  visitColumns(columns)
+  const getField = (column: Obj) => {
+    const field = column.dataIndex ?? column.key
+    return Array.isArray(field) ? field.join('.') : String(field ?? '')
+  }
+  const findColumn = (key: string) => flatColumns.find((column) => String(column.columnKey ?? column.key) === key || getField(column) === key)
+  const emitChange = (action: UITableChange['action'], remote: boolean, page = pagination || undefined) => {
+    callHandler(onTableChange, {
+      action,
+      filters: Object.fromEntries(Object.entries(tableParams.filters).map(([field, values]) => [field, [...values]])),
+      sorters: tableParams.sorters.map((sorter) => ({ ...sorter })),
+      // 本地条件只保留在统一事件中，不能在后续翻页或刷新时带入远程转换。
+      remoteParams: {
+        filters: Object.fromEntries(Object.entries(tableParams.filters)
+          .filter(([field]) => typeof findColumn(field)?.filterMethod !== 'function')
+          .map(([field, values]) => [field, [...values]])),
+        sorters: tableParams.sorters.filter(({ field }) => findColumn(field)?.sortable === 'custom')
+          .map((sorter) => ({ ...sorter })),
+      },
+      pagination: page && { current: page.current, pageSize: page.pageSize, total: page.total },
+      remote,
+    })
+  }
   // ElTable 不内置分页：全量本地数据由 Adapter 截取；接口已分页的数据不重复截取。
   const getRowKey = (row: Obj) => (typeof rowKey === 'function' ? rowKey(row) : row[rowKey])
   const getCellValue = (record: Obj, path: string | string[]) =>
@@ -33,6 +77,7 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
           ...columnAttrs,
           key: key ?? (Array.isArray(dataIndex) ? dataIndex.join('.') : dataIndex),
           prop: Array.isArray(dataIndex) ? dataIndex.join('.') : dataIndex,
+          columnKey: String(columnAttrs.columnKey ?? key ?? getField(column)),
         },
         children?.length
           ? {
@@ -79,13 +124,35 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
   }
   const table = h(
     ElTable as any,
-    {
+    mergeProps({
       ...rest,
       ref: assignTableRef,
       data: pageData,
       rowKey: rowKey as any,
       maxHeight: unref(scroll)?.y ?? rest.maxHeight,
       expandRowKeys: expandedKeys as any,
+      onSortChange: (sort) => {
+        const previous = tableParams.sorters[0]?.field
+        const field = sort.prop || sort.column?.property || previous
+        const column = findColumn(field)
+        tableParams.sorters = sort.order && field
+          ? [{ field, order: sort.order === 'ascending' ? 'asc' : 'desc' }]
+          : []
+        const remote = (sort.column?.sortable ?? column?.sortable) === 'custom'
+          || (previous !== undefined && previous !== field && findColumn(previous)?.sortable === 'custom')
+        emitChange('sort', remote)
+      },
+      onFilterChange: (changes) => {
+        let remote = false
+        Object.entries(changes).forEach(([key, values]) => {
+          const column = findColumn(key)
+          const field = getField(column || { key })
+          if (Array.isArray(values) && values.length) tableParams.filters[field] = [...values]
+          else delete tableParams.filters[field]
+          remote ||= typeof column?.filterMethod !== 'function'
+        })
+        emitChange('filter', remote)
+      },
       onExpandChange: (row, rowsOrExpanded) => {
         if (Array.isArray(rowsOrExpanded)) {
           onExpandedChange?.(rowsOrExpanded.map(getRowKey))
@@ -105,7 +172,7 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
         const nextRows = [...retained, ...rows]
         selection.onChange?.(nextRows.map(getRowKey), nextRows, {})
       },
-    },
+    }, { onSortChange: rest.onSortChange, onFilterChange: rest.onFilterChange }),
     {
       ...slots,
       default: () => [
@@ -121,21 +188,44 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
     }
   )
   if (!pagination) return table
-  const { small, placement = (pagination as Obj).placement ?? ['bottomEnd'], ...paginationAttrs } = pagination.attrs || {}
-  const paginationProps = {
-    currentPage: pagination.current,
-    pageSize: pagination.pageSize,
+  const {
+    small,
+    placement = (pagination as Obj).placement ?? ['bottomEnd'],
+    onCurrentChange,
+    onSizeChange,
+    onChange,
+    ...paginationAttrs
+  } = pagination.attrs || {}
+  const paginationProps = mergeProps({
     // 查询结果异步返回前没有 total，Element Plus 会把分页判定为非法；本地数组模式则回退到当前数据量。
     total: pagination.total ?? data.length,
     pageSizes: pagination.pageSizeOptions,
     layout: 'total, sizes, prev, pager, next, jumper',
-    onCurrentChange: (page) => pagination.onChange?.(page, pagination.pageSize),
-    onSizeChange: (size) =>
-      (pagination.onShowSizeChange || pagination.onChange)?.(pagination.current ?? 1, size),
     ...paginationAttrs,
+    currentPage: pageState.current,
+    pageSize: pageState.pageSize,
+    onCurrentChange: (page) => {
+      if (page === pageState.current) return
+      pageState.current = page
+      pageState.changed = true
+    },
+    onSizeChange: (size) => {
+      if (size === pageState.pageSize) return
+      pageState.current = 1
+      pageState.pageSize = size
+      pageState.changed = true
+      pagination.onShowSizeChange?.(pageState.current, size)
+    },
+    onChange: (page, size) => {
+      // 只消费一次交互变化，外部回写及另一组分页的被动同步不再次发出查询事件。
+      if (!pageState.changed) return
+      pageState.changed = false
+      emitChange('paginate', true, { ...pagination, current: page, pageSize: size })
+      pagination.onChange?.(page, size)
+    },
     ...(small !== undefined ? { size: small ? 'small' : undefined } : {}),
     small: false,
-  }
+  }, { onCurrentChange, onSizeChange, onChange })
   // 每个方向最多展示一组分页，与 AntDV 的 placement 数组语义保持一致。
   const renderPagination = (position?: string) => position && h('div', {
     class: ['sup-table-pagination', position.startsWith('top') ? 'sup-table-pagination-top' : 'sup-table-pagination-bottom'],

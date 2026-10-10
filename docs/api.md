@@ -35,12 +35,16 @@ pageClass: api-index-page
 - [根配置](/manual/super-table#根配置总览)
 - [apis.query / info / save / update / delete](/manual/super-table#apis-完整契约)
 - [params / beforeQuery / afterQuery / getQueryParams](/manual/super-table#查询参数与转换)
+- [attrs.filterSortTransform / onTableChange](/manual/super-table#筛选排序与统一事件)
+- [UITableSorter / UITableParams / UITableChange](/manual/super-table#筛选排序与统一事件)
+- [attrs.pageTransform / attrs.resultTransform](/manual/super-table#查询参数与转换)
 - [searchForm](/manual/super-table#搜索表单)
 - [immediate / 搜索触发策略](/manual/super-table#查询触发方式怎么选)
-- [pagination / query / reload / goPage / resetSearchForm](/manual/super-table#分页与请求动作)
+- [attrs.pagination / query / reload / goPage / resetSearchForm](/manual/super-table#分页与请求动作)
 - [columns / rowSelection / expandedRowKeys](/manual/super-table#列、选择与展开)
 - [tabs](/manual/super-table#tabs-标签筛选)
-- [isContainer / 高度配置](/manual/super-table#页面容器与高度策略)
+- [useSectionStyle / 高度配置](/manual/super-table#页面容器与高度策略)
+- [detailOption / 详情弹窗](/manual/super-table#详情配置)
 - [setData / getData / dataSource / setColumns](/manual/super-table#usetable-动作与状态)
 - [selectedRows / selectedRowKeys / setSelectedRows](/manual/super-table#usetable-动作与状态)
 - [setExpandedRowKeys / expandAll](/manual/super-table#usetable-动作与状态)
@@ -56,7 +60,7 @@ pageClass: api-index-page
 - [useDetail](/manual/super-detail#注册模式)
 - [SuperDetail 根配置](/manual/super-detail#根配置)
 - [detail.setData](/manual/super-detail#当前数据更新)
-- [mode / descriptionsProps](/manual/super-detail#extdescriptionsprops-细节)
+- [mode / attrs / 局部 descriptionsProps](/manual/super-detail#extdescriptionsprops-细节)
 
 </section>
 
@@ -161,12 +165,14 @@ pageClass: api-index-page
 ### 查询与编辑 · 表格
 
 - [params / beforeQuery / afterQuery](/manual/super-table#查询参数与转换)
+- [attrs.filterSortTransform / onTableChange](/manual/super-table#筛选排序与统一事件)
+- [attrs.pageTransform / attrs.resultTransform / getQueryParams](/manual/super-table#查询参数与转换)
 - [searchForm](/manual/super-table#搜索表单)
-- [pagination](/manual/super-table#分页与请求动作)
+- [attrs.pagination](/manual/super-table#分页与请求动作)
 - [columnProps · 表格根](/manual/super-table#列、选择与展开)
 - [columnProps · 字段列](/manual/fields/table#列-extcolumnsitem)
 - [rowEditor / editable](/manual/fields/table#四种编辑方式)
-- [descriptionsProps · 详情](/manual/super-detail#extdescriptionsprops-细节)
+- [detailOption · 表格详情](/manual/fields/table#详情配置)
 
 </section>
 
@@ -307,7 +313,7 @@ pageClass: api-index-page
 - [registerComponent / registerComponents](/manual/custom-fields#注册项目组件)
 - [defaultProps / setDefaultProps](/manual/global-config#defaultprops-合并顺序)
 - [dictApi](/manual/backend-contracts#字典接口)
-- [tableApiSetting](/manual/global-config#tableapisetting)
+- [defaultProps.SuperTable / 接口转换](/manual/global-config#supertable-默认属性)
 - [buttonRoles / defaultButtons](/manual/global-config#图标、权限与按钮)
 - [tagViewer](/manual/rendering#tagviewer-只读配置)
 

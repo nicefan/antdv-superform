@@ -84,7 +84,7 @@ export default defineComponent({
     /** 页面组件注册表格 */
     const [registTable, { setData: setTableData2 }] = useTable({
       dataSource: ref([...data]),
-      isContainer: true,
+      useSectionStyle: true,
       ...getTableOption(),
       // searchschema: undefined,
       // maxHeight: 500,
@@ -102,8 +102,10 @@ export default defineComponent({
         minWidth: 100,
         resizable: true,
       },
-      editMode: 'inline',
-      addMode: 'inline',
+      rowEditor: {
+        editMode: 'inline',
+        addMode: 'inline',
+      },
       attrs: {
         bordered: true,
         height: 600,
@@ -162,7 +164,7 @@ export default defineComponent({
         })
     }
     // const setModalFormValue = () => {
-    //   form.setData(getData())
+    //   form.resetFields(getData())
     // }
     const renameModal = useModalForm(
       {

@@ -360,7 +360,7 @@ export default function exampleForm() {
               },
               {
                 type: 'InfoSlot',
-                hideInDescription: true,
+                exclude: ['description'],
                 colProps: { style: { width: '80px' } },
                 render: () => h(Button, () => '选择'),
               },

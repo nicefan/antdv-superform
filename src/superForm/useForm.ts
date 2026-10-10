@@ -47,24 +47,6 @@ export function useForm(option: UseFormOption) {
       getNativeInstance: () => asyncCall('getNativeInstance'),
       resetFields: (rest?: Obj) => asyncCall('resetFields', rest),
       setFieldsValue: (data: Obj) => asyncCall('setFieldsValue', data),
-      /**
-       * @deprecated 使用`resetFields`
-       */
-      setData(data) {
-        asyncCall('resetFields', data)
-      },
     },
   ] as const
 }
-
-// export function useFormModal(optionData: FormOption, config?: ModalFuncProps) {
-//   const [register, form] = useForm(optionData)
-//   const modal = useModal(register() as Fn, config)
-
-//   return {
-//     openModal: (option?: ModalFuncProps) => {
-//       return modal.openModal(option).then(() => form.getForm())
-//     },
-//     ...form,
-//   }
-// }

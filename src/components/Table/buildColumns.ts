@@ -1,5 +1,5 @@
 import { translate } from '../../locale'
-import { computed, defineComponent, h, reactive, unref, watch } from 'vue'
+import { computed, defineComponent, h, inject, reactive, unref, watch } from 'vue'
 import { createButtons } from '../buttons'
 import { mergeButtonConfig } from '../buttons/mergeButtonConfig'
 import { getViewNode, useControl, getEffectData } from '../../utils'
@@ -91,12 +91,12 @@ export function buildColumns({
   const { methods, buttonMethods, getEditRender, editButtonsSlot } = context
   const effectData = getEffectData({ list: parentData.value, isView, parent: parentData })
   // 弹窗模式的 editable 用于编辑配置，不能再回退为直接修改源数据的单元格输入。
-  const allowColumnEdit = (option.rowEditor || option).editMode !== 'modal'
+  const allowColumnEdit = option.rowEditor?.editMode !== 'modal'
 
   const columns = (function getColumns(_models = childrenMap) {
     const _columns: any[] = []
     ;[..._models].forEach(([col, model]) => {
-      if (col.type === 'Hidden' || col.hideInTable || col.hidden === true || col.exclude?.includes('table')) return
+      if (col.type === 'Hidden' || col.hidden === true || col.exclude?.includes('table')) return
       const title = createLabelNode(col, effectData)
       if (model.children) {
         const subColumns = getColumns(model.children)
@@ -187,13 +187,22 @@ export function buildActionSlot({ buttons, methods, editButtonsSlot, isView, eff
 export const buildIndexColumn = (option, attrs) => {
   const indexColumn = option.indexColumn ?? globalProps.Table?.indexColumn
   if (!indexColumn) return
+  const { dataPagination } = inject<{ dataPagination?: Ref<{ current: number; pageSize: number } | undefined> }>('exaProvider', {})
+  const initialPagination = {
+    current: attrs.pagination?.current || 1,
+    pageSize: attrs.pagination?.pageSize || 10,
+  }
   return {
     key: 'INDEX',
     title: () => translate('indexColumn'),
     width: 60,
     align: 'center',
     customRender: ({ index }) => {
-      return ((attrs.pagination?.current || 1) - 1) * (attrs.pagination?.pageSize || 10) + index + 1
+      // 远程数据等待回写时保留原页索引，本地分页仍按当前页即时计算。
+      const pagination = attrs.pagination && option.apis?.query && dataPagination
+        ? dataPagination.value ?? initialPagination
+        : attrs.pagination
+      return ((pagination?.current || 1) - 1) * (pagination?.pageSize || 10) + index + 1
     },
     ...(isPlainObject(indexColumn) && indexColumn),
   }

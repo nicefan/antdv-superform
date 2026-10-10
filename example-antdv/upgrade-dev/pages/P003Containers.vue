@@ -52,7 +52,7 @@ const model = reactive({
 })
 
 const formSchema: ExtFormOption = {
-  isContainer: true,
+  useSectionStyle: true,
   dataSource: model,
   buttons: {
     actions: [
@@ -156,7 +156,7 @@ const formSchema: ExtFormOption = {
 }
 
 const detailSchema: ExtDescriptionsOption = {
-  isContainer: true,
+  useSectionStyle: true,
   attrs: { bordered: true },
   subSpan: 12,
   subItems: [

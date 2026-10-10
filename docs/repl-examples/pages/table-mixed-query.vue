@@ -1,5 +1,7 @@
 <template>
-  <div class="demo-note">输入名称后点击查询；切换状态会通过 params 立即刷新。</div>
+  <div class="demo-note">
+    输入名称后点击查询；切换状态通过 params 自动调度查询，约 300ms 后刷新。
+  </div>
   <SuperTable @register="register" />
 </template>
 
@@ -12,8 +14,7 @@ const filters = reactive({ status: undefined })
 const status = toRef(filters, 'status')
 
 const [register] = useTable({
-  pagination: false,
-  attrs: { rowKey: 'id' },
+  attrs: { rowKey: 'id', pagination: false },
   apis: { query: mockApis.customers.list },
   params: { status },
   searchForm: {

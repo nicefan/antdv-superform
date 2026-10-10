@@ -13,27 +13,24 @@ import { mockApis, mockDepartments } from './mock'
 
 const departmentId = ref()
 
-const [registerDepartments] = useTable(
-  {
-    title: '部门',
+const [registerDepartments] = useTable({
+  title: '部门',
+  dataSource: mockDepartments,
+  attrs: {
     pagination: false,
-    attrs: {
-      rowKey: 'id',
-      rowSelection: {
-        type: 'radio',
-        onSelect: (record, selected) => selected && (departmentId.value = record.id),
-      },
+    rowKey: 'id',
+    rowSelection: {
+      type: 'radio',
+      onSelect: (record, selected) => selected && (departmentId.value = record.id),
     },
-    columns: [{ field: 'name', label: '部门名称' }],
   },
-  mockDepartments
-)
+  columns: [{ field: 'name', label: '部门名称' }],
+})
 
 const [registerEmployees] = useTable({
   title: '部门员工',
-  pagination: false,
   immediate: false,
-  attrs: { rowKey: 'id' },
+  attrs: { rowKey: 'id', pagination: false },
   apis: { query: mockApis.employees.list },
   params: { departmentId },
   columns: [

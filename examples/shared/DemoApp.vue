@@ -101,6 +101,13 @@ const pages = [
     component: defineAsyncComponent(() => import('./pages/Tables.vue')),
   },
   {
+    id: 'table-query',
+    title: '表格查询',
+    kicker: 'QUERY',
+    description: '列筛选排序、分页与响应转换、当前导出条件及慢请求索引。',
+    component: defineAsyncComponent(() => import('./pages/TableQuery.vue')),
+  },
+  {
     id: 'table-scroll',
     title: '表格高度',
     kicker: 'SCROLL',

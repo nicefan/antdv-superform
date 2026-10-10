@@ -181,7 +181,7 @@ export default defineComponent({
       if (isFormItem) {
         if (isSingle) {
           const { label, labelSlot = label } = columns[0]
-          const breakAfter = columns[0].breakAfter ?? columns[0].wrapping
+          const breakAfter = columns[0].breakAfter
           return () =>
             getUIRender('space')(
               { direction: breakAfter ? 'vertical' : 'horizontal' },

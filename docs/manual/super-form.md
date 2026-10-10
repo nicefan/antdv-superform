@@ -33,7 +33,7 @@ Schema 也可以由函数或 Promise 异步提供，适合根据权限加载配�
 <SuperForm
   :schema="schema"
   :data-source="record"
-  :is-container="true"
+  :use-section-style="true"
   @submit="handleSubmit"
   @reset="handleReset"
 />
@@ -63,7 +63,7 @@ form.resetFields(structuredClone(row));
 | `subItems`          | array           | 必填    | 字段、容器和辅助节点                              |
 | `dataSource`        | object/Ref      | `{}`    | 外部双向模型；缺失字段会按 Schema 补齐            |
 | `attrs`             | object          | `{}`    | 传给 Ant Design Vue Form，如 `layout`、`labelCol` |
-| `isContainer`       | boolean         | `false` | 增加页面容器样式，适合独立页面表单                |
+| `useSectionStyle`   | boolean         | `false` | 增加分区背景、内边距和间距，适合独立页面表单      |
 | `compact`           | boolean         | `false` | 减少纵向间距，适合搜索或密集编辑                  |
 | `ignoreRules`       | boolean         | `false` | 关闭自动触发校验并隐藏必填标识，显式校验及提交仍校验        |
 | `subSpan`           | number/string   | `8`     | 子项默认栅格；字符串仅支持 `'auto'`               |

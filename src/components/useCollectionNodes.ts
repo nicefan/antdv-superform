@@ -39,9 +39,7 @@ export function useCollectionNodes(props: CollectionNodeProps, buildNode: typeof
   const childrenArr = [...props.model.children]
   for (let idx = 0; idx < childrenArr.length; idx++) {
     const [option, subData] = childrenArr[idx]
-    const { type, align, span, hideInForm, exclude, editable } = option
-    const block = option.block ?? option.blocked
-    const breakAfter = option.breakAfter ?? option.wrapping
+    const { type, align, span, block, breakAfter, exclude, editable } = option
     const { parent, refData } = toRaw(subData)
     const effectData = getEffectData({
       parent: props.effectData,
@@ -53,7 +51,7 @@ export function useCollectionNodes(props: CollectionNodeProps, buildNode: typeof
         record: !subData.refName ? refData : parent,
       }),
     })
-    if (type === 'Hidden' || (exclude ? exclude.includes('form') : hideInForm)) {
+    if (type === 'Hidden' || exclude?.includes('form')) {
       useVModel({ option, model: subData, effectData })
       continue
     }

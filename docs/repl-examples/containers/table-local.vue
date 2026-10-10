@@ -17,6 +17,22 @@ const [register] = useForm({
         { id: 2, product: '显示器', quantity: 1, price: 1299 },
       ],
       attrs: { rowKey: 'id' },
+      detailOption: {
+        title: '商品资料',
+        mode: 'table',
+        attrs: { column: 1 },
+        subItems: [
+          { type: 'Text', field: 'product', label: '商品' },
+          { type: 'InputNumber', field: 'quantity', label: '数量' },
+          {
+            type: 'Text',
+            label: '小计',
+            viewRender: ({ current }) => `${current.quantity * current.price} 元`,
+          },
+        ],
+        modalProps: { width: 600 },
+      },
+      rowButtons: { actions: ['detail'] },
       columns: [
         { type: 'Hidden', field: 'id' },
         { type: 'Input', field: 'product', label: '商品', required: true },

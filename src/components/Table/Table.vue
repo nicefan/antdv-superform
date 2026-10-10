@@ -35,8 +35,10 @@ export default defineComponent({
   setup({ option, model, reload, effectData, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
+    // 初始化所需的原生默认值也在 Table 本层消费，局部配置优先。
+    const tableDefaults = globalProps.Table || {}
     const keyMap = new WeakMap<object, PropertyKey>()
-    const rowKeyField = attrs.rowKey || 'id'
+    const rowKeyField = attrs.rowKey || tableDefaults.rowKey || 'id'
     const rowKey = (record) => {
       const key = typeof rowKeyField === 'function' ? rowKeyField(record) : record[rowKeyField]
       if (key !== undefined && key !== null) return key
@@ -48,7 +50,7 @@ export default defineComponent({
       return keyMap.get(raw)
     }
     const orgList = toRef(model, 'refData')
-    const __rowSelection = option.attrs?.rowSelection || undefined
+    const __rowSelection = (option.attrs?.rowSelection ?? tableDefaults.rowSelection) || undefined
     const configuredSelectedKeys = __rowSelection?.selectedRowKeys
     const selectedRowKeys: Ref<any[]> = isRef(configuredSelectedKeys)
       ? (configuredSelectedKeys as Ref<any[]>)
@@ -90,7 +92,7 @@ export default defineComponent({
       },
     }
 
-    const childrenField = attrs.childrenColumnName || 'children'
+    const childrenField = attrs.childrenColumnName || tableDefaults.childrenColumnName || 'children'
     const availableRows = () => {
       const rows = new Map<any, Obj>()
       const visit = (items) =>
@@ -136,12 +138,12 @@ export default defineComponent({
       })
       return arr
     }
-    const expandedRowKeys = ref(option.attrs?.expandedRowKeys || [])
+    const expandedRowKeys = ref(option.attrs?.expandedRowKeys ?? tableDefaults.expandedRowKeys ?? [])
     const updateExpand = (val) => {
       expandedRowKeys.value = val
       ctx.emit('expandedRowsChange', val)
     }
-    if (props.defaultExpandLevel || attrs.defaultExpandAllRows) {
+    if (props.defaultExpandLevel || (attrs.defaultExpandAllRows ?? tableDefaults.defaultExpandAllRows)) {
       watch(
         orgList,
         (list, old) => {
@@ -255,7 +257,7 @@ export default defineComponent({
     const slots: Obj = { ...ctx.slots }
 
     const buttonsConfig = option.buttons as any
-    const slotName = buttonsConfig?.targetSlot ?? buttonsConfig?.forSlot ?? 'extra'
+    const slotName = buttonsConfig?.targetSlot ?? 'extra'
     if (buttonsConfig) {
       const orgSlot = slots[slotName]
       const buttonsSlot = createButtons({
@@ -303,24 +305,17 @@ export default defineComponent({
     }
     const render = () => {
       const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, ...tableAttrs } = attrs
-      // 高度策略由 SuperTable 计算为 scroll，不把模式字符串透传成原生 maxHeight。
-      const {
-        maxHeight: _maxHeight,
-        fixedHeight: _fixedHeight,
-        heightOffset: _heightOffset,
-        ...tableDefaults
-      } = globalProps.Table || {}
       return [
         ...modalSlot.map((slot) => slot()),
         (context.wrapTable || ((render) => render()))(() =>
           getUIRender('table')(
             {
-              ...tableDefaults,
+              tableLayout: 'fixed',
+              pagination: false,
+              ...globalProps.Table,
               ref: tableRef,
               data: list.value,
               columns: reactive(columns),
-              tableLayout: 'fixed',
-              pagination: false,
               ...tableAttrs,
               selection: rowSelection && {
                 ...rowSelection,

@@ -36208,6 +36208,7 @@ export {
   v6 as defaults,
   rn as get,
   Hn as isArray,
+  Gt as isEqual,
   xu as isFunction,
   h6 as isNumber,
   Lu as isPlainObject,

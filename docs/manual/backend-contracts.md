@@ -32,20 +32,28 @@ apis: {
 ### 三种适配位置
 
 ```ts
-// 1. 当前表格 afterQuery
-afterQuery: (result) => ({
-  current: result.pageNum,
-  size: result.pageSize,
-  total: result.totalCount,
-  records: result.list,
-})
-
-// 2. 全局 tableApiSetting
-tableApiSetting: {
-  currentField: 'pageNum',
-  sizeField: 'pageSize',
-  resultTransform: (result) => result.data,
+// 1. 当前表格 attrs
+const tableOption = {
+  attrs: {
+    pageTransform: ({ current, size }) => ({ pageNum: current, pageSize: size }),
+    resultTransform: (response) => ({
+      current: response.data.pageNum,
+      size: response.data.pageSize,
+      total: response.data.totalCount,
+      records: response.data.list,
+    }),
+  },
 }
+
+// 2. 全局 SuperTable 默认属性
+superform.configure({
+  defaultProps: {
+    SuperTable: {
+      pageTransform: ({ current, size }) => ({ pageNum: current, pageSize: size }),
+      resultTransform: (response) => response.data,
+    },
+  },
+})
 
 // 3. API 层直接返回标准结构
 async function pageUsers(params, options) {
@@ -54,13 +62,15 @@ async function pageUsers(params, options) {
 }
 ```
 
-同一后端规范优先全局或 API 层；只有单接口特殊时使用 `beforeQuery` / `afterQuery`。
+同一后端规范使用全局默认值或 API 层转换，单接口差异在当前表格 `attrs` 中覆盖。响应先经过 `attrs.resultTransform` 统一结构，再交给根级 `afterQuery` 处理业务，最后进行分页处理及数据回写。未配置结果转换器时直接将接口结果传给 `afterQuery`；`afterQuery` 返回 `void` 时沿用收到的结果。
 
 新请求会中止前一次请求，务必把 `signal` 传给 fetch/Axios，并在统一错误提示中忽略 AbortError。
 
 ## 查询参数合并顺序 {#查询参数优先级}
 
-参数合并顺序、`beforeQuery` 与临时参数边界见[SuperTable：查询参数与转换](/manual/super-table#查询参数与转换)。导出时使用 `getQueryParams()`，并自行补充分页或导出专属参数。
+参数合并顺序、`beforeQuery` 与临时参数边界见[SuperTable：查询参数与转换](/manual/super-table#查询参数与转换)。列筛选排序通过 `attrs.filterSortTransform` 转成接口条件，默认关闭；分页转换独立使用 `attrs.pageTransform`。
+
+导出时使用 `getQueryParams()`，取得当前搜索、tabs、动态参数和保存的筛选排序转换结果的副本。它不包含分页、单次查询的临时参数及 `beforeQuery` 加工，无需重新执行转换器；导出专属参数由业务补充。可运行示例见[筛选排序与接口转换](/examples?example=table-query-transform)。
 
 ## CRUD 接口适配 {#tableapis-crud}
 

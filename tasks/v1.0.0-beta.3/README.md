@@ -2,7 +2,7 @@
 
 开始日期：2026-09-24。状态：进行中。
 
-README 仅保留阶段状态及专题索引；实施与验证结果按需查阅专题，后续操作见 [Checklist](./CHECKLIST.md)。正式文档已于 2026-09-28 按当前源码同步，高度配置说明于 2026-09-29 更新；阶段仍进行中，人工验证待办保留。
+README 仅保留阶段状态及专题索引；实施与验证结果按需查阅专题，后续操作见 [Checklist](./CHECKLIST.md)。正式文档已于 2026-09-28 按当前源码同步，高度配置说明于 2026-09-29 更新，文档站表格查询说明与演示于 2026-10-10 同步；阶段仍进行中，人工验证待办保留。
 
 - [Element Plus 查询及简化表单间距](./element-form-item-margin.md)
 - [Buttons 协议与默认配置](./buttons.md)
@@ -10,5 +10,8 @@ README 仅保留阶段状态及专题索引；实施与验证结果按需查阅�
 - [Element Plus 的 `span: 'auto'`](./element-auto-span.md)
 - [Form `ignoreRules`](./ignore-rules.md)
 - [表格行编辑](./table-inline.md)
+- [表格查询、统一事件与全局配置](./table-query.md)
+- [数据源入口、分区样式与表格详情配置](./data-source-detail-option.md)
 - [上传组件](./upload.md)
 - [语言包](./locale.md)
+- [类型冗余与废弃 API 清理](./type-cleanup.md)

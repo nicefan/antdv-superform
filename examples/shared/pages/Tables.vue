@@ -3,7 +3,7 @@
     <h2>成员管理</h2>
     <p class="demo-status"><a href="#table-scroll">表格高度示例：自动计算页面高度 / 填充父元素高度 / 指定最大高度</a></p>
     <div class="demo-guide">
-      搜索姓名或选择状态分类，查询结果与分页一起更新。勾选行后可批量删除；行内编辑可切换多行或单行，另有弹窗与整表编辑。全部请求由内存数据模拟，结果可在观察窗追踪。
+      搜索姓名或选择状态分类，查询结果与分页一起更新。勾选行后可批量删除；行内编辑可切换多行或单行，另有弹窗与整表编辑。详情使用独立字段配置，展示成员资料并省略列表 ID。全部请求由内存数据模拟，结果可在观察窗追踪。
     </div>
     <div class="demo-actions">
       <label class="demo-control-label"
@@ -188,17 +188,24 @@ const columns: RootTableOption['columns'] = [
 const schema = computed<RootTableOption>(() => ({
   title: '成员列表',
   columns,
+  detailOption: {
+    title: '成员资料',
+    mode: 'table',
+    attrs: { column: 2 },
+    subItems: columns.filter((item) => item.field !== 'id'),
+    modalProps: { width: 720 },
+  },
   dataSource: remote.value ? undefined : rows,
   editable: mode.value === 'all',
   params: reactive({ onlyEnabled }),
-  pagination: {
-    pageSize: 5,
-    onChange: (current) => {
-      page.value = current
-      event('分页变化', current)
-    },
-  },
   attrs: {
+    pagination: {
+      pageSize: 5,
+      onChange: (current) => {
+        page.value = current
+        event('分页变化', current)
+      },
+    },
     rowKey: 'id',
     rowSelection: { onChange: (keys) => event('选择变化', keys) },
     border: true,

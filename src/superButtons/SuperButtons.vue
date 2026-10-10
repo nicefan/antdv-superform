@@ -12,8 +12,6 @@ const SuperButtons: Component = defineComponent({
     attrs: Object as PropType<ExtButtonGroup['attrs']>,
     methods: Object as PropType<ExtButtonGroup['methods']>,
     visibleIn: String as PropType<ExtButtonGroup['visibleIn']>,
-    validOn: String as PropType<ExtButtonGroup['validOn']>,
-    roleMode: String as PropType<ExtButtonGroup['roleMode']>,
     limit: Number,
     buttonProps: Object as PropType<ExtButtonGroup['buttonProps']>,
     /** 按钮显示方式icon/label */
@@ -21,8 +19,6 @@ const SuperButtons: Component = defineComponent({
     hidden: [Boolean, Function] as PropType<boolean | Fn<boolean>>,
     /** 无权限时的展示方式，默认隐藏 */
     unauthorized: String as PropType<'hide' | 'disable'>,
-    /** @deprecated 使用 `unauthorized: 'disable'` */
-    invalidDisabled: Boolean,
     disabled: [Boolean, Function] as PropType<boolean | Fn<boolean>>,
     actions: Array as PropType<ExtButtonGroup['actions']>,
     effectData: Object,

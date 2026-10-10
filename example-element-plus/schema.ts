@@ -26,7 +26,7 @@ export const probe = {
 }
 
 export const elementPlusSchema: ExtFormOption = {
-  isContainer: true,
+  useSectionStyle: true,
   subSpan: 12,
   subItems: [
     {

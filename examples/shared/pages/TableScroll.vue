@@ -117,8 +117,8 @@ const { isElement } = useDemo(() => ({
 const baseSchema = computed<RootTableOption>(() => ({
   dataSource,
   immediate: false,
-  pagination: { pageSize: 20 },
   attrs: {
+    pagination: { pageSize: 20 },
     rowKey: 'id',
     showHeader: showHeader.value,
     scroll: { x: 1800, scrollToFirstRowOnChange: false },

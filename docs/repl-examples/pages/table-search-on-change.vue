@@ -8,8 +8,7 @@ import { SuperTable, useTable } from 'superform-antdv'
 import { departmentNameOptions, mockApis, statusOptions } from './mock'
 
 const [register] = useTable({
-  pagination: false,
-  attrs: { rowKey: 'id' },
+  attrs: { rowKey: 'id', pagination: false },
   apis: { query: mockApis.users.list },
   searchForm: {
     searchOnChange: true,

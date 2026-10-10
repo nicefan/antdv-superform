@@ -64,6 +64,8 @@ attrs: {
 
 `rowSelection` 传 `{}` 开启选择，传 `false` 或省略关闭。`defaultExpandLevel` 为数字或 `'all'`。其他 attrs 继承 Ant Design Vue TableProps。
 
+两套 UI 的分页、列筛选和排序通过 `attrs.onTableChange(change)` 统一通知业务，根 Schema 回调为 `onTableChange(effectData, change)`；原生事件仍保留各 UI 的签名。表单内 Table 的本地筛选排序使用原生列配置；需要远程查询及条件转换时使用 [SuperTable](/manual/super-table#筛选排序与统一事件)。
+
 ## 序号与按钮
 
 ```ts
@@ -118,24 +120,34 @@ rowEditor: {
 
 默认允许多行同时编辑或新增，各行可独立保存或取消，请提供稳定且唯一的 rowKey。`rowEditor.singleEdit: true` 限制为单行编辑。
 
-## modalProps 与 descriptionsProps
+## modalProps 与 detailOption {#详情配置}
+
+`detailOption` 的类型为 `ExtDescriptionsOption & { modalProps?: ExtModalProps }`，用于配置完整的详情 Schema。未配置时复用表格列；配置后 `subItems` 必填，字段范围和布局可与列表列独立设置。
 
 ```ts
 {
   rowEditor: {
     modalProps: { width: 800 },
   },
-  // 表格级编辑弹窗的公共属性
+  // 表格级编辑与详情弹窗的公共属性
   modalProps: { centered: true },
   // 详情布局以及详情弹窗
-  descriptionsProps: {
+  detailOption: {
+    title: '商品资料',
     mode: 'table',
+    attrs: { column: 1 },
+    subItems: [
+      { type: 'Text', field: 'product', label: '商品' },
+      { type: 'InputNumber', field: 'quantity', label: '数量' },
+    ],
     modalProps: { width: 900 },
   },
 }
 ```
 
-新代码优先把编辑弹窗属性放在 `rowEditor.modalProps`。
+编辑弹窗的专项属性放在 `rowEditor.modalProps`；详情弹窗属性放在 `detailOption.modalProps`，覆盖表格级 `modalProps`。详情根级 `mode` 可被 `attrs.mode` 覆盖，其他外观属性写在 `attrs` 中。
+
+详情读取当前行，配置 `apis.info` 时合并接口返回值，其优先级高于 `detailOption.dataSource`。通过 `rowButtons: { actions: ['detail'] }` 提供每行的详情入口；完整根配置见 [SuperDetail](/manual/super-detail#根配置)。字段、分组和其他列表容器的 `descriptionsProps` 控制对应位置的展示外观。
 
 ## tabs 表格标签
 

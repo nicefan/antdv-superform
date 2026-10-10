@@ -16,7 +16,7 @@ const source = ref({})
 const { options, changeSelect } = useOption()
 const [detailRegister, { setData }] = useDetail(async () => {
   return { 
-    isContainer: true,
+    useSectionStyle: true,
     // dataSource: source, 
     ...options }
 })

@@ -69,7 +69,7 @@
       {
         "id": "table-local",
         "title": "Table 数组表格",
-        "description": "表单内的本地数组、列渲染和整表编辑。",
+        "description": "表单内的本地数组、整表编辑，以及 detailOption 独立详情字段与弹窗。",
         "file": "containers/table-local.vue"
       }
     ]
@@ -124,6 +124,13 @@
         "file": "pages/table-query.vue"
       },
       {
+        "id": "table-query-transform",
+        "title": "筛选排序与接口转换",
+        "level": "进阶",
+        "description": "统一表格事件、保存筛选排序条件、分页及响应转换和导出参数。",
+        "file": "pages/table-query-transform.vue"
+      },
+      {
         "id": "table-search-on-change",
         "title": "查询条件即时生效",
         "level": "进阶",
@@ -147,7 +154,7 @@
       {
         "id": "detail",
         "title": "SuperDetail",
-        "description": "选项映射、范围和自定义只读展示。",
+        "description": "useDetail 的 dataSource、Ref 替换、setData 切换与分区样式。",
         "file": "pages/detail.vue"
       },
       {

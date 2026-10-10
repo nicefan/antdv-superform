@@ -7,8 +7,12 @@ import {
 } from "./components";
 import { initializeUIAdapter, type UIAdapter } from "./adapter";
 import { globalConfig, type GlobalConfig } from "./config";
+import type { SuperTableDefaultProps } from "./exaTypes";
 
-export type AdapterDefaultProps = Record<string, Obj | undefined>;
+export type AdapterDefaultProps = Record<string, Obj | undefined> & {
+  /** 独立表格的扁平默认属性，与 RootTableOption.attrs 的范围一致。 */
+  SuperTable?: SuperTableDefaultProps;
+};
 
 export interface SuperFormConfig extends GlobalConfig {
   /** 组件默认参数 */
@@ -60,7 +64,7 @@ export function registerComponents(
 }
 
 /** 合并组件默认参数。 */
-export function setDefaultProps(props: Obj) {
+export function setDefaultProps(props: AdapterDefaultProps) {
   merge(globalProps, props);
 }
 

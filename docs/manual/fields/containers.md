@@ -166,7 +166,7 @@ Descriptions 在其他 Schema 中嵌入只读信息；独立详情页面优先 S
   title: '审批信息',
   dataSource: approvalRecord,
   mode: 'table',
-  isContainer: false,
+  useSectionStyle: false,
   attrs: {
     bordered: true,
     column: 2,
@@ -189,7 +189,7 @@ Descriptions 在其他 Schema 中嵌入只读信息；独立详情页面优先 S
 | `buttons`     | array/object    | —           | 详情操作按钮                              |
 | `mode`        | string          | `'default'` | `default`、`table`、`form`                |
 | `attrs`       | object          | `{}`        | ExtDescriptionsProps 与 DescriptionsProps |
-| `isContainer` | boolean         | `false`     | 是否使用页面容器样式                      |
+| `useSectionStyle` | boolean     | `false`     | 是否使用分区背景、内边距和间距            |
 | `subItems`    | array           | 必填        | 详情字段                                  |
 | `subSpan`     | number/string   | `12`        | 详情项默认栅格                            |
 | `gutter`      | number          | `16`        | 详情栅格间距                              |

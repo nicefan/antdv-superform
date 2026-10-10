@@ -12,7 +12,7 @@ export default defineComponent({
     schema: Object as PropType<ExtFormOption>,
     model: Object as PropType<Obj>,
     dataSource: Object as PropType<Obj>,
-    isContainer: Boolean,
+    useSectionStyle: Boolean,
     compact: { type: Boolean, default: undefined },
     ignoreRules: { type: Boolean, default: undefined },
   },
@@ -38,7 +38,6 @@ export default defineComponent({
     }
 
     provide('rootSlots', ctx.slots)
-    // watchEffect(() => actions.setData(props.model))
 
     ctx.emit('register', actions)
     const register = (compRef) => {
@@ -59,7 +58,7 @@ export default defineComponent({
     //   </>
     // )
 
-    const isContainer = computed(() => props.isContainer || formOption.isContainer)
+    const useSectionStyle = computed(() => props.useSectionStyle || formOption.useSectionStyle)
     const formNode = () =>
       formOption.subItems &&
       h(
@@ -70,7 +69,7 @@ export default defineComponent({
           onRegister: register,
           compact: props.compact,
           ignoreRules: props.ignoreRules,
-          class: { 'sup-container': isContainer.value },
+          class: { 'sup-container': useSectionStyle.value },
         },
         useInnerSlots(formOption.slots, getEffectData(), ctx.slots)
       )

@@ -22,17 +22,20 @@ SuperDetail 使用与表单、表格相同的字段 Schema 渲染只读详情。
 <script setup lang="ts">
 import { SuperDetail, useDetail } from "superform-antdv";
 
-const [register, detail] = useDetail(detailSchema, initialData);
+const [register, detail] = useDetail({
+  ...detailSchema,
+  dataSource: initialData,
+});
 detail.setData(record);
 </script>
 ```
 
-Schema 可以是对象、函数或 Promise；需要在同一详情实例中切换记录时使用 `setData()`。
+`useDetail(option)` 接收 Schema 对象、返回 Schema 的同步函数或异步函数。初始数据通过 Schema 的 `dataSource` 提供，可以是对象或 Ref；需要在同一详情实例中切换记录时使用 `setData()`。
 
 ## 切换详情数据 {#当前数据更新}
 
 ```ts
-const [register, detail] = useDetail(schema, firstRecord);
+const [register, detail] = useDetail({ ...schema, dataSource: firstRecord });
 
 // 之后切换记录
 detail.setData(nextRecord);
@@ -76,9 +79,11 @@ const detailSchema = defineDetail({
 | `gutter`      | number          | `16`        | 栅格间距                    |
 | `rowProps`    | object          | `{}`        | Row 属性                    |
 | `buttons`     | array/object    | —           | 详情操作按钮                |
-| `isContainer` | boolean         | `false`     | 页面容器样式                |
+| `useSectionStyle` | boolean     | `false`     | 分区背景、内边距和间距      |
 
 字段可以省略 `type`，此时直接展示值。使用 `exclude: ['description']` 排除详情字段。
+
+`useSectionStyle` 开启后在详情根节点增加 `.sup-container`，适合独立详情页。嵌入已有面板或弹窗时通常保持 `false`。
 
 ## mode：详情布局 {#三种布局模式}
 
@@ -104,6 +109,8 @@ const detailSchema = defineDetail({
 ```
 
 ## 详情外观配置 {#extdescriptionsprops-细节}
+
+根级 `mode` 设置默认展示模式，`attrs.mode` 可覆盖；其他根级详情外观写在 `attrs` 中。
 
 | 属性          | 类型          | 默认值      | 说明                                |
 | ------------- | ------------- | ----------- | ----------------------------------- |

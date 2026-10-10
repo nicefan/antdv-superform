@@ -10,7 +10,7 @@ export const getTableOption = () => {
   ]
   const activeKey = ref('text')
   const type = ref()
-  return defineTable({
+  const option = defineTable({
     attrs: {
       // bordered: true,
       rowKey: 'id',
@@ -34,7 +34,6 @@ export const getTableOption = () => {
       },
     },
 
-    descriptionsProps: { column: 1, size: 'default', mode: 'table' },
     searchForm: {
       attrs: {
         wrapperCol: { style: 'width:100px' },
@@ -167,7 +166,7 @@ export const getTableOption = () => {
             download: () => new Promise((resolve, reject) => setTimeout(reject, 2000)),
           },
         },
-        // hideInDescription: true,
+        // exclude: ['description'],
         field: 'files',
         label: '附件',
         //  vModelFields: {fileList: 'files'}
@@ -184,4 +183,9 @@ export const getTableOption = () => {
       },
     ],
   })
+  option.detailOption = {
+    subItems: option.columns,
+    attrs: { column: 1, size: 'default', mode: 'table' },
+  }
+  return option
 }

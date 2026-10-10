@@ -8,7 +8,7 @@
 - 公共 API 从项目选定的 `superform-antdv` 或 `superform-element-plus` 根入口导入。公开子路径仅按用途使用 `/components`、`/unplugin`；不导入源码或 `dist/*`。下文示例使用 AntDV 产品包。
 - 应用挂载前调用一次 `initialize()`；全局行为用 `configure()`，UI 默认属性用 `defaultProps` / `setDefaultProps()`。
 - Adapter 字段通过 Vite 插件或 `initialize({ components })` 提供；业务字段通过 `registerComponent(s)` 注册。字段名称取当前 Adapter 或项目注册名，不猜别名。
-- `attrs` 放所选 UI 框架的属性；`field/rules/params/searchForm/rowEditor` 等业务配置放 Schema 对应层级。
+- `attrs` 放所选 UI 框架的属性；SuperTable 的分页及查询转换器也放在 `attrs`。`field/rules/params/searchForm/rowEditor` 等业务配置放 Schema 对应层级。
 - 只配置需求涉及的能力。省略空对象、空数组、`undefined` 和未改变的默认值；项目覆盖优先于下文库默认值。
 
 ## 按需读取
@@ -21,7 +21,7 @@
 | field、联动、effectData、布局、rules、插槽 | [Schema](#schema) |
 | 表单、提交、回填、重置 | [SuperForm / useForm](#form) |
 | options、字典、远程搜索、日期范围 | [选项与值映射](#options) |
-| 查询、分页、CRUD、选择、行编辑 | [SuperTable / useTable](#table) |
+| 查询、分页、筛选排序、接口转换、导出条件、CRUD、行编辑 | [SuperTable / useTable](#table) |
 | actions、图标、权限 | [按钮](#buttons) |
 | 详情、动态配置 | [SuperDetail / useDetail](#detail) |
 | 弹窗、确认提交 | [弹窗](#modal) |
@@ -52,8 +52,11 @@ Vite 使用对应产品的 `/unplugin` 默认导出，配置 `{ dirs: ['src'], e
 | 按钮 | `SuperButtons, useButtons` |
 | 诊断 | `diagnoseSchema` |
 | 常用类型 | `UniOption, ExtFormOption, RootTableOption, ExtColumnsItem, ExtDescriptionsOption, ButtonItem, ExtButtons` |
+| 表格配置与事件类型 | `SuperTableDefaultProps, UITableSorter, UITableParams, UITableChange` |
 
-`configure()` 常用项：`dictApi(name)` 返回标准 `{ label, value }[]`（可异步）；`buttonRoles()` 返回权限字符串数组；`defaultButtons` 配置动作；`tagViewer` 配置只读颜色；`tableApiSetting` 映射请求与响应字段；`defaultProps` 按组件名配置 UI 默认属性。
+`configure()` 常用项：`dictApi(name)` 返回标准 `{ label, value }[]`（可异步）；`buttonRoles()` 返回权限字符串数组；`defaultButtons` 配置动作；`tagViewer` 配置只读颜色；`defaultProps` 按组件名配置默认属性。
+
+`defaultProps.SuperTable` 使用与 `RootTableOption['attrs']` 一致的扁平属性，不嵌套 `attrs`；分页、查询转换器及高度默认值放在这里，查询接口、搜索与编辑配置、beforeQuery/afterQuery 由单表提供。属性按全局 SuperTable 默认值 → Schema.attrs → 组件传入属性覆盖。`defaultProps.Table` 是共享表格主体的基础默认值，原生属性可被 SuperTable 默认值和局部配置覆盖；它的 pagination 不控制 SuperTable 分页。
 
 <a id="schema"></a>
 
@@ -180,17 +183,45 @@ await table.query()
 ```
 
 查询契约：
-- 默认启用分页（current=1、pageSize=10），关闭用 `pagination: false`；`immediate: false` 放 Schema 顶层以关闭首次查询。
-- 请求覆盖顺序：分页 → searchForm → params → query 临时参数。默认分页请求字段为 current/size，全局 tableApiSetting 可改名。
-- params 支持响应式值，变化后自动回第一页查询。与搜索字段 value 共用 Ref 时，不再额外手动查询。
-- beforeQuery 转换参数；afterQuery 或全局 resultTransform 将响应转为数组或 `{ current, size, total, records }`。
-- `apis.query(params, { signal })` 可接收取消信号；过期响应不会覆盖最新数据。
+
+- 分页只配置在 `attrs.pagination`，默认 current=1、pageSize=10，`false` 关闭分页及分页请求字段；`immediate: false` 放 Schema 顶层以关闭首次查询。
+- 分页对象按 `defaultProps.SuperTable.pagination → Schema.attrs.pagination → 组件传入 pagination` 逐层合并，局部仅传回调时保留页大小；高优先级 false 关闭，之后的显式对象可重新开启。
+- 请求覆盖顺序：分页转换结果 → searchForm → tabs → 动态 params → 已保存的筛选排序条件 → query 临时参数 → beforeQuery。各条件来源独立替换，清空或删除不残留旧字段。
+- `attrs.pageTransform({ current, size })` 转换请求分页字段；未配置时使用标准 current/size，false 覆盖全局转换器并恢复标准字段。UI 分页仍使用 current/pageSize。
+- params 支持响应式值，变化后自动回第一页查询。与搜索字段 value 共用 Ref 时，不再额外手动查询。自动查询使用约 300ms 尾部节流，显式 query/reload/goPage 立即执行并取消待执行的自动查询。
+- 根级 beforeQuery 加工请求参数，不返回值时沿用传入参数。响应顺序为 `apis.query → attrs.resultTransform → 根级 afterQuery → 分页处理与数据回写`；resultTransform 将响应转成数组或 `{ current, size, total, records }`，afterQuery 处理单表业务，返回 void 时沿用转换结果。
+- 分页和远程筛选排序由统一 onTableChange 驱动查询；pagination.onChange(current, pageSize) / onShowSizeChange(current, pageSize) 只通知业务，不再手动调用 query/reload。每页条数变更回第一页，末页失效时补查最后一页。
+- `apis.query(params, { signal })` 可接收取消信号；取消及过期响应不会覆盖最新数据。远程翻页等待响应时旧记录保留原索引，新数据回写后同步换号；失败及取消不提前改号，本地分页即时更新。
 - searchForm.subItems 可引用列字段名；不同查询配置写完整项。searchOnChange=true 自动查询，否则默认 search/reset 按钮；limit 折叠搜索项，teleport 指定目标。
+
+筛选排序与事件：
+
+- `attrs.filterSortTransform` 只支持 false 或函数，默认关闭，不自动传递列条件或因此发起远程查询；未配置时继承全局默认，局部 false 显式关闭。
+- 函数接收远程状态副本 `UITableParams`：filters 为 `Record<string, unknown[]>`，sorters 为 `{ field, order: 'asc' | 'desc' }[]`；嵌套字段使用点分路径，空筛选和取消排序移除对应项。
+- 转换结果固定保存，查询与 getQueryParams 共用；翻页、刷新和 getter 不重复转换相同状态。返回 void 时保存本次输入副本。有效远程条件变化后回第一页查询。
+- AntDV 远程列用 columnProps.sorter=true，筛选不提供 onFilter；Element Plus 远程排序用 sortable='custom'，筛选不提供 filterMethod。本地比较或筛选函数由原生 UI 执行，其条件不进入后续远程请求；AntDV 保留多列排序，Element Plus 保留单列排序。
+- 根 Schema 回调为 `onTableChange(effectData, change)`，attrs 及全局默认回调为 `onTableChange(change)`。UITableChange 携带 action（filter/sort/paginate）、完整 filters/sorters、标准分页 current/pageSize/total；remote 标记远程处理，remoteParams 仅包含远程状态。回调内不额外发起查询，原生事件保留各 UI 的签名。
+
+接口需要映射时才配置转换器；下例放在单表 attrs 中，应用级默认值使用 `defaultProps.SuperTable` 的同名扁平属性：
+
+```ts
+attrs: {
+  pagination: { pageSize: 20 },
+  filterSortTransform: ({ filters, sorters }) => ({ where: filters, orderBy: sorters }),
+  pageTransform: ({ current, size }) => ({ pageNum: current, pageSize: size }),
+  resultTransform: (response) => ({
+    current: response.data.pageNum,
+    size: response.data.pageSize,
+    total: response.data.totalCount,
+    records: response.data.list,
+  }),
+}
+```
 
 | 动作 | 语义 |
 | --- | --- |
 | `query(params?), reload(), goPage(page)` | 回第一页 / 保留页码 / 跳页；等待注册，返回请求 Promise |
-| `getQueryParams()` | 仅搜索参数 + 动态 params，无分页与上次临时参数 |
+| `getQueryParams()` | 当前搜索、tabs、动态 params 及保存的筛选排序条件的合并副本；不含分页、本次临时参数或 beforeQuery 加工 |
 | `resetSearchForm(data?), setColumns(cols)` | 重置查询 / 更新列 |
 | `setData(rows), getData(), dataSource` | 本地数据；也可 useTable(option, dataRef) |
 | `setSelectedRows(rows), setExpandedRowKeys(keys), expandAll()` | 选择与展开 |
@@ -199,7 +230,9 @@ await table.query()
 
 稳定主键放 attrs.rowKey（默认 id）；选择用 attrs.rowSelection={}，不用 true。已有明确动作时不使用 asyncCall。
 
-高度配置写在 Schema 根级：maxHeight 为数字时限制内容滚动区域高度（不含表头和分页），为 'viewport' / 'parent' 时按对应剩余空间计算。未配置时自然布局，无默认高度模式；fixedHeight: true 配合 maxHeight 保留固定高度，heightOffset 仅对 'viewport' / 'parent' 额外扣减。固定高度和偏移单独配置不启用高度约束。
+导出当前条件直接使用 `api.export(table.getQueryParams())`，不要重新执行转换器或 beforeQuery；修改 getter 返回副本不影响后续查询。SuperTable 的 effectData.queryParams 与该 getter 的条件一致。
+
+高度配置可写在 Schema 根级或 attrs，根级优先，应用级默认值写在 defaultProps.SuperTable：maxHeight 为数字时限制内容滚动区域高度（不含表头和分页），为 'viewport' / 'parent' 时按对应剩余空间计算。未配置时自然布局，无默认高度模式；fixedHeight: true 配合 maxHeight 保留固定高度，heightOffset 仅对 'viewport' / 'parent' 额外扣减。固定高度和偏移单独配置不启用高度约束。
 
 | 编辑方式 | 配置 |
 | --- | --- |

@@ -66,12 +66,13 @@ export default defineComponent({
       modelsMap.value &&
       h(
         'div',
-        { class: ['sup-detail', option.value.isContainer && 'sup-container'] },
+        { class: ['sup-detail', option.value.useSectionStyle && 'sup-container'] },
         h(DetailLayout, {
           option: {
             type: 'Descriptions',
             ...option.value,
           } as any,
+          mode: option.value.mode,
           ...option.value.attrs,
           ...option.value.descriptionsProps,
           modelsMap: modelsMap.value,

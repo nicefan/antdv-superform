@@ -27,7 +27,7 @@ export default defineComponent({
     return () => {
       // 保持现有插槽参数为 VNode 数组，紧凑布局的消费者仍能直接取得字段节点。
       if (slots.default) return slots.default({ nodes: layout.renderNodes().filter(Boolean) })
-      return props.option.isContainer && layout.hasWrap
+      return props.option.useSectionStyle && layout.hasWrap
         ? h(
             Controls.Group,
             {

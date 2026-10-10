@@ -35,7 +35,6 @@ export function createAntdvFields(): NonNullable<UIAdapter['fields']> {
     TimeRangePicker: { defaults: { placeholder: undefined, valueFormat: 'HH:mm:ss' } },
     TreeSelect: {
       processors: ['tree'],
-      defaults: { allowClear: true },
       render: ({ slots, ...context }) => h(TreeSelectField, context, slots),
     },
     Switch: {

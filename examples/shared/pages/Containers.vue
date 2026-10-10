@@ -5,10 +5,12 @@
     <div class="demo-actions">
       <label class="demo-control-label"
         ><input class="demo-control-input" v-model="viewOnly" type="checkbox" />查看模式</label
+      ><label class="demo-control-label"
+        ><input class="demo-control-input" v-model="useSectionStyle" type="checkbox" />分区样式</label
       ><button class="demo-control" @click="run('容器校验', () => form?.submit())" :disabled="viewOnly">校验</button>
     </div>
     <SuperDetail v-if="viewOnly" :schema="detailSchema" :data-source="model" />
-    <SuperForm v-else :schema="schema" @register="register" />
+    <SuperForm v-else :schema="schema" :use-section-style="useSectionStyle" @register="register" />
     <p role="status" class="demo-status">{{ status }}</p>
     <Teleport to="#demo-test-content"
       ><div class="dev-tools">
@@ -34,6 +36,7 @@ import { SuperForm, SuperDetail, type ExtFormOption } from '@demo/product'
 import { useDemo } from '../context'
 
 const viewOnly = ref(false)
+const useSectionStyle = ref(false)
 const hideAdvanced = ref(false),
   disableAdvanced = ref(false)
 const activeTab = ref('basic'),
@@ -116,5 +119,9 @@ const schema = computed((): ExtFormOption => ({
     },
   ],
 }))
-const detailSchema = computed(() => ({ subItems: schema.value.subItems, subSpan: schema.value.subSpan }))
+const detailSchema = computed(() => ({
+  subItems: schema.value.subItems,
+  subSpan: schema.value.subSpan,
+  useSectionStyle: useSectionStyle.value,
+}))
 </script>

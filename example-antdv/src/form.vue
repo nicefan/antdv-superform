@@ -36,7 +36,7 @@ const dateChange = (...args) => {
 }
 const { options, changeSelect } = useOption()
 const dataSource = reactive({a:'a'})
-const [formRegister, form] = useForm({ isContainer: true, dataSource, ...options })
+const [formRegister, form] = useForm({ useSectionStyle: true, dataSource, ...options })
 // const sourceData = form.getSource()
 
 const submit = () => {

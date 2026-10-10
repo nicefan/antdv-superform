@@ -8,7 +8,7 @@ import { omit } from 'lodash-es'
 
 export function useSearchForm(tableOption: RootTableOption, tableRef, onChange) {
   const { columns, searchForm } = tableOption
-  const schema = (searchForm || tableOption.searchSchema || {}) as NonNullable<RootTableOption['searchForm']>
+  const schema = (searchForm || {}) as NonNullable<RootTableOption['searchForm']>
   const formRef = ref()
   const dataSource: Obj = schema.dataSource || reactive({})
 

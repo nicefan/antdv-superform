@@ -22,14 +22,11 @@ export function useButtonState(
   const status = (value: any) => computed(() => !!(typeof value === 'function' ? value(param) : toValue(value)))
   const groupHidden = status(hidden)
   const groupDisabled = status(disabled)
-  const unauthorized = (item: Pick<ExtButtonGroup, 'unauthorized' | 'invalidDisabled' | 'roleMode'>) =>
-    item.unauthorized ??
-    (item.invalidDisabled ? 'disable' : item.roleMode === 'disable' ? 'disable' : item.roleMode && 'hide')
   const roles = globalConfig.buttonRoles?.()
   const allButtons = mergeActions(actions, methods || config.methods, defaultAttrs).flatMap((item, index) => {
     const denied = roles && item.roleName && !roles.includes(item.roleName)
-    const roleMode = unauthorized(item) ?? unauthorized(config) ?? 'hide'
-    if (denied && roleMode === 'hide') return []
+    const unauthorized = item.unauthorized ?? config.unauthorized ?? 'hide'
+    if (denied && unauthorized === 'hide') return []
     const itemHidden = status(item.hidden)
     const itemDisabled = item.disabled === undefined ? groupDisabled : status(item.disabled)
     const nativeAttrs: Obj = item.attrs || {}

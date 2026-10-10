@@ -1,25 +1,18 @@
 /// <reference types="../types" />
 
 /* eslint-disable no-use-before-define */
-import Vue from 'vue'
+import type { Component, CSSProperties, DeepReadonly, HTMLAttributes, VNode, VNodeTypes, Ref } from 'vue'
 
-import type { Component, CSSProperties, HTMLAttributes, VNode, VNodeChild, VNodeTypes, Ref } from 'vue'
+import type { RuleConfig } from './utils/buildRule'
+import type { UIUploadFile, UITableChange, UITableParams } from './adapter/types'
 
-import { RuleConfig } from './utils/buildRule'
-import type { UIUploadFile } from './adapter/types'
-
-// type Readonly<T = any> = Vue.DeepReadonly<T>
 type VSlot = string | Fn
 type IconNode = VNode | Component | VSlot
-
-interface HelpMessage {
-  color: 'success' | 'info' | 'warning' | 'error'
-}
 
 type EffectData =
   | (Obj & {
       /**整个表单数据 */
-      formData: Vue.DeepReadonly<Obj>
+      formData: DeepReadonly<Obj>
       /**当前属性所在对象 */
       current: Obj
       /** 上一级数据 */
@@ -168,7 +161,6 @@ interface ExtBaseOption {
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>
   tooltip?: VSlot | (UIActionProps<'Tooltip'> & { title: VSlot; icon?: IconNode })
-  // help?: HelpMessage
   /** 校验规则，指定value而没指定field时无效 */
   rules?: RuleConfig | RuleConfig[]
   required?: boolean | Fn<boolean>
@@ -178,31 +170,16 @@ interface ExtBaseOption {
   hidden?: boolean | ((data: Readonly<Obj>) => boolean)
   /** 排除指定场景 */
   exclude?: ('table' | 'form' | 'description')[]
-  /**@deprecated 改用`exclude: ['form']`*/
-  hideInForm?: boolean
-  /**@deprecated 改用`exclude: ['description']`*/
-  hideInDescription?: boolean
   /** 是否禁用，提供一个监听方法，根据数据变化自动切换 */
   disabled?: boolean | Fn
   on?: Obj<Fn>
-  // row?: boolean
   colProps?: LayoutColProps & UIContainerProps<'Col'>
   /** 快捷实现col span */
   span?: number | 'auto'
   /** 当前节点脱离前后栅格组，独立成块；分组元素默认为 true */
   block?: boolean
-  /**
-   * 是否为独立块
-   * @deprecated 使用 `block`
-   */
-  blocked?: boolean
   /** 当前节点后换行 */
   breakAfter?: boolean
-  /**
-   * 是否在当前节点后换行
-   * @deprecated 使用 `breakAfter`
-   */
-  wrapping?: boolean
   align?: 'left' | 'right' | 'center'
   slots?: Obj<VSlot>
   viewRender?: VSlot
@@ -259,22 +236,20 @@ interface ExtDescriptionsOption extends Omit<ExtBaseOption, 'type'>, ExtRow {
   buttons?: ExtButtons
   mode?: 'table' | 'form' | 'default'
   attrs?: ExtDescriptionsProps
-  isContainer?: boolean
+  useSectionStyle?: boolean
   subItems: (UniOption | Omit<ExtFormItemOption, 'type'>)[]
 }
 
 interface ExtFormOption extends Omit<ExtGroupBaseOption, 'type'> {
-  // type?: 'Form'
   dataSource?: Obj
   attrs?: FormSchemaProps & UIContainerProps<'Form'>
-  isContainer?: boolean
+  useSectionStyle?: boolean
   /** 减少行距 */
   compact?: boolean
   /** 不做校验 */
   ignoreRules?: boolean
   subItems: UniOption[]
   buttons?: ExtButtons<'submit' | 'reset' | 'search'>
-  descriptionsProps?: ExtDescriptionsProps
 }
 
 interface ButtonItem {
@@ -288,17 +263,8 @@ interface ButtonItem {
   roleName?: string
   /** 无权限时的展示方式，默认隐藏 */
   unauthorized?: 'hide' | 'disable'
-  /**
-   * 无权限时禁用，默认隐藏
-   * @deprecated 使用 `unauthorized: 'disable'`
-   */
-  invalidDisabled?: boolean
-  /** @deprecated 使用 `unauthorized` */
-  roleMode?: 'hidden' | 'disable'
   /** 按钮可见场景 */
   visibleIn?: 'form' | 'detail' | 'both'
-  /** @deprecated 使用 `visibleIn` */
-  validOn?: 'form' | 'detail' | 'both'
   dropdown?: ActionMenuSource
   dropdownProps?: UIActionProps<'Dropdown'>
   tooltip?: string
@@ -329,8 +295,6 @@ interface ExtButtonGroup<T extends string = string> {
   align?: 'right' | 'left' | 'center'
   /** 按钮组可见场景 */
   visibleIn?: 'form' | 'detail' | 'both'
-  /** @deprecated 使用 `visibleIn` */
-  validOn?: 'form' | 'detail' | 'both'
   /** 表单按钮位置 */
   placement?: 'top' | 'bottom' | 'inline'
   /** 分隔符， type为'link'/'text'时默认true */
@@ -341,25 +305,14 @@ interface ExtButtonGroup<T extends string = string> {
   moreLabel?: VSlot
   /** 无权限时的展示方式，默认隐藏 */
   unauthorized?: 'hide' | 'disable'
-  /**
-   * 无权限时禁用，默认隐藏
-   * @deprecated 使用 `unauthorized: 'disable'`
-   */
-  invalidDisabled?: boolean
-  /** @deprecated 使用 `unauthorized` */
-  roleMode?: 'hidden' | 'disable'
   hidden?: boolean | Fn<boolean>
   disabled?: boolean | Fn<boolean>
-  /** 将按钮放置到组件的指定slot中 */
   /** 按钮组渲染到的目标插槽 */
   targetSlot?: string
-  /** @deprecated 使用 `targetSlot` */
-  forSlot?: string
   methods?: Obj<Fn>
   /** 传递到事件方法中可响应数据 */
   effectData?: Obj
   actions?: T[] | (string | ButtonItem)[]
-  // subItems?: ButtonItem[]
 }
 type ExtButtons<T extends string = string> = ExtButtonGroup<T> | NonNullable<ExtButtonGroup<T>['actions']>
 type TabsHeader = Omit<UIContainerProps<'Tabs'>, 'activeKey'> & {
@@ -396,6 +349,8 @@ export type ModalOpenOptions = Partial<ExtModalFormProps> & { data?: Obj }
 
 /** SuperForm 稳定的表格容器语义。 */
 export interface TableSchemaProps {
+  /** 两套 UI 共用的筛选、排序与分页事件，不包含原生事件参数。 */
+  onTableChange?: (change: UITableChange) => void
   /** 数据初始化后默认展开的行。 */
   defaultExpandLevel?: number | 'all'
   /** 当前展开行；Core 会在默认展开层级计算完成后更新该值。 */
@@ -412,17 +367,14 @@ export interface TablePaginationSchemaProps {
   current?: number
   pageSize?: number
   total?: number
+  onChange?: (page: number, pageSize?: number) => unknown
+  onShowSizeChange?: (page: number, pageSize: number) => unknown
 }
 
 export type ExtTablePaginationProps = TablePaginationSchemaProps &
   Omit<UITableProps<'Pagination'>, keyof TablePaginationSchemaProps>
 
 type ExtColumnsItem = (UniOption | Partial<ExtFormItemOption>) & {
-  /**
-   *  应用于表格或编辑表单
-   *  @deprecated 该属性已废弃，使用exclude替代
-   * */
-  hideInTable?: boolean
   /** 表格内容渲染 */
   viewRender?: VSlot
   columnProps?: ExtTableColumnProps
@@ -431,9 +383,9 @@ interface ExtTableOption extends ExtBaseOption {
   field: string
   title?: VSlot
   attrs?: ExtTableProps
-  /** @deprecated 更名为editable */
-  edit?: boolean
-  /** 表格全部为编辑状态，开启后rowEdit无效 */
+  /** Schema 事件先接收上下文，再接收统一的表格变更。 */
+  onTableChange?: (effectData: EffectData, change: UITableChange) => void
+  /** 表格全部为编辑状态 */
   editable?: boolean | Fn<boolean>
   rowEditor?: {
     editMode?: 'inline' | 'modal'
@@ -446,10 +398,6 @@ interface ExtTableOption extends ExtBaseOption {
     onSave?: Fn
     onCancel?: Fn
   }
-  /** @deprecated  移至rowEditor */
-  editMode?: 'inline' | 'modal'
-  /** @deprecated  移至rowEditor */
-  addMode?: 'inline' | 'modal'
   columns: ExtColumnsItem[]
   tabs?: TabsHeader | false
   /** 公共列配置 */
@@ -461,9 +409,8 @@ interface ExtTableOption extends ExtBaseOption {
   rowButtons?: false | (ExtButtons<'delete' | 'edit' | 'detail' | 'add'> & { columnProps?: ExtTableColumnProps })
   /** 弹窗属性 */
   modalProps?: ExtModalProps
-  descriptionsProps?: ExtDescriptionsProps & { modalProps?: ExtModalProps }
-  /** @deprecated  弹窗表单配置,移至rowEditor */
-  editForm?: Omit<ExtFormOption, 'subItems'> & { 'subItems'?: UniOption[]; modalProps?: ExtModalProps }
+  /** 独立详情配置；未配置时复用表格列。 */
+  detailOption?: ExtDescriptionsOption & { modalProps?: ExtModalProps }
 }
 
 interface TableHeightOptions {
@@ -474,8 +421,8 @@ interface TableHeightOptions {
   /** viewport/parent 模式额外扣除的底部空间，不影响数字 maxHeight。 */
   heightOffset?: number
 }
-interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableHeightOptions {
-  isContainer?: boolean
+interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field' | 'attrs'>, TableHeightOptions {
+  useSectionStyle?: boolean
   apis?: TableApis
   dataSource?: Obj[] | Ref<any[]>
   params?: Obj
@@ -483,13 +430,9 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableH
   immediate?: boolean
   /** 查询请求前可对请求参数进行处理 */
   beforeQuery?: (data: Obj) => Obj | void
-  /** 查询请求后可对返回结果进行处理 */
+  /** 在 resultTransform 后处理查询结果；返回 void 时沿用转换结果。 */
   afterQuery?: (data: Obj) => Obj | void
   onLoaded?: Fn
-  /**
-   * @deprecated 改为searchForm
-   */
-  searchSchema?: void
   /** 查询表单配置 */
   searchForm?: Omit<ExtFormOption, 'subItems'> & {
     subItems: (UniOption | string)[]
@@ -500,9 +443,27 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field'>, TableH
     /** 开启高级查询 */
     advanced?: boolean
   }
-  pagination?: ExtTablePaginationProps | false
-  attrs?: ExtTableProps & TableHeightOptions
+  attrs?: Omit<ExtTableProps, 'pagination'> & TableHeightOptions & {
+    pagination?: ExtTablePaginationProps | false
+    /** 默认关闭；函数转换并保存表格条件，查询与 getQueryParams 共用；false 覆盖全局配置并关闭。 */
+    filterSortTransform?: false | ((params: UITableParams) => Obj | void)
+    /** 请求分页参数转换；默认使用标准 current/size，false 覆盖全局转换器。 */
+    pageTransform?: false | ((page: { current: number; size: number }) => Obj)
+    /** 查询结果格式转换，在 afterQuery 前执行；无分页时直接返回数组。 */
+    resultTransform?: (result: any) =>
+      | any[]
+      | {
+          current: number
+          size: number
+          total: number
+          records: any[]
+        }
+  }
 }
+
+/** 独立表格的扁平默认属性，与实例 attrs 的配置范围一致。 */
+type SuperTableDefaultProps = Partial<Omit<NonNullable<RootTableOption['attrs']>, 'attrs'>> & { attrs?: never }
+
 /** CardList、TabList、CollapseList 共用的数组配置。 */
 interface ExtListOption extends ExtBaseOption, ExtRow {
   field: string
@@ -547,10 +508,6 @@ interface ExtInputList extends ExtFormItemOption, ExtRow {
 interface ExtInputGroupOption extends ExtBaseOption, ExtRow {
   subItems: UniOption[]
 }
-// interface ExtCardOption extends ExtGroupOption {
-//   title?: string | VNode
-//   subItems: UniOption[]
-// }
 interface ExtTabsOption extends Omit<ExtBaseOption, 'attrs'> {
   attrs?: Obj & UIContainerProps<'Tabs'>
   activeKey?: Ref<string | undefined>
@@ -578,7 +535,6 @@ interface CollapseItem extends Omit<ExtGroupBaseOption, 'type'> {
   key?: string
   icon?: IconNode
   subItems: UniOption[]
-  buttons?: ExtButtons
 }
 /** 表单元素属性 */
 interface ExtFormItemOption extends ExtBaseOption, RangeFieldOption {
@@ -678,7 +634,7 @@ export interface TreeFieldOption<TreeData = unknown> {
   treeData?: TreeData | Ref<TreeData> | Fn<Promise<TreeData>> | Fn<TreeData>
 }
 
-export interface SwitchFieldOption extends SelectFieldOption {}
+export type SwitchFieldOption = SelectFieldOption
 
 export interface RangeFieldOption {
   /** 保留 UI 原生日期及临时选择参数，额外接收表单上下文。 */
@@ -862,6 +818,7 @@ export {
   ExtGroupBaseOption,
   ExtTableOption,
   RootTableOption,
+  SuperTableDefaultProps,
   ExtButtons,
   ButtonItem,
   ExtButtonGroup,

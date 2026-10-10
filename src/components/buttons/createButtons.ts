@@ -6,7 +6,7 @@ type UseButtonsParams = { config: ExtButtons; methods?: Obj; effectData?: Obj; i
 
 export default function createButtons({ config, methods, effectData, isView }: UseButtonsParams) {
   const buttons = Array.isArray(config) ? { actions: config } : config
-  const visibleIn = buttons?.visibleIn ?? buttons?.validOn
+  const visibleIn = buttons?.visibleIn
 
   if (!buttons || (isView && visibleIn === 'form') || (!isView && visibleIn === 'detail')) return
 
@@ -16,7 +16,7 @@ export default function createButtons({ config, methods, effectData, isView }: U
       if (typeof item === 'string') {
         return !isView
       } else {
-        const itemVisibleIn = item.visibleIn ?? item.validOn
+        const itemVisibleIn = item.visibleIn
         if (isView) {
           return itemVisibleIn !== 'form'
         } else {

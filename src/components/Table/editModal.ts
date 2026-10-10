@@ -8,10 +8,9 @@ import { merge } from '../../utils/merge'
 
 export default function editModal({ rowKey, option, listener, orgList }) {
   const rowEditor = option.rowEditor
-  const formOption = rowEditor?.form || option.editForm || option.formSchema || {}
-  // buttons: { actions: ['submit', 'reset'] },
+  const formOption = rowEditor?.form || {}
   formOption.subItems =
-    formOption.subItems || option.columns.filter((item) => !(item.hideInForm || item.exclude?.includes('form')))
+    formOption.subItems || option.columns.filter((item) => !item.exclude?.includes('form'))
 
   // 生成新增表单
   const [register, formActions] = useForm(formOption)

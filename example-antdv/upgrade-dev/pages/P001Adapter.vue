@@ -45,7 +45,7 @@ const model = reactive({
   enabled: true,
 })
 const schema: ExtFormOption = {
-  isContainer: true,
+  useSectionStyle: true,
   dataSource: model,
   subItems: [
     { type: 'Input', field: 'name', label: '名称', span: 12 },

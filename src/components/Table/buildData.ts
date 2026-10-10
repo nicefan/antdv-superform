@@ -6,6 +6,7 @@ import modalRender from './editModal'
 import useTableEdit from './TableEdit'
 import { globalProps } from '../../plugin'
 import View from '../Detail'
+import SuperDetail from '../../superDetail/SuperDetail.vue'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode } from '../../utils'
 import { isFunction } from 'lodash-es'
@@ -13,8 +14,12 @@ import { isFunction } from 'lodash-es'
 function buildDetail(option, modelsMap, rowKey) {
   const source = ref({})
   const { title, apis } = option
-  const { modalProps, ...descriptionsProps } = option.descriptionsProps || {}
-  const detail = () => h(View, { option: { descriptionsProps }, modelsMap, source })
+  const rootSlots = inject<Obj>('rootSlots', {})
+  // 独立详情使用自己的字段与布局；缺省时只复用表格列，数据始终来自当前记录。
+  const { modalProps, ...detailOption } = option.detailOption || {}
+  const detail = () => option.detailOption
+    ? h(SuperDetail, { schema: detailOption, dataSource: source.value }, rootSlots)
+    : h(View, { option: {}, modelsMap, source })
   const modalConfig = {
     ...globalProps.Modal,
     footer: null,
@@ -73,8 +78,8 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
     },
   }
 
-  const { edit, editable = edit, rowEditor } = option
-  const { editMode, addMode } = rowEditor || option // 兼容旧版
+  const { editable, rowEditor } = option
+  const { editMode, addMode } = rowEditor || {}
 
   if (!isView && editable) {
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))

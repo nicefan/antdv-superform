@@ -160,8 +160,11 @@ function openForm() {
 const [registerTable] = useTable({
   title: '候选成员',
   dataSource: modalRows,
-  pagination: { pageSize: 5 },
-  attrs: { rowKey: 'id', rowSelection: { onChange: (keys, rows) => event('弹窗表格选择', { keys, rows }) } },
+  attrs: {
+    pagination: { pageSize: 5 },
+    rowKey: 'id',
+    rowSelection: { onChange: (keys, rows) => event('弹窗表格选择', { keys, rows }) },
+  },
   columns: [{ type: 'Text', field: 'name', label: '姓名' }],
 })
 const tableModal = useModal(registerTable(), {

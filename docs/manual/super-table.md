@@ -15,9 +15,8 @@ SuperTable 在字段级 Table 容器之上增加独立数据源、查询表单�
 import { SuperTable, useTable } from "superform-antdv";
 
 const [register, table] = useTable({
-  isContainer: true,
-  pagination: { pageSize: 20 },
-  attrs: { rowKey: "userId" },
+  useSectionStyle: true,
+  attrs: { rowKey: "userId", pagination: { pageSize: 20 } },
   apis: { query: api.page },
   columns: [
     { field: "name", label: "姓名" },
@@ -27,7 +26,7 @@ const [register, table] = useTable({
 </script>
 ```
 
-`useTable` 的 Schema 可以是对象、函数或异步函数；第二参数可传本地数组或 Ref。
+`useTable(option)` 接收 Schema 对象、返回 Schema 的同步函数或异步函数；本地数组或 Ref 统一放在 Schema 的 `dataSource` 中。
 
 ## 根 Schema 配置 {#根配置总览}
 
@@ -49,28 +48,40 @@ const [register, table] = useTable({
 → columns
 ```
 
-“顶层单属性”包括 `title`、`dataSource`、`immediate`、`pagination`、`editable`、`indexColumn` 及高度策略等独立值。将请求入口、动态参数和请求转换连续放置，能直接读出完整数据链路；把 `columns` 固定在最后，较长的列定义不会打断页面行为配置。
+“顶层单属性”包括 `title`、`dataSource`、`immediate`、`editable`、`indexColumn` 及高度策略等独立值。分页和查询转换器放在 `attrs` 中。将请求入口、动态参数和请求钩子连续放置，能直接读出完整数据链路；把 `columns` 固定在最后，较长的列定义不会打断页面行为配置。
 
 | 属性                         | 类型                 | 默认值     | 作用                                                                                               |
 | ---------------------------- | -------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
 | `title`                      | string/function      | —          | 表格标题                                                                                           |
 | `dataSource`                 | array/Ref            | `[]`       | 本地数据源                                                                                         |
 | `immediate`                  | boolean              | `true`     | 是否首次自动查询                                                                                   |
-| `pagination`                 | boolean/object       | 标准分页   | `false` 关闭分页，object 用于自定义分页                                                            |
 | `editable`                   | boolean/function     | `false`    | 整表编辑状态                                                                                       |
 | `indexColumn`                | boolean/object       | `false`    | 序号列                                                                                             |
-| 高度策略                     | number/string/boolean | 未设置 | `maxHeight`、`fixedHeight`、`heightOffset`；外观容器使用 `isContainer` |
-| `attrs`                      | object               | `{}`       | Ant Design Vue Table 属性                                                                          |
+| `useSectionStyle`            | boolean              | `false`    | 开启分区背景、内边距和间距                                                                         |
+| 高度策略                     | number/string/boolean | 未设置 | `maxHeight`、`fixedHeight`、`heightOffset` |
+| `attrs`                      | object               | `{}`       | 当前 UI 的 Table 属性、分页和查询转换器                                                             |
 | `apis`                       | object               | `{}`       | 查询、详情、保存、更新、删除接口                                                                   |
 | `params`                     | object/Ref           | `{}`       | 响应式附加查询参数                                                                                 |
 | `beforeQuery` / `afterQuery` | function             | —          | 请求前后转换                                                                                       |
 | `on*`                        | function             | —          | `onLoaded` 等表格事件                                                                              |
 | `searchForm`                 | object               | —          | 查询表单配置                                                                                       |
 | `rowEditor`                  | object               | —          | 行内或弹窗编辑配置                                                                                 |
+| `detailOption`               | `ExtDescriptionsOption & { modalProps?: ExtModalProps }` | — | 独立详情字段、布局与弹窗配置；未配置时复用表格列 |
 | `buttons` / `rowButtons`     | array/object/boolean | —          | 工具栏与操作列                                                                                     |
 | `tabs`                       | object/boolean       | —          | 表格顶部标签筛选                                                                                   |
 | `columnProps`                | object               | `{}`       | 所有列的公共属性                                                                                   |
 | `columns`                    | array                | 必填       | 表格列，未声明 `type` 时为只读文本列                                                               |
+
+`attrs` 中的查询配置：
+
+| 属性 | 类型 | 默认行为 |
+| --- | --- | --- |
+| `pagination` | object/false | 第一页，每页 10 条；`false` 关闭分页 |
+| `filterSortTransform` | function/false | 关闭筛选排序条件传递；函数将远程状态转换并保存为查询条件 |
+| `pageTransform` | function/false | 请求使用标准 `current/size`；函数转换请求字段 |
+| `resultTransform` | function | 沿用接口响应；函数转换为数组或标准分页结果 |
+
+单表未配置时继承 `defaultProps.SuperTable` 对应属性。这些转换器由 Core 消费，不传给原生 Table。
 
 ## 远程与本地数据 {#远程与本地数据对比}
 
@@ -78,7 +89,7 @@ const [register, table] = useTable({
 
 ```ts
 {
-  pagination: { current: 1, pageSize: 20 },
+  attrs: { pagination: { current: 1, pageSize: 20 } },
   apis: {
     query: (params, { signal }) => api.page(params, { signal }),
   },
@@ -91,10 +102,14 @@ const [register, table] = useTable({
 
 ```ts
 const rows = ref([{ id: 1, name: "本地记录" }]);
-const [register, table] = useTable({ attrs: { rowKey: "id" }, columns }, rows);
+const [register, table] = useTable({
+  dataSource: rows,
+  attrs: { rowKey: "id" },
+  columns,
+});
 ```
 
-也可以使用根 `dataSource` 或 `table.setData(rows)`。本地模式不会自动执行后端分页。
+通过 `dataSource` 的 Ref 可同步外部数组替换；需要主动替换当前数据时使用 `table.setData(newRows)`。本地模式不会自动执行后端分页。
 
 ## apis：查询与 CRUD {#apis-完整契约}
 
@@ -119,11 +134,20 @@ const [register, table] = useTable({ attrs: { rowKey: "id" }, columns }, rows);
 参数合并顺序，右侧覆盖左侧：
 
 ```text
-分页参数 → searchForm 数据 → params → query(tempParams)
+pageTransform 的分页结果 → searchForm 数据 → tabs 条件 → params → 已保存的筛选排序条件 → query(tempParams) → beforeQuery
 ```
 
 ```ts
 {
+  attrs: {
+    pageTransform: ({ current, size }) => ({ pageNum: current, pageSize: size }),
+    resultTransform: (response) => ({
+      current: response.data.pageNum,
+      size: response.data.pageSize,
+      total: response.data.totalCount,
+      records: response.data.list,
+    }),
+  },
   params: {
     tenantId: currentTenantId, // Ref/computed 会自动解包并触发查询
   },
@@ -132,10 +156,8 @@ const [register, table] = useTable({ attrs: { rowKey: "id" }, columns }, rows);
   },
   afterQuery(result) {
     return {
-      current: result.pageNum,
-      size: result.pageSize,
-      total: result.totalCount,
-      records: result.list,
+      ...result,
+      records: result.records.map((row) => ({ ...row, displayName: row.name.trim() })),
     }
   },
   onLoaded(result) {
@@ -145,10 +167,63 @@ const [register, table] = useTable({ attrs: { rowKey: "id" }, columns }, rows);
 ```
 
 - `beforeQuery` 不返回值时继续使用原参数，返回对象时以新对象请求。
-- `afterQuery` 适合当前接口；全局统一响应使用 `tableApiSetting.resultTransform`。
+- 请求分页默认发送 `current/size`；`attrs.pageTransform` 接收标准分页副本并输出接口需要的字段，`false` 覆盖全局转换器并使用标准字段。
+- 响应处理顺序为 `apis.query → attrs.resultTransform → afterQuery → 分页处理与数据回写`。`resultTransform` 统一接口结构，`afterQuery` 处理当前表格的业务；`afterQuery` 返回 `void` 时沿用转换结果。
+- 这些转换器的全局默认值放在 `defaultProps.SuperTable` 中，单表在 `attrs` 中覆盖，见[全局配置](/manual/global-config#supertable-默认属性)。
 - 响应可直接是数组，或 `{ current, size, total, records }`。
 - `query(tempParams)` 的临时参数只作用于本次请求，不会永久保存。
-- `getQueryParams()` 只返回搜索数据与 `params`，不含分页和上次临时参数。
+- `getQueryParams()` 返回当前搜索、tabs、动态 `params` 及已保存的筛选排序条件的合并副本，不含分页、本次临时参数及 `beforeQuery` 的加工。修改返回值不会影响后续查询。
+
+导出当前条件时直接读取 getter，无需再次执行筛选排序转换器或 `beforeQuery`：
+
+```ts
+await api.exportUsers(table.getQueryParams())
+```
+
+### 列筛选、排序与统一事件 {#筛选排序与统一事件}
+
+`attrs.filterSortTransform` 默认关闭，列筛选和排序不会自动加入查询参数，也不会因此发起远程请求。需要远程处理时显式配置函数：
+
+```ts
+{
+  attrs: {
+    filterSortTransform: ({ filters, sorters }) => ({
+      departmentValues: filters.department ?? [],
+      orderBy: sorters,
+    }),
+    onTableChange(change) {
+      console.log(change.action, change.filters, change.sorters, change.pagination)
+    },
+  },
+  columns: [
+    { field: 'id', label: 'ID', columnProps: { sorter: true } },
+    {
+      field: 'department',
+      label: '部门',
+      columnProps: {
+        filters: [{ text: '研发中心', value: '研发中心' }],
+      },
+    },
+  ],
+}
+```
+
+以上列属性用于 AntDV：`sorter: true` 且不配置本地比较函数，筛选不配置 `onFilter`。Element Plus 对应远程排序使用 `sortable: 'custom'`，筛选不配置 `filterMethod`。本地比较或筛选函数仍由原生 UI 执行，其条件不会在后续远程翻页、刷新时带入接口。AntDV 支持原生多列排序；Element Plus 保留原生单列排序。
+
+转换器接收 `UITableParams` 副本，只有远程条件进入转换：
+
+| 字段 | 结构 | 说明 |
+| --- | --- | --- |
+| `filters` | `Record<string, unknown[]>` | 按字段保存选中值；清空后移除字段 |
+| `sorters` | `{ field: string; order: 'asc' \| 'desc' }[]` | 嵌套字段使用点分路径；取消排序后移除项 |
+
+转换结果固定保存，查询和 `getQueryParams()` 共用；翻页、刷新或读取 getter 不重复转换相同状态。返回 `void` 时保存本次传入的副本，可以在函数内修改它。未配置时继承 `defaultProps.SuperTable.filterSortTransform`，局部 `false` 显式关闭；转换后的有效条件变化后回第一页查询。
+
+统一事件 `onTableChange` 的参数类型为 `UITableChange`，携带 `action: 'filter' | 'sort' | 'paginate'`、完整的 `filters/sorters` 和标准分页 `{ current, pageSize, total }`。`remote` 标记是否为远程处理，`remoteParams` 仅包含远程状态。`UITableSorter`、`UITableParams` 和 `UITableChange` 可从产品包导入。事件用于业务通知，Core 已处理查询，无需在回调中再调用 `query()`。
+
+根 Schema 的写法为 `onTableChange(effectData, change)`；`attrs.onTableChange` 及全局默认回调为 `onTableChange(change)`。原生 `attrs.onChange`（AntDV）或 `onSortChange/onFilterChange`（Element Plus）保留各自原生签名。
+
+可运行代码见[筛选排序与接口转换](/examples?example=table-query-transform)。
 
 ### 场景示例：主从表联动 {#主从表联动-外部状态驱动-params}
 
@@ -293,25 +368,33 @@ const [register] = useTable({
 
 ## 分页与请求动作 {#分页与请求动作}
 
-两套 UI 支持 `pagination.placement` 数组：`topStart`、`topCenter`、`topEnd`、`bottomStart`、`bottomCenter`、`bottomEnd`，默认 `['bottomEnd']`；`['none']` 隐藏分页。每个方向最多一组，如 `['topEnd', 'bottomEnd']` 显示同步的上下分页。Element Plus 分页与表格间距为 16px。
+两套 UI 支持 `attrs.pagination.placement` 数组：`topStart`、`topCenter`、`topEnd`、`bottomStart`、`bottomCenter`、`bottomEnd`，默认 `['bottomEnd']`；`['none']` 隐藏分页。每个方向最多一组，如 `['topEnd', 'bottomEnd']` 显示同步的上下分页。Element Plus 分页与表格间距为 16px。
 
 ```ts
-pagination: false // 显式关闭分页
+attrs: { pagination: false } // 显式关闭分页
 
-pagination: {
-  current: 1,
-  pageSize: 20,
-  showSizeChanger: true,
+attrs: {
+  pagination: {
+    current: 1,
+    pageSize: 20,
+    showSizeChanger: true,
+    onChange: (current, pageSize) => console.log(current, pageSize),
+  },
+  pageTransform: ({ current, size }) => ({ offset: (current - 1) * size, limit: size }),
 }
 ```
 
-省略 `pagination` 时启用标准分页，初始页为 `1`、每页 `10` 条。不分页写 `pagination: false`，分页策略有业务差异时传入配置对象。默认请求字段为 `current` 和 `size`；可在全局 `tableApiSetting` 改名。
+未设置全局默认值且省略 `attrs.pagination` 时启用标准分页，初始页为 `1`、每页 `10` 条。`attrs.pagination: false` 关闭分页，也不生成分页请求字段。默认请求字段为 `current` 和 `size`，通过 `attrs.pageTransform` 转换；转换器接收标准分页，UI 分页仍使用 `current/pageSize`。
+
+分页配置按 `defaultProps.SuperTable.pagination → Schema.attrs.pagination → 组件传入的 pagination` 逐层合并。组件只传回调时保留 Schema 的页大小；高优先级 `false` 关闭分页，之后的显式对象可重新开启。`defaultProps.Table.pagination` 不控制 SuperTable 的分页。
+
+分页查询统一由 `onTableChange` 驱动。`pagination.onChange(current, pageSize)` 和 `onShowSizeChange(current, pageSize)` 只通知业务，不要再调用 `query/reload`，以免重复请求。修改每页条数回第一页，上下分页共用状态。显式 `query/reload/goPage` 立即执行并取消待执行的自动查询；末页数据失效时补查最后一页。
 
 | 动作                     | 页码       | 参数               | 返回         |
 | ------------------------ | ---------- | ------------------ | ------------ |
 | `query(temp?)`           | 回到第一页 | 临时参数只作用本次 | 请求 Promise |
-| `reload()`               | 保留当前页 | 当前搜索与动态参数 | 请求 Promise |
-| `goPage(page)`           | 切换指定页 | 当前搜索与动态参数 | 请求 Promise |
+| `reload()`               | 保留当前页 | 当前全部查询条件   | 请求 Promise |
+| `goPage(page)`           | 切换指定页 | 当前全部查询条件   | 请求 Promise |
 | `resetSearchForm(data?)` | 回到第一页 | 重置后的搜索数据   | 发起查询     |
 
 ## tabs：标签筛选 {#tabs-标签筛选}
@@ -356,28 +439,55 @@ tabs: {
 - `defaultExpandLevel` 为数字时展开指定层级，`'all'` 展开全部。
 - `columnProps` 提供所有列的默认 TableColumnProps，单列 `columnProps` 可覆盖。
 - `indexColumn: true` 使用默认序号列，对象形式用于定制。
+- 远程翻页或修改每页条数时，旧记录保留原索引，新数据成功回写后同步更新索引；失败、取消及过期响应不提前换号。本地分页的索引随当前页即时更新。
 
 ## 编辑与弹窗配置 {#编辑与弹窗属性}
 
-编辑能力来自底层 Table，完整配置见[数组容器：Table](/manual/fields/table#table-数组容器)。根级 `modalProps` 配置编辑弹窗，`descriptionsProps.modalProps` 配置详情弹窗；编辑弹窗优先集中配置在 `rowEditor.modalProps`。
+编辑能力来自底层 Table，完整配置见[数组容器：Table](/manual/fields/table#table-数组容器)。根级 `modalProps` 是编辑与详情弹窗的公共属性，编辑弹窗的专项属性放在 `rowEditor.modalProps`。
+
+### detailOption：独立详情 {#详情配置}
+
+`detailOption` 的类型为 `ExtDescriptionsOption & { modalProps?: ExtModalProps }`。不配置时，详情继续复用表格列；配置后必须提供 `subItems`，可单独选择字段、组织分组，并设置详情标题、按钮、布局和外观。
+
+```ts
+{
+  detailOption: {
+    title: '成员资料',
+    mode: 'table',
+    attrs: { column: 2 },
+    subItems: [
+      { type: 'Text', field: 'name', label: '姓名' },
+      { type: 'Text', field: 'departmentName', label: '部门' },
+      { type: 'TextArea', field: 'note', label: '说明', span: 24 },
+    ],
+    modalProps: { width: 720 },
+  },
+  rowButtons: { actions: ['detail'] },
+  columns,
+}
+```
+
+详情数据来自当前行；配置 `apis.info` 时，将接口结果合入当前行后展示，其优先级高于 `detailOption.dataSource`。详情弹窗按全局 Modal 默认属性 → 表格 `modalProps` → `detailOption.modalProps` 合并，本次 `detail({ meta })` 的打开参数继续覆盖。
+
+根级 `mode` 设置默认展示模式，`attrs.mode` 可覆盖。其他详情配置见 [SuperDetail 根配置](/manual/super-detail#根配置)，可运行示例见 [Table 数组表格](/examples?example=table-local)。
 
 <span id="布局与高度"></span>
 
 ## 容器与高度配置 {#页面容器与高度策略}
 
-这些配置描述 SuperTable 在页面中的占位方式，应写在表格 Schema 根级；`attrs` 只放 Ant Design Vue Table 属性。先根据页面结构选择一种主要高度策略，再决定是否需要固定表格区域。
+这些配置描述 SuperTable 在页面中的占位方式，可写在表格 Schema 根级或 `attrs` 中，根级优先。全局默认写在 `defaultProps.SuperTable` 中。先根据页面结构选择一种主要高度策略，再决定是否需要固定表格区域。
 
-### 容器模式 `isContainer`
+### 分区样式 `useSectionStyle`
 
 ```ts
 {
-  isContainer: true,
+  useSectionStyle: true,
   searchForm: { subItems: ['keyword', 'status'] },
   columns,
 }
 ```
 
-`isContainer` 默认 `false`。开启后根节点增加 `.sup-container`：查询表单和表格主体仍是两个 `.sup-form-section`，并获得独立的白色背景、16px 内边距和区块间距，适合占据页面主体的独立列表页。
+`useSectionStyle` 默认 `false`。开启后根节点增加 `.sup-container`：查询表单和表格主体仍是两个 `.sup-form-section`，并获得独立的白色背景、16px 内边距和区块间距，适合占据页面主体的独立列表页。
 
 业务主题可覆盖这些稳定类名：
 
@@ -404,7 +514,7 @@ tabs: {
 
 未配置 `maxHeight` 时按内容自然布局，不自动限制到视口或父容器。`fixedHeight`、`heightOffset` 单独配置不启用高度计算。需要直接控制原生表格滚动时，可以使用 `attrs.scroll`。
 
-高度属性建议写在 Schema 根级，也支持写入 `attrs` 或通过 `defaultProps.Table` 统一配置；根级值优先。`isContainer` 只控制外观与间距，不启用高度约束。
+高度属性建议写在 Schema 根级，也支持写入 `attrs` 或通过 `defaultProps.SuperTable` 统一配置；根级值优先。`useSectionStyle` 只控制外观与间距，不启用高度约束。
 
 ### 根据视口剩余空间计算
 
@@ -477,7 +587,7 @@ import superForm from 'superform-antdv';
 
 superForm.configure({
   defaultProps: {
-    Table: {
+    SuperTable: {
       maxHeight: 'viewport',
       fixedHeight: true,
       heightOffset: 24,
@@ -498,6 +608,7 @@ superForm.configure({
 | ---------------------------------------------------------- | -------------------- |
 | `getTable()` / `tableRef`                                  | 获取内部动作实例     |
 | `setData()` / `getData()` / `dataSource`                   | 本地数据读写         |
+| `getQueryParams()`                                        | 当前非分页查询条件副本，用于导出 |
 | `setColumns()`                                             | 替换列配置           |
 | `selectedRows` / `selectedRowKeys` / `setSelectedRows()`   | 选择状态             |
 | `expandedRowKeys` / `setExpandedRowKeys()` / `expandAll()` | 展开状态             |

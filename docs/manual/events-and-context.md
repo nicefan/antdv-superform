@@ -151,6 +151,8 @@ Select / SelectV2 不再由 SuperForm 注入搜索 keyword、节流或 loading�
 
 页面组件会在基础字段之上补充自己的上下文。例如 SuperTable 按钮还可能获得 `selectedRows`、`selectedRowKeys`、`tableRef` 及页面动作。不要假设所有字段位置都拥有这些值；可复用回调应只读取当前场景明确提供的数据。
 
+SuperTable 的 `effectData.queryParams` 与 `getQueryParams()` 一致，包含当前搜索、tabs、动态参数及保存的筛选排序条件，不含分页、临时参数或 `beforeQuery` 加工。统一表格事件的 Schema 回调为 `onTableChange(effectData, change)`，属性回调为 `attrs.onTableChange(change)`，详见[筛选排序与统一事件](/manual/super-table#筛选排序与统一事件)。
+
 相关内容：
 
 - [字段状态与联动](/manual/reactivity#字段状态与联动)：如何选择状态函数、事件和计算字段。

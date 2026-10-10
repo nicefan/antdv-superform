@@ -9,7 +9,7 @@ type RegisterMethod = {
 }
 type UseTableOption = RootTableOption | (() => RootTableOption) | (() => Promise<RootTableOption>)
 
-export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
+export const useTable = (option: UseTableOption) => {
   const [tableRef, getTable] = useGetRef()
   const [readyTableRef, getReadyTable] = useGetRef()
   const syncOption = Promise.resolve(typeof option === 'function' ? option() : option)
@@ -18,7 +18,6 @@ export const useTable = (option: UseTableOption, data?: any[] | Ref<any[]>) => {
     if (actions) {
       if (!tableRef.value) {
         syncOption.then(actions.setOption)
-        data && actions.setData(data)
       }
       tableRef.value = actions
       // 外层先注册以接收 Schema，内层注册后才具备选择、展开及行操作。

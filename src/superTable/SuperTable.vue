@@ -32,6 +32,7 @@ import { globalConfig, globalProps } from '../plugin'
 import { useTableScroll } from './useTableScroll'
 import { getUIRender, getUIService } from '../adapter'
 import { set as setObject } from 'lodash-es'
+import { merge } from '../utils/merge'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -61,12 +62,25 @@ export default defineComponent({
     const searchForm = ref()
     const setOption = (_option: RootTableOption) => {
       if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'table', 'SuperTable')
-      const { maxHeight, fixedHeight, heightOffset, isContainer, ...attrs } = mergeProps(
-        globalProps.Table,
+      const { attrs: _attrs, ...superTableAttrs } = globalProps.SuperTable || {}
+      // 高度策略由 SuperTable 消费，其余属性交给下层 Table。
+      const { maxHeight, fixedHeight, heightOffset, useSectionStyle, ...attrs } = mergeProps(
+        superTableAttrs,
         { ..._option.attrs },
-        { ...option.attrs }
+        ctxAttrs
       )
-      Object.assign(option, { maxHeight, fixedHeight, heightOffset, isContainer }, _option, { attrs })
+      // 分页按来源逐层合并；高优先级的 false 关闭分页，后续显式对象可重新开启。
+      let pagination = superTableAttrs.pagination
+      for (const value of [_option.attrs?.pagination, ctxAttrs.pagination]) {
+        if (value !== undefined) pagination = value === false ? false : merge({}, pagination || {}, value)
+      }
+      Object.assign(option, { maxHeight, fixedHeight, heightOffset, useSectionStyle }, _option, {
+        attrs: {
+          ...attrs,
+          pagination,
+          filterSortTransform: ctxAttrs.filterSortTransform ?? _option.attrs?.filterSortTransform ?? superTableAttrs.filterSortTransform,
+        },
+      })
     }
 
     watchEffect(() => props.schema && setOption(toRaw(props.schema)))
@@ -74,6 +88,7 @@ export default defineComponent({
     const {
       loading,
       pagination,
+      dataPagination,
       setPageData,
       onLoaded,
       goPage,
@@ -83,6 +98,7 @@ export default defineComponent({
       cancelQuery,
       setQueryParams,
       getQueryParams,
+      handleTableChange,
     } = useQuery(option, updateSource, dataRef)
     const { getScrollRef, debounceRedoHeight, listenResize, stopResize } = useTableScroll(option, dataRef, wrapRef)
 
@@ -147,7 +163,11 @@ export default defineComponent({
 
     const slots = ref({})
     const tableSlot = ref()
-    const effectData = reactive({ formData: dataRef, current: dataRef, queryParams: computed(getQueryParams) })
+    const effectData = reactive({
+      formData: dataRef,
+      current: dataRef,
+      queryParams: computed(getQueryParams),
+    })
 
     let initQuery = false
     const unWatch = watch(
@@ -167,19 +187,41 @@ export default defineComponent({
 
         slots.value = useInnerSlots(option.slots, effectData, ctx.slots)
 
-        const searchSchema = opt.searchForm || opt.searchSchema
-
         const {
-          attrs: { onLoad, ...attrs },
+          // 查询转换器由 Core 消费，不传给原生 Table。
+          attrs: {
+            onLoad,
+            onTableChange,
+            filterSortTransform: _filterSortTransform,
+            pageTransform: _pageTransform,
+            resultTransform: _resultTransform,
+            ...attrs
+          },
         } = useControl({ option: opt, effectData })
-        Object.assign(tableAttrs, attrs, { pagination })
+        Object.assign(tableAttrs, attrs, {
+          pagination,
+          onTableChange: (change) => {
+            handleTableChange(change)
+            // attrs 与 Schema 同名事件可能被 mergeProps 合为数组，状态先同步再通知业务。
+            const handlers = Array.isArray(onTableChange) ? onTableChange : [onTableChange]
+            const tableChange = {
+              ...change,
+              pagination: pagination.value ? {
+                current: pagination.value.current,
+                pageSize: pagination.value.pageSize,
+                total: pagination.value.total,
+              } : undefined,
+            }
+            handlers.forEach((handler) => handler?.(tableChange))
+          },
+        })
 
         onLoaded((data) => {
           ctx.emit('load', data)
           onLoad?.(data)
         })
 
-        if (searchSchema) {
+        if (opt.searchForm) {
           searchForm.value = useSearchForm(opt, tableRef, (data) => {
             // 初始化时同步表单数据
             setQueryParams(data, 'form')
@@ -193,16 +235,19 @@ export default defineComponent({
           watch(
             tabsKey,
             (key) => {
-              if (key === undefined) return
-              setObject(tabParam, tabsField, key)
-              setQueryParams(tabParam)
+              if (key === undefined) {
+                setQueryParams(undefined, 'tabs')
+              } else {
+                setObject(tabParam, tabsField, key)
+                setQueryParams(tabParam, 'tabs')
+              }
               initQuery && throttleRequest()
             },
             { immediate: true }
           )
         }
         watch(
-          ref(opt.params),
+          () => opt.params && reactive(opt.params),
           (p) => {
             setQueryParams(p, 'dynamic')
             initQuery && throttleRequest()
@@ -221,7 +266,9 @@ export default defineComponent({
           () => {
             if (option.maxHeight == null) {
               stopResize()
-              tableAttrs.scroll = attrs.scroll
+              // 没有局部 scroll 时交给 Table 默认属性，避免 undefined 覆盖下层默认值。
+              if (attrs.scroll === undefined) delete tableAttrs.scroll
+              else tableAttrs.scroll = attrs.scroll
             } else {
               tableAttrs.scroll = getScrollRef
               listenResize()
@@ -264,14 +311,14 @@ export default defineComponent({
 
     return () =>
       tableSlot.value &&
-      h(DataProvider, { name: 'exaProvider', data: { data: dataRef, onLoaded } }, () =>
+      h(DataProvider, { name: 'exaProvider', data: { data: dataRef, dataPagination, onLoaded } }, () =>
         !searchForm.value || option.searchForm?.teleport
           ? h(
               'div',
               mergeProps(
                 {
                   ref: wrapRef,
-                  class: [option.isContainer && 'sup-container', 'sup-table', 'sup-form-section'],
+                  class: [option.useSectionStyle && 'sup-container', 'sup-table', 'sup-form-section'],
                 },
                 {
                   class: ctxClass,
@@ -291,7 +338,7 @@ export default defineComponent({
           : h(
               'div',
               mergeProps(
-                { ref: wrapRef, class: [option.isContainer && 'sup-container', 'sup-table'] },
+                { ref: wrapRef, class: [option.useSectionStyle && 'sup-container', 'sup-table'] },
                 { class: ctxClass, style }
               ),
               [
