@@ -9,7 +9,7 @@ describe('表格查询', () => {
   it('reload 立即请求、保留当前页，并返回可等待的 Promise', async () => {
     const api = vi.fn().mockResolvedValue({ current: 3, size: 20, total: 1, records: [{ id: 1 }] })
     const updateSource = vi.fn()
-    const { reload } = useQuery({ pagination: { current: 3, pageSize: 20 }, apis: { query: api } }, updateSource)
+    const { reload } = useQuery({ attrs: { pagination: { current: 3, pageSize: 20 } }, apis: { query: api } }, updateSource)
 
     const task = reload()
     expect(task).toBeInstanceOf(Promise)
@@ -37,7 +37,7 @@ describe('表格查询', () => {
         })
     )
     const updateSource = vi.fn()
-    const { query } = useQuery({ pagination: { current: 4, pageSize: 10 }, apis: { query: api } }, updateSource)
+    const { query } = useQuery({ attrs: { pagination: { current: 4, pageSize: 10 } }, apis: { query: api } }, updateSource)
 
     const first = query({ keyword: 'first' })
     const firstCanceled = expect(first).rejects.toMatchObject({ name: 'AbortError' })

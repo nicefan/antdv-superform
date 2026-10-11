@@ -1,17 +1,17 @@
 # 数组容器
 
-InputList、GroupList、CardList、TabList、CollapseList 和 Table 都用 `field` 绑定数组，用 `columns` 描述每个元素。
+`InputList`、`GroupList`、`CardList`、`TabList`、`CollapseList` 和 `Table` 都用 `field` 绑定数组，用 `columns` 描述每个元素。
 
 ## 选型对比
 
 | 类型 | 最适合 | 空数组行为 | 编辑方式 |
 | --- | --- | --- | --- |
-| InputList | 字段少，一项能在一行完成 | 至少保留一项 | 直接编辑 |
-| GroupList | 一项需要多行 Group 布局 | 至少保留一项 | 直接编辑 |
-| CardList | 卡片式对象列表 | 允许为空 | 直接编辑或 editModal |
-| TabList | 页签式对象列表 | 允许为空 | 直接编辑或 editModal |
-| CollapseList | 折叠式对象列表 | 允许为空 | 直接编辑或 editModal |
-| Table | 字段多、列结构明确 | 允许为空 | 表格编辑能力 |
+| `InputList` | 字段少，一项能在一行完成 | 至少保留一项 | 直接编辑 |
+| `GroupList` | 一项需要多行 Group 布局 | 至少保留一项 | 直接编辑 |
+| `CardList` | 卡片式对象列表 | 允许为空 | 直接编辑或 editModal |
+| `TabList` | 页签式对象列表 | 允许为空 | 直接编辑或 editModal |
+| `CollapseList` | 折叠式对象列表 | 允许为空 | 直接编辑或 editModal |
+| `Table` | 字段多、列结构明确 | 允许为空 | 表格编辑能力 |
 
 ```ts
 initialValue: () => []

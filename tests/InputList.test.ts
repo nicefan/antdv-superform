@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest'
-import { h, nextTick, reactive } from 'vue'
+import { createApp, h, nextTick, reactive } from 'vue'
 import InputList from '../src/components/InputList.vue'
 import InputGroup from '../src/components/InputGroup.vue'
 import { buildModelsMap } from '../src/utils/buildModel'
@@ -98,9 +98,9 @@ describe('InputList', () => {
       index: 0, propChain: ['items', 0], refData: { name: '' },
       rules: [{ validator }], children,
     })
-    const render = (InputGroup as any).setup({
+    const render = createApp({}).runWithContext(() => (InputGroup as any).setup({
       model, option: {}, compact: true, effectData: reactive({}),
-    }, { attrs: {} })
+    }, { attrs: {} }))
     const rules = render().props.rules
     expect(rules).toHaveLength(2)
     expect(rules[0].validator).toBeTypeOf('function')

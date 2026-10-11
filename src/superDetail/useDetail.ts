@@ -1,4 +1,4 @@
-import { ref, h, useSlots, watch } from 'vue'
+import { ref, h, useSlots, nextTick } from 'vue'
 import SuperDetail from './SuperDetail.vue'
 import type { ExtDescriptionsOption, ExtFormOption } from '../exaTypes'
 
@@ -16,16 +16,12 @@ export function useDetail(option: DetailOption) {
   const register = (actions?: Obj): any => {
     if (actions) {
       if (!actionsRef.value) {
-        syncOption.then(actions.setOption)
-        if (source.value) {
-          watch(
-            source,
-            (_d) => {
-              actions.setData(_d)
-            },
-            { immediate: true }
-          )
-        }
+        syncOption.then(async (schema) => {
+          actions.setOption(schema)
+          // 等 Schema 数据源的监听完成后，恢复加载期间最后一次显式写入。
+          await nextTick()
+          if (source.value !== undefined) actions.setData(source.value)
+        })
       }
       actionsRef.value = actions
     } else {
@@ -37,10 +33,9 @@ export function useDetail(option: DetailOption) {
     register,
     {
       setData(data) {
+        source.value = data
         if (actionsRef.value) {
           actionsRef.value.setData(data)
-        } else {
-          source.value = data
         }
       },
     },

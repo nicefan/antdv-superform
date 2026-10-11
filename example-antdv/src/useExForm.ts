@@ -198,10 +198,10 @@ export default function exampleForm() {
               },
             },
             computed: (val, { current, field }) => current[field]?.trim?.(),
-            attrs: {
+            attrs: () => ({
               enterButton: true,
-              loading: nameSearchLoading,
-            },
+              loading: nameSearchLoading.value,
+            }),
             slots: {
               prefix: () => UserIcon(),
               searchIcon: () => SearchIcon(),

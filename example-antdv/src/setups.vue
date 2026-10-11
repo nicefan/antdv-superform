@@ -92,11 +92,6 @@ export default defineComponent({
       heightOffset: 16,
       // fixedHeight: true,
 
-      pagination: {
-        // pageSize: 30,
-        showSizeChanger: true,
-        pageSizeOptions: ['10', '20', '50'],
-      },
       columnProps: {
         width: 100,
         minWidth: 100,
@@ -107,6 +102,11 @@ export default defineComponent({
         addMode: 'inline',
       },
       attrs: {
+        pagination: {
+          // pageSize: 30,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+        },
         bordered: true,
         height: 600,
         onResizeColumn(w, col) {
