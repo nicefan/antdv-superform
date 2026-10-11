@@ -15,3 +15,4 @@ README 仅保留阶段状态及专题索引；实施与验证结果按需查阅�
 - [上传组件](./upload.md)
 - [语言包](./locale.md)
 - [类型冗余与废弃 API 清理](./type-cleanup.md)
+- [v-model 修饰符](./v-model-modifiers.md)
