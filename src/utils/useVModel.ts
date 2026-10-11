@@ -1,6 +1,7 @@
 import { toRef, watch, ref, unref, toValue, computed, isRef } from 'vue'
 import { get as objectGet, set as objectSet } from 'lodash-es'
 import type { ExtFormItemOption } from '../exaTypes'
+import { applyModelModifiers, resolveModelModifiers } from '../modelModifiers'
 
 type Param = {
   option: ExtFormItemOption
@@ -22,12 +23,15 @@ export default function useVModel(
     onUpdate,
   }: MixOption = option
   const vModels: Obj = {}
+  const modifyValue = (name: string, val: unknown) =>
+    applyModelModifiers(val, resolveModelModifiers(option.modelModifiers, name))
 
   const vModelFields: Obj = option.vModelFields || {}
   if (labelField) {
     vModels['labelValue'] = computed(() => objectGet(model.parent, labelField))
     vModels[`onUpdate:labelValue`] = (val) => {
-      const value = stringifyValue ? val?.toString() : val
+      const modified = modifyValue('labelValue', val)
+      const value = stringifyValue ? modified?.toString() : modified
       objectSet(model.parent, labelField, value)
     }
   }
@@ -36,11 +40,11 @@ export default function useVModel(
       model.parent[field] ??= undefined
       vModels[name] = computed(() => objectGet(model.parent, field))
       vModels[`onUpdate:${name}`] = (val) => {
-        objectSet(model.parent, field, val)
+        objectSet(model.parent, field, modifyValue(name, val))
       }
     } else if (isRef(field)) {
       vModels[name] = field
-      vModels[`onUpdate:${name}`] = (val) => (field.value = val)
+      vModels[`onUpdate:${name}`] = (val) => (field.value = modifyValue(name, val))
     } else {
       vModels[name] = field
     }
@@ -50,7 +54,7 @@ export default function useVModel(
     if (isRef(value)) {
       Object.assign(vModels, {
         value,
-        'onUpdate:value': (val) => (value.value = val),
+        'onUpdate:value': (val) => (value.value = modifyValue('value', val)),
       })
     }
     return vModels
@@ -62,10 +66,13 @@ export default function useVModel(
   // 用于绑定到表单值，可进行转换后再同步至表单对象
   const tempData = ref()
 
-  const updateValue = (val = toValue(defaultValue)) => {
+  const syncValue = (val = toValue(defaultValue)) => {
     tempData.value = val
     // 数据重置时还原为默认值
     if (refValue.value !== val && defaultValue !== undefined) refValue.value = val
+  }
+  const updateValue = (val = toValue(defaultValue)) => {
+    syncValue(modifyValue('value', val))
   }
   Object.assign(vModels, {
     value: tempData,
@@ -75,7 +82,7 @@ export default function useVModel(
   // 同步外部引用值
   if (isRef(value)) {
     watch(refValue, (val) => (value.value = val))
-    watch(value, updateValue)
+    watch(value, syncValue)
   }
 
   let raw = toValue(model.refData) // 阻止监听自身数据变化
@@ -113,7 +120,7 @@ export default function useVModel(
       refValue.value = value
       raw = value
     }
-    watch(refValue, updateValue)
+    watch(refValue, syncValue)
   }
 
   // 表单数据变化同步源数据
