@@ -71,17 +71,17 @@ export default {
       ignoreRules,
     })
 
-    const submitValidate = (data) =>
-      Promise.all(
-        [...submitHandlers, onSubmit].map(async (fn) => {
-          const validate = await fn?.(data)
-          if (validate === false || (validate && validate.errMessage)) {
-            return Promise.reject({ message: validate && validate.errMessage })
-          } else {
-            return validate
-          }
-        })
-      )
+    const runSubmitHandler = async (fn, data) => {
+      const result = await fn?.(data)
+      if (result === false || (result && result.errMessage)) {
+        throw { message: result && result.errMessage }
+      }
+      return result
+    }
+    const submitValidate = async (data) => {
+      await Promise.all([...submitHandlers].map((fn) => runSubmitHandler(fn, data)))
+      await runSubmitHandler(onSubmit, data)
+    }
 
     if (ignoreRules) {
       Object.assign(attrs, { hideRequiredMark: true, validateTrigger: false })

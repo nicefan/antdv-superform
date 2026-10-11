@@ -1,6 +1,6 @@
 # 校验机制
 
-校验仍由 Ant Design Vue Form 执行，SuperForm 负责把更贴近业务的 Schema 声明展开成 FormItem 规则，并把当前数据上下文交给自定义校验器。简单字段保持简洁，复杂约束仍可完整表达。
+校验由所选 UI 的 Form 执行，SuperForm 负责把更贴近业务的 Schema 声明展开成 FormItem 规则，并把当前数据上下文交给自定义校验器。简单字段保持简洁，复杂约束仍可完整表达。
 
 <span id="字段校验规则"></span>
 
@@ -166,6 +166,8 @@ validator: async (_effectData, value) => {
 ## 校验与提交顺序 {#提交流程}
 
 `form.submit()` 会先校验字段，再等待 Upload 等提交任务。完整执行顺序与 `onSubmit` 拦截行为见[SuperForm：Schema 回调与组件事件](/manual/super-form#schema-回调与组件事件)。
+
+字段规则的 `trigger` 控制 `blur` / `change` 时机。原生表单或表单项的 `validateTrigger` 可分别写在 `attrs`、`formItemProps` 中，其支持范围遵循所选 UI：AntDV 支持该属性，Element Plus 表单不使用它，字段时机应通过规则 `trigger` 配置。跨 UI 需要隐藏必填标记并停止输入自动校验时，使用表单顶层 `ignoreRules: true`；显式 `validate` 和 `submit` 仍会校验。
 
 FormItem 全局默认 `validateFirst: true`，即同一字段遇到首个失败规则后停止。可通过[全局配置](/manual/global-config)或节点的 `formItemProps` 调整。
 

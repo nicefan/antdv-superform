@@ -29,6 +29,15 @@ apis: {
 }
 ```
 
+| 分页响应字段 | 说明 |
+| --- | --- |
+| `records` | 本页记录数组；空页返回 `[]` |
+| `total` | 满足查询条件的总记录数，用于分页展示及末页失效时修正页码 |
+| `current` | 返回数据所属页码；缺省时使用本次请求页码 |
+| `size` | 返回数据所属每页条数；缺省时使用本次请求条数 |
+
+UI 分页配置使用 `attrs.pagination.pageSize`，默认请求和响应使用 `size`。接口字段不同可通过 `attrs.pageTransform` 和 `attrs.resultTransform` 转换。
+
 ### 三种适配位置
 
 ```ts

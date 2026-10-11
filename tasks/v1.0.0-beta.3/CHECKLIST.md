@@ -1,5 +1,7 @@
 # 待验证及文档清单
 
+2026-10-11 已修复已发现问题并执行回归（主验收 63/63、单测 51/51 通过），完整清单仍有未覆盖项，详见 [测试结果](./validation-2026-10-11.md)。综合人工检查项仍待完成。
+
 ## 待验证
 
 - [ ] 按需检查 Core、两套产品及示例的类型声明，确认废弃 API 清理、SwitchFieldOption 类型别名及现行配置可用；两套 UI 人工检查 exclude、block/breakAfter、unauthorized/visibleIn/targetSlot、rowEditor、searchForm 和 useForm.resetFields。
@@ -11,7 +13,7 @@
 - [ ] 按需执行 pnpm build:repl 更新文档站的 REPL 运行包，再人工检查详情数据源替换、setData 和表格独立详情示例；检查两套本地演示的分区样式开关及成员详情。
 
 - [ ] 人工检查两套 UI 的语言包：默认中文、英文、部分文案覆盖和缺省回退；已挂载表单/详情/表格、已打开弹窗及确认框切换语言；按钮 pending、编辑草稿和表单值保持；下一次校验使用新语言，已有错误不自动重验；上传状态、限制/失败提示、列表操作及标签添加无障碍文案；显式按钮、placeholder、校验消息和弹窗配置优先，原生 UI 文案由各自 ConfigProvider 配置。
-- [ ] 按需执行 Core 和两套产品的类型检查，确认语言包导出及生产声明。
+- [x] 按需执行 Core 和两套产品的类型检查，确认语言包导出及生产声明。
 - [x] 文档站同步语言配置用法及双 UI 语言协同。
 
 - [ ] 人工检查两套 UI 的 TagInput 标签间距、添加入口与输入框同行、窄容器换行、聚焦及失焦添加、回车确认且不提交表单、中文输入法选词不误提交，切换输入框及增删时已有标签不重新播放入场动画；TagSelect 单多选、单选再次点击保留选中、check/change 事件、字符串序列化及空状态。
@@ -20,9 +22,9 @@
 - [ ] 人工检查 Element Plus 表格查询表单及 `ignoreRules` 表单：不同 size、嵌套 FormItem 的上下间距均为 6px，普通表单间距不受影响。
 - [ ] 人工检查两套 UI 的 Buttons：全局 defaultButtons 和局部覆盖、保存/取消、展开/收起、权限与组禁用、普通下拉、更多菜单及折叠下拉、自定义渲染 tooltip、事件冒泡。
 - [ ] 人工检查确认框异步成功、失败重试、取消及销毁后的 pending 恢复。
-- [ ] 人工检查两套 UI 在未设置顶层 `span` 时保留 `colProps.span`，显式设置时由顶层配置覆盖。
+- [x] 人工检查两套 UI 在未设置顶层 `span` 时保留 `colProps.span`，显式设置时由顶层配置覆盖。
 - [ ] 人工检查 Element Plus 的 `span/subSpan: 'auto'` 不生成 `el-col-24`，且能占据剩余空间。
-- [ ] 人工检查两套 UI 的 `ignoreRules`：必填标记、输入触发及显式校验。
+- [x] 人工检查两套 UI 的 `ignoreRules`：必填标记、输入触发及显式校验。
 
 ## 表格行编辑待验证
 
@@ -44,7 +46,7 @@
 - [ ] 人工检查全局/单表 attrs.filterSortTransform：默认关闭、继承及局部 false、函数及返回 void、切换配置后及时更新条件、清空条件、相同状态不重复转换；查询与 getQueryParams 共用保存的转换结果，导出修改返回副本不影响后续查询，beforeQuery 加工及本次临时参数不写回 getter。补查 attrs.pageTransform 覆盖及 false、默认 current/size、嵌套分页和 offset/limit、attrs.pagination: false；attrs.resultTransform 的全局继承与局部覆盖、先转换再执行 afterQuery、afterQuery 返回 void 沿用转换结果、数组及标准分页结果、末页补查，确认不再读取 tableApiSetting。
 - [ ] 人工检查扁平 defaultProps.SuperTable 与实例 attrs 的合并，以及 Table 本层的基础默认值及局部覆盖，确认 Table.pagination 不影响 SuperTable 分页配置；分页按全局、Schema、组件逐层合并，组件只传回调时保留局部页大小，false 关闭后显式对象可重新开启。补查默认行键、选择、树形子字段、展开、布局、共享序号列、局部高度配置及清除高度后恢复原生 scroll，转换器不透传原生 Table。
 - [ ] 按需检查 Core 与两套产品的类型声明，确认统一事件、attrs.filterSortTransform 的 UITableParams 输入、attrs.pageTransform、attrs.resultTransform、分页 onChange 的两个标准参数，以及 defaultProps.SuperTable 与 RootTableOption['attrs'] 的一致性；根级不接受 pagination 和转换器，全局配置不接受 tableApiSetting，全局 onTableChange 使用属性签名，不接受 attrs 嵌套配置。
-- [ ] 用户明确要求后，将现有 useQuery.test.ts 中的根级 pagination 配置迁移到 attrs，并按新 API 验证查询、取消及过期响应行为。
+- [x] 用户明确要求后，将现有 useQuery.test.ts 中的根级 pagination 配置迁移到 attrs，并按新 API 验证查询、取消及过期响应行为。
 - [x] 同步文档站及 AI_GUIDE.md 中的 attrs.filterSortTransform、attrs.pageTransform、attrs.resultTransform、attrs.pagination、统一事件、分页调度及全局 SuperTable/Table 配置说明，移除 tableApiSetting，展示 SuperTable 扁平默认属性及 Table 基础属性的合并顺序；补充文档站和双 UI 共享查询演示。
 - [ ] 用户明确要求构建后执行 `pnpm build:repl` 更新在线 REPL 运行包，再人工检查文档站 table-query-transform 示例及两套 UI 的 #table-query 页中的筛选排序、转换器关闭、导出条件、请求次数、结果转换顺序和慢请求索引。
 

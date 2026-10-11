@@ -47,8 +47,7 @@ onOk: async (data) => {
 };
 ```
 
- `onSubmitError(error: unknown)`可获取表单提交回调及业务 `onOk` 的异常。
-
+`onSubmitError(error: unknown)` 接收确认流程中的字段校验、上传等注册提交任务、Schema `onSubmit` 和业务 `onOk` 的原始异常。每次失败只通知一次；失败时保留弹窗并恢复按钮 loading。通知回调自身抛错不会替换原异常。本次 `openModal({ onSubmitError })` 可覆盖创建时的回调。
 
 返回对象中的 `formActions` 是完整 useForm 动作：
 
@@ -119,6 +118,11 @@ modal = useModal(renderContent, {
 ## 运行环境与生命周期 {#运行环境}
 
 `useModal` 和 `createModal` 会创建 DOM 容器，只能在浏览器环境及 Vue setup 生命周期中调用，不应在 SSR 服务端求值。组件卸载时会清理已挂载弹窗；`destroyOnClose` 会在关闭后销毁内容实例。
+
+| 配置 | 说明 |
+| --- | --- |
+| `maskClosable` | 是否允许点击遮罩关闭。`useModalForm` 默认 `false`，可显式覆盖；普通弹窗按全局配置及所选 UI 的默认值处理 |
+| `afterClose` | 关闭动画完成后调用。`useModal` 在配置 `destroyOnClose` 时先清理宿主，再执行回调；重复打开不会累加回调，本次打开配置可覆盖持久配置 |
 
 完整交互见[弹窗表单示例](/examples?example=modal-form)。
 

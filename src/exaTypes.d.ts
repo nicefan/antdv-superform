@@ -443,7 +443,7 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field' | 'attrs
     /** 开启高级查询 */
     advanced?: boolean
   }
-  attrs?: Omit<ExtTableProps, 'pagination'> & TableHeightOptions & {
+  attrs?: Omit<ExtTableProps, 'pagination' | keyof TableSchemaProps> & TableSchemaProps & TableHeightOptions & {
     pagination?: ExtTablePaginationProps | false
     /** 默认关闭；函数转换并保存表格条件，查询与 getQueryParams 共用；false 覆盖全局配置并关闭。 */
     filterSortTransform?: false | ((params: UITableParams) => Obj | void)
@@ -462,7 +462,8 @@ interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field' | 'attrs
 }
 
 /** 独立表格的扁平默认属性，与实例 attrs 的配置范围一致。 */
-type SuperTableDefaultProps = Partial<Omit<NonNullable<RootTableOption['attrs']>, 'attrs'>> & { attrs?: never }
+type SuperTableDefaultProps = Partial<Omit<NonNullable<RootTableOption['attrs']>, 'attrs' | keyof TableSchemaProps>> &
+  TableSchemaProps & { attrs?: never }
 
 /** CardList、TabList、CollapseList 共用的数组配置。 */
 interface ExtListOption extends ExtBaseOption, ExtRow {

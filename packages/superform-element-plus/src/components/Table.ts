@@ -129,8 +129,11 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
       ref: assignTableRef,
       data: pageData,
       rowKey: rowKey as any,
-      maxHeight: unref(scroll)?.y ?? rest.maxHeight,
-      expandRowKeys: expandedKeys as any,
+      // ElTable 只在收到字符串时重置内联高度，undefined/null 会留下旧约束。
+      height: rest.height ?? '',
+      maxHeight: unref(scroll)?.y ?? rest.maxHeight ?? '',
+      // 原生树形状态使用对象的字符串键；数字键须统一后才能受控展开。
+      expandRowKeys: expandedKeys?.map(String),
       onSortChange: (sort) => {
         const previous = tableParams.sorters[0]?.field
         const field = sort.prop || sort.column?.property || previous

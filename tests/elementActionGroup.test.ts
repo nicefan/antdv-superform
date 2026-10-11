@@ -18,7 +18,7 @@ describe('Element Plus ActionGroup', () => {
     const button = action(1, [{ key: 0, value: 'enable', label: () => '启用', disabled: false }])
     const group = renderActionGroup({ buttons: [button], moreButtons: [], moreLabel: () => null }) as any
     const tooltip = group.children.default()[0].children[0]
-    const dropdown = tooltip.children.default().children[0]
+    const dropdown = tooltip.children.default()
     const item = dropdown.children.dropdown().children.default()[0]
     const stop = vi.fn()
 
