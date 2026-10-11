@@ -24,6 +24,46 @@ describe('v-model 修饰符', () => {
     expect(resolveModelModifiers(modifiers, 'labelValue')).toEqual(['trim'])
   })
 
+  it('number 保留空字符串、无法解析的文本和非字符串值', () => {
+    for (const value of ['', '  ', 'text', null, undefined, false, 0, { amount: '12' }]) {
+      expect(applyModelModifiers(value, ['number'])).toBe(value)
+    }
+    expect(applyModelModifiers('  ', ['trim', 'number'])).toBe('')
+  })
+
+  it('无 field 的 Ref 写回执行修饰符，外部赋值不转换', () => {
+    const value = ref<any>('  initial  ')
+    const option = { type: 'Input', value, modelModifiers: ['trim', 'number'] } as const
+    const { modelsMap } = buildModelsMap([option], reactive({}))
+    const binding = useVModel({ option, model: modelsMap.get(option)!, effectData: {} })
+    expect(binding.value.value).toBe('  initial  ')
+    binding['onUpdate:value'](' 12.5 ')
+    expect(value.value).toBe(12.5)
+    value.value = '  external  '
+    expect(binding.value.value).toBe('  external  ')
+  })
+
+  it('先转换数组再拆分范围或序列化，外部复合值同步不转换', async () => {
+    const source = reactive<any>({ start: ' 1 ', end: ' 2 ', tags: ' 3 , 4 ' })
+    const range = { type: 'Input', field: 'start', endField: 'end', modelModifiers: ['trim', 'number'] } as const
+    const tags = { type: 'Input', field: 'tags', stringifyValue: true, modelModifiers: ['trim', 'number'] } as const
+    const { modelsMap } = buildModelsMap([range, tags], source)
+    const rangeBinding = useVModel({ option: range, model: modelsMap.get(range)!, effectData: {} })
+    const tagsBinding = useVModel({ option: tags, model: modelsMap.get(tags)!, effectData: {} })
+    expect(rangeBinding.value.value).toEqual([' 1 ', ' 2 '])
+    expect(tagsBinding.value.value).toEqual([' 3 ', ' 4 '])
+    rangeBinding['onUpdate:value']([' 10 ', ' 20 '])
+    tagsBinding['onUpdate:value']([' 30 ', ' text '])
+    expect([source.start, source.end]).toEqual([10, 20])
+    expect(source.tags).toBe('30,text')
+    source.start = ' 40 '
+    source.end = ' 50 '
+    source.tags = ' 60 , 70 '
+    await nextTick()
+    expect(rangeBinding.value.value).toEqual([' 40 ', ' 50 '])
+    expect(tagsBinding.value.value).toEqual([' 60 ', ' 70 '])
+  })
+
   it('主值与具名 v-model 在写回前转换，外部赋值不主动转换', async () => {
     const parent = reactive({
       value: 'source',

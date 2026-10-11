@@ -37,6 +37,10 @@ next: false
 
 [复合字段的值映射](/manual/fields-and-paths#复合值的双向转换)
 
+## 输入写回修饰符
+
+[modelModifiers：trim、number 与具名绑定](/manual/fields-and-paths#modelmodifiers)
+
 <span id="数据动作的边界"></span>
 
 [回填与局部更新](/manual/fields-and-paths#数据动作的边界)

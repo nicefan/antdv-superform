@@ -235,7 +235,66 @@ const [register, form] = useForm({
 
 键是扩展组件的 v-model 参数名，值可以是当前对象中的字段名或外部 Ref。适用于一个组件同时更新多个业务字段，项目组件的注册方式见[自定义字段](/manual/custom-fields#注册项目组件)。
 
+## modelModifiers：输入写回修饰符 {#modelmodifiers}
 
+`modelModifiers` 配置在字段 Schema 顶层，用于组件 `onUpdate:*` 写回模型前的值转换。支持 `trim` 和 `number`，按数组顺序执行；不支持 `lazy`，也不改变组件的事件触发时机。
+
+```ts
+{
+  type: 'Input',
+  field: 'amount',
+  label: '金额',
+  modelModifiers: ['trim', 'number'],
+}
+```
+
+输入 `' 12.5 '` 后，模型保存数字 `12.5`。数组形式仅作用于主 `value`。主值在 AntDV 使用 `value`、Element Plus 使用 `modelValue`，或项目组件使用其他模型属性时，配置键仍为 Core 的 `value`，由 Adapter 映射到原生属性。
+
+| 修饰符 | 行为 |
+| --- | --- |
+| `trim` | 去除字符串两端空白；非字符串保持原值 |
+| `number` | 对字符串使用 `parseFloat`，例如 `'12px'` 转为 `12`；无法转换的空字符串、纯空白或普通文本保持原值，非字符串不转换 |
+
+数组值逐项执行相同转换，例如 `[' 1 ', ' x ']` 经 `['trim', 'number']` 得到 `[1, 'x']`。组合顺序会影响结果：纯空白经单独 `number` 保持空白，经 `['trim', 'number']` 变为 `''`。`number` 不验证整个字符串是否合法；需要严格数值格式时另外配置校验规则。
+
+### 具名绑定
+
+对象形式按绑定名分别配置，可使用 `value`、关联标签的 `labelValue` 及 `vModelFields` 的键名。键名对应组件绑定，不是模型字段路径：
+
+```ts
+{
+  type: 'ExtAddressPicker',
+  field: 'districtCode',
+  labelField: 'districtName',
+  vModelFields: {
+    provinceCode: 'provinceId',
+    cityCode: externalCityCode, // Ref
+  },
+  modelModifiers: {
+    value: ['trim'],
+    labelValue: ['trim'],
+    provinceCode: ['number'],
+    cityCode: ['number'],
+  },
+}
+```
+
+`onUpdate:provinceCode` 会先转为数字，再写入当前对象的 `provinceId`；`onUpdate:cityCode` 转换后更新外部 Ref。未配置的绑定保持原写回行为。没有 `field`、仅使用 `value: someRef` 的输入也可使用主值修饰符，但该 Ref 不会因此进入提交模型。
+
+### 转换边界与类型
+
+修饰符只在组件发出绑定更新时执行。初始化、外部 `dataSource` / Ref 赋值、`setFieldsValue`、`resetFields` 及 `computed` 写回不会主动套用修饰符；它不是接口数据清洗或提交前格式化钩子。Schema 顶层 `onUpdate` 观察实际存储值，而原生事件回调仍接收组件原始参数。
+
+同时配置 `endField` 时，先转换范围数组，再拆分写入两个字段；同时配置 `stringifyValue` 时，先转换数组，再存为逗号字符串。`labelValue` 的转换也先于字符串序列化。
+
+```ts
+import type { ModelModifier, ModelModifiers } from 'superform-antdv'
+
+const modifier: ModelModifier = 'trim'
+const modifiers: ModelModifiers = { value: [modifier, 'number'] }
+```
+
+Core 和 Element Plus 项目分别从 `superform`、`superform-element-plus` 导入同名类型。转换辅助函数属于内部实现，不从产品根入口导出。
 
 ## initialValue：字段默认值 {#标准初始模型与当前模型}
 
@@ -318,6 +377,7 @@ const keyword = ref('')
 | 数组对应逗号字符串 | [选择字段值转换](/manual/fields/selections#通用值转换属性) |
 | 同时保存选中值与标签 | [labelField](/manual/fields-and-paths#labelfield-同时保存值与显示文本) |
 | 额外 v-model 对应字段或 Ref | [vModelFields](/manual/fields-and-paths#vmodelfields-扩展额外-v-model) |
+| 输入写回时去空白或转数字 | [modelModifiers](/manual/fields-and-paths#modelmodifiers) |
 
 <span id="数据更新与提交"></span>
 

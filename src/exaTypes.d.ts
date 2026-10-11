@@ -5,6 +5,7 @@ import type { Component, CSSProperties, DeepReadonly, HTMLAttributes, VNode, VNo
 
 import type { RuleConfig } from './utils/buildRule'
 import type { UIUploadFile, UITableChange, UITableParams } from './adapter/types'
+import type { ModelModifiers } from './modelModifiers'
 
 type VSlot = string | Fn
 type IconNode = VNode | Component | VSlot
@@ -157,6 +158,8 @@ interface ExtBaseOption {
   type: string
   field?: string
   vModelFields?: Obj<string | Obj>
+  /** v-model 写回修饰符；数组作用于主 value，具名对象按 binding 名分别配置。 */
+  modelModifiers?: ModelModifiers
   initialValue?: any
   label?: VSlot
   labelSlot?: Fn<VNodeTypes>

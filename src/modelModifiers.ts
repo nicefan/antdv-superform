@@ -2,13 +2,6 @@ export type ModelModifier = 'trim' | 'number'
 export type ModelModifierList = readonly ModelModifier[]
 export type ModelModifiers = ModelModifierList | Readonly<Record<string, ModelModifierList>>
 
-declare module './exaTypes' {
-  interface ExtBaseOption {
-    /** v-model 写回修饰符；数组作用于主 value，具名对象按 binding 名分别配置。 */
-    modelModifiers?: ModelModifiers
-  }
-}
-
 export function resolveModelModifiers(
   modifiers: ModelModifiers | undefined,
   name = 'value'

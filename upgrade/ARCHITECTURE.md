@@ -1,6 +1,6 @@
 # SuperForm UI Adapter 架构总览
 
-维护日期：2026-09-29。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
+维护日期：2026-10-11。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
 
 ## 1. 分层与入口
 
@@ -40,6 +40,8 @@ Element Plus 名称目录将原生字段映射到 El 导出；TextArea、InputPa
 - Input/Select 不自动接管远程搜索或异步 loading。InputSearch 在 UI 包提供搜索入口，状态由业务控制。
 
 普通字段默认 value/onUpdate:value；checked、modelValue、targetKeys 由 Adapter 映射。TagInput/TagSelect 保留 Core 增删与序列化语义。
+
+字段 modelModifiers 由 Core 在组件 onUpdate:* 写回前处理，支持按声明顺序执行 trim/number，数组值逐项转换；数组配置只作用于主 value，具名配置对应 value、labelValue 和 vModelFields 的 binding 名。外部模型同步和 computed 写回不主动转换；范围拆分及 stringifyValue 序列化在修饰符之后执行。UI Adapter 保留原模型事件协议，不实现 lazy。根入口导出 ModelModifier、ModelModifiers 类型。
 
 ## 5. 容器、表单与上传
 

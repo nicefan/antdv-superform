@@ -105,6 +105,7 @@ pageClass: api-index-page
 - [labelField](/manual/fields-and-paths#labelfield-同时保存值与显示文本)
 - [endField](/manual/fields-and-paths#endfield-把范围拆成两个业务字段)
 - [vModelFields](/manual/fields-and-paths#vmodelfields-扩展额外-v-model)
+- [modelModifiers / ModelModifier / ModelModifiers](/manual/fields-and-paths#modelmodifiers)
 - [dataSource / 对象与 Ref](/manual/fields-and-paths#对象与-ref-的差异)
 - [字段 value 绑定 Ref](/manual/fields-and-paths#字段级-ref)
 - [重置与局部更新边界](/manual/fields-and-paths#数据动作的边界)

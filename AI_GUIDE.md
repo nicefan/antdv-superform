@@ -66,6 +66,7 @@ Vite 使用对应产品的 `/unplugin` 默认导出，配置 `{ dirs: ['src'], e
 | --- | --- |
 | `field: 'profile.name'` | 支持点路径；`initialValue` 提供初始值 |
 | `value: externalRef` | 外部 Ref 双向绑定，可与 field 同时使用 |
+| `modelModifiers` | `['trim', 'number']` 只转换主 value 的组件写回；具名对象按 value/labelValue/vModelFields 键名配置，不支持 lazy |
 | `dynamicAttrs(effectData)` | 动态 UI 属性 |
 | `hidden/disabled/required` | 布尔值或上下文函数 |
 | `exclude` | `('table' \| 'form' \| 'description')[]` |
@@ -76,6 +77,8 @@ Vite 使用对应产品的 `/unplugin` 默认导出，配置 `{ dirs: ['src'], e
 | `onUpdate(effectData)` | 实际存储值变化后触发 |
 
 上下文按场景取值：字段常用 `formData/current/parent/value/field/index/isView`；表格列常用 `record/text/column`；工具栏常用 `selectedRows/selectedRowKeys/tableRef`。不要假定所有回调都有这些字段。
+
+`modelModifiers` 在 Core 写回模型前按声明顺序执行，数组值逐项转换；`number` 使用 parseFloat，不能转换时保留原值。配置放在字段顶层，两套 UI 的主键都用 value；不要写在 attrs 或改成 modelValueModifiers。外部赋值、回填、重置及 computed 不主动转换；范围拆分与 stringifyValue 序列化在修饰符之后执行。产品根入口导出 ModelModifier、ModelModifiers 类型。
 
 默认值满足需求时省略：字段 span=8、gutter=16；无 span 的容器独占一块；InputGroup 紧凑布局；输入/选择控件按 label 生成占位符；FormItem.validateFirst=true；有 options 时只读按 Tag 展示。表单按钮无默认动作，按需配置。
 
