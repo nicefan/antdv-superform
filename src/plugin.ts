@@ -7,11 +7,11 @@ import {
 } from "./components";
 import { initializeUIAdapter, type UIAdapter } from "./adapter";
 import { globalConfig, type GlobalConfig } from "./config";
-import type { SuperTableDefaultProps } from "./exaTypes";
+import type { RootTableOption, SuperTableDefaultProps } from "./exaTypes";
 
 export type AdapterDefaultProps = Record<string, Obj | undefined> & {
-  /** 独立表格的扁平默认属性，与 RootTableOption.attrs 的范围一致。 */
-  SuperTable?: SuperTableDefaultProps;
+  /** 独立表格的扁平默认属性；tableTools 由 Core 消费，不下发原生 Table。 */
+  SuperTable?: SuperTableDefaultProps & Pick<RootTableOption, "tableTools">;
 };
 
 export interface SuperFormConfig extends GlobalConfig {

@@ -33,6 +33,7 @@ import { useTableScroll } from './useTableScroll'
 import { getUIRender, getUIService } from '../adapter'
 import { set as setObject } from 'lodash-es'
 import { merge } from '../utils/merge'
+import { createTableViewState } from '../components/Table/tableTools'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -48,6 +49,8 @@ export default defineComponent({
     const option = shallowReactive({ attrs: ctxAttrs }) as unknown as RootTableOption & { attrs: Obj }
     const dataRef = ref([])
     const wrapRef = ref()
+    // setColumns 会重建下层 Table；视图偏好留在 SuperTable 才不会随子实例丢失。
+    const tableViewState = reactive(createTableViewState())
 
     const updateSource = (data) => {
       dataRef.value = data
@@ -63,8 +66,8 @@ export default defineComponent({
     const setOption = (_option: RootTableOption) => {
       if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'table', 'SuperTable')
       const { attrs: _attrs, ...superTableAttrs } = globalProps.SuperTable || {}
-      // 高度策略由 SuperTable 消费，其余属性交给下层 Table。
-      const { maxHeight, fixedHeight, heightOffset, useSectionStyle, ...attrs } = mergeProps(
+      // 高度和工具栏策略由 SuperTable/Core 消费，其余属性交给下层 Table。
+      const { maxHeight, fixedHeight, heightOffset, useSectionStyle, tableTools, ...attrs } = mergeProps(
         superTableAttrs,
         { ..._option.attrs },
         ctxAttrs
@@ -74,7 +77,7 @@ export default defineComponent({
       for (const value of [_option.attrs?.pagination, ctxAttrs.pagination]) {
         if (value !== undefined) pagination = value === false ? false : merge({}, pagination || {}, value)
       }
-      Object.assign(option, { maxHeight, fixedHeight, heightOffset, useSectionStyle }, _option, {
+      Object.assign(option, { maxHeight, fixedHeight, heightOffset, useSectionStyle, tableTools }, _option, {
         attrs: {
           ...attrs,
           pagination,
@@ -281,7 +284,8 @@ export default defineComponent({
           onExpandedRowsChange?.(param)
           debounceRedoHeight()
         }
-        const table = () => h(Controls.Table, { option, effectData, model, ...tableAttrs } as any, slots.value)
+        const table = () =>
+          h(Controls.Table, { option, effectData, model, ...tableAttrs, tableViewState } as any, slots.value)
         if (option.editable) {
           tableSlot.value = () => getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: table })
         } else {
@@ -301,7 +305,11 @@ export default defineComponent({
       // 每次列配置变更重建一次；同一配置的普通渲染保持实例与行缓存。
       const tableKey = Symbol()
       const table = () =>
-        h(Controls.Table, { option, effectData, model, key: tableKey, ...tableAttrs } as any, slots.value)
+        h(
+          Controls.Table,
+          { option, effectData, model, key: tableKey, ...tableAttrs, tableViewState } as any,
+          slots.value
+        )
       if (option.editable) {
         tableSlot.value = () => getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: table })
       } else {
