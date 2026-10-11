@@ -60,6 +60,12 @@ export type {
   UIActionItem,
   UIActionMenuItem,
 } from './adapter'
+export type {
+  UITableDensity,
+  UITableToolName,
+  UITableToolbarColumn,
+  UITableToolbarProps,
+} from './tableToolbarProtocol'
 export { registerAutoImportedComponents } from './components'
 export { configure, registerComponent, registerComponents, useAdapter } from './plugin'
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'

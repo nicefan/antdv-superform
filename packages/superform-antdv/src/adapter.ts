@@ -2,11 +2,19 @@ import { h } from 'vue'
 import { translate } from 'superform/sdk'
 import { Modal, message } from 'antdv-next'
 import type { Component } from 'vue'
-import { builtInIcons, defineUIAdapter, extendUIAdapter, type UIAdapter, type UIAdapterOverrides } from 'superform/sdk'
+import {
+  builtInIcons,
+  defineUIAdapter,
+  extendUIAdapter,
+  type UIAdapter,
+  type UIAdapterOverrides,
+  type UIComponentDefinitions,
+} from 'superform/sdk'
 import { antdvFieldNames, type AntdvFieldName } from './fieldNames'
 import { createAntdvFields, adaptAntdvFieldProps } from './fields'
 import './schemaTypes'
 import { uiComponents } from './uiComponents'
+import { renderTableToolbar } from './components/TableToolbar'
 export type { AntdvFieldName } from './fieldNames'
 
 export interface AntdvAdapterOptions {
@@ -14,11 +22,22 @@ export interface AntdvAdapterOptions {
   overrides?: UIAdapterOverrides
 }
 
+const antdvUIComponents = {
+  ...uiComponents,
+  table: {
+    ...uiComponents.table,
+    adaptProps: ({ density, ...attrs }) => (density ? { ...attrs, size: density } : attrs),
+  },
+  tableToolbar: {
+    render: ({ attrs }) => renderTableToolbar(attrs),
+  },
+} as UIComponentDefinitions
+
 export function createAntdvAdapter(options: AntdvAdapterOptions = {}): UIAdapter {
   return extendUIAdapter(
     defineUIAdapter({
       name: 'antdv-next',
-      uiComponents,
+      uiComponents: antdvUIComponents,
       supportedFields: antdvFieldNames,
       adaptFieldProps: adaptAntdvFieldProps,
       fields: createAntdvFields(),
