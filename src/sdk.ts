@@ -54,6 +54,12 @@ export type {
   UIActionItem,
   UIActionMenuItem,
 } from './adapter'
+export type {
+  UITableDensity,
+  UITableToolName,
+  UITableToolbarColumn,
+  UITableToolbarProps,
+} from './tableToolbarProtocol'
 export { translate } from './locale'
 export { globalConfig } from './config'
 export { toNode } from './utils/toNode'

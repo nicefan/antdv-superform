@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, isRef, ref, reactive, type PropType, defineComponent, toRaw, toRef, unref, watch } from 'vue'
+import { computed, h, isRef, ref, reactive, type PropType, defineComponent, toRaw, toRef, unref, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { createButtons } from '../buttons'
 import { buildData } from './buildData'
@@ -9,6 +9,13 @@ import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
 import TabsFilter from './TabsFilter.vue'
 import { buildColumns } from './buildColumns'
+import {
+  applyTableColumnState,
+  createTableToolbarProps,
+  normalizeTableTools,
+  reconcileTableViewState,
+  type TableViewState,
+} from './tableTools'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -16,7 +23,7 @@ export default defineComponent({
   props: {
     option: {
       required: true,
-      type: Object as PropType<GetOption<'Table'> & Pick<RootTableOption, 'apis'>>,
+      type: Object as PropType<GetOption<'Table'> & Pick<RootTableOption, 'apis' | 'tableTools'>>,
     },
     model: {
       required: true,
@@ -26,13 +33,17 @@ export default defineComponent({
       required: true,
       type: Object as PropType<Obj>,
     },
+    tableViewState: {
+      required: true,
+      type: Object as PropType<TableViewState>,
+    },
     isView: Boolean,
     reload: Function as PropType<(param?: Obj) => Promise<any>>,
     expandedRowKeys: Array,
     defaultExpandLevel: null as unknown as PropType<number | 'all'>,
   },
   emits: ['register', 'expandedRowsChange'],
-  setup({ option, model, reload, effectData, isView, ...props }, ctx) {
+  setup({ option, model, reload, effectData, tableViewState, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     // 初始化所需的原生默认值也在 Table 本层消费，局部配置优先。
@@ -214,6 +225,12 @@ export default defineComponent({
       isView,
       effectData,
     })
+    reconcileTableViewState(columns, tableViewState, attrs.size ?? tableDefaults.size)
+    const tableTools = computed(() => normalizeTableTools(option.tableTools))
+    const displayColumns = computed(() =>
+      applyTableColumnState(columns, tableViewState, tableTools.value.includes('columnSetting'))
+    )
+    const toolbarProps = computed(() => createTableToolbarProps(columns, tableViewState, tableTools.value, reload))
 
     const { list, methods, buttonMethods = methods, modalSlot } = context
     // TODO: 补充TS
@@ -272,7 +289,24 @@ export default defineComponent({
     }
 
     const titleString = option.title || option.label
-    const { title: titleSlot = titleString, extra: extraSlot, ...__slots } = slots
+    const { title: titleSlot = titleString, extra: customExtraSlot, ...__slots } = slots
+    const toolbarSlot = tableTools.value.length
+      ? () => getUIRender('tableToolbar')(toolbarProps.value)
+      : undefined
+    const extraSlot =
+      customExtraSlot || toolbarSlot
+        ? () => {
+            const extra = customExtraSlot?.()
+            const toolbar = toolbarSlot?.()
+            if (extra && toolbar) {
+              return getUIRender('space')(
+                { size: 'small', align: 'center' },
+                { default: () => [extra, toolbar] }
+              )
+            }
+            return extra || toolbar
+          }
+        : undefined
     const titleBar =
       (titleSlot || extraSlot) &&
       (() =>
@@ -315,8 +349,9 @@ export default defineComponent({
               ...globalProps.Table,
               ref: tableRef,
               data: list.value,
-              columns: reactive(columns),
+              columns: displayColumns.value,
               ...tableAttrs,
+              density: tableTools.value.includes('density') ? tableViewState.density : undefined,
               selection: rowSelection && {
                 ...rowSelection,
                 selectedKeys: selectedRowKeys.value,
