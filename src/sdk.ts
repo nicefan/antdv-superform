@@ -59,7 +59,7 @@ export type {
   UITableToolName,
   UITableToolbarColumn,
   UITableToolbarProps,
-} from './tableToolbarProtocol'
+} from './adapter'
 export { translate } from './locale'
 export { globalConfig } from './config'
 export { toNode } from './utils/toNode'

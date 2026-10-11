@@ -48,7 +48,7 @@ const [register, table] = useTable({
 → columns
 ```
 
-“顶层单属性”包括 `title`、`dataSource`、`immediate`、`editable`、`indexColumn` 及高度策略等独立值。分页和查询转换器放在 `attrs` 中。将请求入口、动态参数和请求钩子连续放置，能直接读出完整数据链路；把 `columns` 固定在最后，较长的列定义不会打断页面行为配置。
+“顶层单属性”包括 `title`、`dataSource`、`immediate`、`editable`、`indexColumn`、`tableTools` 及高度策略等独立值。分页和查询转换器放在 `attrs` 中。将请求入口、动态参数和请求钩子连续放置，能直接读出完整数据链路；把 `columns` 固定在最后，较长的列定义不会打断页面行为配置。
 
 | 属性                         | 类型                 | 默认值     | 作用                                                                                               |
 | ---------------------------- | -------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
@@ -57,6 +57,7 @@ const [register, table] = useTable({
 | `immediate`                  | boolean              | `true`     | 是否首次自动查询                                                                                   |
 | `editable`                   | boolean/function     | `false`    | 整表编辑状态                                                                                       |
 | `indexColumn`                | boolean/object       | `false`    | 序号列                                                                                             |
+| `tableTools` | false/array | 关闭 | 刷新、密度和列设置工具，见[工具栏](#tabletools) |
 | `useSectionStyle`            | boolean              | `false`    | 开启分区背景、内边距和间距                                                                         |
 | 高度策略                     | number/string/boolean | 未设置 | `maxHeight`、`fixedHeight`、`heightOffset` |
 | `attrs`                      | object               | `{}`       | 当前 UI 的 Table 属性、分页和查询转换器                                                             |
@@ -419,6 +420,43 @@ tabs: {
 `tabs.options` 使用同一 OptionsConfig，可配置 `source`、`dictName`、`labelAsValue` 等；`activeKey` 可与外部 Ref 双向控制。设置 `tabs: false` 关闭。
 
 <span id="列与编辑"></span>
+
+## tableTools：表格工具栏 {#tabletools}
+
+在独立 SuperTable 的根 Schema 配置 `tableTools`，按需启用 `refresh`、`density` 和 `columnSetting`。省略、`false` 或空数组均关闭；业务新增、删除等动作继续使用 `buttons`，两者可以同时展示。
+
+```ts
+const [register, table] = useTable({
+  title: '用户列表',
+  tableTools: ['refresh', 'density', 'columnSetting'],
+  attrs: { rowKey: 'id', size: 'small' },
+  apis: { query: api.page },
+  columns: [
+    { field: 'name', label: '姓名', columnProps: { width: 180 } },
+    { field: 'age', label: '年龄', columnProps: { width: 100 } },
+  ],
+})
+```
+
+| 工具 | 行为 |
+| --- | --- |
+| `refresh` | 调用 `reload()`，保留当前页及查询条件；不会重置搜索表单或列偏好 |
+| `density` | 选择紧凑、默认或宽松；统一值为 `small`、`middle`、`large`，Element Plus 的 `middle` 映射为原生 `default` |
+| `columnSetting` | 勾选列显隐、拖拽调整顺序、切换左右固定；全选恢复全部可见，重置恢复当前 Schema 的顺序、可见列和固定设置 |
+
+工具栏合入标题右侧的 `extra` 区域，可与自定义 `extra` 插槽、按钮及 `tabs` 组合。工具按内置顺序展示：刷新、密度、列设置；配置数组用于选择工具，不用于排序。
+
+列设置作用于顶层列，分组列整体调整；序号列和操作列也会出现在设置中。列偏好不修改业务 Schema，也不写入本地存储。通过 `setColumns()` 重建列时，仍存在的列保留偏好，已删除列的偏好被清除，新增列按 Schema 顺序追加并默认可见。为列提供稳定且唯一的 `columnProps.key` 或 `field`；无键的分组列使用位置识别，调整分组结构后不保证偏好对应原分组。
+
+固定列的最终位置遵循原生 UI 的固定区域规则，宽度与滚动也需满足原生要求，AntDV 需要为表格配置足够的横向 `attrs.scroll.x`。
+
+密度在实例首次创建时读取当前表格的 `size`，缺省或无法识别时使用 `small`；Element Plus 的原生 `default` 对应 `middle`。用户选择后，列重建不会覆盖该密度。
+
+重置列设置不会重置密度。关闭列设置或密度工具时恢复 Schema 的列或原生 size；重新启用时使用当前实例保留的偏好。卸载并新建 SuperTable 实例会重新初始化偏好。
+
+可在 `defaultProps.SuperTable.tableTools` 设置应用默认值，单表根级 `tableTools` 优先；也可通过 `attrs.tableTools` 或组件属性设置，优先级见[全局配置](/manual/global-config#supertable-默认属性)。该属性由 Core 消费，不传给原生 Table，表单内的 Table 字段不提供独立工具栏。
+
+`UITableToolName`、`UITableDensity`、`UITableToolbarColumn` 和 `UITableToolbarProps` 可从产品包导入；Core 项目从 `superform` 导入，Adapter 开发从 `superform/sdk` 导入。自定义 Adapter 通过固定 UI 的 `tableToolbar` 渲染入口消费工具和回调，视图状态由 Core 管理。
 
 ## 列、选择与展开 {#列、选择与展开}
 

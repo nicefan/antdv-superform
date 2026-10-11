@@ -6,7 +6,6 @@ import {
   ElDropdownMenu,
   ElPopover,
   ElSpace,
-  ElTooltip,
 } from 'element-plus'
 import { defineComponent, h, ref } from 'vue'
 import { builtInIcons, translate, type UIRenderers, type UITableToolName } from 'superform/sdk'
@@ -31,24 +30,19 @@ const TableToolbar = defineComponent({
   setup(props) {
     const dragKey = ref('')
     const enabled = (name: UITableToolName) => (props.tools as UITableToolName[]).includes(name)
+    // Dropdown/Popover 需要直接的按钮触发节点，避免 Tooltip 截获监听器或遮挡菜单。
     const toolButton = (label: string, content: () => any, onClick?: () => unknown) =>
       h(
-        ElTooltip,
-        { content: label, placement: 'top' },
+        ElButton,
         {
-          default: () =>
-            h(
-              ElButton,
-              {
-                text: true,
-                size: 'small',
-                'aria-label': label,
-                style: { width: '28px', height: '28px', padding: 0 },
-                onClick,
-              },
-              content
-            ),
-        }
+          text: true,
+          size: 'small',
+          title: label,
+          'aria-label': label,
+          style: { width: '28px', height: '28px', padding: 0 },
+          onClick,
+        },
+        content
       )
 
     const densityItems = [

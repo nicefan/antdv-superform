@@ -65,7 +65,7 @@ export type {
   UITableToolName,
   UITableToolbarColumn,
   UITableToolbarProps,
-} from './tableToolbarProtocol'
+} from './adapter'
 export { registerAutoImportedComponents } from './components'
 export { configure, registerComponent, registerComponents, useAdapter } from './plugin'
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'

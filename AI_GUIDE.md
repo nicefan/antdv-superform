@@ -56,7 +56,7 @@ Vite 使用对应产品的 `/unplugin` 默认导出，配置 `{ dirs: ['src'], e
 
 `configure()` 常用项：`dictApi(name)` 返回标准 `{ label, value }[]`（可异步）；`buttonRoles()` 返回权限字符串数组；`defaultButtons` 配置动作；`tagViewer` 配置只读颜色；`defaultProps` 按组件名配置默认属性。
 
-`defaultProps.SuperTable` 使用与 `RootTableOption['attrs']` 一致的扁平属性，不嵌套 `attrs`；分页、查询转换器及高度默认值放在这里，查询接口、搜索与编辑配置、beforeQuery/afterQuery 由单表提供。属性按全局 SuperTable 默认值 → Schema.attrs → 组件传入属性覆盖。`defaultProps.Table` 是共享表格主体的基础默认值，原生属性可被 SuperTable 默认值和局部配置覆盖；它的 pagination 不控制 SuperTable 分页。
+`defaultProps.SuperTable` 使用与 `RootTableOption['attrs']` 一致的扁平属性，不嵌套 `attrs`；分页、查询转换器、高度及 tableTools 默认值放在这里，查询接口、搜索与编辑配置、beforeQuery/afterQuery 由单表提供。属性按全局 SuperTable 默认值 → Schema.attrs → 组件传入属性覆盖。`defaultProps.Table` 是共享表格主体的基础默认值，原生属性可被 SuperTable 默认值和局部配置覆盖；它的 pagination 不控制 SuperTable 分页。
 
 <a id="schema"></a>
 
@@ -234,6 +234,8 @@ attrs: {
 稳定主键放 attrs.rowKey（默认 id）；选择用 attrs.rowSelection={}，不用 true。已有明确动作时不使用 asyncCall。
 
 导出当前条件直接使用 `api.export(table.getQueryParams())`，不要重新执行转换器或 beforeQuery；修改 getter 返回副本不影响后续查询。SuperTable 的 effectData.queryParams 与该 getter 的条件一致。
+
+工具栏在根 Schema 配置 tableTools: ['refresh', 'density', 'columnSetting']，未配置、false 或空数组关闭；应用默认值为 defaultProps.SuperTable.tableTools，根级优先于 attrs 和组件传入属性。refresh 复用 reload 并保留当前页，density 在两套 UI 映射原生 size，columnSetting 支持顶层列显隐、拖拽排序、左右固定和重置。它与 buttons/extra/tabs 共存，列偏好不反写 Schema；setColumns 保留仍存在的列偏好，追加新增列，实例卸载后不保留。类型 UITableToolName/UITableDensity/UITableToolbarColumn/UITableToolbarProps 从产品根入口导入。详见[工具栏手册](https://nicefan.github.io/antdv-superform/manual/super-table#tabletools)。
 
 高度配置可写在 Schema 根级或 attrs，根级优先，应用级默认值写在 defaultProps.SuperTable：maxHeight 为数字时限制内容滚动区域高度（不含表头和分页），为 'viewport' / 'parent' 时按对应剩余空间计算。未配置时自然布局，无默认高度模式；fixedHeight: true 配合 maxHeight 保留固定高度，heightOffset 仅对 'viewport' / 'parent' 额外扣减。固定高度和偏移单独配置不启用高度约束。
 

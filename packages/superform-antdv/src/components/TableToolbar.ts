@@ -1,4 +1,4 @@
-import { Button, Checkbox, Dropdown, Popover, Space, Tooltip } from 'antdv-next'
+import { Button, Checkbox, Dropdown, Popover, Space } from 'antdv-next'
 import { defineComponent, h, ref } from 'vue'
 import { builtInIcons, translate, type UIRenderers, type UITableToolName } from 'superform/sdk'
 
@@ -22,24 +22,19 @@ const TableToolbar = defineComponent({
   setup(props) {
     const dragKey = ref('')
     const enabled = (name: UITableToolName) => (props.tools as UITableToolName[]).includes(name)
+    // Dropdown/Popover 需要直接的按钮触发节点，避免 Tooltip 截获监听器或遮挡菜单。
     const toolButton = (label: string, content: () => any, onClick?: () => unknown) =>
       h(
-        Tooltip,
-        { title: label },
+        Button,
         {
-          default: () =>
-            h(
-              Button,
-              {
-                type: 'text',
-                size: 'small',
-                'aria-label': label,
-                style: { width: '28px', height: '28px', padding: 0 },
-                onClick,
-              },
-              content
-            ),
-        }
+          type: 'text',
+          size: 'small',
+          title: label,
+          'aria-label': label,
+          style: { width: '28px', height: '28px', padding: 0 },
+          onClick,
+        },
+        content
       )
 
     const densityItems = [

@@ -4,7 +4,7 @@ import type {
   UITableToolName,
   UITableToolbarColumn,
   UITableToolbarProps,
-} from '../../tableToolbarProtocol'
+} from '../../adapter'
 
 type ColumnFixed = 'left' | 'right'
 
@@ -80,7 +80,7 @@ export function reconcileTableViewState(columns: UITableColumn[], state: TableVi
 }
 
 function currentFixed(entry: ColumnEntry, state: TableViewState): ColumnFixed | undefined {
-  if (Object.prototype.hasOwnProperty.call(state.fixed, entry.key)) {
+  if (entry.key in state.fixed) {
     return state.fixed[entry.key] ?? undefined
   }
   return entry.column.fixed === 'left' || entry.column.fixed === 'right' ? entry.column.fixed : undefined
@@ -98,7 +98,7 @@ export function applyTableColumnState(
     if (!state.visibleKeys.includes(key)) return []
     const entry = byKey.get(key)
     if (!entry) return []
-    if (!Object.prototype.hasOwnProperty.call(state.fixed, key)) return [entry.column]
+    if (!(key in state.fixed)) return [entry.column]
     return [{ ...entry.column, fixed: state.fixed[key] ?? undefined }]
   })
 }

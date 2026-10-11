@@ -170,6 +170,7 @@ pageClass: api-index-page
 - [attrs.pageTransform / attrs.resultTransform / getQueryParams](/manual/super-table#查询参数与转换)
 - [searchForm](/manual/super-table#搜索表单)
 - [attrs.pagination](/manual/super-table#分页与请求动作)
+- [tableTools / UITableToolName / UITableDensity / UITableToolbarProps](/manual/super-table#tabletools)
 - [columnProps · 表格根](/manual/super-table#列、选择与展开)
 - [columnProps · 字段列](/manual/fields/table#列-extcolumnsitem)
 - [rowEditor / editable](/manual/fields/table#四种编辑方式)

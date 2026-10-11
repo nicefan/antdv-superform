@@ -111,6 +111,8 @@ SuperTable 默认属性的覆盖顺序为：
 defaultProps.SuperTable → Schema.attrs → 组件传入属性
 ```
 
+`defaultProps.SuperTable.tableTools` 设置工具栏默认工具，例如 `['refresh', 'density', 'columnSetting']`。单表的覆盖顺序为 `全局默认值 → Schema.attrs.tableTools → 组件传入 tableTools → Schema 根级 tableTools`；`false` 或空数组显式关闭。它由 Core 消费，具体用法见[表格工具栏](/manual/super-table#tabletools)。
+
 分页对象逐层合并；`false` 关闭分页，后续显式对象可重新开启。全局配置不嵌套 `attrs`，查询接口、搜索配置、编辑配置及 `beforeQuery/afterQuery` 等根 Schema 行为由单表提供。
 
 `defaultProps.Table` 是共享 Table 主体的基础默认值，适用于表单内 Table 和 SuperTable 的主体。SuperTable 原生属性按 `Table 基础默认值 → SuperTable 默认值 → 局部属性` 覆盖；SuperTable 的受控分页由自己的配置管理，高度策略默认也放在 `defaultProps.SuperTable` 中。

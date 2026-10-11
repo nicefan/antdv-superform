@@ -12,6 +12,7 @@ import { buildColumns } from './buildColumns'
 import {
   applyTableColumnState,
   createTableToolbarProps,
+  createTableViewState,
   normalizeTableTools,
   reconcileTableViewState,
   type TableViewState,
@@ -34,8 +35,8 @@ export default defineComponent({
       type: Object as PropType<Obj>,
     },
     tableViewState: {
-      required: true,
       type: Object as PropType<TableViewState>,
+      default: () => reactive(createTableViewState()),
     },
     isView: Boolean,
     reload: Function as PropType<(param?: Obj) => Promise<any>>,
@@ -217,14 +218,14 @@ export default defineComponent({
       isView,
       effectData,
     })
-    const columns = buildColumns({
+    const columns = reactive(buildColumns({
       childrenMap: model.listData.modelsMap,
       context,
       option,
       attrs,
       isView,
       effectData,
-    })
+    }))
     reconcileTableViewState(columns, tableViewState, attrs.size ?? tableDefaults.size)
     const tableTools = computed(() => normalizeTableTools(option.tableTools))
     const displayColumns = computed(() =>
@@ -290,26 +291,20 @@ export default defineComponent({
 
     const titleString = option.title || option.label
     const { title: titleSlot = titleString, extra: customExtraSlot, ...__slots } = slots
-    const toolbarSlot = tableTools.value.length
-      ? () => getUIRender('tableToolbar')(toolbarProps.value)
-      : undefined
-    const extraSlot =
-      customExtraSlot || toolbarSlot
-        ? () => {
-            const extra = customExtraSlot?.()
-            const toolbar = toolbarSlot?.()
-            if (extra && toolbar) {
-              return getUIRender('space')(
-                { size: 'small', align: 'center' },
-                { default: () => [extra, toolbar] }
-              )
-            }
-            return extra || toolbar
-          }
-        : undefined
-    const titleBar =
-      (titleSlot || extraSlot) &&
-      (() =>
+    const hasExtra = computed(() => Boolean(customExtraSlot || tableTools.value.length))
+    const extraSlot = () => {
+      const extra = customExtraSlot?.()
+      const toolbar = tableTools.value.length ? getUIRender('tableToolbar')(toolbarProps.value) : undefined
+      if (extra && toolbar) {
+        return getUIRender('space')(
+          { size: 'small', align: 'center' },
+          { default: () => [extra, toolbar] }
+        )
+      }
+      return extra || toolbar
+    }
+    const titleBar = () =>
+      (titleSlot || hasExtra.value) ?
         getUIRender('row')(
           { align: 'middle', class: 'sup-titlebar' },
           {
@@ -322,7 +317,7 @@ export default defineComponent({
                     default: createLabelNode({ labelSlot: titleSlot, tooltip: option.tooltip }, effectData),
                   }
                 ),
-              extraSlot &&
+              hasExtra.value &&
                 getUIRender('col')(
                   {
                     class: 'sup-title-buttons',
@@ -333,12 +328,12 @@ export default defineComponent({
                 ),
             ],
           }
-        ))
+        ) : null
     __slots.headerCell = (col) => {
       return slots.headerCell?.(col) || toNode(col.title, effectData)
     }
     const render = () => {
-      const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, ...tableAttrs } = attrs
+      const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, tableTools: _tableTools, ...tableAttrs } = attrs
       return [
         ...modalSlot.map((slot) => slot()),
         (context.wrapTable || ((render) => render()))(() =>
