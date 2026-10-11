@@ -64,6 +64,7 @@ export { registerAutoImportedComponents } from './components'
 export { configure, registerComponent, registerComponents, useAdapter } from './plugin'
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'
 export type { AdapterDefaultProps, SuperFormConfig } from './plugin'
+export type { ModelModifier, ModelModifiers } from './modelModifiers'
 
 export { zhCN, enUS } from './locale'
 export type { SuperFormLocale, SuperFormLocaleConfig } from './locale'
