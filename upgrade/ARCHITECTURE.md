@@ -1,6 +1,6 @@
 # SuperForm UI Adapter 架构总览
 
-维护日期：2026-10-11。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
+维护日期：2026-10-12。本文描述当前源码架构；升级过程见[归档](./status/ACCEPTED-2026-09-16.md)，当前工作与验证结果见[任务记录](../tasks/README.md)。
 
 ## 1. 分层与入口
 
@@ -69,7 +69,7 @@ rowEditor.singleEdit 限制单行，并在实际查询请求前清理编辑状�
 
 选择按稳定行键同步当前记录，清除无效选择；跨远程页保留选择由 preserveSelectedRowKeys 显式控制。数据缩减时回退有效页。稳定行键应由业务提供且保持唯一。标题与按钮同行并保留按钮对齐。Element Plus 支持 pagination.placement 上下六种位置及 none，默认 bottomEnd，分页间距 16px，自适应高度仅额外扣除下方分页。
 
-独立 SuperTable 的 tableTools 按需启用 refresh/density/columnSetting，Core 持有密度、顶层列显隐、顺序与固定状态，Adapter 的 tableToolbar 固定 UI 入口负责交互与外观。refresh 复用 reload；密度映射到原生 size。工具栏合入 title/extra 与 tabs 布局，列偏好不反写 Schema；setColumns 保留仍存在列的偏好，新增列默认可见，删除列清理状态。未配置或 false 时关闭，应用默认值放在 defaultProps.SuperTable。
+独立 SuperTable 的 tableTools 按需启用 refresh/density/columnSetting，Core 持有密度、顶层列显隐、顺序与固定状态，Adapter 的 tableToolbar 固定 UI 入口负责交互与外观。refresh 回到第一页、清除 Core 查询条件及 Adapter 原生排序/筛选状态后刷新，保留每页条数、搜索、Tabs、动态参数及视图偏好；公开 reload 保留当前页和排序筛选。queryResetKey 仅重建原生 Table，不重建 Core 编辑模型。密度映射到原生 size。工具栏合入 title/extra 与 tabs 布局，列偏好不反写 Schema；setColumns 保留仍存在列的偏好，新增列默认可见，删除列清理状态。未配置或 false 时关闭，应用默认值放在 defaultProps.SuperTable。
 
 高度来源统一为 `maxHeight: number | 'viewport' | 'parent'`，数字表示内容滚动区域高度，两个字符串按视口或父元素剩余空间扣除表头、页脚及分页等占用后计算。未配置时自然布局；`fixedHeight: true` 保留固定高度，`heightOffset` 仅在空间计算模式额外扣减。根级、attrs 和全局 Table 默认属性统一归一化，模式字符串不透传原生 maxHeight。高度约束可动态启停，清除时释放监听并恢复样式及原生 scroll；AntDV 根据实际内容决定是否启用纵向滚动，Element Plus 按整表高度换算后下发。
 

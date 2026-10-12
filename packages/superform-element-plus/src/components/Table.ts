@@ -28,14 +28,14 @@ const TableRenderer = defineComponent({
   },
 })
 export const renderTable: UIRenderers['table'] = ({ ref, ...props }, slots = {}) =>
-  h(TableRenderer, { ...props, tableRef: ref }, slots)
+  h(TableRenderer, { ...props, key: props.queryResetKey, tableRef: ref }, slots)
 
 const callHandler = (handler, ...args) => {
   const handlers = Array.isArray(handler) ? handler : [handler]
   handlers.forEach((fn) => fn?.(...args))
 }
 const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Obj, pageData: Obj[], tableParams: UITableParams, pageState: PaginationState) => {
-  const { data, columns = [], selection, expandedKeys, onExpandedChange, onTableChange, pagination, rowKey, scroll, ref: tableRef, ...rest } = props
+  const { data, columns = [], selection, expandedKeys, onExpandedChange, onTableChange, pagination, rowKey, scroll, ref: tableRef, queryResetKey, ...rest } = props
   const flatColumns: Obj[] = []
   const visitColumns = (items: Obj[]) => items.forEach((column) => {
     flatColumns.push(column)
@@ -71,6 +71,7 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
   const renderColumns = (items: Obj[]) =>
     items.map((column) => {
       const { dataIndex, title, children, customRender, key, ...columnAttrs } = column
+      if (queryResetKey) delete columnAttrs.filteredValue
       return h(
         ElTableColumn,
         {
@@ -126,6 +127,7 @@ const renderNativeTable = (props: Parameters<UIRenderers['table']>[0], slots: Ob
     ElTable as any,
     mergeProps({
       ...rest,
+      ...(queryResetKey ? { defaultSort: {} } : {}),
       ref: assignTableRef,
       data: pageData,
       rowKey: rowKey as any,

@@ -96,6 +96,7 @@ export default defineComponent({
       onLoaded,
       goPage,
       reload,
+      resetRefresh,
       query,
       throttleRequest,
       cancelQuery,
@@ -150,6 +151,7 @@ export default defineComponent({
 
     const tableAttrs: Obj = reactive({
       reload,
+      refresh: resetRefresh,
       onRegister: register,
       loading,
     })

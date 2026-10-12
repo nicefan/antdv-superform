@@ -40,11 +40,12 @@ export default defineComponent({
     },
     isView: Boolean,
     reload: Function as PropType<(param?: Obj) => Promise<any>>,
+    refresh: Function as PropType<() => Promise<any>>,
     expandedRowKeys: Array,
     defaultExpandLevel: null as unknown as PropType<number | 'all'>,
   },
   emits: ['register', 'expandedRowsChange'],
-  setup({ option, model, reload, effectData, tableViewState, isView, ...props }, ctx) {
+  setup({ option, model, reload, refresh, effectData, tableViewState, isView, ...props }, ctx) {
     const editInline = option.rowEditor?.editMode === 'inline'
     const attrs: Obj = ctx.attrs
     // 初始化所需的原生默认值也在 Table 本层消费，局部配置优先。
@@ -231,7 +232,13 @@ export default defineComponent({
     const displayColumns = computed(() =>
       applyTableColumnState(columns, tableViewState, tableTools.value.includes('columnSetting'))
     )
-    const toolbarProps = computed(() => createTableToolbarProps(columns, tableViewState, tableTools.value, reload))
+    const queryResetKey = ref(0)
+    const resetRefresh = () => {
+      // 仅重建原生 Table，行编辑草稿和列偏好继续由 Core 持有。
+      queryResetKey.value += 1
+      return refresh?.()
+    }
+    const toolbarProps = computed(() => createTableToolbarProps(columns, tableViewState, tableTools.value, resetRefresh))
 
     const { list, methods, buttonMethods = methods, modalSlot } = context
     // TODO: 补充TS
@@ -345,6 +352,7 @@ export default defineComponent({
               ref: tableRef,
               data: list.value,
               columns: displayColumns.value,
+              queryResetKey: queryResetKey.value,
               ...tableAttrs,
               density: tableTools.value.includes('density') ? tableViewState.density : undefined,
               selection: rowSelection && {

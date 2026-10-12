@@ -90,3 +90,28 @@ describe('表格查询', () => {
     expect(api).toHaveBeenCalledWith({ current: 1, size: 10, keyword: 'last' }, { signal: expect.any(AbortSignal) })
   })
 })
+
+describe('工具栏重置刷新', () => {
+  it('回到第一页并清除排序筛选，保留页大小及其它查询来源；reload 仍保留当前页', async () => {
+    const api = vi.fn(async (params) => ({ current: params.current, size: params.size, total: 100, records: [{ id: 1 }] }))
+    const state = useQuery({
+      attrs: { pagination: { current: 4, pageSize: 20 }, filterSortTransform: ({ filters, sorters }) => ({ ...filters, orderBy: sorters }) },
+      apis: { query: api },
+    }, vi.fn())
+    state.setQueryParams({ keyword: 'keep' })
+    state.setQueryParams({ status: 'active' }, 'tabs')
+    state.setQueryParams({ tenantId: 8 }, 'dynamic')
+    await state.handleTableChange({ action: 'sort', filters: { name: ['Alice'] }, sorters: [{ field: 'name', order: 'asc' }], remote: true })
+    await state.goPage(4)
+    api.mockClear()
+    await state.resetRefresh()
+    expect(api).toHaveBeenCalledOnce()
+    expect(api.mock.calls[0][0]).toEqual({ current: 1, size: 20, keyword: 'keep', status: 'active', tenantId: 8, orderBy: [] })
+    expect(state.getQueryParams()).toEqual({ keyword: 'keep', status: 'active', tenantId: 8, orderBy: [] })
+    expect(state.pagination.value).toMatchObject({ current: 1, pageSize: 20 })
+    await state.goPage(3)
+    api.mockClear()
+    await state.reload()
+    expect(api.mock.calls[0][0].current).toBe(3)
+  })
+})

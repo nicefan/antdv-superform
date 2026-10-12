@@ -440,7 +440,7 @@ const [register, table] = useTable({
 
 | 工具 | 行为 |
 | --- | --- |
-| `refresh` | 调用 `reload()`，保留当前页及查询条件；不会重置搜索表单或列偏好 |
+| `refresh` | 回到第一页，清除表格排序和筛选后重新查询；保留每页条数、搜索表单、Tabs、动态参数和列偏好，公开 `reload()` 仍保留当前页与排序筛选 |
 | `density` | 选择紧凑、默认或宽松；统一值为 `small`、`middle`、`large`，Element Plus 的 `middle` 映射为原生 `default` |
 | `columnSetting` | 勾选列显隐、拖拽调整顺序、切换左右固定；全选恢复全部可见，重置恢复当前 Schema 的顺序、可见列和固定设置 |
 

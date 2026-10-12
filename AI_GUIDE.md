@@ -235,7 +235,7 @@ attrs: {
 
 导出当前条件直接使用 `api.export(table.getQueryParams())`，不要重新执行转换器或 beforeQuery；修改 getter 返回副本不影响后续查询。SuperTable 的 effectData.queryParams 与该 getter 的条件一致。
 
-工具栏在根 Schema 配置 tableTools: ['refresh', 'density', 'columnSetting']，未配置、false 或空数组关闭；应用默认值为 defaultProps.SuperTable.tableTools，根级优先于 attrs 和组件传入属性。refresh 复用 reload 并保留当前页，density 在两套 UI 映射原生 size，columnSetting 支持顶层列显隐、拖拽排序、左右固定和重置。它与 buttons/extra/tabs 共存，列偏好不反写 Schema；setColumns 保留仍存在的列偏好，追加新增列，实例卸载后不保留。类型 UITableToolName/UITableDensity/UITableToolbarColumn/UITableToolbarProps 从产品根入口导入。详见[工具栏手册](https://nicefan.github.io/antdv-superform/manual/super-table#tabletools)。
+工具栏在根 Schema 配置 tableTools: ['refresh', 'density', 'columnSetting']，未配置、false 或空数组关闭；应用默认值为 defaultProps.SuperTable.tableTools，根级优先于 attrs 和组件传入属性。refresh 回到第一页、清除表格 sort/filter 后刷新，density 在两套 UI 映射原生 size，columnSetting 支持顶层列显隐、拖拽排序、左右固定和重置。它与 buttons/extra/tabs 共存，列偏好不反写 Schema；setColumns 保留仍存在的列偏好，追加新增列，实例卸载后不保留。类型 UITableToolName/UITableDensity/UITableToolbarColumn/UITableToolbarProps 从产品根入口导入。详见[工具栏手册](https://nicefan.github.io/antdv-superform/manual/super-table#tabletools)。
 
 高度配置可写在 Schema 根级或 attrs，根级优先，应用级默认值写在 defaultProps.SuperTable：maxHeight 为数字时限制内容滚动区域高度（不含表头和分页），为 'viewport' / 'parent' 时按对应剩余空间计算。未配置时自然布局，无默认高度模式；fixedHeight: true 配合 maxHeight 保留固定高度，heightOffset 仅对 'viewport' / 'parent' 额外扣减。固定高度和偏移单独配置不启用高度约束。
 

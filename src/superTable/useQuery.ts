@@ -129,6 +129,12 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, sou
     if (pagination.value) pageParam.current = 1
     return request(param)
   }
+  const resetRefresh = () => {
+    // 只清除表格查询状态，保留搜索、Tabs、动态参数和每页条数。
+    tableState.value = { filters: {}, sorters: [] }
+    pageParam.current = 1
+    return request()
+  }
   const reportQueryError = (error) => {
     // 内部调度没有调用者接收拒绝；公开 query/reload 仍透传原始异常。
     if (error?.name !== 'AbortError') console.error(error)
@@ -215,6 +221,7 @@ export function useQuery(option: Partial<RootTableOption>, updateSource: Fn, sou
   return {
     goPage,
     reload: request,
+    resetRefresh,
     throttleRequest,
     cancelQuery,
     setQueryParams,

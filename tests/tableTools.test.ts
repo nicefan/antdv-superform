@@ -59,7 +59,7 @@ describe('Table toolbar state', () => {
     ])
   })
 
-  it('refresh 只调用 Core 注入的 reload', () => {
+  it('refresh 委托 Core 注入的重置刷新动作', () => {
     const reload = vi.fn()
     const state = createTableViewState()
     const columns = [{ key: 'name', title: 'Name' }]

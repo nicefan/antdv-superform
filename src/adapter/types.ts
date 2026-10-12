@@ -210,6 +210,8 @@ export interface UITableColumn extends Obj {
 }
 
 export interface UITableRenderProps extends Obj {
+  /** 重置查询的版本号；Adapter 重建原生查询状态，不重建 Core 行编辑模型。 */
+  queryResetKey?: number
   /** Core 密度语义，由 Adapter 转为原生 Table size。 */
   density?: UITableDensity
   data: Obj[]
