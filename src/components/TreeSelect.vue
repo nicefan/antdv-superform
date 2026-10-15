@@ -1,4 +1,3 @@
-
 <script lang="ts">
 import { ref, unref, watchPostEffect, watch, defineComponent, h, toRef } from 'vue'
 import base from './base'
@@ -34,12 +33,7 @@ export default defineComponent({
         props.onChange?.(...args)
       }
     }
-    return () =>
-      h(
-        base.TreeSelect,
-        { allowClear: true, placeholder: `请选择${label}`, onChange, treeData: dataRef.value },
-        ctx.slots
-      )
+    return () => h(base.TreeSelect, { placeholder: `请选择${label}`, onChange, treeData: dataRef.value }, ctx.slots)
   },
 })
 </script>
