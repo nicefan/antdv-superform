@@ -13,7 +13,7 @@ export default function createButtons({ config, methods, effectData, isView }: U
   let actions = buttons.actions || []
   if (!visibleIn) {
     actions = actions.filter((item) => {
-      if (typeof item === 'string') {
+      if (typeof item === 'string' || item.name) {
         return !isView
       } else {
         const itemVisibleIn = item.visibleIn

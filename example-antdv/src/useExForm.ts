@@ -766,6 +766,7 @@ export default function exampleForm() {
           columnProps: { width: 120 },
           buttonProps: { type: 'link' },
           labelMode: 'icon',
+          // visibleIn: 'form',
           actions: [
             {
               name: 'add',

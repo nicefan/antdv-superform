@@ -10,6 +10,7 @@ import SuperDetail from '../../superDetail/SuperDetail.vue'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode } from '../../utils'
 import { isFunction } from 'lodash-es'
+import type { TableRowState } from './useTableRows'
 
 function buildDetail(option, modelsMap, rowKey) {
   const source = ref({})
@@ -51,23 +52,64 @@ type BuildDataParam = {
   option: RootTableOption
   model: ModelDataGroup
   orgList: Ref<Obj[]>
-  rowKey: Fn<PropertyKey>
-  listener: { onSave: AsyncFn; onUpdate: AsyncFn; onDelete: AsyncFn }
+  rows: TableRowState
+  reload?: (param?: Obj) => Promise<any>
   isView?: boolean
   effectData?: Obj
 }
 
-function buildData({ option, model, orgList, rowKey, listener, isView, effectData }: BuildDataParam) {
+export interface TableContext {
+  list: Ref<Obj[]>
+  methods: Obj
+  buttonMethods?: Obj
+  modalSlot: Fn[]
+  getEditRender?: Fn
+  editButtonsSlot?: Fn
+  wrapTable?: Fn
+}
+
+/** 编辑流程与接口、本地写回在同一模块组合，Table 只消费数据、动作和渲染能力。 */
+function buildData({ option, model, orgList, rows, reload, isView, effectData }: BuildDataParam): TableContext {
+  const { rowKey, rowSelection, selectedRowKeys, selectedRows, expandedRowKeys } = rows
+  const listener = {
+    async onSave(data, index?: number) {
+      if (option.apis?.save) {
+        await option.apis.save(data)
+        if (data.parentId) expandedRowKeys.value = [...expandedRowKeys.value, data.parentId]
+        reload?.()
+        return
+      }
+      if (index !== undefined) orgList.value.splice(index + 1, 0, data)
+      else orgList.value.push(data)
+    },
+    async onUpdate(newData, oldData) {
+      if (option.apis?.update) await option.apis.update(newData)
+      Object.assign(oldData, newData)
+      reload?.()
+    },
+    async onDelete(items: Obj[]) {
+      const keys = items.map(rowKey)
+      try {
+        await option.apis?.delete?.(keys, items)
+      } catch (error) {
+        console.error(error)
+        return error
+      }
+      if (rowSelection) {
+        selectedRowKeys.value = selectedRowKeys.value.filter((key) => !keys.includes(key))
+        selectedRows.value = selectedRows.value.filter((item) => !keys.includes(rowKey(item)))
+      }
+      items.forEach((item) => {
+        const key = rowKey(item)
+        const index = orgList.value.findIndex((record) => record === item || rowKey(record) === key)
+        // 接口等待期间源数组可能已变化，未找到目标时不能误删末行。
+        if (index !== -1) orgList.value.splice(index, 1)
+      })
+      return reload?.()
+    },
+  }
   const { modelsMap: childrenMap } = model.listData
-  const context: {
-    list: Ref
-    methods: Obj
-    buttonMethods?: Obj
-    modalSlot: Fn[]
-    getEditRender?: Fn
-    editButtonsSlot?: Fn
-    wrapTable?: Fn
-  } = {
+  const context: TableContext = {
     list: orgList,
     modalSlot: [],
     methods: {
@@ -84,9 +126,9 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
   if (!isView && editable) {
     const editableRef = computed(() => (isFunction(editable) ? editable(effectData) : editable))
 
-    const { methods, ..._context } = useTableEdit({ model, orgList, editableRef, rowKey })
+    const { methods, getEditRender } = useTableEdit({ model, orgList, editableRef, rowKey })
     Object.assign(context.methods, methods)
-    Object.assign(context, _context)
+    context.getEditRender = getEditRender
   } else if (editMode === 'inline') {
     const { list, methods, buttonMethods, editButtonsSlot, getEditRender, wrapTable } = inlineRender({
       childrenMap,
@@ -97,7 +139,10 @@ function buildData({ option, model, orgList, rowKey, listener, isView, effectDat
     })
     context.list = list
     Object.assign(context.methods, methods)
-    Object.assign(context, { buttonMethods, editButtonsSlot, getEditRender, wrapTable })
+    context.buttonMethods = buttonMethods
+    context.editButtonsSlot = editButtonsSlot
+    context.getEditRender = getEditRender
+    context.wrapTable = wrapTable
   }
   if (editMode === 'modal' || addMode === 'modal') {
     const { modalSlot, methods } = modalRender({ rowKey, option, listener, orgList })

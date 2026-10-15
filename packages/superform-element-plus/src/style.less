@@ -1,3 +1,59 @@
+@import '../../shared/table.less';
+
+.sup-el-descriptions-form {
+  width: 100%;
+
+  .sup-descriptions-form-item {
+    padding: 8px 0;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+  .sup-descriptions-form-label {
+    max-width: 100%;
+    padding-right: 12px;
+    text-align: right;
+  }
+  .sup-descriptions-form-content {
+    min-width: 0;
+  }
+  &.has-colon .sup-descriptions-form-label:not(.sup-label-no-colon) > label::after {
+    content: ':';
+  }
+  &.is-vertical .sup-descriptions-form-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  &.is-vertical .sup-descriptions-form-label {
+    padding-bottom: 6px;
+    text-align: left;
+  }
+  .sup-descriptions-item-input {
+    color: var(--el-text-color-regular);
+    background-color: var(--el-fill-color-light);
+    border-color: var(--el-border-color);
+    border-radius: var(--el-border-radius-base);
+  }
+}
+
+.sup-table-tabs {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  > .el-tabs {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.sup-column-settings-popup.el-dropdown__popper.el-popper {
+  border: 0;
+}
+
+.sup-column-settings .sup-column-setting-header {
+  padding-inline: 1em;
+}
+
 .sup-table-adapter > .sup-table-pagination {
   display: flex;
 

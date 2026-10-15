@@ -2,10 +2,18 @@
   <section class="demo-section">
     <h2>同一份数据，不同呈现</h2>
     <div class="demo-guide">
-      修改姓名或切换“展示备注”，查看详情中的联动结果。下方业务包装接收 title/actions/default
+      切换详情展示方式，对比普通、表格和表单式详情；表单式详情使用输入框外观展示只读内容。修改姓名或切换“展示备注”，查看详情中的联动结果。下方业务包装接收 title/actions/default
       插槽；按钮组支持折叠、菜单、确认及动态禁用。
     </div>
     <div class="demo-actions">
+      <label class="demo-control-label">
+        详情展示方式
+        <select class="demo-control-input" v-model="details.mode">
+          <option value="default">普通详情</option>
+          <option value="table">表格详情</option>
+          <option value="form">表单式详情</option>
+        </select>
+      </label>
       <label class="demo-control-label"
         ><input class="demo-control-input" v-model="showNote" type="checkbox" />展示备注</label
       ><label class="demo-control-label"
@@ -13,7 +21,8 @@
       ><button class="demo-control" @click="model.name = model.name === '陈清禾' ? '林小满' : '陈清禾'">修改姓名</button
       ><button class="demo-control" @click="detailModal.openModal()">弹窗预览</button>
     </div>
-    <SuperDetail :schema="details" :data-source="model" />
+    <!-- 模式是静态配置，切换时重建详情实例以重新读取。 -->
+    <SuperDetail :key="details.mode" :schema="details" :data-source="model" />
     <SuperForm :schema="customSchema"
       ><template #businessHint="scope"
         ><span class="demo-muted">命名插槽：当前联系人 {{ scope.formData?.name }}</span></template
@@ -73,8 +82,8 @@ const model = reactive({
 const showNote = ref(true),
   locked = ref(false)
 const { isElement, event, status } = useDemo(() => ({ model, showNote: showNote.value, locked: locked.value }))
-const details: ExtDescriptionsOption = {
-  attrs: { bordered: true },
+const details = reactive<ExtDescriptionsOption>({
+  mode: 'form',
   subSpan: 12,
   subItems: [
     { field: 'name', label: '姓名' },
@@ -93,7 +102,7 @@ const details: ExtDescriptionsOption = {
     },
     { field: 'note', label: '备注', hidden: () => !showNote.value, span: 24 },
   ],
-}
+})
 const BusinessGroup = defineComponent({
   setup(_, { slots }) {
     return () =>
@@ -171,7 +180,7 @@ const buttons = {
     { label: '折叠操作二', onClick: () => event('折叠操作二') },
   ],
 }
-const detailModal = useModal(() => h(SuperDetail, { schema: details, dataSource: model }), {
+const detailModal = useModal(() => h(SuperDetail, { key: details.mode, schema: details, dataSource: model }), {
   title: '当前资料预览',
   width: 780,
 })

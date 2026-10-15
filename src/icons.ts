@@ -1,10 +1,10 @@
 import { h } from 'vue'
 
 // 统一用 currentColor 和 em 尺寸，让内置图标自然继承所在按钮、标签或提示的样式。
-function createIcon(paths: string[], spinning = false) {
+function createIcon(paths: string[], spinning = false, canvas: { viewBox: string; strokeWidth: number; fill?: string } = { viewBox: '0 0 24 24', strokeWidth: 1.8 }) {
   return () => h('svg', {
-    viewBox: '0 0 24 24', width: '1em', height: '1em', fill: 'none',
-    stroke: 'currentColor', 'stroke-width': 1.8, 'stroke-linecap': 'round',
+    viewBox: canvas.viewBox, width: '1em', height: '1em', fill: canvas.fill ?? 'none',
+    stroke: 'currentColor', 'stroke-width': canvas.strokeWidth, 'stroke-linecap': 'round',
     'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false',
     style: { display: 'inline-block', verticalAlign: '-0.125em', flexShrink: 0 },
   }, [
@@ -28,9 +28,17 @@ export const builtInIcons = {
   submit: createIcon(['M3 11L21 3l-8 18-3-7zM10 14L21 3']),
   search: createIcon(['M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0M15 15l6 6']),
   reset: createIcon(['M4 10a8 8 0 1 1 1 8M4 4v6h6']),
-  refresh: createIcon(['M4 10a8 8 0 0 1 14-4l2 3M20 3v6h-6', 'M20 14a8 8 0 0 1-14 4l-2-3M4 21v-6h6']),
-  density: createIcon(['M5 6h14M5 12h14M5 18h14', 'M3 4v4M3 16v4M21 4v4M21 16v4']),
-  columnSetting: createIcon(['M4 6h16M4 12h16M4 18h16', 'M8 4v4M16 10v4M11 16v4']),
+  // 统一使用 16px 网格，直线落在半像素上；不再分别裁切画布后缩放描边。
+  refresh: createIcon(['M14.5 3v4h-4', 'M14.5 7a7 7 0 1 0-1.5 5.3'], false, { viewBox: '0 0 16 16', strokeWidth: 1 }),
+  density: createIcon(['M2.5.5h11M2.5 15.5h11M8.5 4v8M6.5 6l2-2 2 2M6.5 10l2 2 2-2'], false, { viewBox: '0 0 16 16', strokeWidth: 1 }),
+  columnSetting: createIcon(['M6.5.5h3l.5 2 1.5.9 2-.5 1.5 2.6-1.5 1.4v2.2l1.5 1.4-1.5 2.6-2-.5-1.5.9-.5 2h-3l-.5-2-1.5-.9-2 .5L1 10.5l1.5-1.4V6.9L1 5.5l1.5-2.6 2 .5 1.5-.9z', 'M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0'], false, { viewBox: '0 0 16 16', strokeWidth: 1 }),
+  // 用实心圆保证小尺寸拖动标识可见，避免极短描边被浏览器省略。
+  dragHandle: () => h('svg', {
+    viewBox: '0 0 16 16', width: '1em', height: '1em', fill: 'currentColor',
+    'aria-hidden': 'true', focusable: 'false',
+  }, [3, 8, 13].flatMap((cy) => [5, 11].map((cx) => h('circle', { cx, cy, r: 1.25 })))),
+  fixLeft: createIcon(['M11 0h1v16h-1zM3 4l5 4-5 4z'], false, { viewBox: '0 0 16 16', strokeWidth: 0, fill: 'currentColor' }),
+  fixRight: createIcon(['M4 0h1v16H4zM13 4L8 8l5 4z'], false, { viewBox: '0 0 16 16', strokeWidth: 0, fill: 'currentColor' }),
   more: createIcon(['M5 12h.01M12 12h.01M19 12h.01']),
   expand: createIcon(['M5 9l7 7 7-7']),
   collapse: createIcon(['M5 15l7-7 7 7']),

@@ -32,7 +32,13 @@
 
 ## 表格工具栏待验证
 
-- [ ] 两套 UI 人工检查工具栏与分组列、序号/操作列、行编辑、Tabs 和自动高度的组合；补查真实鼠标拖拽、键盘操作及左右固定列在不同宽度下的表现。基础工具交互及表单内 Table 兼容已做浏览器回归，见 [专题记录](./table-toolbar.md)。
+- [ ] 两套 UI 检查标题/extra、自定义 Tabs 操作插槽、普通 Tabs 和 Card Tabs 布局，以及行编辑 Form 包裹范围和自动高度。
+- [ ] 两套 UI 检查静态配置和默认值覆盖、dynamicAttrs 启停、密度/列显隐/拖动/固定/重置、setColumns 保留偏好及多实例隔离。
+- [ ] 两套 UI 检查刷新只查询一次、清除排序筛选并保留其他条件；换列及 reload 不恢复旧条件，合法配置更新可重新控制原生属性。
+- [ ] 补查异步 Schema、展开 Ref 回写、增删链路，以及分组列、键盘操作与横向滚动。
+- [ ] 用户允许修改测试后，将 tests/tableTools.test.ts 的内部模块导入迁移至 packages/shared/tableTools；本次按约定未修改测试，旧导入路径已失效。
+- [ ] 用户要求同步正式文档时，更新 Core slots/UI 展示边界、移除的 tableToolbar/tableFilter 协议及工具配置入口；需要时再构建 REPL。
+- [ ] 按需定位 AntDV 查询页 ID 排序表头可访问名称为 `[object Object],` 的来源，确认读屏文案。
 
 ## 表格行编辑待验证
 

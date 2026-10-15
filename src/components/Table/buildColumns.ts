@@ -8,6 +8,7 @@ import { buildInnerNode } from '../Collections'
 import { defaults, isFunction, isPlainObject, get as objGet, set as objSet } from 'lodash-es'
 import { globalConfig, globalProps } from '../../plugin'
 import { createLabelNode } from '../../utils/labelNode'
+import type { TableContext } from './buildData'
 
 const InputNode = defineComponent({
   props: {
@@ -67,13 +68,7 @@ const getEditNode = (option) => {
 
 interface BuildColumnsParam {
   childrenMap: ModelsMap<MixOption>
-  context: {
-    list: Ref
-    methods?: Obj // 按钮组件绑定方法
-    buttonMethods?: Obj // 带禁用状态等配置的按钮方法
-    getEditRender?: Fn // 行内编辑render方法
-    editButtonsSlot?: Fn
-  }
+  context: TableContext
   effectData: Obj
   attrs: Obj
   option: Obj // 表格配置
@@ -91,7 +86,7 @@ export function buildColumns({
   const { methods, buttonMethods, getEditRender, editButtonsSlot } = context
   const effectData = getEffectData({ list: parentData.value, isView, parent: parentData })
   // 弹窗模式的 editable 用于编辑配置，不能再回退为直接修改源数据的单元格输入。
-  const allowColumnEdit = option.rowEditor?.editMode !== 'modal'
+  const allowColumnEdit = !isView && option.rowEditor?.editMode !== 'modal'
 
   const columns = (function getColumns(_models = childrenMap) {
     const _columns: any[] = []
@@ -123,7 +118,7 @@ export function buildColumns({
         defaults(column, option.columnProps, globalProps.Column)
 
         const viewRender = column.customRender || getViewNode(col) || undefined
-        const editRender = getEditRender ? getEditRender(col, viewRender) : allowColumnEdit ? getEditNode(col) : undefined
+        const editRender = !isView && getEditRender ? getEditRender(col, viewRender) : allowColumnEdit ? getEditNode(col) : undefined
         column.customRender = parseRender(viewRender, editRender, effectData)
         _columns.push(column)
       }
@@ -157,7 +152,7 @@ function parseRender(viewRender, editRender, effectData) {
       }
       return result
     }
-    return (param) => h(__render, { ...effectData, ...param, current: param.record })
+    return (param) => h(__render, { ...effectData, value: param.text, ...param, current: param.record })
   } else {
     return ({ text }) => String(text ?? '')
   }
@@ -205,5 +200,6 @@ export const buildIndexColumn = (option, attrs) => {
       return ((pagination?.current || 1) - 1) * (pagination?.pageSize || 10) + index + 1
     },
     ...(isPlainObject(indexColumn) && indexColumn),
+    isIndexColumn: true,
   }
 }

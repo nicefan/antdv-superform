@@ -46,11 +46,11 @@ function renderButton(button: UIActionItem, props: UIActionGroupProps) {
   }
   let content: VNodeChild = button.render
     ? button.render(attrs)
-    : h(ElButton, attrs, () => [
-        !props.labelOnly && button.icon?.(),
-        (!props.iconOnly || !button.icon) && button.label(),
-        button.menu && builtInIcons.expand(),
-      ])
+    : h(ElButton, attrs, {
+        icon: !props.labelOnly ? button.icon : undefined,
+        default: () => [(!props.iconOnly || !button.icon) && button.label(), button.menu && builtInIcons.expand()],
+      })
+
   if (button.menu) content = dropdown(button, content)
   const tooltip = button.tooltip?.()
   return h(

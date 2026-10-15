@@ -1,0 +1,28 @@
+.sup-column-settings {
+  min-width: 280px;
+}
+.sup-column-setting-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+}
+.sup-column-setting-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sup-column-drag-handle {
+  display: inline-flex;
+  width: 12px;
+  opacity: 0.45;
+}
+// 整行可以拖动，内部按钮及勾选控件保留原生操作手势。
+.sup-column-settings .sup-column-setting-row[draggable='true'] {
+  user-select: none;
+  cursor: move;
+  .sup-column-drag-handle {
+    cursor: inherit;
+  }
+}

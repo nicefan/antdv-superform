@@ -1,22 +1,14 @@
 <script lang="ts">
-import { computed, h, isRef, ref, reactive, type PropType, defineComponent, toRaw, toRef, unref, watch } from 'vue'
-import { nanoid } from 'nanoid'
+import { ref, reactive, type PropType, defineComponent, toRef, unref, watch } from 'vue'
 import { createButtons } from '../buttons'
 import { buildData } from './buildData'
-import { getUIRender, getUIService } from '../../adapter'
+import { getUIRender } from '../../adapter'
 import type { RootTableOption } from '../../exaTypes'
 import { toNode, createLabelNode } from '../../utils'
 import { globalProps } from '../../plugin'
-import TabsFilter from './TabsFilter.vue'
+import { useTableTabs } from './useTableTabs'
 import { buildColumns } from './buildColumns'
-import {
-  applyTableColumnState,
-  createTableToolbarProps,
-  createTableViewState,
-  normalizeTableTools,
-  reconcileTableViewState,
-  type TableViewState,
-} from './tableTools'
+import { useTableRows } from './useTableRows'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -24,7 +16,7 @@ export default defineComponent({
   props: {
     option: {
       required: true,
-      type: Object as PropType<GetOption<'Table'> & Pick<RootTableOption, 'apis' | 'tableTools'>>,
+      type: Object as PropType<GetOption<'Table'> & Pick<RootTableOption, 'apis'>>,
     },
     model: {
       required: true,
@@ -34,9 +26,9 @@ export default defineComponent({
       required: true,
       type: Object as PropType<Obj>,
     },
-    tableViewState: {
-      type: Object as PropType<TableViewState>,
-      default: () => reactive(createTableViewState()),
+    tableInstance: {
+      type: Object,
+      default: () => ({}),
     },
     isView: Boolean,
     reload: Function as PropType<(param?: Obj) => Promise<any>>,
@@ -45,216 +37,53 @@ export default defineComponent({
     defaultExpandLevel: null as unknown as PropType<number | 'all'>,
   },
   emits: ['register', 'expandedRowsChange'],
-  setup({ option, model, reload, refresh, effectData, tableViewState, isView, ...props }, ctx) {
-    const editInline = option.rowEditor?.editMode === 'inline'
+  setup(componentProps, ctx) {
+    const { option, model, reload, effectData, isView } = componentProps
     const attrs: Obj = ctx.attrs
-    // 初始化所需的原生默认值也在 Table 本层消费，局部配置优先。
     const tableDefaults = globalProps.Table || {}
-    const keyMap = new WeakMap<object, PropertyKey>()
-    const rowKeyField = attrs.rowKey || tableDefaults.rowKey || 'id'
-    const rowKey = (record) => {
-      const key = typeof rowKeyField === 'function' ? rowKeyField(record) : record[rowKeyField]
-      if (key !== undefined && key !== null) return key
-
-      const raw = toRaw(record)
-      if (!keyMap.has(raw)) {
-        keyMap.set(raw, nanoid(12))
-      }
-      return keyMap.get(raw)
-    }
     const orgList = toRef(model, 'refData')
-    const __rowSelection = (option.attrs?.rowSelection ?? tableDefaults.rowSelection) || undefined
-    const configuredSelectedKeys = __rowSelection?.selectedRowKeys
-    const selectedRowKeys: Ref<any[]> = isRef(configuredSelectedKeys)
-      ? (configuredSelectedKeys as Ref<any[]>)
-      : ref<any[]>(configuredSelectedKeys || [])
-    const selectedRows = ref<Obj[]>([])
-    const {
-      selectedRowKeys: _selectedRowKeys,
-      onChange: _onSelectionChange,
-      getCheckboxProps: _getCheckboxProps,
-      ...selectionAttrs
-    } = __rowSelection || {}
-    const rowSelection = __rowSelection && {
-      attrs: {
-        fixed: true,
-        ...selectionAttrs,
+    // 静态配置在初始化时合并；动态属性仍由 useControl 处理，不监听 option.attrs。
+    const rows = useTableRows(
+      orgList,
+      {
+        ...tableDefaults,
+        ...attrs,
+        // 保留静态配置中已有的 Ref，避免上层属性解包后丢失展开键的回写绑定。
+        expandedRowKeys:
+          option.attrs?.expandedRowKeys ?? componentProps.expandedRowKeys ?? tableDefaults.expandedRowKeys,
+        defaultExpandLevel: componentProps.defaultExpandLevel,
       },
-      onChange: (_selectedRowKeys, _selectedRows, info) => {
-        if (__rowSelection?.preserveSelectedRowKeys) {
-          const currentRows = availableRows()
-          const offPage = selectedRows.value.filter((row) => !currentRows.has(rowKey(row)))
-          const merged = new Map([...offPage, ..._selectedRows].map((row) => [rowKey(row), row]))
-          _selectedRowKeys = [...new Set([...offPage.map(rowKey), ..._selectedRowKeys])]
-          _selectedRows = _selectedRowKeys.map((key) => merged.get(key)).filter(Boolean)
-        }
-        if (
-          _selectedRowKeys.length === selectedRowKeys.value.length &&
-          _selectedRowKeys.every((key, index) => key === selectedRowKeys.value[index]) &&
-          _selectedRows.length === selectedRows.value.length &&
-          _selectedRows.every((row, index) => row === selectedRows.value[index])
-        )
-          return
-        selectedRowKeys.value = _selectedRowKeys
-        selectedRows.value = _selectedRows
-        __rowSelection?.onChange?.(_selectedRowKeys, _selectedRows, info)
-      },
-      isRowSelectable: (record) => {
-        if (editInline && !orgList.value.includes(record)) return false
-        return !__rowSelection?.getCheckboxProps?.(record)?.disabled
-      },
-    }
-
-    const childrenField = attrs.childrenColumnName || tableDefaults.childrenColumnName || 'children'
-    const availableRows = () => {
-      const rows = new Map<any, Obj>()
-      const visit = (items) =>
-        items.forEach((item) => {
-          rows.set(rowKey(item), item)
-          if (Array.isArray(item[childrenField])) visit(item[childrenField])
-        })
-      visit(orgList.value)
-      return rows
-    }
-    watch(
-      () => [availableRows(), [...selectedRowKeys.value]] as const,
-      ([rows, keys]) => {
-        // 默认选择只关联当前数据；显式保留跨页选择时，仍将同键对象替换为最新实例。
-        const retained = __rowSelection?.preserveSelectedRowKeys
-        const nextKeys = retained ? [...keys] : keys.filter((key) => rows.has(key))
-        const previous = new Map(selectedRows.value.map((row) => [rowKey(row), row]))
-        const nextRows = nextKeys
-          .map((key) => rows.get(key) ?? (retained ? previous.get(key) : undefined))
-          .filter((row): row is Obj => !!row)
-        const changed =
-          nextKeys.length !== keys.length ||
-          nextRows.length !== selectedRows.value.length ||
-          nextRows.some((row, index) => row !== selectedRows.value[index])
-        if (changed) {
-          selectedRows.value = nextRows
-          if (nextKeys.length !== keys.length) selectedRowKeys.value = nextKeys
-          __rowSelection?.onChange?.(nextKeys, nextRows, { type: 'none' })
-        }
-      },
-      { immediate: true }
+      option.rowEditor?.editMode === 'inline',
+      (keys) => ctx.emit('expandedRowsChange', keys)
     )
-    const getExpandKeys = (list, deep = 0, level = 1) => {
-      const arr: any[] = []
-      const isEnd = deep === level
-      list.forEach((item) => {
-        if (item[childrenField]) {
-          arr.push(rowKey(item))
-          if (!isEnd) {
-            arr.push(...getExpandKeys(item[childrenField], deep, level + 1))
-          }
-        }
-      })
-      return arr
-    }
-    const expandedRowKeys = ref(option.attrs?.expandedRowKeys ?? tableDefaults.expandedRowKeys ?? [])
-    const updateExpand = (val) => {
-      expandedRowKeys.value = val
-      ctx.emit('expandedRowsChange', val)
-    }
-    if (props.defaultExpandLevel || (attrs.defaultExpandAllRows ?? tableDefaults.defaultExpandAllRows)) {
-      watch(
-        orgList,
-        (list, old) => {
-          if (list.length && !old?.length) {
-            updateExpand(getExpandKeys(list, Number(props.defaultExpandLevel)))
-          }
-        },
-        { immediate: true }
-      )
-    }
-
-    const listener = {
-      async onSave(data, index?: number) {
-        if (option.apis?.save) {
-          await option.apis.save(data)
-          if (data.parentId) {
-            expandedRowKeys.value = [...expandedRowKeys.value, data.parentId]
-          }
-          reload?.()
-          return
-        }
-        if (index !== undefined) orgList.value.splice(index + 1, 0, data)
-        else orgList.value.push(data)
-      },
-      async onUpdate(newData, oldData) {
-        if (option.apis?.update) {
-          await option.apis.update(newData)
-        }
-        Object.assign(oldData, newData)
-        reload?.()
-      },
-      async onDelete(items: any[]) {
-        const keys = items.map((item) => rowKey(item))
-        try {
-          await option.apis?.delete?.(keys, items)
-        } catch (error) {
-          console.error(error)
-          return error
-        }
-        if (rowSelection) {
-          selectedRowKeys.value = selectedRowKeys.value.filter((key) => !keys.includes(key))
-          selectedRows.value = selectedRows.value.filter((item) => !keys.includes(rowKey(item)))
-        }
-        items.forEach((item) => {
-          const key = rowKey(item)
-          const index = orgList.value.findIndex((record) => record === item || rowKey(record) === key)
-          // 接口等待期间源数组可能已变化，未找到目标时不能用 -1 误删末行。
-          if (index !== -1) orgList.value.splice(index, 1)
-        })
-        return reload?.()
-      },
-    }
-
+    const { rowKey, rowSelection, selectedRowKeys, selectedRows, expandedRowKeys, setExpandedRowKeys } = rows
     const context = buildData({
       option: option as RootTableOption,
       model,
       orgList,
-      rowKey,
-      listener,
+      rows,
+      reload,
       isView,
       effectData,
     })
-    const columns = reactive(buildColumns({
-      childrenMap: model.listData.modelsMap,
-      context,
-      option,
-      attrs,
-      isView,
-      effectData,
-    }))
-    reconcileTableViewState(columns, tableViewState, attrs.size ?? tableDefaults.size)
-    const tableTools = computed(() => normalizeTableTools(option.tableTools))
-    const displayColumns = computed(() =>
-      applyTableColumnState(columns, tableViewState, tableTools.value.includes('columnSetting'))
+    const columns = reactive(
+      buildColumns({
+        childrenMap: model.listData.modelsMap,
+        context,
+        option,
+        attrs,
+        isView,
+        effectData,
+      })
     )
-    const queryResetKey = ref(0)
-    const resetRefresh = () => {
-      // 仅重建原生 Table，行编辑草稿和列偏好继续由 Core 持有。
-      queryResetKey.value += 1
-      return refresh?.()
-    }
-    const toolbarProps = computed(() => createTableToolbarProps(columns, tableViewState, tableTools.value, resetRefresh))
-
     const { list, methods, buttonMethods = methods, modalSlot } = context
-    // TODO: 补充TS
     const actions = {
       selectedRowKeys,
       selectedRows,
-      setSelectedRows: (arr: any[]) => {
-        selectedRows.value = arr
-        selectedRowKeys.value = arr.map((item) => rowKey(item))
-        // selectedRows.value = []
-      },
+      setSelectedRows: rows.setSelectedRows,
       expandedRowKeys,
-      setExpandedRowKeys: updateExpand,
-      expandAll: () => {
-        updateExpand(getExpandKeys(orgList.value))
-      },
+      setExpandedRowKeys,
+      expandAll: rows.expandAll,
       add: (param?: { resetData?: Obj } & ActionOuter) => methods.add?.(param),
       edit: (param?: ActionOuter) => methods.edit?.({ ...editParam, ...param }),
       delete: () => methods.delete?.(editParam),
@@ -296,90 +125,39 @@ export default defineComponent({
       }
     }
 
-    const titleString = option.title || option.label
-    const { title: titleSlot = titleString, extra: customExtraSlot, ...__slots } = slots
-    const hasExtra = computed(() => Boolean(customExtraSlot || tableTools.value.length))
-    const extraSlot = () => {
-      const extra = customExtraSlot?.()
-      const toolbar = tableTools.value.length ? getUIRender('tableToolbar')(toolbarProps.value) : undefined
-      if (extra && toolbar) {
-        return getUIRender('space')(
-          { size: 'small', align: 'center' },
-          { default: () => [extra, toolbar] }
-        )
-      }
-      return extra || toolbar
+    const { title: titleSlot = option.title || option.label, ...contentSlots } = slots
+    const tabs = useTableTabs(option.tabs, effectData)
+    const uiSlots = {
+      ...contentSlots,
+      ...(titleSlot && { title: createLabelNode({ labelSlot: titleSlot, tooltip: option.tooltip }, effectData) }),
+      ...tabs.slots,
+      headerCell: (column) => slots.headerCell?.(column) || toNode(column.title, effectData),
+      // 行编辑校验宿主只包裹原生表格，UI 自行安排标题、Tabs 和工具栏。
+      tableBody: ({ render }) => context.wrapTable ? context.wrapTable(render) : render(),
     }
-    const titleBar = () =>
-      (titleSlot || hasExtra.value) ?
-        getUIRender('row')(
-          { align: 'middle', class: 'sup-titlebar' },
-          {
-            default: () => [
-              titleSlot &&
-                getUIRender('col')(
-                  // 显式使用内容宽度，避免 Element Plus 的默认 24 栅格将按钮挤到下一行。
-                  { class: 'sup-title', flex: '0 1 auto' },
-                  {
-                    default: createLabelNode({ labelSlot: titleSlot, tooltip: option.tooltip }, effectData),
-                  }
-                ),
-              hasExtra.value &&
-                getUIRender('col')(
-                  {
-                    class: 'sup-title-buttons',
-                    flex: 1,
-                    style: { textAlign: buttonsConfig?.align || 'right' },
-                  },
-                  { default: extraSlot }
-                ),
-            ],
-          }
-        ) : null
-    __slots.headerCell = (col) => {
-      return slots.headerCell?.(col) || toNode(col.title, effectData)
-    }
-    const render = () => {
-      const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, tableTools: _tableTools, ...tableAttrs } = attrs
+    return () => {
+      const { rowSelection: _rowSelection, expandedRowKeys: _expandedRowKeys, ...tableAttrs } = attrs
       return [
         ...modalSlot.map((slot) => slot()),
-        (context.wrapTable || ((render) => render()))(() =>
-          getUIRender('table')(
-            {
-              tableLayout: 'fixed',
-              pagination: false,
-              ...globalProps.Table,
-              ref: tableRef,
-              data: list.value,
-              columns: displayColumns.value,
-              queryResetKey: queryResetKey.value,
-              ...tableAttrs,
-              density: tableTools.value.includes('density') ? tableViewState.density : undefined,
-              selection: rowSelection && {
-                ...rowSelection,
-                selectedKeys: selectedRowKeys.value,
-              },
-              rowKey,
-              expandedKeys: expandedRowKeys.value,
-              onExpandedChange: updateExpand,
-              class: ['sup-table-wrapper', option.editable && 'sup-table-editable'],
-            },
-            __slots
-          )
-        ),
+        getUIRender('table')({
+          tableLayout: 'fixed',
+          pagination: false,
+          ...tableDefaults,
+          ...tableAttrs,
+          ref: tableRef,
+          tableInstance: componentProps.tableInstance,
+          data: list.value,
+          columns,
+          tabs: unref(tabs.state),
+          extraAlign: buttonsConfig?.align || 'right',
+          onRefresh: componentProps.refresh,
+          selection: rowSelection && { ...rowSelection, selectedKeys: selectedRowKeys.value },
+          rowKey,
+          expandedKeys: expandedRowKeys.value,
+          onExpandedChange: setExpandedRowKeys,
+          class: ['sup-table-wrapper', option.editable && 'sup-table-editable'],
+        }, uiSlots),
       ]
-    }
-    if (option.tabs) {
-      return () =>
-        h(TabsFilter, { ...option.tabs, effectData } as any, {
-          [slotName]: slots[slotName],
-          title: titleSlot && (() => toNode(titleSlot, effectData)),
-          extra: extraSlot,
-          titleBar,
-          default: render,
-        })
-    } else {
-      return () => [titleBar?.(), render()]
     }
     /** 内置操作附加参数 */
     interface ActionOuter {

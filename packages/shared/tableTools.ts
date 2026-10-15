@@ -1,10 +1,25 @@
-import type { UITableColumn } from '../../adapter'
-import type {
-  UITableDensity,
-  UITableToolName,
-  UITableToolbarColumn,
-  UITableToolbarProps,
-} from '../../adapter'
+import { computed, reactive, watch } from 'vue'
+import type { UITableColumn, UITableToolName } from 'superform/sdk'
+
+type UITableDensity = 'small' | 'middle' | 'large'
+interface UITableToolbarColumn {
+  key: string
+  title?: unknown
+  fixed?: 'left' | 'right'
+  sortable?: boolean
+}
+export interface TableToolbarProps {
+  tools: UITableToolName[]
+  density: UITableDensity
+  columns: UITableToolbarColumn[]
+  visibleKeys: string[]
+  onReload?: () => unknown
+  onDensityChange: (density: UITableDensity) => void
+  onVisibleKeysChange: (keys: string[]) => void
+  onColumnOrderChange: (keys: string[]) => void
+  onColumnFixedChange: (key: string, fixed: 'left' | 'right' | undefined) => void
+  onResetColumns: () => void
+}
 
 type ColumnFixed = 'left' | 'right'
 
@@ -13,7 +28,7 @@ type ColumnEntry = {
   column: UITableColumn
 }
 
-/** 跨 Table 子实例保留的视图偏好；Schema columns 始终是业务来源。 */
+/** UI 私有偏好；只派生原生表格属性，不修改传入的业务列。 */
 export interface TableViewState {
   density: UITableDensity
   densityInitialized: boolean
@@ -80,10 +95,15 @@ export function reconcileTableViewState(columns: UITableColumn[], state: TableVi
 }
 
 function currentFixed(entry: ColumnEntry, state: TableViewState): ColumnFixed | undefined {
+  if (entry.column.isIndexColumn) return 'left'
   if (entry.key in state.fixed) {
     return state.fixed[entry.key] ?? undefined
   }
-  return entry.column.fixed === 'left' || entry.column.fixed === 'right' ? entry.column.fixed : undefined
+  return entry.column.fixed === true
+    ? 'left'
+    : entry.column.fixed === 'left' || entry.column.fixed === 'right'
+    ? entry.column.fixed
+    : undefined
 }
 
 export function applyTableColumnState(
@@ -94,13 +114,23 @@ export function applyTableColumnState(
   if (!enabled) return columns
   const entries = getColumnEntries(columns)
   const byKey = new Map(entries.map((entry) => [entry.key, entry]))
-  return state.order.flatMap((key) => {
+  const displayed = state.order.flatMap((key) => {
     if (!state.visibleKeys.includes(key)) return []
     const entry = byKey.get(key)
     if (!entry) return []
+    if (entry.column.isIndexColumn) return [{ ...entry.column, fixed: 'left' }]
     if (!(key in state.fixed)) return [entry.column]
     return [{ ...entry.column, fixed: state.fixed[key] ?? undefined }]
   })
+  // 两套原生表格都按左右固定区域布局；先分区，避免固定列留在中间时偏移错误。
+  return [
+    ...displayed.filter((column) => column.isIndexColumn),
+    ...displayed.filter((column) => !column.isIndexColumn && (column.fixed === 'left' || column.fixed === true)),
+    ...displayed.filter(
+      (column) => !column.isIndexColumn && column.fixed !== true && column.fixed !== 'left' && column.fixed !== 'right'
+    ),
+    ...displayed.filter((column) => !column.isIndexColumn && column.fixed === 'right'),
+  ]
 }
 
 export function createTableToolbarProps(
@@ -108,14 +138,23 @@ export function createTableToolbarProps(
   state: TableViewState,
   tools: UITableToolName[],
   reload?: () => unknown
-): UITableToolbarProps {
+): TableToolbarProps {
   const entries = getColumnEntries(columns)
   const byKey = new Map(entries.map((entry) => [entry.key, entry]))
   const knownKeys = entries.map(({ key }) => key)
-  const toolbarColumns: UITableToolbarColumn[] = state.order.flatMap((key) => {
+  const indexKeys = entries.filter(({ column }) => column.isIndexColumn).map(({ key }) => key)
+  const orderedKeys = [...indexKeys, ...state.order.filter((key) => !indexKeys.includes(key))]
+  const toolbarColumns: UITableToolbarColumn[] = orderedKeys.flatMap((key) => {
     const entry = byKey.get(key)
     return entry
-      ? [{ key, title: entry.column.title, fixed: currentFixed(entry, state) }]
+      ? [
+          {
+            key,
+            title: entry.column.title,
+            fixed: currentFixed(entry, state),
+            sortable: !entry.column.isIndexColumn,
+          },
+        ]
       : []
   })
 
@@ -133,16 +172,51 @@ export function createTableToolbarProps(
     },
     onColumnOrderChange: (keys) => {
       const next = [...new Set(keys)].filter((key) => knownKeys.includes(key))
-      state.order = [...next, ...knownKeys.filter((key) => !next.includes(key))]
+      state.order = [
+        ...indexKeys,
+        ...next.filter((key) => !indexKeys.includes(key)),
+        ...knownKeys.filter((key) => !indexKeys.includes(key) && !next.includes(key)),
+      ]
     },
     onColumnFixedChange: (key, fixed) => {
-      if (!knownKeys.includes(key)) return
+      if (!knownKeys.includes(key) || indexKeys.includes(key)) return
       state.fixed[key] = fixed ?? null
     },
     onResetColumns: () => {
       state.visibleKeys = [...knownKeys]
-      state.order = [...knownKeys]
+      state.order = [...indexKeys, ...knownKeys.filter((key) => !indexKeys.includes(key))]
       state.fixed = {}
     },
+  }
+}
+
+// Core 仅传稳定实例标识；列模型重建时，偏好和原生重置状态仍由 UI 自行保存。
+const tableViews = new WeakMap<object, { view: TableViewState; queryReset: { version: number } }>()
+
+export function useTableView(props: {
+  tableInstance?: object
+  columns: UITableColumn[]
+  tableTools?: false | UITableToolName[]
+  size?: unknown
+  onRefresh?: () => unknown
+}) {
+  const identity = props.tableInstance || {}
+  let state = tableViews.get(identity)
+  if (!state) {
+    state = { view: reactive(createTableViewState()), queryReset: reactive({ version: 0 }) }
+    tableViews.set(identity, state)
+  }
+  const { view, queryReset } = state
+  watch(() => props.columns, (columns) => reconcileTableViewState(columns, view, props.size), { immediate: true, flush: 'sync' })
+  const tools = computed(() => normalizeTableTools(props.tableTools).filter((tool) => tool !== 'refresh' || props.onRefresh))
+  return {
+    queryReset,
+    tools,
+    columns: computed(() => applyTableColumnState(props.columns, view, tools.value.includes('columnSetting'))),
+    density: computed(() => tools.value.includes('density') ? view.density : undefined),
+    toolbar: computed(() => createTableToolbarProps(props.columns, view, tools.value, props.onRefresh ? () => {
+      queryReset.version += 1
+      return props.onRefresh?.()
+    } : undefined)),
   }
 }

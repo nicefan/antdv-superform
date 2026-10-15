@@ -1,28 +1,6 @@
 import type { Component, Slots, VNodeChild } from 'vue'
 
 export type UITableToolName = 'refresh' | 'density' | 'columnSetting'
-export type UITableDensity = 'small' | 'middle' | 'large'
-
-export interface UITableToolbarColumn {
-  key: string
-  title?: unknown
-  fixed?: 'left' | 'right'
-}
-
-/** Core 提供表格视图状态，Adapter 只负责具体工具栏交互和外观。 */
-export interface UITableToolbarProps {
-  tools: UITableToolName[]
-  density: UITableDensity
-  columns: UITableToolbarColumn[]
-  visibleKeys: string[]
-  onReload?: () => unknown
-  onDensityChange: (density: UITableDensity) => void
-  onVisibleKeysChange: (keys: string[]) => void
-  onColumnOrderChange: (keys: string[]) => void
-  onColumnFixedChange: (key: string, fixed: 'left' | 'right' | undefined) => void
-  onResetColumns: () => void
-}
-
 export interface FormAdapter {
   /** 只校验指定字段路径，供复合字段更新时使用。 */
   validateField?: (instance: any, path: (string | number)[]) => Promise<unknown>
@@ -202,6 +180,8 @@ export interface UITableChange extends UITableParams {
 }
 
 export interface UITableColumn extends Obj {
+  /** Core 生成的序号列标识，不透传原生组件。 */
+  isIndexColumn?: boolean
   key?: PropertyKey
   dataIndex?: string | string[]
   title?: unknown
@@ -210,10 +190,12 @@ export interface UITableColumn extends Obj {
 }
 
 export interface UITableRenderProps extends Obj {
-  /** 重置查询的版本号；Adapter 重建原生查询状态，不重建 Core 行编辑模型。 */
-  queryResetKey?: number
-  /** Core 密度语义，由 Adapter 转为原生 Table size。 */
-  density?: UITableDensity
+  /** 稳定实例身份；具体展示状态由 UI 私有管理。 */
+  tableInstance?: object
+  tableTools?: false | UITableToolName[]
+  onRefresh?: () => unknown
+  tabs?: UITableTabs
+  extraAlign?: string
   data: Obj[]
   columns: UITableColumn[]
   selection?: UITableSelection
@@ -224,7 +206,7 @@ export interface UITableRenderProps extends Obj {
   onTableChange?: (change: UITableChange) => void
 }
 
-export interface UITableFilterProps {
+export interface UITableTabs {
   bordered?: boolean
   items: Array<Obj & { key: PropertyKey; tab: unknown }>
   value?: unknown
@@ -314,7 +296,6 @@ export interface ResolvedField extends Omit<FieldAdapter, 'component' | 'render'
 
 /** 固定 UI 的唯一渲染目录；复杂组件与轻量函数共用同一调用协议。 */
 export interface UIRenderers {
-  tableToolbar: (props: UITableToolbarProps) => VNodeChild
   form: (props: Obj, slots?: Obj) => VNodeChild
   formItem: (props: UIFormItemProps, slots?: Obj) => VNodeChild
   row: (props?: Obj, slots?: Obj) => VNodeChild
@@ -341,8 +322,8 @@ export interface UIRenderers {
   modal: (props: Obj, slots?: Obj) => VNodeChild
   upload: (state: UIUploadState, slots?: Obj) => VNodeChild
   preview: (props: Obj) => VNodeChild
+  /** title/extra 提供内容，tableBody({ render }) 包裹编辑校验宿主；布局与工具栏由 UI 组合。 */
   table: (props: UITableRenderProps, slots?: Obj) => VNodeChild
-  tableFilter: (props: UITableFilterProps, slots?: Obj) => VNodeChild
 }
 
 export interface UIFormItemProps extends Obj {

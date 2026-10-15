@@ -11,7 +11,7 @@ README 仅保留阶段状态及专题索引；实施与验证结果按需查阅�
 - [Form `ignoreRules`](./ignore-rules.md)
 - [表格行编辑](./table-inline.md)
 - [表格查询、统一事件与全局配置](./table-query.md)
-- [SuperTable 工具栏](./table-toolbar.md)
+- [Table 增强工具栏](./table-toolbar.md)
 - [数据源入口、分区样式与表格详情配置](./data-source-detail-option.md)
 - [上传组件](./upload.md)
 - [语言包](./locale.md)

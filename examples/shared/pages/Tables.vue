@@ -6,6 +6,9 @@
       搜索姓名或选择状态分类，查询结果与分页一起更新。勾选行后可批量删除；行内编辑可切换多行或单行，另有弹窗与整表编辑。详情使用独立字段配置，展示成员资料并省略列表 ID。全部请求由内存数据模拟，结果可在观察窗追踪。
     </div>
     <div class="demo-actions">
+      <label class="demo-control-label">
+        <input v-model="toolbarEnabled" class="demo-control-input" type="checkbox" />表格工具栏
+      </label>
       <label class="demo-control-label"
         >编辑方式<select class="demo-control-input" v-model="mode">
           <option value="inline">多行编辑</option>
@@ -75,6 +78,7 @@
             编辑中替换/移除目标、勾选后换页或缩短数据，记录选择与编辑的实际变化。这些是待回归边界，不代表已验证通过。
           </li>
           <li>onSave/onCancel 拦截在不同编辑方式下分别观察；切换方式或数据源会重建表格。</li>
+          <li>关闭再启用工具栏，列偏好应保留；调整列顺序、显隐、固定和密度后切换附加列，检查仍存在列的偏好。</li>
         </ol>
       </div></Teleport
     >
@@ -102,6 +106,7 @@ const rows = ref(
 const mode = ref('inline'),
   remote = ref(true),
   onlyEnabled = ref(false)
+const toolbarEnabled = ref(true)
 const failSave = ref(false),
   vetoSave = ref(false),
   vetoCancel = ref(false),
@@ -198,6 +203,9 @@ const schema = computed<RootTableOption>(() => ({
   dataSource: remote.value ? undefined : rows,
   editable: mode.value === 'all',
   params: reactive({ onlyEnabled }),
+  dynamicAttrs: () => ({
+    tableTools: toolbarEnabled.value ? ['refresh', 'density', 'columnSetting'] : false,
+  }),
   attrs: {
     pagination: {
       pageSize: 5,
@@ -209,13 +217,6 @@ const schema = computed<RootTableOption>(() => ({
     rowKey: 'id',
     rowSelection: { onChange: (keys) => event('选择变化', keys) },
     border: true,
-    ...(isElement
-      ? {}
-      : {
-          onResizeColumn: (width, column) => {
-            column.width = width
-          },
-        }),
   },
   columnProps: { ellipsis: true, ...(isElement ? {} : { resizable: true }) },
   searchForm: {

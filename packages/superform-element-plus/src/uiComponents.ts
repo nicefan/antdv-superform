@@ -18,7 +18,7 @@ import { translate, FormValidationError, type UIComponentDefinitions } from 'sup
 import Descriptions from './components/Descriptions'
 import renderTabs from './components/Tabs'
 import renderCollapse from './components/Collapse'
-import { renderTable, renderTableFilter, tableSelectors } from './components/Table'
+import { renderTable, tableSelectors } from './components/Table'
 import { renderActionGroup } from './components/ActionGroup'
 import { renderUpload } from './components/Upload'
 
@@ -234,5 +234,4 @@ export const uiComponents: UIComponentDefinitions = {
     service: { selectors: tableSelectors, scrollHeightScope: 'table' },
     render: ({ attrs, slots }) => renderTable(attrs, slots),
   },
-  tableFilter: { render: ({ attrs, slots }) => renderTableFilter(attrs, slots) },
 }

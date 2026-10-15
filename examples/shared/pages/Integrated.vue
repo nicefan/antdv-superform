@@ -128,7 +128,7 @@ const schema: ExtFormOption = {
       field: 'lines',
       label: '商品明细',
       editable: true,
-      attrs: { rowKey: 'id', pagination: false },
+      attrs: { rowKey: 'id', pagination: false, tableTools: ['density', 'columnSetting'] },
       buttons: { actions: ['add'] },
       rowButtons: { actions: ['delete'], labelMode: 'label' },
       columns: [

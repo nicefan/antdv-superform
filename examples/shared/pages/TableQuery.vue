@@ -3,7 +3,8 @@
     <h2>查询条件与接口转换</h2>
     <div class="demo-guide">
       搜索姓名、切换状态分类、筛选部门或点击 ID
-      排序。翻页和刷新保留这些条件；查看导出条件时不包含分页、本次临时参数和请求前补充的 client。
+      排序。翻页和“刷新当前页”保留条件；表格右侧的刷新工具清除列排序筛选并回到第一页，保留搜索、状态分类和动态条件。
+      密度与列设置只改变表格视图；导出条件不包含分页、本次临时参数和请求前补充的 client。
     </div>
     <div class="demo-actions">
       <button class="demo-control" @click="run('刷新当前页', () => table?.reload())">
@@ -29,6 +30,9 @@
       <div class="dev-tools">
         <h2 class="demo-test-title">开发与测试 · 转换顺序、分页与导出条件</h2>
         <div class="dev-controls">
+          <button class="demo-control" @click="run('重建列', () => table?.setColumns(schema.columns))">
+            按当前配置重建列
+          </button>
           <label class="demo-control-label">
             <input
               v-model="filterEnabled"
@@ -56,6 +60,10 @@
           <li>
             筛选部门后刷新或翻页，查询条件仍保留；查看导出条件，确认与请求中的
             departmentValues/orderBy 一致。
+          </li>
+          <li>
+            筛选排序后切到后续页，点击表格工具栏刷新：只增加一次请求，回到第一页并清空列条件。
+            再重建列，旧条件不应恢复；搜索、状态分类、页大小及列偏好应保留。
           </li>
           <li>
             临时查询的 preview、beforeQuery 添加的 client 和 offset/limit 只出现在请求参数中。
@@ -113,7 +121,10 @@ function register(actions: unknown) {
 const schema = computed<RootTableOption>(() => ({
   title: '成员查询',
   indexColumn: true,
+  columnProps: { width: 160 },
   attrs: {
+    tableTools: ['refresh', 'density', 'columnSetting'],
+    scroll: { x: 700 },
     rowKey: 'id',
     pagination: { pageSize: 6, pageSizeOptions: [6, 12, 18], showSizeChanger: true },
     filterSortTransform: filterEnabled.value

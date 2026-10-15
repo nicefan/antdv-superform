@@ -1,5 +1,6 @@
-import { type PropType, defineComponent, h, mergeProps } from 'vue'
+import { type PropType, defineComponent, h, mergeProps, ref } from 'vue'
 import { Col, Row } from 'antdv-next'
+import useDescriptionsStyle from 'antdv-next/dist/descriptions/style/index'
 import type { UIDescriptionItem, UIDescriptionsProps } from 'superform/sdk'
 
 function renderLayout(type: 'row' | 'col', props: Obj, slots: Obj) {
@@ -10,6 +11,8 @@ function renderLayout(type: 'row' | 'col', props: Obj, slots: Obj) {
 export default defineComponent({
   props: { state: { type: Object as PropType<UIDescriptionsProps>, required: true } },
   setup(props) {
+    // 自定义详情结构也必须注册原生样式，并挂载对应的哈希及主题变量类。
+    const [hashId, cssVarCls] = useDescriptionsStyle(ref('ant-descriptions'))
     const renderTableItem = (item: UIDescriptionItem) =>
       !item.label
         ? [
@@ -66,7 +69,9 @@ export default defineComponent({
             class: [
               'ant-descriptions',
               'ant-descriptions-bordered',
-              state.size !== 'default' && `ant-descriptions-${state.size}`,
+              hashId.value,
+              cssVarCls.value,
+              state.size !== 'default' && `ant-descriptions-${state.size === 'middle' ? 'medium' : state.size}`,
               state.attrs.class,
             ],
           },
@@ -120,10 +125,12 @@ export default defineComponent({
           ...state.attrs,
           class: [
             'ant-descriptions',
+            hashId.value,
+            cssVarCls.value,
             state.layout === 'vertical' && 'ant-descriptions-vertical',
             state.mode === 'form' ? 'sup-descriptions-mode-form' : 'sup-descriptions-default',
             state.colon === false && 'ant-descriptions-item-no-colon',
-            state.size !== 'default' && `ant-descriptions-${state.size}`,
+            state.size !== 'default' && `ant-descriptions-${state.size === 'middle' ? 'medium' : state.size}`,
             state.attrs.class,
           ],
         },

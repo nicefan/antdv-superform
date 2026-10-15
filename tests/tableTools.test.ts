@@ -101,8 +101,65 @@ describe('Table toolbar boundaries', () => {
   })
 })
 
-
 describe('Table toolbar reactivity', () => {
+  it('序号列始终排在首位，忽略拖动和固定方向修改', () => {
+    // 自定义序号列 key 仍使用系统标识识别，不能依赖固定的 INDEX 字符串。
+    const columns = [{ key: 'sequence', isIndexColumn: true }, { key: 'name' }, { key: 'age' }]
+    const state = reactive(createTableViewState())
+    reconcileTableViewState(columns, state)
+    const toolbar = computed(() => createTableToolbarProps(columns, state, ['columnSetting']))
+    toolbar.value.onColumnOrderChange(['age', 'sequence', 'name'])
+    toolbar.value.onColumnFixedChange('sequence', 'right')
+    expect(state.order).toEqual(['sequence', 'age', 'name'])
+    expect(toolbar.value.columns[0]).toMatchObject({
+      key: 'sequence',
+      sortable: false,
+      fixed: 'left',
+    })
+    expect(state.fixed).not.toHaveProperty('sequence')
+    expect(applyTableColumnState(columns, state, true).map(({ key }) => key)).toEqual(['sequence', 'age', 'name'])
+  })
+
+  it('动态左右固定按区域排列，取消固定后恢复拖动顺序且不改写来源列', () => {
+    const columns = [{ key: 'INDEX', isIndexColumn: true }, { key: 'name' }, { key: 'age' }, { key: 'email' }]
+    const state = reactive(createTableViewState())
+    reconcileTableViewState(columns, state)
+    const toolbar = computed(() => createTableToolbarProps(columns, state, ['columnSetting']))
+    const display = computed(() => applyTableColumnState(columns, state, true))
+    toolbar.value.onColumnOrderChange(['email', 'name', 'age', 'INDEX'])
+    toolbar.value.onColumnFixedChange('age', 'left')
+    toolbar.value.onColumnFixedChange('name', 'right')
+    expect(display.value.map(({ key, fixed }) => [key, fixed])).toEqual([
+      ['INDEX', 'left'],
+      ['age', 'left'],
+      ['email', undefined],
+      ['name', 'right'],
+    ])
+    toolbar.value.onColumnFixedChange('age', undefined)
+    toolbar.value.onColumnFixedChange('name', undefined)
+    expect(display.value.map(({ key }) => key)).toEqual(['INDEX', 'email', 'name', 'age'])
+    expect(columns.every((column) => !('fixed' in column))).toBe(true)
+  })
+
+  it('原生 fixed true 映射左固定，列重建和重置后保留序号列约束', () => {
+    const columns = [
+      { key: 'name', fixed: true },
+      { key: 'sequence', isIndexColumn: true },
+    ]
+    const state = reactive(createTableViewState())
+    reconcileTableViewState(columns, state)
+    const toolbar = createTableToolbarProps(columns, state, ['columnSetting'])
+    expect(toolbar.columns.find(({ key }) => key === 'name')?.fixed).toBe('left')
+    toolbar.onColumnOrderChange(['name', 'sequence'])
+    reconcileTableViewState([...columns, { key: 'age' }], state)
+    createTableToolbarProps([...columns, { key: 'age' }], state, ['columnSetting']).onResetColumns()
+    expect(applyTableColumnState([...columns, { key: 'age' }], state, true).map(({ key }) => key)).toEqual([
+      'sequence',
+      'name',
+      'age',
+    ])
+  })
+
   it('首次固定列和取消固定立即更新表格列与工具栏状态', () => {
     const columns = [{ key: 'name' }]
     const state = reactive(createTableViewState())

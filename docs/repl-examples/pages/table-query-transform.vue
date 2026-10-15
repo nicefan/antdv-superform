@@ -1,7 +1,7 @@
 <template>
   <div class="demo-note">
     筛选部门或点击 ID 排序，再翻页、刷新或查看导出条件。接口使用 offset/limit，响应先转换再进入
-    afterQuery；慢请求期间旧数据保留旧索引。
+    afterQuery；慢请求期间旧数据保留旧索引。表格工具栏刷新会清除列条件并回到第一页，保留搜索和分类；密度与列设置调整视图。
   </div>
   <p>
     <button @click="table.reload()">刷新当前页</button>
@@ -29,6 +29,7 @@ const stages = ref([])
 const [register, table] = useTable({
   indexColumn: true,
   attrs: {
+    tableTools: ['refresh', 'density', 'columnSetting'],
     rowKey: 'id',
     pagination: { pageSize: 6, pageSizeOptions: [6, 12, 18], showSizeChanger: true },
     filterSortTransform: ({ filters, sorters }) => ({

@@ -71,7 +71,7 @@ export function useButtonState(
       return toNode(tips, param)
     })
     const uiItem: UIActionItem = {
-      key: index,
+      key: index + '',
       name: item.name,
       label: () => toNode(item.label, param),
       icon: item.icon ? () => toNode(item.icon, param) : undefined,
@@ -82,7 +82,7 @@ export function useButtonState(
       },
       get menu() {
         return menu ? menu.value.map((entry, menuIndex) => ({
-          key: menuIndex,
+          key: menuIndex + '',
           value: entry.value,
           label: () => toNode(entry.label, param),
           icon: entry.icon ? () => toNode(entry.icon, param) : undefined,

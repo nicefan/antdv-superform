@@ -1,14 +1,7 @@
-import {
-  ElButton,
-  ElCheckbox,
-  ElDropdown,
-  ElDropdownItem,
-  ElDropdownMenu,
-  ElPopover,
-  ElSpace,
-} from 'element-plus'
+import type { TableToolbarProps } from '../../../shared/tableTools'
+import { ElButton, ElCheckbox, ElDropdown, ElDropdownItem, ElDropdownMenu, ElSpace } from 'element-plus'
 import { defineComponent, h, ref } from 'vue'
-import { builtInIcons, translate, type UIRenderers, type UITableToolName } from 'superform/sdk'
+import { builtInIcons, translate, type UITableToolName } from 'superform/sdk'
 
 const renderTitle = (title: unknown) => (typeof title === 'function' ? title() : title)
 
@@ -30,20 +23,9 @@ const TableToolbar = defineComponent({
   setup(props) {
     const dragKey = ref('')
     const enabled = (name: UITableToolName) => (props.tools as UITableToolName[]).includes(name)
-    // Dropdown/Popover 需要直接的按钮触发节点，避免 Tooltip 截获监听器或遮挡菜单。
-    const toolButton = (label: string, content: () => any, onClick?: () => unknown) =>
-      h(
-        ElButton,
-        {
-          text: true,
-          size: 'small',
-          title: label,
-          'aria-label': label,
-          style: { width: '28px', height: '28px', padding: 0 },
-          onClick,
-        },
-        content
-      )
+    // Dropdown 使用直接按钮触发节点，避免包装组件截获菜单监听器。
+    const toolButton = (label: string, icon: () => any, onClick?: () => unknown) =>
+      h(ElButton, { text: true, circle: true, icon, title: label, 'aria-label': label, onClick })
 
     const densityItems = [
       { label: translate('densityLarge'), key: 'large' },
@@ -52,101 +34,112 @@ const TableToolbar = defineComponent({
     ] as const
 
     const renderColumnSettings = () =>
-      h('div', { style: { minWidth: '240px' } }, [
-        h(
-          ElSpace,
-          { size: 'small', style: { marginBottom: '8px' } },
-          {
-            default: () => [
-              h(
-                ElButton,
-                {
-                  size: 'small',
-                  onClick: () => props.onVisibleKeysChange((props.columns as Obj[]).map(({ key }) => key)),
-                },
-                () => translate('checkAll')
-              ),
-              h(ElButton, { size: 'small', onClick: () => props.onResetColumns() }, () => translate('reset')),
-            ],
-          }
-        ),
-        ...(props.columns as Obj[]).map((column) =>
+      h(ElDropdownMenu, { class: 'sup-column-settings' }, () => [
+        // 头部只承载操作，不参与菜单项的悬停及键盘选中。
+        h('li', { role: 'presentation', class: 'sup-column-setting-header' }, [
+          h('div', { class: 'sup-column-setting-content' }, [
+            h(
+              ElButton,
+              {
+                link: true,
+                type: 'primary',
+                onClick: () => props.onVisibleKeysChange((props.columns as Obj[]).map(({ key }) => key)),
+              },
+              () => translate('checkAll')
+            ),
+            h(
+              ElButton,
+              {
+                link: true,
+                type: 'primary',
+                onClick: () => props.onResetColumns(),
+              },
+              () => translate('reset')
+            ),
+          ])
+        ]),
+        ...(props.columns as Obj[]).map((column, index, columns) =>
           h(
-            'div',
+            ElDropdownItem,
             {
               key: column.key,
-              draggable: true,
-              style: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '20px',
-                padding: '4px 0',
-              },
-              onDragstart: () => {
+              class: 'sup-column-setting-row',
+              'data-column-key': column.key,
+              draggable: column.sortable !== false,
+              onDragstart: (event: DragEvent) => {
+                if (column.sortable === false) return event.preventDefault()
                 dragKey.value = column.key
+                event.dataTransfer?.setData('text/plain', column.key)
+                if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
               },
-              onDragover: (event: DragEvent) => event.preventDefault(),
+              onDragend: () => {
+                dragKey.value = ''
+              },
+              onDragover: (event: DragEvent) => {
+                if (column.sortable !== false && dragKey.value) event.preventDefault()
+              },
               onDrop: (event: DragEvent) => {
                 event.preventDefault()
                 const source = dragKey.value
                 dragKey.value = ''
-                if (!source || source === column.key) return
+                if (!source || source === column.key || column.sortable === false) return
                 const next = (props.columns as Obj[]).map(({ key }) => key).filter((key) => key !== source)
                 const targetIndex = next.indexOf(column.key)
                 next.splice(targetIndex < 0 ? next.length : targetIndex, 0, source)
                 props.onColumnOrderChange(next)
               },
+              divided: index === 0 || columns[index - 1].sortable === false,
             },
-            [
-              h(
-                ElCheckbox,
-                {
-                  modelValue: (props.visibleKeys as string[]).includes(column.key),
-                  onChange: () => {
-                    const current = props.visibleKeys as string[]
-                    props.onVisibleKeysChange(
-                      current.includes(column.key)
-                        ? current.filter((key) => key !== column.key)
-                        : [...current, column.key]
-                    )
-                  },
-                },
-                { default: () => renderTitle(column.title) }
-              ),
-              h(
-                ElSpace,
-                { size: 0 },
-                {
-                  default: () => [
-                    h(
-                      ElButton,
-                      {
-                        size: 'small',
-                        text: true,
-                        title: translate('fixLeft'),
-                        style: column.fixed === 'left' ? { fontWeight: 700 } : undefined,
-                        onClick: () =>
-                          props.onColumnFixedChange(column.key, column.fixed === 'left' ? undefined : 'left'),
+            () =>
+              h('div', { class: 'sup-column-setting-content' }, [
+                h('div', { class: 'sup-column-setting-label' }, [
+                  h(
+                    'span',
+                    {
+                      class: 'sup-column-drag-handle',
+                      title: column.sortable === false ? undefined : translate('dragColumn'),
+                    },
+                    column.sortable === false ? undefined : [builtInIcons.dragHandle()]
+                  ),
+                  h(
+                    ElCheckbox,
+                    {
+                      modelValue: (props.visibleKeys as string[]).includes(column.key),
+                      onChange: () => {
+                        const current = props.visibleKeys as string[]
+                        props.onVisibleKeysChange(
+                          current.includes(column.key)
+                            ? current.filter((key) => key !== column.key)
+                            : [...current, column.key]
+                        )
                       },
-                      () => '←'
-                    ),
-                    h(
-                      ElButton,
-                      {
-                        size: 'small',
-                        text: true,
-                        title: translate('fixRight'),
-                        style: column.fixed === 'right' ? { fontWeight: 700 } : undefined,
-                        onClick: () =>
-                          props.onColumnFixedChange(column.key, column.fixed === 'right' ? undefined : 'right'),
-                      },
-                      () => '→'
-                    ),
-                  ],
-                }
-              ),
-            ]
+                    },
+                    { default: () => renderTitle(column.title) }
+                  ),
+                ]),
+                column.sortable !== false &&
+                  h(
+                    ElSpace,
+                    { size: 4 },
+                    {
+                      default: () =>
+                        (['left', 'right'] as const).map((side) =>
+                          h(ElButton, {
+                            text: true,
+                            circle: true,
+                            type: column.fixed === side ? 'primary' : undefined,
+                            bg: column.fixed === side,
+                            icon: side === 'left' ? builtInIcons.fixLeft : builtInIcons.fixRight,
+                            title: translate(side === 'left' ? 'fixLeft' : 'fixRight'),
+                            'aria-label': translate(side === 'left' ? 'fixLeft' : 'fixRight'),
+                            'aria-pressed': column.fixed === side,
+                            onClick: () =>
+                              props.onColumnFixedChange(column.key, column.fixed === side ? undefined : side),
+                          })
+                        ),
+                    }
+                  ),
+              ])
           )
         ),
       ])
@@ -174,28 +167,33 @@ const TableToolbar = defineComponent({
                   {
                     default: () => toolButton(translate('density'), builtInIcons.density),
                     dropdown: () =>
-                      h(
-                        ElDropdownMenu,
-                        {},
-                        () =>
-                          densityItems.map((item) =>
-                            h(
-                              ElDropdownItem,
-                              { command: item.key, disabled: props.density === item.key },
-                              () => item.label
-                            )
+                      h(ElDropdownMenu, {}, () =>
+                        densityItems.map((item) =>
+                          h(
+                            ElDropdownItem,
+                            {
+                              command: item.key,
+                              disabled: props.density === item.key,
+                            },
+                            () => item.label
                           )
+                        )
                       ),
                   }
                 )
               : null,
             enabled('columnSetting')
               ? h(
-                  ElPopover,
-                  { trigger: 'click', placement: 'bottom-end', width: 280 },
+                  ElDropdown,
                   {
-                    reference: () => toolButton(translate('columnSetting'), builtInIcons.columnSetting),
-                    default: renderColumnSettings,
+                    trigger: 'click',
+                    placement: 'bottom-end',
+                    hideOnClick: false,
+                    popperClass: 'sup-column-settings-popup',
+                  },
+                  {
+                    default: () => toolButton(translate('columnSetting'), builtInIcons.columnSetting),
+                    dropdown: renderColumnSettings,
                   }
                 )
               : null,
@@ -205,4 +203,4 @@ const TableToolbar = defineComponent({
   },
 })
 
-export const renderTableToolbar: UIRenderers['tableToolbar'] = (props) => h(TableToolbar, props as Obj)
+export const renderTableToolbar = (props: TableToolbarProps) => h(TableToolbar, props as Obj)

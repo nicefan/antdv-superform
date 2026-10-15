@@ -7,7 +7,7 @@ import type { ExtFormItemOption } from '../../exaTypes'
 /** 将 Core 处理器产生的标准绑定和属性交给当前 Adapter 组件。 */
 export default defineComponent({
   name: 'FieldProcessorRenderer',
-  inheritAttrs: false,
+  // inheritAttrs: false,
   props: {
     // 直接接收已经解析的配置，渲染阶段不再按类型查询 Adapter。
     field: { type: Object as PropType<ResolvedField>, required: true },

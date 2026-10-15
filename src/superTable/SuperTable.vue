@@ -33,7 +33,6 @@ import { useTableScroll } from './useTableScroll'
 import { getUIRender, getUIService } from '../adapter'
 import { set as setObject } from 'lodash-es'
 import { merge } from '../utils/merge'
-import { createTableViewState } from '../components/Table/tableTools'
 
 export default defineComponent({
   name: 'SuperTable',
@@ -49,8 +48,17 @@ export default defineComponent({
     const option = shallowReactive({ attrs: ctxAttrs }) as unknown as RootTableOption & { attrs: Obj }
     const dataRef = ref([])
     const wrapRef = ref()
-    // setColumns 会重建下层 Table；视图偏好留在 SuperTable 才不会随子实例丢失。
-    const tableViewState = reactive(createTableViewState())
+    // 列模型重建不改变表格身份；UI 根据此标识管理自己的实例状态。
+    const tableInstance = {}
+    const tableState = shallowRef<{ model: Obj; key: symbol; editable: boolean }>()
+    const updateColumns = (columns) => {
+      // 只重建列模型与共享 Table，查询仍属于外层实例。
+      tableState.value = {
+        model: reactive({ refData: dataRef, listData: buildModelsMap(columns) }),
+        key: Symbol(),
+        editable: !!option.editable,
+      }
+    }
 
     const updateSource = (data) => {
       dataRef.value = data
@@ -66,8 +74,8 @@ export default defineComponent({
     const setOption = (_option: RootTableOption) => {
       if (globalConfig.schemaDiagnostics) reportSchemaDiagnostics(_option, 'table', 'SuperTable')
       const { attrs: _attrs, ...superTableAttrs } = globalProps.SuperTable || {}
-      // 高度和工具栏策略由 SuperTable/Core 消费，其余属性交给下层 Table。
-      const { maxHeight, fixedHeight, heightOffset, useSectionStyle, tableTools, ...attrs } = mergeProps(
+      // 高度策略由 SuperTable 消费，表格增强属性交给共享 Table。
+      const { maxHeight, fixedHeight, heightOffset, useSectionStyle, ...attrs } = mergeProps(
         superTableAttrs,
         { ..._option.attrs },
         ctxAttrs
@@ -77,7 +85,7 @@ export default defineComponent({
       for (const value of [_option.attrs?.pagination, ctxAttrs.pagination]) {
         if (value !== undefined) pagination = value === false ? false : merge({}, pagination || {}, value)
       }
-      Object.assign(option, { maxHeight, fixedHeight, heightOffset, useSectionStyle, tableTools }, _option, {
+      Object.assign(option, { maxHeight, fixedHeight, heightOffset, useSectionStyle }, _option, {
         attrs: {
           ...attrs,
           pagination,
@@ -130,12 +138,8 @@ export default defineComponent({
         if (tableFormRef.value) await getUIService('form').validate(tableFormRef.value)
       },
       setColumns: (cols) => {
-        if (!initQuery && !option.columns?.length) {
-          Object.assign(option, { columns: cols })
-        } else {
-          Object.assign(option, { columns: cols })
-          updateColumns(cols)
-        }
+        option.columns = cols
+        if (tableState.value) updateColumns(cols)
       },
     }
 
@@ -149,6 +153,7 @@ export default defineComponent({
     ctx.emit('register', tableRef.value)
     ctx.expose(tableRef.value)
 
+    // useControl 合并一次静态 attrs，保留 dynamicAttrs 的 Ref；这里只叠加运行状态。
     const tableAttrs: Obj = reactive({
       reload,
       refresh: resetRefresh,
@@ -156,39 +161,33 @@ export default defineComponent({
       loading,
     })
 
-    // const windowResize = new AbortController()
     // key 切换时先释放旧实例，避免旧 onUnmounted 在新 register 之后把引用清空。
     onBeforeUnmount(() => {
       cancelQuery()
-      // 异步更新option,添加resize事件，需提前配置销毁
-      // windowResize.abort()
       ctx.emit('register', null)
     })
     provide('rootSlots', ctx.slots)
 
     const slots = ref({})
-    const tableSlot = ref()
     const effectData = reactive({
       formData: dataRef,
       current: dataRef,
       queryParams: computed(getQueryParams),
     })
+    const renderTable = () => {
+      const { model, key } = tableState.value!
+      return h(Controls.Table, { option, effectData, model, key, ...tableAttrs, tableInstance } as any, slots.value)
+    }
+    const renderTableContent = () => tableState.value!.editable
+      ? getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: renderTable })
+      : renderTable()
 
     let initQuery = false
-    const unWatch = watch(
-      option,
-      (opt) => {
-        if (!opt?.columns?.length) return
-        if (tableSlot.value) {
-          unWatch() // 由于立即监听，第一次执行后方法还没初始化，需下次执行解除监听
-          return
-        }
-        const { columns } = opt
-        // 列表控件子表单模型
-        const model = reactive({
-          refData: dataRef,
-          listData: buildModelsMap(columns),
-        })
+    watch(
+      () => option.columns,
+      (columns) => {
+        if (tableState.value || !columns?.length) return
+        const opt = option
 
         slots.value = useInnerSlots(option.slots, effectData, ctx.slots)
 
@@ -286,41 +285,15 @@ export default defineComponent({
           onExpandedRowsChange?.(param)
           debounceRedoHeight()
         }
-        const table = () =>
-          h(Controls.Table, { option, effectData, model, ...tableAttrs, tableViewState } as any, slots.value)
-        if (option.editable) {
-          tableSlot.value = () => getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: table })
-        } else {
-          tableSlot.value = table
-        }
+        updateColumns(columns)
       },
       {
         immediate: true,
       }
     )
 
-    const updateColumns = (cols) => {
-      const model = reactive({
-        refData: dataRef,
-        listData: buildModelsMap(cols),
-      })
-      // 每次列配置变更重建一次；同一配置的普通渲染保持实例与行缓存。
-      const tableKey = Symbol()
-      const table = () =>
-        h(
-          Controls.Table,
-          { option, effectData, model, key: tableKey, ...tableAttrs, tableViewState } as any,
-          slots.value
-        )
-      if (option.editable) {
-        tableSlot.value = () => getUIRender('form')({ model: dataRef.value, ref: tableFormRef }, { default: table })
-      } else {
-        tableSlot.value = table
-      }
-    }
-
     return () =>
-      tableSlot.value &&
+      tableState.value &&
       h(DataProvider, { name: 'exaProvider', data: { data: dataRef, dataPagination, onLoaded } }, () =>
         !searchForm.value || option.searchForm?.teleport
           ? h(
@@ -342,7 +315,7 @@ export default defineComponent({
                     { to: option.searchForm.teleport },
                     h('div', { class: 'sup-form-section sup-table-search' }, h(searchForm.value.formNode))
                   ),
-                tableSlot.value(),
+                renderTableContent(),
               ]
             )
           : h(
@@ -353,7 +326,7 @@ export default defineComponent({
               ),
               [
                 h('div', { class: 'sup-form-section sup-table-search' }, h(searchForm.value.formNode)),
-                h('div', { class: 'sup-form-section section-last' }, h(tableSlot.value)),
+                h('div', { class: 'sup-form-section section-last' }, [renderTableContent()]),
               ]
             )
       )

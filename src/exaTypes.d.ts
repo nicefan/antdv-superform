@@ -352,7 +352,7 @@ export type ModalOpenOptions = Partial<ExtModalFormProps> & { data?: Obj }
 
 /** SuperForm 稳定的表格容器语义。 */
 export interface TableSchemaProps {
-  /** 独立表格工具栏；未配置或 false 时关闭，由 Core 消费。 */
+  /** 表格增强工具栏；未配置或 false 时关闭，由共享 Table 消费。 */
   tableTools?: false | UITableToolName[]
   /** 两套 UI 共用的筛选、排序与分页事件，不包含原生事件参数。 */
   onTableChange?: (change: UITableChange) => void
@@ -427,8 +427,6 @@ interface TableHeightOptions {
   heightOffset?: number
 }
 interface RootTableOption extends Omit<ExtTableOption, 'type' | 'field' | 'attrs'>, TableHeightOptions {
-  /** 独立表格工具栏，Core 持有状态，Adapter 负责渲染。 */
-  tableTools?: false | UITableToolName[]
   useSectionStyle?: boolean
   apis?: TableApis
   dataSource?: Obj[] | Ref<any[]>

@@ -43,7 +43,7 @@ export type {
   UITableSorter,
   UITableParams,
   UITableChange,
-  UITableFilterProps,
+  UITableTabs,
   UITablePagination,
   UITableRenderProps,
   UITableSelection,
@@ -60,12 +60,7 @@ export type {
   UIActionItem,
   UIActionMenuItem,
 } from './adapter'
-export type {
-  UITableDensity,
-  UITableToolName,
-  UITableToolbarColumn,
-  UITableToolbarProps,
-} from './adapter'
+export type { UITableToolName } from './adapter'
 export { registerAutoImportedComponents } from './components'
 export { configure, registerComponent, registerComponents, useAdapter } from './plugin'
 export type { ComponentModelConfig, FormComponent, FormComponentConfig, FormComponentProps } from './components'
